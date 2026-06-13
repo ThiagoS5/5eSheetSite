@@ -29,7 +29,7 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion";
+} from "@/src/components/ui/accordion";
 import { AttributeEditor } from "@/src/components/organisms/AttributeEditor";
 import { DescriptionFields } from "@/src/components/organisms/DescriptionFields";
 import { EquipmentChecklist } from "@/src/components/organisms/EquipmentChecklist";
