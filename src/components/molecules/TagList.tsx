@@ -1,0 +1,23 @@
+interface TagListProps {
+  items: readonly string[];
+  emptyLabel: string;
+}
+
+export function TagList({ items, emptyLabel }: TagListProps) {
+  if (items.length === 0) {
+    return <p className="text-sm italic text-[#7a7e99]">{emptyLabel}</p>;
+  }
+
+  return (
+    <ul className="flex flex-wrap gap-1.5" aria-label={emptyLabel}>
+      {items.map((item) => (
+        <li
+          key={item}
+          className="rounded border border-white/[0.08] bg-white/5 px-2 py-0.5 text-[0.65rem] font-medium text-[#b0b5cc]"
+        >
+          {item}
+        </li>
+      ))}
+    </ul>
+  );
+}
