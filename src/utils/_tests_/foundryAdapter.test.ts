@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createFoundryCharacterExport } from "@/src/utils/foundryAdapter";
-import type { CharacterBuilderState } from "@/store/characterStore.types";
+import type { CharacterBuilderState } from "@/src/store/characterStore.types";
 import type { CharacterSheetSummary } from "@/types/builder";
 
 const state: CharacterBuilderState = {

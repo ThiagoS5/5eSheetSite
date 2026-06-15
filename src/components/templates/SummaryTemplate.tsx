@@ -1,10 +1,10 @@
 "use client";
 
 import { useMemo, type ReactNode } from "react";
-import { getAbilityModifier } from "@/rules/characterRules";
-import { selectCharacterSheetSummary } from "@/store/characterSelectors";
-import { useCharacterStore } from "@/store/useCharacterStore";
-import type { CharacterBuilderState } from "@/store/characterStore.types";
+import { getAbilityModifier } from "@/src/adapters/characterDerivedAdapter";
+import { selectCharacterSheetSummary } from "@/src/store/characterSelectors";
+import { useCharacterStore } from "@/src/store/useCharacterStore";
+import type { CharacterBuilderState } from "@/src/store/characterStore.types";
 import { ActionBtn } from "@/src/components/atoms/ActionBtn";
 import { HoverTooltip } from "@/src/components/molecules/HoverTooltip";
 import { parseTaggedText } from "@/src/utils/textParser";

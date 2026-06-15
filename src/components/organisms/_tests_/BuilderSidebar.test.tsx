@@ -10,7 +10,7 @@ vi.mock("next/navigation", () => ({
   usePathname: () => "/builder/recursos-classe",
 }));
 
-vi.mock("@/store/useCharacterStore", () => ({
+vi.mock("@/src/store/useCharacterStore", () => ({
   useCharacterStore: <T,>(selector: (state: { maxUnlockedStepIndex: number }) => T) =>
     selector({ maxUnlockedStepIndex: 8 }),
 }));
@@ -52,5 +52,19 @@ describe("BuilderSidebar", () => {
     expect(screen.getByRole("link", { name: "Classe" })).not.toHaveAttribute(
       "aria-current",
     );
+  });
+
+  it("renders mapped FontAwesome icons for builder steps", () => {
+    render(<BuilderSidebar />);
+
+    expect(document.querySelector(".fa-wand")).toBeInTheDocument();
+    expect(document.querySelector(".fa-wand-sparkles")).toBeInTheDocument();
+    expect(document.querySelector(".fa-scroll-old")).toBeInTheDocument();
+    expect(document.querySelector(".fa-dragon")).toBeInTheDocument();
+    expect(document.querySelector(".fa-eye-evil")).toBeInTheDocument();
+    expect(document.querySelector(".fa-dice-d20")).toBeInTheDocument();
+    expect(document.querySelector(".fa-backpack")).toBeInTheDocument();
+    expect(document.querySelector(".fa-feather-pointed")).toBeInTheDocument();
+    expect(document.querySelector(".fa-flag-pennant")).toBeInTheDocument();
   });
 });

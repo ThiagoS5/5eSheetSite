@@ -5,11 +5,11 @@ import {
   getBuilderBackgrounds,
   getBuilderClasses,
   getBuilderSpecies,
-} from "@/services/builderDataService";
-import { getAbilityModifier } from "@/rules/characterRules";
-import { selectCharacterSheetSummary } from "@/store/characterSelectors";
-import type { CharacterBuilderState } from "@/store/characterStore.types";
-import { useCharacterStore } from "@/store/useCharacterStore";
+} from "@/src/services/ruleService";
+import { getAbilityModifier } from "@/src/adapters/characterDerivedAdapter";
+import { selectCharacterSheetSummary } from "@/src/store/characterSelectors";
+import type { CharacterBuilderState } from "@/src/store/characterStore.types";
+import { useCharacterStore } from "@/src/store/useCharacterStore";
 import { ATTRIBUTE_LABELS, type AttributeKey } from "@/types/dnd";
 import { TagList } from "@/src/components/molecules/TagList";
 

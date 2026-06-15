@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { validateBuilderStep } from "@/rules/builderValidation";
-import { getBuilderClasses } from "@/services/builderDataService";
-import { initialCharacterState } from "@/store/createCharacterStore";
+import { getBuilderClasses } from "@/src/services/ruleService";
+import { initialCharacterState } from "@/src/store/createCharacterStore";
 
 describe("builder validation", () => {
   it("requires class, class feature choices, species, background choices, description name, and equipment", () => {

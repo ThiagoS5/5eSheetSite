@@ -4,7 +4,7 @@
 import "@testing-library/jest-dom/vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
-import { CharacterStoreProvider } from "@/store/useCharacterStore";
+import { CharacterStoreProvider } from "@/src/store/useCharacterStore";
 import { SummaryTemplate } from "@/src/components/templates/SummaryTemplate";
 
 describe("SummaryTemplate", () => {

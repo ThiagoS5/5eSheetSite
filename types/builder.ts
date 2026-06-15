@@ -98,6 +98,7 @@ export interface BuilderBackground {
   summary: string;
   description: string;
   descriptionBlocks: BuilderFeatureBlock[];
+  image?: BuilderClassImage;
   abilityOptions: BuilderAbilityOption[];
   originFeat: string;
   skillProficiencies: string[];

@@ -4,7 +4,7 @@ import {
   getBuilderEquipmentOptions,
   getBuilderLanguages,
   getBuilderSpecies,
-} from "@/services/builderDataService";
+} from "@/src/services/ruleService";
 import { BuilderStepPanel } from "@/src/components/pages/BuilderStepPanel";
 import type { BuilderStepSlug } from "@/types/builder";
 

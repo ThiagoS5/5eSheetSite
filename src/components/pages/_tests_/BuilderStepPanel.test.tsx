@@ -2,7 +2,14 @@
  * @vitest-environment jsdom
  */
 import "@testing-library/jest-dom/vitest";
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import { useEffect } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
@@ -11,13 +18,15 @@ import {
   getBuilderEquipmentOptions,
   getBuilderLanguages,
   getBuilderSpecies,
-} from "@/services/builderDataService";
-import { CharacterStoreProvider, useCharacterStore } from "@/store/useCharacterStore";
+} from "@/src/services/ruleService";
+import { CharacterStoreProvider, useCharacterStore } from "@/src/store/useCharacterStore";
 import { BuilderStepPanel } from "@/src/components/pages/BuilderStepPanel";
+
+const pushMock = vi.fn();
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
-    push: vi.fn(),
+    push: pushMock,
   }),
 }));
 
@@ -32,11 +41,12 @@ const builderData = {
 describe("BuilderStepPanel", () => {
   afterEach(() => {
     cleanup();
+    pushMock.mockClear();
     sessionStorage.clear();
     localStorage.clear();
   });
 
-  it("renders class cards with separated labels, values, and footer actions", () => {
+  it("renders class cards with artwork, tags, resources, and footer actions", () => {
     render(
       <CharacterStoreProvider>
         <BuilderStepPanel step="classe" {...builderData} />
@@ -45,14 +55,52 @@ describe("BuilderStepPanel", () => {
 
     expect(screen.queryByText("Etapa válida.")).not.toBeInTheDocument();
     expect(screen.queryByText("Etapa inválida.")).not.toBeInTheDocument();
-    expect(screen.getAllByText("Primary Ability:")[0]).toBeInTheDocument();
-    expect(screen.getAllByText("Proficiências de Armadura:")[0]).toBeInTheDocument();
+    expect(screen.getByLabelText("Filtrar classes")).toBeInTheDocument();
+    expect(screen.getByText(/classes encontradas/i)).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: /fighter artwork/i })).toBeInTheDocument();
+    expect(screen.getAllByText(/DADO DE VIDA/i)[0]).toBeInTheDocument();
     expect(screen.getAllByLabelText("Recursos de Nível 1")[0]).toBeInTheDocument();
     expect(screen.getAllByRole("button", { name: "DETAILS" })[0]).toBeInTheDocument();
     expect(screen.getAllByRole("button", { name: "SELECT" })[0]).toBeInTheDocument();
   });
 
-  it("opens class details without the generic description and renders accordion items", () => {
+  it("filters class cards by name, summary, source, and level one features", () => {
+    render(
+      <CharacterStoreProvider>
+        <BuilderStepPanel step="classe" {...builderData} />
+      </CharacterStoreProvider>,
+    );
+
+    fireEvent.change(screen.getByLabelText("Filtrar classes"), {
+      target: { value: "arcane recovery" },
+    });
+
+    expect(screen.getByRole("heading", { name: "Wizard" })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Fighter" })).not.toBeInTheDocument();
+    expect(screen.getByText("1 classe encontrada")).toBeInTheDocument();
+  });
+
+  it("renders an accessible empty state when no class matches the search", () => {
+    render(
+      <CharacterStoreProvider>
+        <BuilderStepPanel step="classe" {...builderData} />
+      </CharacterStoreProvider>,
+    );
+
+    fireEvent.change(screen.getByLabelText("Filtrar classes"), {
+      target: { value: "classe inexistente" },
+    });
+
+    expect(screen.getByText("Nenhuma classe encontrada")).toBeInTheDocument();
+    expect(
+      screen.getByText("Tente buscar por nome, fonte ou recurso inicial."),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "SELECT" })).not.toBeInTheDocument();
+  });
+
+  it("opens class details in the new class modal layout", () => {
+    const firstClass = builderData.classes[0];
+
     render(
       <CharacterStoreProvider>
         <BuilderStepPanel step="classe" {...builderData} />
@@ -62,9 +110,57 @@ describe("BuilderStepPanel", () => {
     fireEvent.click(screen.getAllByRole("button", { name: "DETAILS" })[0]);
 
     expect(screen.queryByText(/Progressao completa/i)).not.toBeInTheDocument();
-    expect(screen.getByRole("dialog")).toBeInTheDocument();
-    expect(screen.getByText("Descricao")).toBeInTheDocument();
+    expect(screen.getByRole("dialog", { name: firstClass.name })).toBeInTheDocument();
+    expect(
+      screen.getAllByRole("img", { name: firstClass.image?.alt })[0],
+    ).toBeInTheDocument();
+    expect(screen.getByText("Identidade da classe")).toBeInTheDocument();
+    expect(screen.getByText("Atributo Primario")).toBeInTheDocument();
+    expect(screen.getByText("Dado de Vida")).toBeInTheDocument();
+    expect(screen.getByText("Proficiencias Iniciais")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Descricao" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: /Progress.*Classe/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: `Fechar detalhes de ${firstClass.name}` }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Selecionar Classe" })).toHaveAttribute(
+      "aria-pressed",
+      "false",
+    );
     expect(screen.getAllByRole("button", { name: /Level 1:/i })[0]).toBeInTheDocument();
+  });
+
+  it("selects a class from the details modal and persists the builder advance", async () => {
+    render(
+      <CharacterStoreProvider>
+        <BuilderStepPanel step="classe" {...builderData} />
+      </CharacterStoreProvider>,
+    );
+
+    fireEvent.click(screen.getAllByRole("button", { name: "DETAILS" })[0]);
+    fireEvent.click(screen.getByRole("button", { name: "Selecionar Classe" }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: "Classe Selecionada" })).toHaveAttribute(
+        "aria-pressed",
+        "true",
+      );
+    });
+
+    await waitFor(() => {
+      const saves = JSON.parse(
+        localStorage.getItem("forge-fate-character-saves:v1") ?? "{}",
+      );
+
+      expect(Object.values(saves)[0]).toMatchObject({
+        draft: {
+          currentStepSlug: "recursos-classe",
+          maxUnlockedStepIndex: 1,
+        },
+      });
+    });
   });
 
   it("persists the active build when advancing through a wizard step", async () => {
@@ -107,7 +203,7 @@ describe("BuilderStepPanel", () => {
     expect(screen.getByText("Armaduras:")).toBeInTheDocument();
     expect(screen.getByText("Recursos Iniciais de Nível 1:")).toBeInTheDocument();
   });
-  it("renders background rewards before ability bonus controls", async () => {
+  it("renders background cards with artwork, content, actions, and accessible bonus controls", async () => {
     render(
       <CharacterStoreProvider>
         <SelectedBackgroundInitializer />
@@ -116,14 +212,24 @@ describe("BuilderStepPanel", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getAllByText("Recompensas")[0]).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Acolyte" })).toBeInTheDocument();
     });
-    expect(screen.getAllByText("Bonus de atributo")[0]).toBeInTheDocument();
+    expect(screen.getAllByRole("img", { name: /artwork/i })[0]).toBeInTheDocument();
+    expect(screen.getAllByText("Talento de Origem")[0]).toBeInTheDocument();
+    expect(screen.getAllByText(/Bonus de Atributo/i)[0]).toBeInTheDocument();
+    expect(
+      screen.getByLabelText("Acolyte: atributo com bonus +2"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByLabelText("Acolyte: atributo com bonus +1"),
+    ).toBeInTheDocument();
     expect(screen.getAllByRole("button", { name: "DETAILS" })[0]).toBeInTheDocument();
-    expect(screen.getAllByRole("button", { name: "SELECT" })[0]).toBeInTheDocument();
+    expect(
+      screen.getAllByRole("button", { name: "SELECIONAR" })[0],
+    ).toBeInTheDocument();
   });
 
-  it("opens background details without duplicated empty reward rows", async () => {
+  it("opens the background details modal with real rewards and an accessible close button", async () => {
     render(
       <CharacterStoreProvider>
         <SelectedBackgroundInitializer />
@@ -135,13 +241,68 @@ describe("BuilderStepPanel", () => {
       expect(screen.getAllByRole("button", { name: "DETAILS" })[0]).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getAllByRole("button", { name: "DETAILS" })[0]);
+    const acolyteCard = screen
+      .getByRole("heading", { name: "Acolyte" })
+      .closest("article");
 
-    expect(screen.getByRole("dialog")).toBeInTheDocument();
-    expect(screen.getByText("Lore")).toBeInTheDocument();
-    expect(screen.getAllByText("Recompensas")[0]).toBeInTheDocument();
+    expect(acolyteCard).not.toBeNull();
+    fireEvent.click(within(acolyteCard as HTMLElement).getByRole("button", { name: "DETAILS" }));
+
+    const dialog = screen.getByRole("dialog", { name: "Acolyte" });
+
+    expect(dialog).toBeInTheDocument();
+    expect(within(dialog).getByText("Recompensas")).toBeInTheDocument();
+    expect(within(dialog).getByText("Talento de Origem")).toBeInTheDocument();
+    expect(within(dialog).getByText("Bonus de Atributo")).toBeInTheDocument();
+    expect(within(dialog).getByText("Proficiencias")).toBeInTheDocument();
+    expect(within(dialog).getByText("Equipamento Inicial")).toBeInTheDocument();
+    expect(
+      within(dialog).getByRole("button", { name: "Fechar detalhes" }),
+    ).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Detalhes" })).not.toBeInTheDocument();
     expect(screen.queryByText(/Ability Scores::/i)).not.toBeInTheDocument();
+  });
+
+  it("selects a background from the modal and advances only after valid bonuses", async () => {
+    render(
+      <CharacterStoreProvider>
+        <SelectedBackgroundWithBonusesInitializer />
+        <BuilderStepPanel step="antecedente" {...builderData} />
+      </CharacterStoreProvider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getAllByRole("button", { name: "DETAILS" })[0]).toBeInTheDocument();
+    });
+
+    const acolyteCard = screen
+      .getByRole("heading", { name: "Acolyte" })
+      .closest("article");
+
+    expect(acolyteCard).not.toBeNull();
+    fireEvent.click(within(acolyteCard as HTMLElement).getByRole("button", { name: "DETAILS" }));
+    fireEvent.click(
+      within(screen.getByRole("dialog", { name: "Acolyte" })).getByRole("button", {
+        name: "SELECIONADO",
+      }),
+    );
+
+    await waitFor(() => {
+      expect(pushMock).toHaveBeenCalledWith("/builder/especie");
+    });
+
+    await waitFor(() => {
+      const saves = JSON.parse(
+        localStorage.getItem("forge-fate-character-saves:v1") ?? "{}",
+      );
+
+      expect(Object.values(saves)[0]).toMatchObject({
+        draft: {
+          currentStepSlug: "especie",
+          maxUnlockedStepIndex: 3,
+        },
+      });
+    });
   });
 
   it("renders species card actions in the footer like class cards", () => {
@@ -234,6 +395,39 @@ function SelectedBackgroundInitializer() {
     setClassSkillProficiencies,
     setClassFeatureChoice,
     selectBackground,
+    unlockStep,
+  ]);
+
+  return null;
+}
+
+function SelectedBackgroundWithBonusesInitializer() {
+  const selectClass = useCharacterStore((state) => state.selectClass);
+  const setClassSkillProficiencies = useCharacterStore(
+    (state) => state.setClassSkillProficiencies,
+  );
+  const setClassFeatureChoice = useCharacterStore(
+    (state) => state.setClassFeatureChoice,
+  );
+  const selectBackground = useCharacterStore((state) => state.selectBackground);
+  const setBackgroundAbilityBonuses = useCharacterStore(
+    (state) => state.setBackgroundAbilityBonuses,
+  );
+  const unlockStep = useCharacterStore((state) => state.unlockStep);
+
+  useEffect(() => {
+    selectClass("fighter-xphb");
+    setClassSkillProficiencies(["Athletics", "Perception"]);
+    setClassFeatureChoice("weapon-mastery", getFighterWeaponMasteries());
+    selectBackground("acolyte-xphb");
+    setBackgroundAbilityBonuses({ inteligencia: 2, sabedoria: 1 });
+    unlockStep(2);
+  }, [
+    selectClass,
+    setClassSkillProficiencies,
+    setClassFeatureChoice,
+    selectBackground,
+    setBackgroundAbilityBonuses,
     unlockStep,
   ]);
 

@@ -4,9 +4,9 @@
 import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { saveCharacter } from "@/services/characterService";
-import { createEmptyCharacterBuild } from "@/store/characterBuildModel";
-import { CharacterStoreProvider } from "@/store/useCharacterStore";
+import { saveCharacter } from "@/src/services/characterService";
+import { createEmptyCharacterBuild } from "@/src/store/characterBuildModel";
+import { CharacterStoreProvider } from "@/src/store/useCharacterStore";
 import { Dashboard } from "@/src/components/pages/Dashboard";
 import type { CharacterBuild } from "@/src/types/characterBuild";
 
