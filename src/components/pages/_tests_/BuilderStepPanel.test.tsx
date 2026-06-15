@@ -110,10 +110,13 @@ describe("BuilderStepPanel", () => {
     fireEvent.click(screen.getAllByRole("button", { name: "DETAILS" })[0]);
 
     expect(screen.queryByText(/Progressao completa/i)).not.toBeInTheDocument();
-    expect(screen.getByRole("dialog", { name: firstClass.name })).toBeInTheDocument();
-    expect(
-      screen.getAllByRole("img", { name: firstClass.image?.alt })[0],
-    ).toBeInTheDocument();
+    const detailsDialog = screen.getByRole("dialog", { name: firstClass.name });
+    const detailsImage = within(detailsDialog).getByRole("img", {
+      name: firstClass.image?.alt,
+    });
+
+    expect(detailsDialog).toBeInTheDocument();
+    expect(detailsImage).toHaveClass("object-cover", "object-top");
     expect(screen.getByText("Identidade da classe")).toBeInTheDocument();
     expect(screen.getByText("Atributo Primario")).toBeInTheDocument();
     expect(screen.getByText("Dado de Vida")).toBeInTheDocument();

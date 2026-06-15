@@ -3,6 +3,7 @@
 import { useState, type ReactNode } from "react";
 import { BuilderSidebar } from "@/src/components/organisms/BuilderSidebar";
 import { CharacterSheetPreview } from "@/src/components/organisms/CharacterSheetPreview";
+import { Header } from "@/src/components/organisms/Header";
 
 interface BuilderShellProps {
   children: ReactNode;
@@ -14,8 +15,9 @@ export function BuilderShell({ children }: BuilderShellProps) {
   const gridClass = getGridClass(sidebarCollapsed, sheetCollapsed);
 
   return (
-    <main className="min-h-screen overflow-x-hidden bg-[#12131a] text-[#e8e9f0]">
-      <div className={`grid min-h-screen w-full min-w-0 ${gridClass}`}>
+    <main className="min-h-screen overflow-x-hidden bg-[#12131a] pt-16 text-[#e8e9f0]">
+      <Header />
+      <div className={`grid min-h-[calc(100dvh-4rem)] w-full min-w-0 ${gridClass}`}>
         <BuilderSidebar
           collapsed={sidebarCollapsed}
           onToggleCollapsed={() => setSidebarCollapsed((value) => !value)}
@@ -25,18 +27,6 @@ export function BuilderShell({ children }: BuilderShellProps) {
           aria-labelledby="builder-title"
           className="min-w-0 border-x border-white/[0.06] bg-[#12131a]"
         >
-          <div className="sticky top-0 z-20 border-b border-white/[0.06] bg-[#12131a]/95 px-4 py-4 backdrop-blur md:px-6">
-            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-[#7a7e99]">
-              Character Creation
-            </p>
-            <h1
-              id="builder-title"
-              className="mt-1 font-serif text-2xl font-bold tracking-wide text-white sm:text-3xl"
-            >
-              Forge & Fate
-            </h1>
-          </div>
-
           <div className="px-4 py-5 md:px-6">{children}</div>
         </section>
 

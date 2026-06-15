@@ -35,7 +35,10 @@ export default function RootLayout({
       data-scroll-behavior="smooth"
       className={`${geistSans.variable} ${geistMono.variable} min-h-full scroll-smooth bg-slate-950 antialiased`}
     >
-      <body className="min-h-screen bg-slate-950 font-sans text-slate-100">
+      <body
+        suppressHydrationWarning
+        className="min-h-screen bg-slate-950 font-sans text-slate-100"
+      >
         {children}
       </body>
     </html>

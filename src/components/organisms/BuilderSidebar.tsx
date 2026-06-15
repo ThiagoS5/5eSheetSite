@@ -50,7 +50,7 @@ export function BuilderSidebar({
 
   return (
     <aside
-      className={`flex min-w-0 flex-col border-b border-white/5 bg-[#0f1018] text-[#e8e9f0] xl:min-h-screen xl:border-b-0 xl:border-r ${
+      className={`hidden min-w-0 flex-col border-b border-white/5 bg-[#0f1018] text-[#e8e9f0] xl:flex xl:min-h-[calc(100dvh-4rem)] xl:border-b-0 xl:border-r ${
         collapsed ? "xl:w-[4.5rem]" : "xl:w-full"
       }`}
     >

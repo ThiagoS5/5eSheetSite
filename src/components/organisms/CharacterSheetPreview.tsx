@@ -43,9 +43,9 @@ export function CharacterSheetPreview({
   return (
     <aside
       aria-labelledby="sheet-preview-title"
-      className="border-t border-white/[0.06] bg-[#0f1018] xl:min-h-screen xl:border-l xl:border-t-0"
+      className="hidden border-t border-white/[0.06] bg-[#0f1018] xl:block xl:min-h-[calc(100dvh-4rem)] xl:border-l xl:border-t-0"
     >
-      <div className="sticky top-0 max-h-screen overflow-y-auto px-4 py-5">
+      <div className="sticky top-16 max-h-[calc(100dvh-4rem)] overflow-y-auto px-4 py-5">
         <button
           type="button"
           aria-expanded={!collapsed}

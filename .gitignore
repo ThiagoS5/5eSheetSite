@@ -58,3 +58,6 @@ enviarparaocodex.md
 *.mock.json
 src/_references/*
 !src/_references/foundry-reference.json
+design.md
+project-delivery-ruler.md
+5etools-data-audit.md

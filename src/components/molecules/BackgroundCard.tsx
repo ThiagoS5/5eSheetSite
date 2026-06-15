@@ -175,7 +175,7 @@ function BackgroundDetailsModal({
                   alt={background.image.alt}
                   fill
                   sizes="(min-width: 640px) 42rem, 100vw"
-                  className="object-cover opacity-80"
+                  className="object-cover object-top opacity-80"
                 />
               ) : (
                 <div

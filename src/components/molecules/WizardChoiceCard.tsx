@@ -88,7 +88,7 @@ export function WizardChoiceCard({
             alt={imageAlt ?? title}
             fill
             sizes={imageSizes}
-            className={`object-cover transition duration-300 ${
+            className={`object-cover object-top transition duration-300 ${
               isActive
                 ? "opacity-90"
                 : "opacity-65 saturate-[0.75] group-hover:opacity-90 group-hover:saturate-100"

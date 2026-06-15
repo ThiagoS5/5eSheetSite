@@ -1186,7 +1186,7 @@ function ClassDetailsSidebar({
             alt={classEntry.image.alt}
             fill
             sizes="(min-width: 768px) 20rem, 100vw"
-            className="object-cover opacity-85 saturate-[0.8] transition duration-500 hover:opacity-95 hover:saturate-100"
+            className="object-cover object-top opacity-85 saturate-[0.8] transition duration-500 hover:opacity-95 hover:saturate-100"
           />
         ) : (
           <div
