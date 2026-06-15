@@ -36,6 +36,14 @@ describe("Dashboard", () => {
     await waitFor(() => {
       expect(screen.getByRole("heading", { name: "Forje Sua Alma" })).toBeInTheDocument();
     });
+    expect(
+      screen.getByText(
+        "Nenhum heroi forjado ainda. Inicie sua jornada criando um novo personagem.",
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /Criar Novo Personagem/i }),
+    ).toBeInTheDocument();
     expect(screen.queryByText("Bem-vindo, Arquiteto")).not.toBeInTheDocument();
     expect(screen.queryByText("Aelarion Sunweaver")).not.toBeInTheDocument();
   });

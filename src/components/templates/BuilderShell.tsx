@@ -4,6 +4,7 @@ import { useState, type ReactNode } from "react";
 import { BuilderSidebar } from "@/src/components/organisms/BuilderSidebar";
 import { CharacterSheetPreview } from "@/src/components/organisms/CharacterSheetPreview";
 import { Header } from "@/src/components/organisms/Header";
+import { SidebarProvider } from "@/src/components/ui/sidebar";
 
 interface BuilderShellProps {
   children: ReactNode;
@@ -15,27 +16,36 @@ export function BuilderShell({ children }: BuilderShellProps) {
   const gridClass = getGridClass(sidebarCollapsed, sheetCollapsed);
 
   return (
-    <main className="min-h-screen overflow-x-hidden bg-[#12131a] pt-16 text-[#e8e9f0]">
-      <Header />
-      <div className={`grid min-h-[calc(100dvh-4rem)] w-full min-w-0 ${gridClass}`}>
-        <BuilderSidebar
-          collapsed={sidebarCollapsed}
-          onToggleCollapsed={() => setSidebarCollapsed((value) => !value)}
-        />
+    <SidebarProvider
+      open={!sidebarCollapsed}
+      onOpenChange={(open) => setSidebarCollapsed(!open)}
+      className="block min-h-0 w-full bg-transparent"
+      style={
+        {
+          "--sidebar-width": "16rem",
+          "--sidebar-width-icon": "4.5rem",
+        } as React.CSSProperties
+      }
+    >
+      <main className="min-h-screen overflow-x-hidden bg-[#12131a] pt-16 text-[#e8e9f0]">
+        <Header />
+        <div className={`grid min-h-[calc(100dvh-4rem)] w-full min-w-0 ${gridClass}`}>
+          <BuilderSidebar />
 
-        <section
-          aria-labelledby="builder-title"
-          className="min-w-0 border-x border-white/[0.06] bg-[#12131a]"
-        >
-          <div className="px-4 py-5 md:px-6">{children}</div>
-        </section>
+          <section
+            aria-labelledby="builder-title"
+            className="min-w-0 border-x border-white/[0.06] bg-[#12131a]"
+          >
+            <div className="px-4 py-5 md:px-6">{children}</div>
+          </section>
 
-        <CharacterSheetPreview
-          collapsed={sheetCollapsed}
-          onToggleCollapsed={() => setSheetCollapsed((value) => !value)}
-        />
-      </div>
-    </main>
+          <CharacterSheetPreview
+            collapsed={sheetCollapsed}
+            onToggleCollapsed={() => setSheetCollapsed((value) => !value)}
+          />
+        </div>
+      </main>
+    </SidebarProvider>
   );
 }
 

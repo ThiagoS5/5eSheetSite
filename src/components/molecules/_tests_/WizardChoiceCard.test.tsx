@@ -34,4 +34,28 @@ describe("WizardChoiceCard", () => {
       "object-top",
     );
   });
+
+  it("renders summary subtitles without the eyebrow treatment", () => {
+    render(
+      <WizardChoiceCard
+        title="Human"
+        subtitle="Humans are adaptable, ambitious, and found across every realm."
+        subtitleVariant="summary"
+        imageSrc="https://example.com/human.webp"
+        imageAlt="Human artwork"
+        isActive={false}
+        onClickDetails={vi.fn()}
+        onClickSelect={vi.fn()}
+      >
+        <p>Species summary</p>
+      </WizardChoiceCard>,
+    );
+
+    const subtitle = screen.getByText(
+      "Humans are adaptable, ambitious, and found across every realm.",
+    );
+
+    expect(subtitle).toHaveClass("line-clamp-2", "text-sm");
+    expect(subtitle).not.toHaveClass("uppercase");
+  });
 });

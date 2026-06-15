@@ -30,6 +30,7 @@ describe("Header", () => {
     expect(screen.getByRole("button", { name: "Abrir menu" })).toHaveClass(
       "md:hidden",
     );
+    expect(screen.queryByTitle(/barra lateral/i)).not.toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: "Abrir perfil do usuario" }),
     ).toBeInTheDocument();

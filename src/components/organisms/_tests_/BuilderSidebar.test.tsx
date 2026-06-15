@@ -2,17 +2,61 @@
  * @vitest-environment jsdom
  */
 import "@testing-library/jest-dom/vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { BuilderSidebar } from "@/src/components/organisms/BuilderSidebar";
+import { SidebarProvider } from "@/src/components/ui/sidebar";
+import type { CharacterBuilderState } from "@/src/store/characterStore.types";
 
 vi.mock("next/navigation", () => ({
   usePathname: () => "/builder/recursos-classe",
 }));
 
 vi.mock("@/src/store/useCharacterStore", () => ({
-  useCharacterStore: <T,>(selector: (state: { maxUnlockedStepIndex: number }) => T) =>
-    selector({ maxUnlockedStepIndex: 8 }),
+  useCharacterStore: <T,>(selector: (state: CharacterBuilderState) => T) =>
+    selector({
+      ruleset: "2024",
+      level: 1,
+      selectedSpeciesId: "",
+      selectedClassId: "fighter-xphb",
+      selectedBackgroundId: "",
+      selectedEquipmentIds: [],
+      equipmentAcquisitionMode: "items",
+      maxUnlockedStepIndex: 8,
+      pendingChoiceIds: [],
+      classSkillProficiencies: [],
+      skillTraining: {},
+      classFeatureChoices: {},
+      speciesChoices: {},
+      speciesLanguages: [],
+      attributeGenerationMethod: "standard-array",
+      baseAttributes: {
+        forca: 15,
+        destreza: 14,
+        constituicao: 13,
+        inteligencia: 12,
+        sabedoria: 10,
+        carisma: 8,
+      },
+      backgroundAbilityBonuses: {},
+      description: {
+        nome: "",
+        alinhamento: "",
+        faith: "",
+        lifestyle: "",
+        age: "",
+        height: "",
+        weight: "",
+        eyes: "",
+        skin: "",
+        hair: "",
+        gender: "",
+        aparencia: "",
+        personalidade: "",
+        tracos: "",
+        notas: "",
+      },
+    }),
 }));
 
 describe("BuilderSidebar", () => {
@@ -21,7 +65,9 @@ describe("BuilderSidebar", () => {
   });
 
   it("renders the DDB-inspired builder steps as keyboard-accessible links", () => {
-    render(<BuilderSidebar />);
+    renderSidebar();
+
+    fireEvent.click(screen.getByRole("button", { name: "Raca/Especie" }));
 
     expect(
       screen.getByRole("navigation", { name: "Etapas do Character Builder" }),
@@ -43,7 +89,7 @@ describe("BuilderSidebar", () => {
   });
 
   it("marks the current step with aria-current", () => {
-    render(<BuilderSidebar />);
+    renderSidebar();
 
     expect(screen.getByRole("link", { name: "Recursos de Classe" })).toHaveAttribute(
       "aria-current",
@@ -54,17 +100,68 @@ describe("BuilderSidebar", () => {
     );
   });
 
+  it("renders grouped shadcn sidebar sections with progress and guide lines", () => {
+    renderSidebar();
+
+    expect(screen.getByTitle("Fechar barra lateral (Ctrl+B)")).toBeInTheDocument();
+    expect(
+      screen.getByRole("progressbar", { name: /Progresso do wizard/i }),
+    ).toHaveAttribute("aria-valuenow", "22.22222222222222");
+    expect(screen.getByRole("button", { name: "Classe" })).toHaveAttribute(
+      "aria-expanded",
+      "true",
+    );
+    expect(screen.getByRole("button", { name: "Raca/Especie" })).toHaveAttribute(
+      "aria-expanded",
+      "false",
+    );
+    expect(document.querySelector('[data-sidebar="menu-sub"]')).toHaveClass(
+      "border-l",
+      "border-white/10",
+      "ml-3",
+      "pl-3",
+    );
+  });
+
+  it("uses real store status for completed child items", () => {
+    renderSidebar();
+
+    expect(screen.getByRole("link", { name: "Classe" })).toHaveClass(
+      "text-[#50c878]",
+    );
+    expect(document.querySelector(".fa-check")).toBeInTheDocument();
+  });
+
   it("renders mapped FontAwesome icons for builder steps", () => {
-    render(<BuilderSidebar />);
+    renderSidebar();
 
     expect(document.querySelector(".fa-wand")).toBeInTheDocument();
-    expect(document.querySelector(".fa-wand-sparkles")).toBeInTheDocument();
     expect(document.querySelector(".fa-scroll-old")).toBeInTheDocument();
     expect(document.querySelector(".fa-dragon")).toBeInTheDocument();
-    expect(document.querySelector(".fa-eye-evil")).toBeInTheDocument();
     expect(document.querySelector(".fa-dice-d20")).toBeInTheDocument();
     expect(document.querySelector(".fa-backpack")).toBeInTheDocument();
     expect(document.querySelector(".fa-feather-pointed")).toBeInTheDocument();
     expect(document.querySelector(".fa-flag-pennant")).toBeInTheDocument();
   });
+
+  it("uses icon collapsible mode without rendering the old internal toggle", () => {
+    renderSidebar(true);
+
+    expect(screen.getByTitle("Abrir barra lateral (Ctrl+B)")).toBeInTheDocument();
+    expect(document.querySelector('[data-slot="sidebar"]')).toHaveAttribute(
+      "data-collapsible",
+      "icon",
+    );
+    expect(
+      screen.queryByRole("button", { name: /Recolher sidebar|Expandir sidebar/i }),
+    ).not.toBeInTheDocument();
+  });
 });
+
+function renderSidebar(collapsed = false) {
+  return render(
+    <SidebarProvider open={!collapsed}>
+      <BuilderSidebar />
+    </SidebarProvider>,
+  );
+}

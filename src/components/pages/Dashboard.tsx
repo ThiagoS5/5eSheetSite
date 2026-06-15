@@ -13,6 +13,8 @@ import {
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState, useSyncExternalStore, type ReactNode } from "react";
+import { Button } from "@/src/components/ui/button";
+import { Card, CardContent } from "@/src/components/ui/card";
 import {
   CHARACTER_SAVES_CHANGED_EVENT,
   getCharacter,
@@ -147,29 +149,37 @@ function EmptyState({ onCreate }: { onCreate: () => void }) {
     <section
       id="empty-state"
       aria-labelledby="empty-state-title"
-      className="flex min-h-[60vh] flex-col items-center justify-center text-center"
+      className="flex min-h-[60vh] items-center justify-center text-center"
     >
-      <div className="relative mx-auto mb-8 w-full max-w-2xl">
-        <div className="absolute inset-0 rounded-full bg-[#e61c23]/10 blur-[100px]" />
-        <ForgeFateLogo
-          decorative
-          className="relative mx-auto h-64 w-64 animate-pulse opacity-40 mix-blend-screen"
-        />
-      </div>
-      <h2 id="empty-state-title" className="mb-4 font-serif text-5xl font-bold text-white">
-        Forje Sua Alma
-      </h2>
-      <p className="mx-auto mb-8 max-w-lg font-sans text-lg leading-7 text-[#b0b5cc]">
-        O multiverso aguarda seu comando. Comece sua lenda criando seu primeiro personagem hoje.
-      </p>
-      <button
-        type="button"
-        onClick={onCreate}
-        className="crimson-glow mx-auto flex items-center gap-3 rounded-lg bg-[#e61c23] px-8 py-4 font-sans font-bold text-white outline-none transition-all hover:bg-[#a91515] active:scale-95 focus-visible:ring-2 focus-visible:ring-[#e61c23]"
+      <Card
+        size="default"
+        className="relative w-full max-w-3xl border-white/[0.08] bg-[#14151b]/80 py-12 shadow-[0_0_80px_rgba(230,28,35,0.08)] backdrop-blur"
       >
-        <Plus className="h-5 w-5" />
-        CRIAR NOVO PERSONAGEM
-      </button>
+        <CardContent className="flex flex-col items-center">
+          <div className="relative mx-auto mb-8 w-full max-w-2xl">
+            <div className="absolute inset-0 rounded-full bg-[#e61c23]/10 blur-[100px]" />
+            <ForgeFateLogo
+              decorative
+              className="relative mx-auto h-56 w-56 animate-pulse opacity-40 mix-blend-screen sm:h-64 sm:w-64"
+            />
+          </div>
+          <h2 id="empty-state-title" className="mb-4 font-serif text-4xl font-bold text-white sm:text-5xl">
+            Forje Sua Alma
+          </h2>
+          <p className="mx-auto mb-8 max-w-lg font-sans text-lg leading-7 text-[#b0b5cc]">
+            Nenhum heroi forjado ainda. Inicie sua jornada criando um novo personagem.
+          </p>
+          <Button
+            type="button"
+            onClick={onCreate}
+            size="lg"
+            className="crimson-glow mx-auto h-auto gap-3 px-8 py-4 font-sans font-bold uppercase tracking-[0.08em] hover:bg-[#a91515] active:scale-95"
+          >
+            <Plus className="h-5 w-5" />
+            Criar Novo Personagem
+          </Button>
+        </CardContent>
+      </Card>
     </section>
   );
 }

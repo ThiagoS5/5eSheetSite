@@ -7,7 +7,9 @@ import { useRouter } from "next/navigation";
 import {
   BookOpen,
   CheckCircle2,
+  Footprints,
   PlusCircle,
+  Ruler,
   ScrollText,
   Shield,
   Sparkles,
@@ -36,8 +38,6 @@ import {
   getHitDieIconClass,
 } from "@/src/components/atoms/FontAwesomeIcon";
 import { BackgroundCard } from "@/src/components/molecules/BackgroundCard";
-import { ChoiceCard } from "@/src/components/molecules/ChoiceCard";
-import { DetailDialog } from "@/src/components/molecules/DetailDialog";
 import { FeatureTagList } from "@/src/components/molecules/FeatureTagList";
 import { WizardChoiceCard } from "@/src/components/molecules/WizardChoiceCard";
 import { WizardStepHeader } from "@/src/components/molecules/WizardStepHeader";
@@ -814,6 +814,27 @@ function matchesBackgroundSearch(
   );
 }
 
+function matchesSpeciesSearch(species: BuilderSpecies, query: string): boolean {
+  const normalizedQuery = normalizeSearchText(query);
+
+  if (!normalizedQuery) {
+    return true;
+  }
+
+  return matchesNormalizedSearchText(
+    [
+      species.name,
+      species.summary,
+      species.description,
+      species.source,
+      species.size,
+      `${species.speed}`,
+      ...species.traits.flatMap((trait) => [trait.name, trait.description]),
+    ].join(" "),
+    normalizedQuery,
+  );
+}
+
 function SpeciesStep({
   species,
   selectedSpeciesId,
@@ -825,113 +846,315 @@ function SpeciesStep({
   disabled: boolean;
   onSelectSpecies: (speciesId: string) => void;
 }) {
+  const [searchQuery, setSearchQuery] = useState("");
+  const filteredSpecies = useMemo(
+    () => species.filter((entry) => matchesSpeciesSearch(entry, searchQuery)),
+    [species, searchQuery],
+  );
+  const resultCountLabel =
+    filteredSpecies.length === 1
+      ? "1 especie encontrada"
+      : `${filteredSpecies.length} especies encontradas`;
+
   return (
-    <section aria-labelledby="species-options-title" className="grid gap-5">
-      <StepHeader
+    <section aria-labelledby="species-options-title" className="grid gap-6">
+      <WizardStepHeader
         eyebrow="Rules 2024"
         title="Escolha uma Raca/Especie"
         description="Especies 2024 fornecem tracos, tamanho, deslocamento, sentidos e resistencias."
         id="species-options-title"
+        searchId="species-filter"
+        searchLabel="Filtrar especies"
+        searchValue={searchQuery}
+        searchPlaceholder="Nome, fonte ou traco..."
+        resultCountLabel={resultCountLabel}
+        onSearch={setSearchQuery}
       />
 
-      <div className="grid gap-4 lg:grid-cols-2 2xl:grid-cols-3">
-        {species.map((entry) => (
-          <ChoiceCard
-            key={entry.id}
-            title={entry.name}
-            eyebrow={`${entry.source} · ${entry.ruleset}`}
-            selected={selectedSpeciesId === entry.id}
-            disabled={disabled}
-            showDefaultAction={false}
-            onSelect={() => onSelectSpecies(entry.id)}
-            footer={
-              <div className="flex w-full gap-2">
-                <DetailDialog
-                  title={entry.name}
-                  triggerLabel="DETAILS"
-                  triggerClassName="flex-1 rounded-md border border-white/10 bg-white/5 px-3 py-2 text-xs font-bold uppercase tracking-[0.08em] text-[#b0b5cc] outline-none transition hover:border-[#c41e1e]/70 hover:text-white focus-visible:ring-2 focus-visible:ring-[#c41e1e]/70"
-                >
-                  <SpeciesDetails species={entry} />
-                </DetailDialog>
-                <button
-                  type="button"
-                  onClick={() => onSelectSpecies(entry.id)}
-                  disabled={disabled}
-                  aria-pressed={selectedSpeciesId === entry.id}
-                  className="flex-1 rounded-md border border-[#c41e1e] bg-[#c41e1e] px-3 py-2 text-xs font-bold uppercase tracking-[0.08em] text-white outline-none transition hover:bg-[#a91515] focus-visible:ring-2 focus-visible:ring-[#f3c969] disabled:cursor-not-allowed disabled:opacity-50 aria-pressed:border-[#f3c969] aria-pressed:bg-[#f3c969] aria-pressed:text-[#12131a]"
-                >
-                  {selectedSpeciesId === entry.id ? "SELECIONADO" : "SELECIONAR"}
-                </button>
-              </div>
-            }
-          >
-            <dl className="grid grid-cols-2 gap-3 text-sm">
-              <DescriptionPair label="Tamanho" value={entry.size} />
-              <DescriptionPair label="Deslocamento" value={`${entry.speed} ft.`} />
-            </dl>
-            <div className="mt-4 grid gap-3">
-              <p className="text-sm leading-6 text-[#b0b5cc]">
-                {entry.summary}
-              </p>
-              <FeatureTagList
-                features={entry.traits}
-                emptyLabel="Tracos de especie"
-              />
-            </div>
-          </ChoiceCard>
-        ))}
-      </div>
+      {filteredSpecies.length ? (
+        <div className="grid min-w-0 grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {filteredSpecies.map((entry) => (
+            <SpeciesOptionCard
+              key={entry.id}
+              species={entry}
+              selected={selectedSpeciesId === entry.id}
+              disabled={disabled}
+              onSelect={() => onSelectSpecies(entry.id)}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="rounded-lg border border-dashed border-white/10 bg-[#1c1e2a]/70 p-6 text-center">
+          <h3 className="font-serif text-lg font-bold text-white">
+            Nenhuma especie encontrada
+          </h3>
+          <p className="mt-2 text-sm leading-6 text-[#b0b5cc]">
+            Tente buscar por nome, fonte ou traco racial.
+          </p>
+        </div>
+      )}
     </section>
   );
 }
 
-function SpeciesDetails({ species }: { species: BuilderSpecies }) {
+function SpeciesOptionCard({
+  species,
+  selected,
+  disabled,
+  onSelect,
+}: {
+  species: BuilderSpecies;
+  selected: boolean;
+  disabled: boolean;
+  onSelect: () => void;
+}) {
+  const [detailsOpen, setDetailsOpen] = useState(false);
+
   return (
-    <div className="grid gap-6">
-      {species.image ? (
-        <div className="rounded-lg border border-white/[0.08] bg-black/20 p-2">
+    <>
+      <WizardChoiceCard
+        title={species.name}
+        subtitle={species.summary}
+        subtitleVariant="summary"
+        imageSrc={species.image?.src}
+        imageAlt={species.image?.alt}
+        isActive={selected}
+        disabled={disabled}
+        selectedLabel="SELECIONADO"
+        onClickDetails={() => setDetailsOpen(true)}
+        onClickSelect={onSelect}
+      >
+        <div className="mb-3 flex flex-wrap gap-2">
+          <span className="rounded border border-white/10 bg-[#0f1018] px-2 py-0.5 text-[0.62rem] font-bold uppercase tracking-[0.14em] text-[#b0b5cc]">
+            {species.source}
+          </span>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <ClassMetric label="Tamanho" value={species.size} />
+          <ClassMetric label="Deslocamento" value={`${species.speed} ft.`} />
+        </div>
+
+        <div className="mt-5 grid gap-3 border-t border-white/[0.06] pt-4">
+          <h4 className="text-[0.62rem] font-bold uppercase tracking-[0.14em] text-[#b0b5cc]">
+            Tracos Raciais
+          </h4>
+          <FeatureTagList
+            features={species.traits}
+            emptyLabel="Nenhum traco racial"
+            ariaLabel="Tracos Raciais"
+          />
+        </div>
+      </WizardChoiceCard>
+
+      <SpeciesDetailsDialog
+        open={detailsOpen}
+        onOpenChange={setDetailsOpen}
+        species={species}
+        selected={selected}
+        disabled={disabled}
+        onSelect={onSelect}
+      />
+    </>
+  );
+}
+
+function SpeciesDetailsDialog({
+  open,
+  onOpenChange,
+  species,
+  selected,
+  disabled,
+  onSelect,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  species: BuilderSpecies;
+  selected: boolean;
+  disabled: boolean;
+  onSelect: () => void;
+}) {
+  return (
+    <Dialog.Root open={open} onOpenChange={onOpenChange}>
+      <Dialog.Portal>
+        <Dialog.Overlay className="fixed inset-0 z-50 flex items-stretch justify-center overflow-y-auto bg-black/70 p-0 backdrop-blur-md md:items-center md:p-6">
+          <Dialog.Content className="relative flex h-[100dvh] w-full min-w-0 flex-col overflow-hidden border border-white/[0.08] bg-[#12131a] text-[#e8e9f0] shadow-2xl shadow-black/60 outline-none focus-visible:ring-2 focus-visible:ring-[#ebc162]/70 md:h-[min(88vh,920px)] md:max-w-6xl md:flex-row md:rounded-xl">
+            <Dialog.Title className="sr-only">{species.name}</Dialog.Title>
+            <Dialog.Description className="sr-only">
+              {`Detalhes de ${species.name}: ${species.summary}`}
+            </Dialog.Description>
+            <Dialog.Close asChild>
+              <button
+                type="button"
+                aria-label={`Fechar detalhes de ${species.name}`}
+                className="absolute right-3 top-3 z-40 inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-[#0f1018]/85 text-[#b0b5cc] outline-none backdrop-blur transition hover:border-[#ebc162]/60 hover:text-white focus-visible:ring-2 focus-visible:ring-[#ebc162]/70"
+              >
+                <X aria-hidden="true" className="h-5 w-5" />
+              </button>
+            </Dialog.Close>
+
+            <SpeciesDetailsSidebar
+              species={species}
+              selected={selected}
+              disabled={disabled}
+              onSelect={onSelect}
+            />
+            <SpeciesDetailsMain species={species} />
+          </Dialog.Content>
+        </Dialog.Overlay>
+      </Dialog.Portal>
+    </Dialog.Root>
+  );
+}
+
+function SpeciesDetailsSidebar({
+  species,
+  selected,
+  disabled,
+  onSelect,
+}: {
+  species: BuilderSpecies;
+  selected: boolean;
+  disabled: boolean;
+  onSelect: () => void;
+}) {
+  return (
+    <aside className="flex max-h-[48dvh] w-full shrink-0 flex-col overflow-y-auto border-b border-white/[0.06] bg-[#0f1018] md:h-full md:max-h-none md:w-80 md:border-b-0 md:border-r">
+      <div className="relative h-56 shrink-0 overflow-hidden bg-[#1c1e2a] md:h-[300px]">
+        {species.image ? (
           <Image
             unoptimized
             src={species.image.src}
             alt={species.image.alt}
-            width={960}
-            height={540}
-            sizes="(min-width: 768px) 720px, 100vw"
-            className="w-full object-contain"
+            fill
+            sizes="(min-width: 768px) 20rem, 100vw"
+            className="object-cover object-top opacity-85 saturate-[0.8] transition duration-500 hover:opacity-95 hover:saturate-100"
           />
-        </div>
-      ) : null}
-      <section>
-        <h3 className="mb-2 text-xs font-bold uppercase tracking-[0.14em] text-[#7a7e99]">
-          Descricao Geral
-        </h3>
-        <ContentBlocks
-          blocks={
-            species.descriptionBlocks.length
-              ? species.descriptionBlocks
-              : [{ type: "paragraph", text: species.description }]
-          }
+        ) : (
+          <div
+            aria-hidden="true"
+            className="h-full w-full bg-gradient-to-br from-[#0f1018] via-[#3d1820] to-[#1c1e2a]"
+          />
+        )}
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 bg-gradient-to-t from-[#0f1018] via-[#0f1018]/25 to-transparent"
         />
-      </section>
-      <section>
-        <h3 className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-[#7a7e99]">
-          Tracos e Beneficios
-        </h3>
-        <div className="grid gap-4">
-          {species.traits.map((trait) => (
-            <article
-              key={trait.name}
-              className="rounded-lg border border-white/[0.06] bg-white/[0.03] p-3"
-            >
-              <h4 className="font-serif text-base font-bold text-white">
-                {trait.name}
-              </h4>
-              <FeatureBlocks feature={trait} />
-            </article>
-          ))}
+        <div className="absolute bottom-0 left-0 right-0 p-4">
+          <div className="mb-2 flex flex-wrap gap-2">
+            <span className="rounded border border-white/10 bg-black/45 px-2 py-1 text-[0.62rem] font-bold uppercase tracking-[0.14em] text-[#b0b5cc] backdrop-blur">
+              {species.source}
+            </span>
+            <span className="rounded border border-white/10 bg-black/45 px-2 py-1 text-[0.62rem] font-bold uppercase tracking-[0.14em] text-[#b0b5cc] backdrop-blur">
+              {species.ruleset}
+            </span>
+          </div>
+          <h2 className="font-serif text-3xl font-bold tracking-wide text-white">
+            {species.name}
+          </h2>
+          <p className="mt-1 line-clamp-2 text-sm leading-5 text-[#b0b5cc]">
+            {species.summary}
+          </p>
         </div>
-      </section>
-    </div>
+      </div>
+
+      <div className="grid gap-5 p-4">
+        <section aria-labelledby={`${species.id}-biology-title`} className="grid gap-3">
+          <h3
+            id={`${species.id}-biology-title`}
+            className="text-[0.62rem] font-bold uppercase tracking-[0.14em] text-[#7a7e99]"
+          >
+            Biologia da especie
+          </h3>
+          <div className="grid grid-cols-2 gap-3">
+            <ClassDetailStat
+              icon={<Ruler aria-hidden="true" className="h-4 w-4" />}
+              label="Tamanho"
+              value={species.size}
+              description="Porte"
+              compact
+            />
+            <ClassDetailStat
+              icon={<Footprints aria-hidden="true" className="h-4 w-4" />}
+              label="Deslocamento"
+              value={`${species.speed} ft.`}
+              description="Caminhada"
+              compact
+            />
+          </div>
+        </section>
+      </div>
+
+      <div className="sticky bottom-0 mt-auto border-t border-white/[0.06] bg-[#12131a]/95 p-4 backdrop-blur">
+        <button
+          type="button"
+          onClick={onSelect}
+          disabled={disabled}
+          aria-pressed={selected}
+          className={`inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg border px-4 py-3 font-serif text-lg font-semibold text-white outline-none transition focus-visible:ring-2 focus-visible:ring-[#ebc162]/70 disabled:cursor-not-allowed disabled:opacity-50 ${
+            selected
+              ? "border-[#f3c969] bg-[#f3c969] text-[#12131a]"
+              : "border-[#a91515]/70 bg-[#a91515] shadow-[0_0_18px_rgba(230,28,35,0.2)] hover:border-[#e61c23] hover:bg-[#e61c23]"
+          }`}
+        >
+          {selected ? (
+            <CheckCircle2 aria-hidden="true" className="h-5 w-5" />
+          ) : (
+            <PlusCircle aria-hidden="true" className="h-5 w-5" />
+          )}
+          {selected ? "Espécie Selecionada" : "Selecionar Raça"}
+        </button>
+      </div>
+    </aside>
+  );
+}
+
+function SpeciesDetailsMain({ species }: { species: BuilderSpecies }) {
+  return (
+    <main className="min-h-0 min-w-0 flex-1 overflow-y-auto bg-[#12131a] scroll-smooth">
+      <div className="mx-auto grid max-w-4xl gap-6 p-4 sm:p-6 lg:p-8">
+        <section aria-labelledby={`${species.id}-description-title`}>
+          <ClassSectionHeading
+            id={`${species.id}-description-title`}
+            icon={<BookOpen aria-hidden="true" className="h-5 w-5" />}
+          >
+            Descricao
+          </ClassSectionHeading>
+          <ContentBlocks
+            blocks={
+              species.descriptionBlocks.length
+                ? species.descriptionBlocks
+                : [{ type: "paragraph", text: species.description }]
+            }
+          />
+        </section>
+
+        <section aria-labelledby={`${species.id}-traits-title`}>
+          <ClassSectionHeading
+            id={`${species.id}-traits-title`}
+            icon={<ScrollText aria-hidden="true" className="h-5 w-5" />}
+            withRule
+          >
+            Tracos Raciais
+          </ClassSectionHeading>
+          <div className="grid gap-4">
+            {species.traits.map((trait) => (
+              <article
+                key={trait.name}
+                className="rounded-lg border border-white/[0.08] bg-[#0f1018] p-4"
+              >
+                <h4 className="font-serif text-lg font-bold text-white">
+                  {trait.name}
+                </h4>
+                <div className="mt-3">
+                  <FeatureBlocks feature={trait} />
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+      </div>
+    </main>
   );
 }
 
@@ -1566,15 +1789,6 @@ function StepHeader({
       <p className="mt-2 max-w-3xl text-sm leading-6 text-[#7a7e99]">
         {description}
       </p>
-    </div>
-  );
-}
-
-function DescriptionPair({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <dt className="text-[#7a7e99]">{label}</dt>
-      <dd className="font-semibold text-[#e8e9f0]">{value}</dd>
     </div>
   );
 }

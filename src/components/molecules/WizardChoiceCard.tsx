@@ -14,6 +14,7 @@ interface WizardChoiceCardTone {
 interface WizardChoiceCardProps {
   title: string;
   subtitle?: string;
+  subtitleVariant?: "eyebrow" | "summary";
   imageSrc?: string;
   imageAlt?: string;
   icon?: ReactNode;
@@ -42,6 +43,7 @@ const defaultTone: Required<WizardChoiceCardTone> = {
 export function WizardChoiceCard({
   title,
   subtitle,
+  subtitleVariant = "eyebrow",
   imageSrc,
   imageAlt,
   icon,
@@ -57,6 +59,10 @@ export function WizardChoiceCard({
   children,
 }: WizardChoiceCardProps) {
   const resolvedTone = { ...defaultTone, ...tone };
+  const subtitleClassName =
+    subtitleVariant === "summary"
+      ? "mt-2 line-clamp-2 text-sm leading-5 text-[#b0b5cc]"
+      : "mt-1 text-[0.62rem] font-bold uppercase tracking-[0.14em] text-[#7a7e99]";
 
   return (
     <article
@@ -113,7 +119,7 @@ export function WizardChoiceCard({
               {title}
             </h3>
             {subtitle ? (
-              <p className="mt-1 text-[0.62rem] font-bold uppercase tracking-[0.14em] text-[#7a7e99]">
+              <p className={subtitleClassName}>
                 {subtitle}
               </p>
             ) : null}

@@ -338,7 +338,11 @@ describe("BuilderStepPanel", () => {
     });
   });
 
-  it("renders species card actions in the footer like class cards", () => {
+  it("renders species cards with the class card visual system", () => {
+    const firstSpecies = builderData.species.find(
+      (entry) => entry.image && entry.traits.length > 0,
+    ) ?? builderData.species[0];
+
     render(
       <CharacterStoreProvider>
         <UnlockedSpeciesInitializer />
@@ -346,14 +350,92 @@ describe("BuilderStepPanel", () => {
       </CharacterStoreProvider>,
     );
 
+    expect(screen.getByLabelText("Filtrar especies")).toBeInTheDocument();
+    expect(screen.getByText(/especies encontradas/i)).toBeInTheDocument();
+
+    const speciesHeading = screen.getByRole("heading", { name: firstSpecies.name });
+    const speciesCard = speciesHeading.closest("article");
+    const speciesGrid = speciesCard?.parentElement;
+
+    expect(speciesGrid).toHaveClass(
+      "grid-cols-1",
+      "md:grid-cols-2",
+      "lg:grid-cols-3",
+      "xl:grid-cols-4",
+    );
+    expect(screen.getAllByText(firstSpecies.source)[0]).toBeInTheDocument();
+    expect(screen.getByText(firstSpecies.summary)).toHaveClass("line-clamp-2");
+    expect(screen.getAllByText("Tamanho")[0]).toBeInTheDocument();
+    expect(screen.getAllByText("Deslocamento")[0]).toBeInTheDocument();
+    expect(screen.getAllByLabelText("Tracos Raciais")[0]).toBeInTheDocument();
+    if (firstSpecies.image) {
+      expect(screen.getAllByRole("img", { name: firstSpecies.image.alt })[0]).toHaveClass(
+        "object-cover",
+        "object-top",
+      );
+    }
+
     const detailsButton = screen.getAllByRole("button", { name: "DETAILS" })[0];
-    const selectButton = screen.getAllByRole("button", { name: "SELECIONAR" })[0];
+    const selectButton = screen.getAllByRole("button", { name: "SELECT" })[0];
 
     expect(screen.queryByRole("button", { name: "Selecionar" })).not.toBeInTheDocument();
     expect(detailsButton.parentElement).toBe(selectButton.parentElement);
     expect(detailsButton.parentElement).toHaveClass("flex", "w-full", "gap-2");
     expect(detailsButton).toHaveClass("flex-1");
     expect(selectButton).toHaveClass("flex-1");
+  });
+
+  it("opens species details in the split-pane species modal layout", () => {
+    const firstSpecies = builderData.species.find(
+      (entry) => entry.image && entry.traits.length > 0,
+    ) ?? builderData.species[0];
+
+    render(
+      <CharacterStoreProvider>
+        <UnlockedSpeciesInitializer />
+        <BuilderStepPanel step="especie" {...builderData} />
+      </CharacterStoreProvider>,
+    );
+
+    fireEvent.click(screen.getAllByRole("button", { name: "DETAILS" })[0]);
+
+    const detailsDialog = screen.getByRole("dialog", { name: firstSpecies.name });
+
+    expect(within(detailsDialog).getByRole("heading", { name: "Descricao" })).toBeInTheDocument();
+    expect(
+      within(detailsDialog).getByRole("heading", { name: "Tracos Raciais" }),
+    ).toBeInTheDocument();
+    expect(within(detailsDialog).getByText("Tamanho")).toBeInTheDocument();
+    expect(within(detailsDialog).getByText("Deslocamento")).toBeInTheDocument();
+    if (firstSpecies.image) {
+      expect(within(detailsDialog).getByRole("img", { name: firstSpecies.image.alt })).toHaveClass(
+        "object-cover",
+        "object-top",
+      );
+    }
+    expect(
+      within(detailsDialog).getByRole("button", { name: "Selecionar Raça" }),
+    ).toHaveAttribute("aria-pressed", "false");
+  });
+
+  it("selects a species from the details modal without changing the wizard route", async () => {
+    render(
+      <CharacterStoreProvider>
+        <UnlockedSpeciesInitializer />
+        <BuilderStepPanel step="especie" {...builderData} />
+      </CharacterStoreProvider>,
+    );
+
+    fireEvent.click(screen.getAllByRole("button", { name: "DETAILS" })[0]);
+    fireEvent.click(screen.getByRole("button", { name: "Selecionar Raça" }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: "Espécie Selecionada" })).toHaveAttribute(
+        "aria-pressed",
+        "true",
+      );
+    });
+    expect(pushMock).not.toHaveBeenCalled();
   });
 
   it("lists rare and exotic languages in species details", async () => {
