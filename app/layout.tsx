@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import "../public/fontawesome/css/fontawesome.css";
 import "../public/fontawesome/css/solid.css";
@@ -37,6 +38,7 @@ export default function RootLayout({
     >
       <body className="min-h-screen bg-slate-950 font-sans text-slate-100">
         {children}
+        <Analytics />
       </body>
     </html>
   );
