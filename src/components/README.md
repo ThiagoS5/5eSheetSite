@@ -10,7 +10,8 @@ Esta pasta e a camada visual compartilhada do projeto.
 
 Regras:
 
-- Nao adicionar componentes soltos na raiz de `components/`.
+- Nao criar nem manter pasta `components/` na raiz do projeto.
+- Todo componente deve ficar em `src/components/`.
 - UI nao deve conter regra de RPG ou busca de dados.
 - Componentes interativos devem usar HTML semantico, foco visivel e ARIA apenas quando necessario.
-- Imports de UI devem apontar para `@/components/<nivel>/<Componente>`.
+- Imports de UI devem apontar para `@/src/components/<nivel>/<Componente>`.

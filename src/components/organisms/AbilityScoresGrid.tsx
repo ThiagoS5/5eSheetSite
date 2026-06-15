@@ -1,4 +1,4 @@
-import { getAbilityModifier } from "@/rules/characterRules";
+import { getAbilityModifier } from "@/src/adapters/characterDerivedAdapter";
 import { StatBadge } from "@/src/components/atoms/StatBadge";
 import type { CharacterSheetSummary } from "@/types/builder";
 import { ATTRIBUTE_LABELS, type AttributeKey } from "@/types/dnd";

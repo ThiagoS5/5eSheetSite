@@ -10,6 +10,7 @@ import {
   UserCircle,
   WandSparkles,
 } from "lucide-react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState, useSyncExternalStore, type ReactNode } from "react";
 import {
@@ -17,9 +18,9 @@ import {
   getCharacter,
   listCharactersSync,
   saveCharacter,
-} from "@/services/characterService";
-import { createEmptyCharacterBuild } from "@/store/characterBuildModel";
-import { useCharacterStore } from "@/store/useCharacterStore";
+} from "@/src/services/characterService";
+import { createEmptyCharacterBuild } from "@/src/store/characterBuildModel";
+import { useCharacterStore } from "@/src/store/useCharacterStore";
 import type { Character } from "@/types/Character";
 
 const builderStartHref = "/builder/classe";
@@ -127,9 +128,12 @@ function DashboardTopNav() {
           aria-label="Perfil"
           className="h-10 w-10 overflow-hidden rounded-full border border-white/[0.1] outline-none transition-transform active:scale-95 focus-visible:ring-2 focus-visible:ring-[#e61c23]"
         >
-          <img
+          <Image
+            unoptimized
             src={profileUrl}
             alt=""
+            width={40}
+            height={40}
             className="h-full w-full object-cover"
           />
         </button>
@@ -241,9 +245,12 @@ function DashboardCharacterCard({
         <div className="mb-4 flex items-start justify-between">
           <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-lg border border-white/[0.08] bg-[#1c1e2a]">
             {character.portraitUrl ? (
-              <img
+              <Image
+                unoptimized
                 src={character.portraitUrl}
                 alt=""
+                width={56}
+                height={56}
                 className="h-full w-full object-cover"
               />
             ) : (
@@ -353,11 +360,13 @@ function ForgeFateLogo({
   }
 
   return (
-    <img
+    <Image
+      unoptimized
       src={logoUrl}
       alt={decorative ? "" : "Forge & Fate"}
+      width={256}
+      height={256}
       loading="lazy"
-      decoding="async"
       fetchPriority="low"
       className={`${className} object-contain`}
       onError={() => setHasImageError(true)}

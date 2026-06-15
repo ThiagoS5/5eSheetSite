@@ -12,9 +12,9 @@ import {
 import {
   calculateFinalAttributes,
   getAbilityModifier,
-} from "@/rules/characterRules";
-import { getAttributeMethodLabel } from "@/store/createCharacterStore";
-import type { AttributeGenerationMethod } from "@/store/characterStore.types";
+} from "@/src/adapters/characterDerivedAdapter";
+import { getAttributeMethodLabel } from "@/src/store/createCharacterStore";
+import type { AttributeGenerationMethod } from "@/src/store/characterStore.types";
 import {
   ATTRIBUTE_LABELS,
   type AttributeBonuses,

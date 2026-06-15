@@ -1,5 +1,5 @@
 import foundryReference from "@/src/_references/foundry-reference.json";
-import type { CharacterBuilderState } from "@/store/characterStore.types";
+import type { CharacterBuilderState } from "@/src/store/characterStore.types";
 import type { CharacterSheetSummary } from "@/types/builder";
 import type { AttributeKey } from "@/types/dnd";
 

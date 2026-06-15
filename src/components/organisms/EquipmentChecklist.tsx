@@ -1,6 +1,6 @@
 "use client";
 
-import type { EquipmentAcquisitionMode } from "@/store/characterStore.types";
+import type { EquipmentAcquisitionMode } from "@/src/store/characterStore.types";
 import type { BuilderClass, BuilderEquipmentOption } from "@/types/builder";
 
 interface EquipmentChecklistProps {

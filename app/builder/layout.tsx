@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { CharacterStoreProvider } from "@/store/useCharacterStore";
+import { CharacterStoreProvider } from "@/src/store/useCharacterStore";
 import { BuilderShell } from "@/src/components/templates/BuilderShell";
 
 interface BuilderLayoutProps {

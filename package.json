@@ -13,6 +13,8 @@
     "prune:data": "node scripts/prune-data.js"
   },
   "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^7.2.0",
+    "@fortawesome/react-fontawesome": "^3.3.1",
     "@radix-ui/react-accordion": "^1.2.13",
     "@radix-ui/react-dialog": "^1.1.16",
     "@radix-ui/react-navigation-menu": "^1.2.15",

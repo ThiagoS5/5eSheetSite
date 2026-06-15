@@ -1,13 +1,24 @@
 "use client";
 
-import { useMemo, type ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react";
+import * as Dialog from "@radix-ui/react-dialog";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
+import {
+  BookOpen,
+  CheckCircle2,
+  PlusCircle,
+  ScrollText,
+  Shield,
+  Sparkles,
+  X,
+} from "lucide-react";
 import {
   getRequiredLanguageCount,
   validateBuilderStep,
 } from "@/rules/builderValidation";
-import { useCharacterStore } from "@/store/useCharacterStore";
-import type { CharacterBuilderState, SkillTrainingLevel } from "@/store/characterStore.types";
+import { useCharacterStore } from "@/src/store/useCharacterStore";
+import type { CharacterBuilderState, SkillTrainingLevel } from "@/src/store/characterStore.types";
 import type {
   BuilderBackground,
   BuilderClass,
@@ -20,16 +31,22 @@ import type {
 } from "@/types/builder";
 import type { AttributeBonuses, AttributeKey } from "@/types/dnd";
 import { ActionBtn } from "@/src/components/atoms/ActionBtn";
+import {
+  FontAwesomeIcon,
+  getHitDieIconClass,
+} from "@/src/components/atoms/FontAwesomeIcon";
+import { BackgroundCard } from "@/src/components/molecules/BackgroundCard";
 import { ChoiceCard } from "@/src/components/molecules/ChoiceCard";
 import { DetailDialog } from "@/src/components/molecules/DetailDialog";
 import { FeatureTagList } from "@/src/components/molecules/FeatureTagList";
-import { TagList } from "@/src/components/molecules/TagList";
+import { WizardChoiceCard } from "@/src/components/molecules/WizardChoiceCard";
+import { WizardStepHeader } from "@/src/components/molecules/WizardStepHeader";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion";
+} from "@/src/components/ui/accordion";
 import { AttributeEditor } from "@/src/components/organisms/AttributeEditor";
 import { DescriptionFields } from "@/src/components/organisms/DescriptionFields";
 import { EquipmentChecklist } from "@/src/components/organisms/EquipmentChecklist";
@@ -44,23 +61,6 @@ interface BuilderStepPanelProps {
   equipment: BuilderEquipmentOption[];
   languages: BuilderLanguage[];
 }
-
-const attributeKeys: readonly AttributeKey[] = [
-  "forca",
-  "destreza",
-  "constituicao",
-  "inteligencia",
-  "sabedoria",
-  "carisma",
-];
-const attributeLabels: Record<AttributeKey, string> = {
-  forca: "Forca",
-  destreza: "Destreza",
-  constituicao: "Constituicao",
-  inteligencia: "Inteligencia",
-  sabedoria: "Sabedoria",
-  carisma: "Carisma",
-};
 
 export function BuilderStepPanel({
   step,
@@ -149,6 +149,9 @@ export function BuilderStepPanel({
           disabled={!canUseCurrentStep}
           onSelectBackground={actions.selectBackground}
           onSetBonuses={actions.setBackgroundAbilityBonuses}
+          onCommitBackground={() => {
+            void unlockAndGo(3);
+          }}
         />
       ) : null}
 
@@ -247,85 +250,272 @@ function ClassStep({
   disabled: boolean;
   onSelectClass: (classId: string) => void;
 }) {
+  const [searchQuery, setSearchQuery] = useState("");
+  const filteredClasses = useMemo(
+    () => classes.filter((entry) => matchesClassSearch(entry, searchQuery)),
+    [classes, searchQuery],
+  );
+  const resultCountLabel =
+    filteredClasses.length === 1
+      ? "1 classe encontrada"
+      : `${filteredClasses.length} classes encontradas`;
+
   return (
-    <section aria-labelledby="class-options-title" className="grid gap-5">
-      <StepHeader
+    <section aria-labelledby="class-options-title" className="grid gap-6">
+      <WizardStepHeader
         eyebrow="Level 1"
         title="Escolha uma Classe"
         description="Classe define dado de vida, proficiencias, salvaguardas e recursos."
         id="class-options-title"
+        searchId="class-filter"
+        searchLabel="Filtrar classes"
+        searchValue={searchQuery}
+        searchPlaceholder="Nome, fonte ou recurso..."
+        resultCountLabel={resultCountLabel}
+        onSearch={setSearchQuery}
       />
 
-      <div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-3">
-        {classes.map((entry) => (
-          <ChoiceCard
-            key={entry.id}
-            title={entry.name}
-            eyebrow={`d${entry.hitDie} HP · ${entry.source}`}
-            selected={selectedClassId === entry.id}
-            disabled={disabled}
-            showDefaultAction={false}
-            onSelect={() => onSelectClass(entry.id)}
-            footer={
-              <div className="flex w-full gap-2">
-                <DetailDialog
-                  title={entry.name}
-                  triggerLabel="DETAILS"
-                  triggerClassName="flex-1 rounded-md border border-white/10 bg-white/5 px-3 py-2 text-xs font-bold uppercase tracking-[0.08em] text-[#b0b5cc] outline-none transition hover:border-[#c41e1e]/70 hover:text-white focus-visible:ring-2 focus-visible:ring-[#c41e1e]/70"
-                >
-                  <ClassDetails classEntry={entry} />
-                </DetailDialog>
-                <button
-                  type="button"
-                  onClick={() => onSelectClass(entry.id)}
-                  disabled={disabled}
-                  aria-pressed={selectedClassId === entry.id}
-                  className="flex-1 rounded-md border border-[#c41e1e] bg-[#c41e1e] px-3 py-2 text-xs font-bold uppercase tracking-[0.08em] text-white outline-none transition hover:bg-[#a91515] focus-visible:ring-2 focus-visible:ring-[#f3c969] disabled:cursor-not-allowed disabled:opacity-50 aria-pressed:border-[#f3c969] aria-pressed:bg-[#f3c969] aria-pressed:text-[#12131a]"
-                >
-                  {selectedClassId === entry.id ? "SELECTED" : "SELECT"}
-                </button>
-              </div>
-            }
-          >
-            <div className="grid gap-3">
-              <p className="text-sm leading-6 text-[#b0b5cc]">
-                {entry.summary}
-              </p>
-              <ClassSummaryLine
-                label="Primary Ability"
-                value={formatList(entry.primaryAbility)}
-              />
-              <ClassSummaryLine label="Saves" value={formatList(entry.savingThrows)} />
-              <ClassSummaryLine
-                label="Pericias"
-                value={`Escolha ${entry.skillChoices.count}`}
-              />
-              <ClassSummaryLine label="Proficiências de Armadura" value="">
-                <TagList
-                  items={entry.armorProficiencies}
-                  emptyLabel="Nenhuma"
-                />
-              </ClassSummaryLine>
-              <ClassSummaryLine label="Proficiências de Armas" value="">
-                <TagList
-                  items={entry.weaponProficiencies}
-                  emptyLabel="Nenhuma"
-                />
-              </ClassSummaryLine>
-              <ClassSummaryLine label="Recursos de Nível 1" value="">
-                <FeatureTagList
-                  features={entry.levelOneFeatures}
-                  emptyLabel="Nenhum"
-                  ariaLabel="Recursos de Nível 1"
-                />
-              </ClassSummaryLine>
-            </div>
-          </ChoiceCard>
-        ))}
-      </div>
+      {filteredClasses.length ? (
+        <div className="grid min-w-0 grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {filteredClasses.map((entry) => (
+            <ClassOptionCard
+              key={entry.id}
+              classEntry={entry}
+              selected={selectedClassId === entry.id}
+              disabled={disabled}
+              onSelect={() => onSelectClass(entry.id)}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="rounded-lg border border-dashed border-white/10 bg-[#1c1e2a]/70 p-6 text-center">
+          <h3 className="font-serif text-lg font-bold text-white">
+            Nenhuma classe encontrada
+          </h3>
+          <p className="mt-2 text-sm leading-6 text-[#b0b5cc]">
+            Tente buscar por nome, fonte ou recurso inicial.
+          </p>
+        </div>
+      )}
     </section>
   );
 }
+
+function ClassOptionCard({
+  classEntry,
+  selected,
+  disabled,
+  onSelect,
+}: {
+  classEntry: BuilderClass;
+  selected: boolean;
+  disabled: boolean;
+  onSelect: () => void;
+}) {
+  const tone = getClassTone(classEntry);
+  const tags = getClassTags(classEntry);
+  const [detailsOpen, setDetailsOpen] = useState(false);
+
+  return (
+    <>
+      <WizardChoiceCard
+        title={classEntry.name}
+        subtitle={classEntry.source}
+        imageSrc={classEntry.image?.src}
+        imageAlt={classEntry.image?.alt}
+        isActive={selected}
+        disabled={disabled}
+        onClickDetails={() => setDetailsOpen(true)}
+        onClickSelect={onSelect}
+        tone={tone}
+      >
+        <div className="mb-3 flex flex-wrap gap-2">
+          {tags.map((tag) => (
+            <span
+              key={tag}
+              className="rounded border border-white/10 bg-[#0f1018] px-2 py-0.5 text-[0.62rem] font-bold uppercase tracking-[0.14em] text-[#b0b5cc]"
+            >
+              {tag}
+            </span>
+          ))}
+        </div>
+
+        <p className="line-clamp-3 flex-1 text-sm leading-6 text-[#b0b5cc]">
+          {classEntry.summary}
+        </p>
+
+        <div className="mt-5 grid gap-3 border-t border-white/[0.06] pt-4">
+          <div className="grid grid-cols-2 gap-3">
+            <ClassMetric
+              label="DADO DE VIDA"
+              value={`d${classEntry.hitDie}`}
+              iconClassName={getHitDieIconClass(classEntry.hitDie)}
+            />
+            <ClassMetric label="FONTE" value={classEntry.source} />
+          </div>
+          <ClassSummaryLine
+            label="Atributo Primario"
+            value={formatList(classEntry.primaryAbility)}
+          />
+          <ClassSummaryLine
+            label="Salvaguardas"
+            value={formatList(classEntry.savingThrows)}
+          />
+          <div>
+            <h4 className="mb-2 text-[0.62rem] font-bold uppercase tracking-[0.14em] text-[#b0b5cc]">
+              Recursos de Nível 1
+            </h4>
+            <FeatureTagList
+              features={classEntry.levelOneFeatures}
+              emptyLabel="Nenhum"
+              ariaLabel="Recursos de Nível 1"
+            />
+          </div>
+        </div>
+      </WizardChoiceCard>
+
+      <ClassDetailsDialog
+        open={detailsOpen}
+        onOpenChange={setDetailsOpen}
+        classEntry={classEntry}
+        selected={selected}
+        disabled={disabled}
+        onSelect={onSelect}
+      />
+    </>
+  );
+}
+
+function ClassMetric({
+  label,
+  value,
+  iconClassName,
+}: {
+  label: string;
+  value: string;
+  iconClassName?: string;
+}) {
+  return (
+    <div className="rounded border border-white/[0.06] bg-[#0f1018] px-3 py-2">
+      <p className="flex items-center gap-1.5 text-[0.58rem] font-bold uppercase tracking-[0.14em] text-[#7a7e99]">
+        {iconClassName ? (
+          <FontAwesomeIcon iconClassName={iconClassName} className="text-[#e61c23]" />
+        ) : null}
+        {label}
+      </p>
+      <p className="mt-1 font-mono text-sm font-bold text-[#e8e9f0]">
+        {value || "-"}
+      </p>
+    </div>
+  );
+}
+
+function matchesClassSearch(classEntry: BuilderClass, query: string): boolean {
+  const normalizedQuery = normalizeSearchText(query);
+
+  if (!normalizedQuery) {
+    return true;
+  }
+
+  return matchesNormalizedSearchText(
+    [
+      classEntry.name,
+      classEntry.summary,
+      classEntry.source,
+      ...classEntry.levelOneFeatures.map((feature) => feature.name),
+    ].join(" "),
+    normalizedQuery,
+  );
+}
+
+function getClassTags(classEntry: BuilderClass): string[] {
+  const combatRole = classEntry.spellcastingAbility ? "Conjurador" : "Marcial";
+  const armorRole = classEntry.armorProficiencies.some((entry) =>
+    normalizeSearchText(entry).includes("heavy"),
+  )
+    ? "Linha de frente"
+    : classEntry.spellcastingAbility
+      ? classEntry.spellcastingAbility
+      : "Especialista";
+
+  return [combatRole, armorRole].filter(Boolean).slice(0, 2);
+}
+
+function getClassTone(classEntry: BuilderClass) {
+  const normalizedName = normalizeSearchText(classEntry.name);
+
+  if (normalizedName.includes("wizard") || normalizedName.includes("sorcerer")) {
+    return classToneByName.arcane;
+  }
+
+  if (normalizedName.includes("rogue") || normalizedName.includes("ranger")) {
+    return classToneByName.green;
+  }
+
+  if (normalizedName.includes("cleric") || normalizedName.includes("paladin")) {
+    return classToneByName.gold;
+  }
+
+  return classToneByName.crimson;
+}
+
+function normalizeSearchText(value: string): string {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+}
+
+function matchesNormalizedSearchText(value: string, normalizedQuery: string): boolean {
+  const normalizedValue = normalizeSearchText(value);
+  const queryTerms = normalizedQuery.split(/\s+/).filter(Boolean);
+
+  return queryTerms.every((term) => normalizedValue.includes(term));
+}
+
+const classToneByName = {
+  crimson: {
+    topBorder: "via-[#e61c23]",
+    selectedBorder: "border-[#e61c23]",
+    selectedShadow: "shadow-[0_0_24px_rgba(230,28,35,0.28)]",
+    activeBadge: "bg-[#e61c23]",
+    activeButton:
+      "border-[#e61c23] bg-[#e61c23] shadow-[0_0_15px_rgba(230,28,35,0.35)]",
+    fallbackGradient: "via-[#5c171b]",
+    statAccent: "border-[#e61c23]/30 bg-[#a91515]/20 text-[#ffb4ab]",
+  },
+  arcane: {
+    topBorder: "via-[#a4c9ff]",
+    selectedBorder: "border-[#a4c9ff]",
+    selectedShadow: "shadow-[0_0_24px_rgba(164,201,255,0.2)]",
+    activeBadge: "bg-[#0065b7]",
+    activeButton:
+      "border-[#a4c9ff] bg-[#0065b7] shadow-[0_0_15px_rgba(164,201,255,0.22)]",
+    fallbackGradient: "via-[#19375c]",
+    statAccent: "border-[#a4c9ff]/30 bg-[#0065b7]/20 text-[#a4c9ff]",
+  },
+  green: {
+    topBorder: "via-[#50c878]",
+    selectedBorder: "border-[#50c878]",
+    selectedShadow: "shadow-[0_0_24px_rgba(80,200,120,0.18)]",
+    activeBadge: "bg-[#2f8f55]",
+    activeButton:
+      "border-[#50c878] bg-[#2f8f55] shadow-[0_0_15px_rgba(80,200,120,0.22)]",
+    fallbackGradient: "via-[#183f2c]",
+    statAccent: "border-[#50c878]/30 bg-[#2f8f55]/20 text-[#50c878]",
+  },
+  gold: {
+    topBorder: "via-[#ebc162]",
+    selectedBorder: "border-[#ebc162]",
+    selectedShadow: "shadow-[0_0_24px_rgba(235,193,98,0.18)]",
+    activeBadge: "bg-[#7e5e00]",
+    activeButton:
+      "border-[#ebc162] bg-[#7e5e00] shadow-[0_0_15px_rgba(235,193,98,0.22)]",
+    fallbackGradient: "via-[#4d3a12]",
+    statAccent: "border-[#ebc162]/30 bg-[#7e5e00]/20 text-[#ebc162]",
+  },
+} as const;
 
 function ClassFeaturesStep({
   selectedClass,
@@ -529,6 +719,7 @@ function BackgroundStep({
   disabled,
   onSelectBackground,
   onSetBonuses,
+  onCommitBackground,
 }: {
   backgrounds: BuilderBackground[];
   selectedBackgroundId: string;
@@ -536,216 +727,90 @@ function BackgroundStep({
   disabled: boolean;
   onSelectBackground: (backgroundId: string) => void;
   onSetBonuses: (bonuses: AttributeBonuses) => void;
+  onCommitBackground: () => void;
 }) {
+  const [searchQuery, setSearchQuery] = useState("");
+  const filteredBackgrounds = useMemo(
+    () =>
+      backgrounds.filter((entry) =>
+        matchesBackgroundSearch(entry, searchQuery),
+      ),
+    [backgrounds, searchQuery],
+  );
+  const resultCountLabel =
+    filteredBackgrounds.length === 1
+      ? "1 antecedente encontrado"
+      : `${filteredBackgrounds.length} antecedentes encontrados`;
+
   return (
-    <section aria-labelledby="background-options-title" className="grid gap-5">
-      <StepHeader
+    <section aria-labelledby="background-options-title" className="grid gap-6">
+      <WizardStepHeader
         eyebrow="Origin Rules"
-        title="Escolha um Antecedente"
-        description="Em 2024, o Antecedente fornece bonus de atributo, Talento de Origem, pericias, ferramentas e equipamento."
+        title="Escolha seu Antecedente"
+        description="O passado molda o destino. Escolha a origem que definiu sua jornada antes de empunhar armas ou magia."
         id="background-options-title"
+        searchId="background-filter"
+        searchLabel="Filtrar antecedentes"
+        searchValue={searchQuery}
+        searchPlaceholder="Nome, talento ou descricao..."
+        resultCountLabel={resultCountLabel}
+        onSearch={setSearchQuery}
       />
 
-      <div className="grid gap-4">
-        {backgrounds.map((entry) => (
-          <ChoiceCard
-            key={entry.id}
-            title={entry.name}
-            eyebrow={`${entry.source} · ${entry.originFeat || "Origin Feat"}`}
-            selected={selectedBackgroundId === entry.id}
-            disabled={disabled}
-            showDefaultAction={false}
-            onSelect={() => onSelectBackground(entry.id)}
-            footer={
-              <div className="flex w-full gap-2">
-                <DetailDialog
-                  title={entry.name}
-                  triggerLabel="DETAILS"
-                  triggerClassName="flex-1 rounded-md border border-white/10 bg-white/5 px-3 py-2 text-xs font-bold uppercase tracking-[0.08em] text-[#b0b5cc] outline-none transition hover:border-[#c41e1e]/70 hover:text-white focus-visible:ring-2 focus-visible:ring-[#c41e1e]/70"
-                >
-                  <BackgroundDetails background={entry} />
-                </DetailDialog>
-                <button
-                  type="button"
-                  onClick={() => onSelectBackground(entry.id)}
-                  disabled={disabled}
-                  aria-pressed={selectedBackgroundId === entry.id}
-                  className="flex-1 rounded-md border border-[#c41e1e] bg-[#c41e1e] px-3 py-2 text-xs font-bold uppercase tracking-[0.08em] text-white outline-none transition hover:bg-[#a91515] focus-visible:ring-2 focus-visible:ring-[#f3c969] disabled:cursor-not-allowed disabled:opacity-50 aria-pressed:border-[#f3c969] aria-pressed:bg-[#f3c969] aria-pressed:text-[#12131a]"
-                >
-                  {selectedBackgroundId === entry.id ? "SELECTED" : "SELECT"}
-                </button>
-              </div>
-            }
-          >
-            <div className="grid gap-4">
-              <section className="grid gap-3">
-                <p className="text-sm leading-6 text-[#b0b5cc]">
-                  {entry.summary}
-                </p>
-                <BackgroundRewardSummary background={entry} />
-              </section>
-              <BackgroundAbilitySelector
-                background={entry}
-                selected={selectedBackgroundId === entry.id ? selectedBonuses : {}}
-                disabled={disabled || selectedBackgroundId !== entry.id}
-                onChange={(bonuses) => {
-                  onSelectBackground(entry.id);
-                  onSetBonuses(bonuses);
-                }}
-              />
-            </div>
-          </ChoiceCard>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function BackgroundRewardSummary({ background }: { background: BuilderBackground }) {
-  return (
-    <section className="grid gap-3 rounded-lg border border-white/[0.06] bg-white/[0.03] p-3">
-      <h3 className="text-xs font-bold uppercase tracking-[0.14em] text-[#7a7e99]">
-        Recompensas
-      </h3>
-      <div className="grid gap-2 text-sm leading-6 text-[#d7d9e6]">
-        <ClassSummaryLine
-          label="Talento"
-          value={background.originFeat || "-"}
-        />
-        <ClassSummaryLine
-          label="Pericias"
-          value={formatList(background.skillProficiencies)}
-        />
-        <ClassSummaryLine
-          label="Ferramentas"
-          value={formatList(background.toolProficiencies)}
-        />
-        <ClassSummaryLine
-          label="Equipamento"
-          value={background.equipmentSummary || "-"}
-        />
-      </div>
-    </section>
-  );
-}
-
-function BackgroundAbilitySelector({
-  background,
-  selected,
-  disabled,
-  onChange,
-}: {
-  background: BuilderBackground;
-  selected: AttributeBonuses;
-  disabled: boolean;
-  onChange: (bonuses: AttributeBonuses) => void;
-}) {
-  const splitOption = background.abilityOptions.find(
-    (option) => option.mode === "+2/+1",
-  );
-  const tripleOption = background.abilityOptions.find(
-    (option) => option.mode === "+1/+1/+1",
-  );
-  const plusTwoAttribute = findAttributeByBonus(selected, 2);
-  const plusOneAttribute = findAttributeByBonus(selected, 1);
-  const tripleBonuses =
-    tripleOption?.attributes.reduce<AttributeBonuses>(
-      (bonuses, attribute) => ({ ...bonuses, [attribute]: 1 }),
-      {},
-    ) ?? {};
-  const isTripleSelected = tripleOption
-    ? hasSameBonuses(selected, tripleBonuses)
-    : false;
-
-  return (
-    <fieldset className="rounded-lg border border-white/[0.06] bg-white/[0.03] p-4">
-      <legend className="mb-3 text-xs font-semibold uppercase tracking-[0.12em] text-[#7a7e99]">
-        Bonus de atributo
-      </legend>
-      {splitOption ? (
-        <div className="grid gap-3 md:grid-cols-2">
-          <label className="grid gap-1 text-sm">
-            <span className="text-xs font-bold uppercase tracking-[0.12em] text-[#7a7e99]">
-              Atributo +2
-            </span>
-            <select
-              value={plusTwoAttribute ?? ""}
+      {filteredBackgrounds.length ? (
+        <div className="grid w-full min-w-0 grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {filteredBackgrounds.map((entry) => (
+            <BackgroundCard
+              key={entry.id}
+              background={entry}
+              selected={selectedBackgroundId === entry.id}
+              selectedBonuses={selectedBackgroundId === entry.id ? selectedBonuses : {}}
               disabled={disabled}
-              onChange={(event) =>
-                onChange(createSplitBonuses(event.target.value, plusOneAttribute))
-              }
-              className="rounded-md border border-white/10 bg-[#12131a] px-3 py-2 text-[#e8e9f0] outline-none focus-visible:ring-2 focus-visible:ring-[#c41e1e]/70 disabled:opacity-50"
-            >
-              <option value="">Selecione</option>
-              {splitOption.attributes.map((attribute) => (
-                <option
-                  key={attribute}
-                  value={attribute}
-                  disabled={attribute === plusOneAttribute}
-                >
-                  {attributeLabels[attribute]}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="grid gap-1 text-sm">
-            <span className="text-xs font-bold uppercase tracking-[0.12em] text-[#7a7e99]">
-              Atributo +1
-            </span>
-            <select
-              value={plusOneAttribute ?? ""}
-              disabled={disabled}
-              onChange={(event) =>
-                onChange(createSplitBonuses(plusTwoAttribute, event.target.value))
-              }
-              className="rounded-md border border-white/10 bg-[#12131a] px-3 py-2 text-[#e8e9f0] outline-none focus-visible:ring-2 focus-visible:ring-[#c41e1e]/70 disabled:opacity-50"
-            >
-              <option value="">Selecione</option>
-              {splitOption.attributes.map((attribute) => (
-                <option
-                  key={attribute}
-                  value={attribute}
-                  disabled={attribute === plusTwoAttribute}
-                >
-                  {attributeLabels[attribute]}
-                </option>
-              ))}
-            </select>
-          </label>
+              onSelect={() => onSelectBackground(entry.id)}
+              onBonusesChange={(bonuses) => {
+                onSelectBackground(entry.id);
+                onSetBonuses(bonuses);
+              }}
+              onCommit={onCommitBackground}
+            />
+          ))}
         </div>
-      ) : null}
-      {tripleOption ? (
-        <button
-          type="button"
-          aria-pressed={isTripleSelected}
-          disabled={disabled}
-          onClick={() => onChange(tripleBonuses)}
-          className="mt-3 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.08em] text-[#b0b5cc] outline-none transition hover:border-[#c41e1e]/70 hover:text-white focus-visible:ring-2 focus-visible:ring-[#c41e1e]/70 disabled:cursor-not-allowed disabled:opacity-50 aria-pressed:border-[#c41e1e] aria-pressed:bg-[#c41e1e] aria-pressed:text-white"
-        >
-          +1 / +1 / +1 em {tripleOption.attributes.map((attribute) => attributeLabels[attribute]).join(", ")}
-        </button>
-      ) : null}
-    </fieldset>
+      ) : (
+        <div className="rounded-lg border border-dashed border-white/10 bg-[#1c1e2a]/70 p-6 text-center">
+          <h3 className="font-serif text-lg font-bold text-white">
+            Nenhum antecedente encontrado
+          </h3>
+          <p className="mt-2 text-sm leading-6 text-[#b0b5cc]">
+            Tente buscar por nome, talento de origem ou descricao.
+          </p>
+        </div>
+      )}
+    </section>
   );
 }
 
-function BackgroundDetails({ background }: { background: BuilderBackground }) {
-  return (
-    <div className="grid gap-5">
-      <section>
-        <h3 className="mb-2 text-xs font-bold uppercase tracking-[0.14em] text-[#7a7e99]">
-          Lore
-        </h3>
-        <ContentBlocks
-          blocks={
-            background.descriptionBlocks.length
-              ? background.descriptionBlocks
-              : [{ type: "paragraph", text: background.description }]
-          }
-        />
-      </section>
-      <BackgroundRewardSummary background={background} />
-    </div>
+function matchesBackgroundSearch(
+  background: BuilderBackground,
+  query: string,
+): boolean {
+  const normalizedQuery = normalizeSearchText(query);
+
+  if (!normalizedQuery) {
+    return true;
+  }
+
+  return matchesNormalizedSearchText(
+    [
+      background.name,
+      background.summary,
+      background.description,
+      background.source,
+      background.originFeat,
+      background.equipmentSummary,
+      ...background.skillProficiencies,
+      ...background.toolProficiencies,
+    ].join(" "),
+    normalizedQuery,
   );
 }
 
@@ -825,9 +890,13 @@ function SpeciesDetails({ species }: { species: BuilderSpecies }) {
     <div className="grid gap-6">
       {species.image ? (
         <div className="rounded-lg border border-white/[0.08] bg-black/20 p-2">
-          <img
+          <Image
+            unoptimized
             src={species.image.src}
             alt={species.image.alt}
+            width={960}
+            height={540}
+            sizes="(min-width: 768px) 720px, 100vw"
             className="w-full object-contain"
           />
         </div>
@@ -1041,74 +1110,335 @@ function LanguageGroup({
   );
 }
 
-function ClassDetails({ classEntry }: { classEntry: BuilderClass }) {
+function ClassDetailsDialog({
+  open,
+  onOpenChange,
+  classEntry,
+  selected,
+  disabled,
+  onSelect,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  classEntry: BuilderClass;
+  selected: boolean;
+  disabled: boolean;
+  onSelect: () => void;
+}) {
+  const tone = getClassTone(classEntry);
+
   return (
-    <div className="grid gap-6">
-      {classEntry.image ? (
-        <div className="rounded-lg border border-white/[0.08] bg-black/20 p-2">
-          <img
+    <Dialog.Root open={open} onOpenChange={onOpenChange}>
+      <Dialog.Portal>
+        <Dialog.Overlay className="fixed inset-0 z-50 flex items-stretch justify-center overflow-y-auto bg-black/70 p-0 backdrop-blur-md md:items-center md:p-6">
+          <Dialog.Content className="relative flex h-[100dvh] w-full min-w-0 flex-col overflow-hidden border border-white/[0.08] bg-[#12131a] text-[#e8e9f0] shadow-2xl shadow-black/60 outline-none focus-visible:ring-2 focus-visible:ring-[#ebc162]/70 md:h-[min(88vh,920px)] md:max-w-6xl md:flex-row md:rounded-xl">
+            <Dialog.Title className="sr-only">{classEntry.name}</Dialog.Title>
+            <Dialog.Description className="sr-only">
+              {`Detalhes de ${classEntry.name}: ${classEntry.summary}`}
+            </Dialog.Description>
+            <Dialog.Close asChild>
+              <button
+                type="button"
+                aria-label={`Fechar detalhes de ${classEntry.name}`}
+                className="absolute right-3 top-3 z-40 inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-[#0f1018]/85 text-[#b0b5cc] outline-none backdrop-blur transition hover:border-[#ebc162]/60 hover:text-white focus-visible:ring-2 focus-visible:ring-[#ebc162]/70"
+              >
+                <X aria-hidden="true" className="h-5 w-5" />
+              </button>
+            </Dialog.Close>
+
+            <ClassDetailsSidebar
+              classEntry={classEntry}
+              selected={selected}
+              disabled={disabled}
+              tone={tone}
+              onSelect={onSelect}
+            />
+            <ClassDetailsMain classEntry={classEntry} />
+          </Dialog.Content>
+        </Dialog.Overlay>
+      </Dialog.Portal>
+    </Dialog.Root>
+  );
+}
+
+function ClassDetailsSidebar({
+  classEntry,
+  selected,
+  disabled,
+  tone,
+  onSelect,
+}: {
+  classEntry: BuilderClass;
+  selected: boolean;
+  disabled: boolean;
+  tone: ReturnType<typeof getClassTone>;
+  onSelect: () => void;
+}) {
+  const tags = getClassTags(classEntry);
+
+  return (
+    <aside className="flex max-h-[48dvh] w-full shrink-0 flex-col overflow-y-auto border-b border-white/[0.06] bg-[#0f1018] md:h-full md:max-h-none md:w-80 md:border-b-0 md:border-r">
+      <div className="relative h-56 shrink-0 overflow-hidden bg-[#1c1e2a] md:h-[300px]">
+        {classEntry.image ? (
+          <Image
+            unoptimized
             src={classEntry.image.src}
             alt={classEntry.image.alt}
-            className="w-full object-contain"
+            fill
+            sizes="(min-width: 768px) 20rem, 100vw"
+            className="object-cover opacity-85 saturate-[0.8] transition duration-500 hover:opacity-95 hover:saturate-100"
           />
-        </div>
-      ) : null}
-
-      <section>
-        <h3 className="mb-2 text-xs font-bold uppercase tracking-[0.14em] text-[#7a7e99]">
-          Descricao
-        </h3>
-        <ContentBlocks
-          blocks={
-            classEntry.descriptionBlocks.length
-              ? classEntry.descriptionBlocks
-              : [{ type: "paragraph", text: classEntry.description }]
-          }
+        ) : (
+          <div
+            aria-hidden="true"
+            className={`h-full w-full bg-gradient-to-br from-[#0f1018] ${tone.fallbackGradient} to-[#1c1e2a]`}
+          />
+        )}
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 bg-gradient-to-t from-[#0f1018] via-[#0f1018]/25 to-transparent"
         />
-      </section>
+        <div className="absolute bottom-0 left-0 right-0 p-4">
+          <div className="mb-2 flex flex-wrap gap-2">
+            {tags.map((tag) => (
+              <span
+                key={tag}
+                className="rounded border border-white/10 bg-black/45 px-2 py-1 text-[0.62rem] font-bold uppercase tracking-[0.14em] text-[#b0b5cc] backdrop-blur"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+          <h2 className="font-serif text-3xl font-bold tracking-wide text-white">
+            {classEntry.name}
+          </h2>
+          <p className="mt-1 line-clamp-2 text-sm leading-5 text-[#b0b5cc]">
+            {classEntry.summary}
+          </p>
+        </div>
+      </div>
 
-      <ClassProgressionTable classEntry={classEntry} />
-
-      {classEntry.spellcastingAbility ? (
-        <section className="rounded-lg border border-[#f3c969]/25 bg-[#f3c969]/10 p-4">
-          <h3 className="text-xs font-bold uppercase tracking-[0.14em] text-[#f3c969]">
-            Spellcasting
+      <div className="grid gap-5 p-4">
+        <section aria-labelledby={`${classEntry.id}-identity-title`} className="grid gap-3">
+          <h3
+            id={`${classEntry.id}-identity-title`}
+            className="text-[0.62rem] font-bold uppercase tracking-[0.14em] text-[#7a7e99]"
+          >
+            Identidade da classe
           </h3>
-          <div className="mt-3 grid gap-2 text-sm leading-6 text-[#f8e5b7]">
-            <ClassSummaryLine
-              label="Habilidade de Conjuração"
-              value={classEntry.spellcastingAbility}
+          <ClassDetailStat
+            icon={<Sparkles aria-hidden="true" className="h-5 w-5" />}
+            label="Atributo Primario"
+            value={formatList(classEntry.primaryAbility)}
+            description="Base para as principais mecanicas da classe."
+            accentClassName={tone.statAccent}
+          />
+          <div className="grid grid-cols-2 gap-3">
+            <ClassDetailStat
+              icon={
+                <FontAwesomeIcon
+                  iconClassName={getHitDieIconClass(classEntry.hitDie)}
+                  className="text-base"
+                />
+              }
+              label="Dado de Vida"
+              value={`d${classEntry.hitDie}`}
+              description="Por nivel"
+              compact
             />
-            <ClassSummaryLine
-              label="CD do TR de Magia"
-              value={`8 + Bônus de Proficiência + Modificador de ${classEntry.spellcastingAbility}`}
-            />
-            <ClassSummaryLine
-              label="Ataque de Magia"
-              value={`Bônus de Proficiência + Modificador de ${classEntry.spellcastingAbility}`}
+            <ClassDetailStat
+              icon={<Shield aria-hidden="true" className="h-4 w-4" />}
+              label="Resistencias"
+              value={formatList(classEntry.savingThrows)}
+              description="Salvaguardas"
+              compact
             />
           </div>
         </section>
-      ) : null}
 
-      <section>
-        <h3 className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-[#7a7e99]">
-          Recursos de Classe
-        </h3>
-        <Accordion type="single" collapsible className="rounded-lg border border-white/[0.08] px-4">
-          {classEntry.allFeatures.map((feature) => (
-            <AccordionItem key={`${feature.level}-${feature.name}`} value={`${feature.level}-${feature.name}`}>
-              <AccordionTrigger>
-                Level {feature.level}: {feature.name}
-              </AccordionTrigger>
-              <AccordionContent>
-                <FeatureBlocks feature={feature} />
-              </AccordionContent>
-            </AccordionItem>
-          ))}
-        </Accordion>
-      </section>
+        <section>
+          <h3 className="border-b border-white/[0.06] pb-2 text-[0.62rem] font-bold uppercase tracking-[0.14em] text-[#7a7e99]">
+            Proficiencias Iniciais
+          </h3>
+          <dl className="mt-3 grid gap-3 text-sm leading-6">
+            <ClassProficiencyLine
+              label="Armaduras"
+              value={formatList(classEntry.armorProficiencies)}
+            />
+            <ClassProficiencyLine
+              label="Armas"
+              value={formatList(classEntry.weaponProficiencies)}
+            />
+            <ClassProficiencyLine
+              label="Ferramentas"
+              value={formatList(classEntry.toolProficiencies)}
+            />
+          </dl>
+        </section>
+      </div>
+
+      <div className="sticky bottom-0 mt-auto border-t border-white/[0.06] bg-[#12131a]/95 p-4 backdrop-blur">
+        <button
+          type="button"
+          onClick={onSelect}
+          disabled={disabled}
+          aria-pressed={selected}
+          className={`inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg border px-4 py-3 font-serif text-lg font-semibold text-white outline-none transition focus-visible:ring-2 focus-visible:ring-[#ebc162]/70 disabled:cursor-not-allowed disabled:opacity-50 ${
+            selected
+              ? tone.activeButton
+              : "border-[#a91515]/70 bg-[#a91515] shadow-[0_0_18px_rgba(230,28,35,0.2)] hover:border-[#e61c23] hover:bg-[#e61c23]"
+          }`}
+        >
+          {selected ? (
+            <CheckCircle2 aria-hidden="true" className="h-5 w-5" />
+          ) : (
+            <PlusCircle aria-hidden="true" className="h-5 w-5" />
+          )}
+          {selected ? "Classe Selecionada" : "Selecionar Classe"}
+        </button>
+      </div>
+    </aside>
+  );
+}
+
+function ClassDetailsMain({ classEntry }: { classEntry: BuilderClass }) {
+  return (
+    <main className="min-h-0 min-w-0 flex-1 overflow-y-auto bg-[#12131a] scroll-smooth">
+      <div className="mx-auto grid max-w-4xl gap-6 p-4 sm:p-6 lg:p-8">
+        <section aria-labelledby={`${classEntry.id}-description-title`}>
+          <ClassSectionHeading
+            id={`${classEntry.id}-description-title`}
+            icon={<BookOpen aria-hidden="true" className="h-5 w-5" />}
+          >
+            Descricao
+          </ClassSectionHeading>
+          <ContentBlocks
+            blocks={
+              classEntry.descriptionBlocks.length
+                ? classEntry.descriptionBlocks
+                : [{ type: "paragraph", text: classEntry.description }]
+            }
+          />
+        </section>
+
+        <ClassProgressionTable classEntry={classEntry} />
+
+        {classEntry.spellcastingAbility ? (
+          <section className="rounded-lg border border-[#f3c969]/25 bg-[#f3c969]/10 p-4">
+            <ClassSectionHeading
+              icon={<Sparkles aria-hidden="true" className="h-5 w-5" />}
+              toneClassName="text-[#f3c969]"
+            >
+              Conjuracao
+            </ClassSectionHeading>
+            <div className="mt-3 grid gap-2 text-sm leading-6 text-[#f8e5b7]">
+              <ClassSummaryLine
+                label="Habilidade de Conjuracao"
+                value={classEntry.spellcastingAbility}
+              />
+              <ClassSummaryLine
+                label="CD do TR de Magia"
+                value={`8 + Bonus de Proficiencia + Modificador de ${classEntry.spellcastingAbility}`}
+              />
+              <ClassSummaryLine
+                label="Ataque de Magia"
+                value={`Bonus de Proficiencia + Modificador de ${classEntry.spellcastingAbility}`}
+              />
+            </div>
+          </section>
+        ) : null}
+
+        <section aria-labelledby={`${classEntry.id}-features-title`}>
+          <ClassSectionHeading
+            id={`${classEntry.id}-features-title`}
+            icon={<ScrollText aria-hidden="true" className="h-5 w-5" />}
+            withRule
+          >
+            Recursos de Classe
+          </ClassSectionHeading>
+          <Accordion type="single" collapsible className="rounded-lg border border-white/[0.08] bg-[#0f1018] px-4">
+            {classEntry.allFeatures.map((feature) => (
+              <AccordionItem key={`${feature.level}-${feature.name}`} value={`${feature.level}-${feature.name}`}>
+                <AccordionTrigger>
+                  Level {feature.level}: {feature.name}
+                </AccordionTrigger>
+                <AccordionContent>
+                  <FeatureBlocks feature={feature} />
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        </section>
+      </div>
+    </main>
+  );
+}
+
+function ClassDetailStat({
+  icon,
+  label,
+  value,
+  description,
+  accentClassName = "border-white/10 bg-[#1c1e2a] text-[#b0b5cc]",
+  compact = false,
+}: {
+  icon: ReactNode;
+  label: string;
+  value: string;
+  description: string;
+  accentClassName?: string;
+  compact?: boolean;
+}) {
+  return (
+    <div className={`rounded-lg border border-white/[0.06] bg-[#12131a] p-3 ${compact ? "" : "grid grid-cols-[auto_1fr] gap-3"}`}>
+      <div
+        className={`mb-2 inline-flex h-9 w-9 items-center justify-center rounded-md border ${accentClassName} ${compact ? "" : "mb-0"}`}
+      >
+        {icon}
+      </div>
+      <div>
+        <p className="text-[0.62rem] font-bold uppercase tracking-[0.14em] text-[#7a7e99]">
+          {label}
+        </p>
+        <p className="mt-1 font-mono text-base font-bold text-white">
+          {value}
+        </p>
+        <p className="mt-1 text-xs leading-5 text-[#7a7e99]">{description}</p>
+      </div>
     </div>
+  );
+}
+
+function ClassProficiencyLine({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <dt className="font-semibold text-white">{label}</dt>
+      <dd className="text-[#b0b5cc]">{value}</dd>
+    </div>
+  );
+}
+
+function ClassSectionHeading({
+  id,
+  icon,
+  children,
+  toneClassName = "text-[#e61c23]",
+  withRule = false,
+}: {
+  id?: string;
+  icon: ReactNode;
+  children: ReactNode;
+  toneClassName?: string;
+  withRule?: boolean;
+}) {
+  return (
+    <h3
+      id={id}
+      className={`mb-4 flex items-center gap-2 font-serif text-xl font-bold text-white ${withRule ? "border-b border-white/10 pb-2" : ""}`}
+    >
+      <span className={toneClassName}>{icon}</span>
+      {children}
+    </h3>
   );
 }
 
@@ -1246,40 +1576,6 @@ function DescriptionPair({ label, value }: { label: string; value: string }) {
       <dt className="text-[#7a7e99]">{label}</dt>
       <dd className="font-semibold text-[#e8e9f0]">{value}</dd>
     </div>
-  );
-}
-
-function findAttributeByBonus(
-  bonuses: AttributeBonuses,
-  bonus: number,
-): AttributeKey | undefined {
-  return attributeKeys.find((attribute) => bonuses[attribute] === bonus);
-}
-
-function createSplitBonuses(
-  plusTwoAttribute: string | undefined,
-  plusOneAttribute: string | undefined,
-): AttributeBonuses {
-  const bonuses: AttributeBonuses = {};
-
-  if (isAttributeKey(plusTwoAttribute)) {
-    bonuses[plusTwoAttribute] = 2;
-  }
-
-  if (isAttributeKey(plusOneAttribute) && plusOneAttribute !== plusTwoAttribute) {
-    bonuses[plusOneAttribute] = 1;
-  }
-
-  return bonuses;
-}
-
-function isAttributeKey(value: string | undefined): value is AttributeKey {
-  return attributeKeys.includes(value as AttributeKey);
-}
-
-function hasSameBonuses(first: AttributeBonuses, second: AttributeBonuses): boolean {
-  return attributeKeys.every(
-    (attribute) => (first[attribute] ?? 0) === (second[attribute] ?? 0),
   );
 }
 

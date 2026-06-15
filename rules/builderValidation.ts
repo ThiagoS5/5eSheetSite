@@ -7,8 +7,8 @@ import {
 import {
   getBuilderBackgrounds,
   getBuilderClasses,
-} from "@/services/builderDataService";
-import type { CharacterBuilderState } from "@/store/characterStore.types";
+} from "@/src/services/ruleService";
+import type { CharacterBuilderState } from "@/src/store/characterStore.types";
 import type { BuilderStepSlug } from "@/types/builder";
 
 export function validateBuilderStep(
