@@ -229,6 +229,36 @@ describe("BuilderStepPanel", () => {
     ).toBeInTheDocument();
   });
 
+  it("filters background cards by name, origin feat, and description", async () => {
+    render(
+      <CharacterStoreProvider>
+        <SelectedBackgroundInitializer />
+        <BuilderStepPanel step="antecedente" {...builderData} />
+      </CharacterStoreProvider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByLabelText("Filtrar antecedentes")).toBeInTheDocument();
+    });
+
+    fireEvent.change(screen.getByLabelText("Filtrar antecedentes"), {
+      target: { value: "magic initiate cleric" },
+    });
+
+    expect(screen.getByRole("heading", { name: "Acolyte" })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Soldier" })).not.toBeInTheDocument();
+    expect(screen.getByText(/antecedente encontrado/i)).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText("Filtrar antecedentes"), {
+      target: { value: "antecedente inexistente" },
+    });
+
+    expect(screen.getByText("Nenhum antecedente encontrado")).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "SELECIONAR" }),
+    ).not.toBeInTheDocument();
+  });
+
   it("opens the background details modal with real rewards and an accessible close button", async () => {
     render(
       <CharacterStoreProvider>

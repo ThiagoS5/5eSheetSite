@@ -3,6 +3,7 @@
 import { useId, useRef, useState, type ReactNode, type RefObject } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import Image from "next/image";
+import { WizardChoiceCard } from "@/src/components/molecules/WizardChoiceCard";
 import type { BuilderBackground, BuilderFeatureBlock } from "@/types/builder";
 import {
   ATTRIBUTE_LABELS,
@@ -38,6 +39,7 @@ export function BackgroundCard({
   onBonusesChange,
   onCommit,
 }: BackgroundCardProps) {
+  const [detailsOpen, setDetailsOpen] = useState(false);
   const bonusControlsRef = useRef<HTMLFieldSetElement>(null);
   const isComplete =
     selected && isBackgroundAbilitySelectionComplete(background, selectedBonuses);
@@ -64,56 +66,22 @@ export function BackgroundCard({
   }
 
   return (
-    <article
-      className={`group relative flex min-w-0 flex-col overflow-hidden rounded-xl border bg-[#1c1e2a] transition-colors ${
-        selected
-          ? "border-[#e61c23]/80 shadow-[0_0_24px_rgba(230,28,35,0.22)]"
-          : "border-white/[0.06] hover:border-white/20"
-      }`}
-    >
-      <div
-        aria-hidden="true"
-        className="absolute left-0 top-0 z-10 h-[1.5px] w-full bg-gradient-to-r from-[#e61c23]/0 via-[#e61c23]/60 to-[#e61c23]/0 opacity-0 transition-opacity group-hover:opacity-100"
-      />
-
-      <div className="relative h-32 w-full shrink-0 overflow-hidden bg-[#0f1018]">
-        {background.image ? (
-          <Image
-            unoptimized
-            src={background.image.src}
-            alt={background.image.alt}
-            fill
-            sizes="(min-width: 1280px) 38rem, (min-width: 768px) 50vw, 100vw"
-            className="object-cover opacity-55 saturate-[0.75] transition duration-500 group-hover:opacity-75 group-hover:saturate-100"
-          />
-        ) : (
-          <div
-            aria-hidden="true"
-            className="h-full w-full bg-gradient-to-br from-[#0f1018] via-[#3d1820] to-[#1c1e2a]"
-          />
-        )}
-        <div
-          aria-hidden="true"
-          className="absolute inset-0 bg-gradient-to-t from-[#1c1e2a] to-transparent"
-        />
-      </div>
-
-      <div className="flex flex-1 flex-col p-5 sm:p-6">
-        <div className="relative z-10 mb-4 -mt-12 flex items-start justify-between gap-4">
-          <div className="min-w-0">
-            <h3 className="font-serif text-xl font-bold text-white">
-              {background.name}
-            </h3>
-            <span className="mt-1 block text-[0.62rem] font-bold uppercase tracking-[0.14em] text-[#7a7e99]">
-              {background.source}
-            </span>
-          </div>
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/[0.06] bg-[#1c1e2a] text-2xl text-[#e61c23]">
-            <i aria-hidden="true" className="fa-solid fa-scroll-old" />
-          </span>
-        </div>
-
-        <p className="mb-6 line-clamp-3 flex-1 text-sm leading-6 text-[#e8e9f0]">
+    <>
+      <WizardChoiceCard
+        title={background.name}
+        subtitle={background.source}
+        imageSrc={background.image?.src}
+        imageAlt={background.image?.alt}
+        icon={<i aria-hidden="true" className="fa-solid fa-scroll-old" />}
+        isActive={selected}
+        disabled={disabled}
+        onClickDetails={() => setDetailsOpen(true)}
+        onClickSelect={handleSelect}
+        selectLabel="SELECIONAR"
+        selectedLabel="SELECIONADO"
+        imageSizes="(min-width: 1280px) 24rem, (min-width: 768px) 50vw, 100vw"
+      >
+        <p className="line-clamp-3 flex-1 text-sm leading-6 text-[#e8e9f0]">
           {background.summary}
         </p>
 
@@ -129,40 +97,26 @@ export function BackgroundCard({
             onBonusesChange(bonuses);
           }}
         />
+      </WizardChoiceCard>
 
-        <div className="mt-auto flex gap-3 pt-6">
-          <BackgroundDetailsModal
-            background={background}
-            selected={selected}
-            canCommit={isComplete}
-            disabled={disabled}
-            onSelect={onSelect}
-            onCommit={onCommit}
-            onNeedsBonuses={focusBonusControls}
-          />
-          <button
-            type="button"
-            onClick={handleSelect}
-            disabled={disabled}
-            aria-pressed={selected}
-            aria-describedby={
-              isComplete ? undefined : `${background.id}-bonus-help`
-            }
-            className={`flex-1 rounded-md border px-3 py-2 text-xs font-bold uppercase tracking-[0.1em] outline-none transition focus-visible:ring-2 focus-visible:ring-[#e61c23] disabled:cursor-not-allowed disabled:opacity-50 ${
-              selected
-                ? "border-[#e61c23] bg-[#e61c23] text-white shadow-[0_0_15px_rgba(196,30,30,0.2)]"
-                : "border-[#c41e1e] bg-[#c41e1e] text-white hover:bg-[#e61c23]"
-            }`}
-          >
-            {selected ? "SELECIONADO" : "SELECIONAR"}
-          </button>
-        </div>
-      </div>
-    </article>
+      <BackgroundDetailsModal
+        open={detailsOpen}
+        onOpenChange={setDetailsOpen}
+        background={background}
+        selected={selected}
+        canCommit={isComplete}
+        disabled={disabled}
+        onSelect={onSelect}
+        onCommit={onCommit}
+        onNeedsBonuses={focusBonusControls}
+      />
+    </>
   );
 }
 
 function BackgroundDetailsModal({
+  open,
+  onOpenChange,
   background,
   selected,
   canCommit,
@@ -171,6 +125,8 @@ function BackgroundDetailsModal({
   onCommit,
   onNeedsBonuses,
 }: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   background: BuilderBackground;
   selected: boolean;
   canCommit: boolean;
@@ -179,8 +135,6 @@ function BackgroundDetailsModal({
   onCommit: () => void;
   onNeedsBonuses: () => void;
 }) {
-  const [open, setOpen] = useState(false);
-
   function handleModalSelect() {
     onSelect();
 
@@ -189,20 +143,12 @@ function BackgroundDetailsModal({
       return;
     }
 
-    setOpen(false);
+    onOpenChange(false);
     onNeedsBonuses();
   }
 
   return (
-    <Dialog.Root open={open} onOpenChange={setOpen}>
-      <Dialog.Trigger asChild>
-        <button
-          type="button"
-          className="flex-1 rounded-md border border-white/10 bg-transparent px-3 py-2 text-xs font-bold uppercase tracking-[0.1em] text-white outline-none transition hover:bg-white/5 focus-visible:ring-2 focus-visible:ring-[#e61c23]"
-        >
-          DETAILS
-        </button>
-      </Dialog.Trigger>
+    <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 flex items-end justify-center bg-[#0a0b10]/80 backdrop-blur-md sm:items-center sm:p-6">
           <Dialog.Content className="relative flex h-[85dvh] w-full max-w-md flex-col overflow-hidden rounded-t-xl border border-white/[0.06] bg-[#1c1e2a] text-[#e8e9f0] shadow-[0_0_30px_rgba(0,0,0,0.8)] outline-none focus-visible:ring-2 focus-visible:ring-[#e61c23] sm:max-h-[85vh] sm:max-w-2xl sm:rounded-xl">

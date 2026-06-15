@@ -1,9 +1,23 @@
 @import "tailwindcss";
 
 @layer base {
+  html,
+  body,
+  main,
+  section,
+  aside,
+  div,
+  [role="dialog"],
+  [data-radix-scroll-area-viewport],
   * {
     scrollbar-width: thin;
     scrollbar-color: #38393f #0d0e13;
+  }
+
+  html,
+  body {
+    background: #12131a;
+    overflow-x: hidden;
   }
 
   ::-webkit-scrollbar {

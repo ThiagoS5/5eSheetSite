@@ -39,6 +39,8 @@ import { BackgroundCard } from "@/src/components/molecules/BackgroundCard";
 import { ChoiceCard } from "@/src/components/molecules/ChoiceCard";
 import { DetailDialog } from "@/src/components/molecules/DetailDialog";
 import { FeatureTagList } from "@/src/components/molecules/FeatureTagList";
+import { WizardChoiceCard } from "@/src/components/molecules/WizardChoiceCard";
+import { WizardStepHeader } from "@/src/components/molecules/WizardStepHeader";
 import {
   Accordion,
   AccordionContent,
@@ -260,44 +262,21 @@ function ClassStep({
 
   return (
     <section aria-labelledby="class-options-title" className="grid gap-6">
-      <div className="flex flex-col gap-4 border-b border-white/[0.06] pb-5 lg:flex-row lg:items-end lg:justify-between">
-        <StepHeader
-          eyebrow="Level 1"
-          title="Escolha uma Classe"
-          description="Classe define dado de vida, proficiencias, salvaguardas e recursos."
-          id="class-options-title"
-        />
-
-        <div className="w-full lg:max-w-xs">
-          <label
-            htmlFor="class-filter"
-            className="mb-2 block text-[0.62rem] font-bold uppercase tracking-[0.14em] text-[#b0b5cc]"
-          >
-            Filtrar classes
-          </label>
-          <input
-            id="class-filter"
-            type="search"
-            value={searchQuery}
-            onChange={(event) => setSearchQuery(event.target.value)}
-            onInput={(event) => setSearchQuery(event.currentTarget.value)}
-            onKeyUp={(event) => setSearchQuery(event.currentTarget.value)}
-            aria-describedby="class-filter-results"
-            placeholder="Nome, fonte ou recurso..."
-            className="min-h-11 w-full rounded-md border border-white/10 bg-[#0f1018] px-3 py-2 text-sm text-[#e8e9f0] outline-none transition placeholder:text-[#7a7e99] hover:border-white/20 focus:border-[#ebc162] focus:ring-2 focus:ring-[#ebc162]/40"
-          />
-          <p
-            id="class-filter-results"
-            className="mt-2 text-xs leading-5 text-[#7a7e99]"
-            aria-live="polite"
-          >
-            {resultCountLabel}
-          </p>
-        </div>
-      </div>
+      <WizardStepHeader
+        eyebrow="Level 1"
+        title="Escolha uma Classe"
+        description="Classe define dado de vida, proficiencias, salvaguardas e recursos."
+        id="class-options-title"
+        searchId="class-filter"
+        searchLabel="Filtrar classes"
+        searchValue={searchQuery}
+        searchPlaceholder="Nome, fonte ou recurso..."
+        resultCountLabel={resultCountLabel}
+        onSearch={setSearchQuery}
+      />
 
       {filteredClasses.length ? (
-        <div className="grid min-w-0 gap-5 md:grid-cols-2 2xl:grid-cols-3">
+        <div className="grid min-w-0 grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {filteredClasses.map((entry) => (
             <ClassOptionCard
               key={entry.id}
@@ -335,55 +314,21 @@ function ClassOptionCard({
 }) {
   const tone = getClassTone(classEntry);
   const tags = getClassTags(classEntry);
+  const [detailsOpen, setDetailsOpen] = useState(false);
 
   return (
-    <article
-      className={`group relative flex min-w-0 flex-col overflow-hidden rounded-lg border bg-[#1c1e2a] shadow-black/20 transition duration-200 hover:-translate-y-1 hover:shadow-xl ${
-        selected
-          ? `${tone.selectedBorder} ${tone.selectedShadow}`
-          : "border-white/[0.06] hover:border-white/15"
-      }`}
-    >
-      <div
-        aria-hidden="true"
-        className={`absolute left-0 right-0 top-0 z-10 h-0.5 bg-gradient-to-r from-transparent ${tone.topBorder} to-transparent opacity-70 transition-opacity group-hover:opacity-100`}
-      />
-      {selected ? (
-        <span
-          aria-hidden="true"
-          className={`absolute right-3 top-3 z-20 flex h-7 w-7 items-center justify-center rounded-full ${tone.activeBadge} text-xs font-bold text-white shadow-lg`}
-        >
-          ✓
-        </span>
-      ) : null}
-
-      <div className="relative h-44 overflow-hidden bg-[#0f1018]">
-        {classEntry.image ? (
-          <Image
-            unoptimized
-            src={classEntry.image.src}
-            alt={classEntry.image.alt}
-            fill
-            sizes="(min-width: 1536px) 24rem, (min-width: 768px) 50vw, 100vw"
-            className={`object-cover transition duration-300 ${
-              selected
-                ? "opacity-90"
-                : "opacity-65 saturate-[0.75] group-hover:opacity-90 group-hover:saturate-100"
-            }`}
-          />
-        ) : (
-          <div
-            aria-hidden="true"
-            className={`h-full w-full bg-gradient-to-br from-[#0f1018] ${tone.fallbackGradient} to-[#1c1e2a]`}
-          />
-        )}
-        <div
-          aria-hidden="true"
-          className="absolute inset-0 bg-gradient-to-t from-[#1c1e2a] via-[#1c1e2a]/20 to-transparent"
-        />
-      </div>
-
-      <div className="flex flex-1 flex-col p-5">
+    <>
+      <WizardChoiceCard
+        title={classEntry.name}
+        subtitle={classEntry.source}
+        imageSrc={classEntry.image?.src}
+        imageAlt={classEntry.image?.alt}
+        isActive={selected}
+        disabled={disabled}
+        onClickDetails={() => setDetailsOpen(true)}
+        onClickSelect={onSelect}
+        tone={tone}
+      >
         <div className="mb-3 flex flex-wrap gap-2">
           {tags.map((tag) => (
             <span
@@ -395,10 +340,7 @@ function ClassOptionCard({
           ))}
         </div>
 
-        <h3 className="font-serif text-xl font-bold tracking-wide text-white">
-          {classEntry.name}
-        </h3>
-        <p className="mt-2 line-clamp-3 flex-1 text-sm leading-6 text-[#b0b5cc]">
+        <p className="line-clamp-3 flex-1 text-sm leading-6 text-[#b0b5cc]">
           {classEntry.summary}
         </p>
 
@@ -430,30 +372,17 @@ function ClassOptionCard({
             />
           </div>
         </div>
+      </WizardChoiceCard>
 
-        <div className="mt-5 flex w-full gap-2">
-          <ClassDetailsDialog
-            classEntry={classEntry}
-            selected={selected}
-            disabled={disabled}
-            onSelect={onSelect}
-          />
-          <button
-            type="button"
-            onClick={onSelect}
-            disabled={disabled}
-            aria-pressed={selected}
-            className={`flex-1 rounded-md border px-3 py-2 text-xs font-bold uppercase tracking-[0.08em] outline-none transition focus-visible:ring-2 focus-visible:ring-[#f3c969] disabled:cursor-not-allowed disabled:opacity-50 ${
-              selected
-                ? `${tone.activeButton} text-white`
-                : "border-white/10 bg-[#0f1018] text-white hover:border-white/20 hover:bg-[#292a2f]"
-            }`}
-          >
-            {selected ? "SELECTED" : "SELECT"}
-          </button>
-        </div>
-      </div>
-    </article>
+      <ClassDetailsDialog
+        open={detailsOpen}
+        onOpenChange={setDetailsOpen}
+        classEntry={classEntry}
+        selected={selected}
+        disabled={disabled}
+        onSelect={onSelect}
+      />
+    </>
   );
 }
 
@@ -488,14 +417,15 @@ function matchesClassSearch(classEntry: BuilderClass, query: string): boolean {
     return true;
   }
 
-  return normalizeSearchText(
+  return matchesNormalizedSearchText(
     [
       classEntry.name,
       classEntry.summary,
       classEntry.source,
       ...classEntry.levelOneFeatures.map((feature) => feature.name),
     ].join(" "),
-  ).includes(normalizedQuery);
+    normalizedQuery,
+  );
 }
 
 function getClassTags(classEntry: BuilderClass): string[] {
@@ -535,6 +465,13 @@ function normalizeSearchText(value: string): string {
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
     .trim();
+}
+
+function matchesNormalizedSearchText(value: string, normalizedQuery: string): boolean {
+  const normalizedValue = normalizeSearchText(value);
+  const queryTerms = normalizedQuery.split(/\s+/).filter(Boolean);
+
+  return queryTerms.every((term) => normalizedValue.includes(term));
 }
 
 const classToneByName = {
@@ -792,35 +729,88 @@ function BackgroundStep({
   onSetBonuses: (bonuses: AttributeBonuses) => void;
   onCommitBackground: () => void;
 }) {
+  const [searchQuery, setSearchQuery] = useState("");
+  const filteredBackgrounds = useMemo(
+    () =>
+      backgrounds.filter((entry) =>
+        matchesBackgroundSearch(entry, searchQuery),
+      ),
+    [backgrounds, searchQuery],
+  );
+  const resultCountLabel =
+    filteredBackgrounds.length === 1
+      ? "1 antecedente encontrado"
+      : `${filteredBackgrounds.length} antecedentes encontrados`;
+
   return (
     <section aria-labelledby="background-options-title" className="grid gap-6">
-      <div className="border-b border-white/[0.06] pb-5">
-        <StepHeader
-          eyebrow="Origin Rules"
-          title="Escolha seu Antecedente"
-          description="O passado molda o destino. Escolha a origem que definiu sua jornada antes de empunhar armas ou magia."
-          id="background-options-title"
-        />
-      </div>
+      <WizardStepHeader
+        eyebrow="Origin Rules"
+        title="Escolha seu Antecedente"
+        description="O passado molda o destino. Escolha a origem que definiu sua jornada antes de empunhar armas ou magia."
+        id="background-options-title"
+        searchId="background-filter"
+        searchLabel="Filtrar antecedentes"
+        searchValue={searchQuery}
+        searchPlaceholder="Nome, talento ou descricao..."
+        resultCountLabel={resultCountLabel}
+        onSearch={setSearchQuery}
+      />
 
-      <div className="mx-auto grid w-full max-w-7xl grid-cols-1 gap-6 xl:grid-cols-2">
-        {backgrounds.map((entry) => (
-          <BackgroundCard
-            key={entry.id}
-            background={entry}
-            selected={selectedBackgroundId === entry.id}
-            selectedBonuses={selectedBackgroundId === entry.id ? selectedBonuses : {}}
-            disabled={disabled}
-            onSelect={() => onSelectBackground(entry.id)}
-            onBonusesChange={(bonuses) => {
-              onSelectBackground(entry.id);
-              onSetBonuses(bonuses);
-            }}
-            onCommit={onCommitBackground}
-          />
-        ))}
-      </div>
+      {filteredBackgrounds.length ? (
+        <div className="grid w-full min-w-0 grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {filteredBackgrounds.map((entry) => (
+            <BackgroundCard
+              key={entry.id}
+              background={entry}
+              selected={selectedBackgroundId === entry.id}
+              selectedBonuses={selectedBackgroundId === entry.id ? selectedBonuses : {}}
+              disabled={disabled}
+              onSelect={() => onSelectBackground(entry.id)}
+              onBonusesChange={(bonuses) => {
+                onSelectBackground(entry.id);
+                onSetBonuses(bonuses);
+              }}
+              onCommit={onCommitBackground}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="rounded-lg border border-dashed border-white/10 bg-[#1c1e2a]/70 p-6 text-center">
+          <h3 className="font-serif text-lg font-bold text-white">
+            Nenhum antecedente encontrado
+          </h3>
+          <p className="mt-2 text-sm leading-6 text-[#b0b5cc]">
+            Tente buscar por nome, talento de origem ou descricao.
+          </p>
+        </div>
+      )}
     </section>
+  );
+}
+
+function matchesBackgroundSearch(
+  background: BuilderBackground,
+  query: string,
+): boolean {
+  const normalizedQuery = normalizeSearchText(query);
+
+  if (!normalizedQuery) {
+    return true;
+  }
+
+  return matchesNormalizedSearchText(
+    [
+      background.name,
+      background.summary,
+      background.description,
+      background.source,
+      background.originFeat,
+      background.equipmentSummary,
+      ...background.skillProficiencies,
+      ...background.toolProficiencies,
+    ].join(" "),
+    normalizedQuery,
   );
 }
 
@@ -1121,11 +1111,15 @@ function LanguageGroup({
 }
 
 function ClassDetailsDialog({
+  open,
+  onOpenChange,
   classEntry,
   selected,
   disabled,
   onSelect,
 }: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   classEntry: BuilderClass;
   selected: boolean;
   disabled: boolean;
@@ -1134,15 +1128,7 @@ function ClassDetailsDialog({
   const tone = getClassTone(classEntry);
 
   return (
-    <Dialog.Root>
-      <Dialog.Trigger asChild>
-        <button
-          type="button"
-          className="flex-1 rounded-md border border-white/10 bg-transparent px-3 py-2 text-xs font-bold uppercase tracking-[0.08em] text-[#e8e9f0] outline-none transition hover:border-[#ebc162]/70 hover:bg-white/5 focus-visible:ring-2 focus-visible:ring-[#ebc162]/70"
-        >
-          DETAILS
-        </button>
-      </Dialog.Trigger>
+    <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 flex items-stretch justify-center overflow-y-auto bg-black/70 p-0 backdrop-blur-md md:items-center md:p-6">
           <Dialog.Content className="relative flex h-[100dvh] w-full min-w-0 flex-col overflow-hidden border border-white/[0.08] bg-[#12131a] text-[#e8e9f0] shadow-2xl shadow-black/60 outline-none focus-visible:ring-2 focus-visible:ring-[#ebc162]/70 md:h-[min(88vh,920px)] md:max-w-6xl md:flex-row md:rounded-xl">

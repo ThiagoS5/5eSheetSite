@@ -14,8 +14,8 @@ export function BuilderShell({ children }: BuilderShellProps) {
   const gridClass = getGridClass(sidebarCollapsed, sheetCollapsed);
 
   return (
-    <main className="min-h-screen bg-[#12131a] text-[#e8e9f0]">
-      <div className={`grid min-h-screen w-full ${gridClass}`}>
+    <main className="min-h-screen overflow-x-hidden bg-[#12131a] text-[#e8e9f0]">
+      <div className={`grid min-h-screen w-full min-w-0 ${gridClass}`}>
         <BuilderSidebar
           collapsed={sidebarCollapsed}
           onToggleCollapsed={() => setSidebarCollapsed((value) => !value)}
