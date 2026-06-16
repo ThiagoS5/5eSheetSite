@@ -2,7 +2,7 @@
  * @vitest-environment jsdom
  */
 import "@testing-library/jest-dom/vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { EquipmentChecklist } from "@/src/components/organisms/EquipmentChecklist";
 import type { BuilderClass, BuilderEquipmentOption } from "@/types/builder";
@@ -60,38 +60,37 @@ describe("EquipmentChecklist", () => {
     cleanup();
   });
 
-  it("shows only the class item package when item mode is selected", () => {
+  it("renders an isolated class card with selectable Option A and the extras section", () => {
     render(
       <EquipmentChecklist
         equipment={equipment}
         selectedClass={selectedClass}
-        acquisitionMode="items"
+        choicesBySource={{ class: { mode: "items", selectedOptionId: "A" } }}
         selectedEquipmentIds={[]}
-        onAcquisitionModeChange={vi.fn()}
+        onSourceModeChange={vi.fn()}
+        onSourceOptionChange={vi.fn()}
         onToggleEquipment={vi.fn()}
       />,
     );
-
+    expect(screen.getByText("EQUIPAMENTO DA CLASSE")).toBeInTheDocument();
     expect(screen.getByText("Option A")).toBeInTheDocument();
-    expect(screen.queryByText("O personagem usara a opcao de ouro inicial da classe selecionada.")).not.toBeInTheDocument();
     expect(screen.getByText("Adicionar Itens Opcionais / Equipamentos Extras")).toBeInTheDocument();
-    expect(screen.getByText("Acid")).toBeInTheDocument();
   });
 
-  it("shows only the gold option when gold mode is selected", () => {
+  it("calls onSourceOptionChange with the source and option id when a kit is clicked", () => {
+    const onSourceOptionChange = vi.fn();
     render(
       <EquipmentChecklist
         equipment={equipment}
         selectedClass={selectedClass}
-        acquisitionMode="gold"
+        choicesBySource={{ class: { mode: "items", selectedOptionId: null } }}
         selectedEquipmentIds={[]}
-        onAcquisitionModeChange={vi.fn()}
+        onSourceModeChange={vi.fn()}
+        onSourceOptionChange={onSourceOptionChange}
         onToggleEquipment={vi.fn()}
       />,
     );
-
-    expect(screen.queryByText("Option A")).not.toBeInTheDocument();
-    expect(screen.getAllByText("150 GP")).toHaveLength(1);
-    expect(screen.getByText("Adicionar Itens Opcionais / Equipamentos Extras")).toBeInTheDocument();
+    fireEvent.click(screen.getByText("Option A"));
+    expect(onSourceOptionChange).toHaveBeenCalledWith("class", "A");
   });
 });

@@ -1,26 +1,95 @@
 "use client";
 
-import type { EquipmentAcquisitionMode } from "@/src/store/characterStore.types";
-import type { BuilderClass, BuilderEquipmentOption } from "@/types/builder";
+import { CheckCircle2 } from "lucide-react";
+import { Card, CardContent, CardHeader } from "@/src/components/ui/card";
+import type {
+  EquipmentAcquisitionMode,
+  EquipmentChoicesBySource,
+  EquipmentSourceKey,
+} from "@/src/store/characterStore.types";
+import type {
+  BuilderBackground,
+  BuilderClass,
+  BuilderEquipmentOption,
+  BuilderEquipmentPackage,
+  BuilderSpecies,
+} from "@/types/builder";
+
+interface EquipmentSourceKit {
+  id: string;
+  label: string;
+  summary: string;
+}
+
+interface EquipmentSourceBlock {
+  key: EquipmentSourceKey;
+  heading: string;
+  kits: EquipmentSourceKit[];
+  goldLabel: string;
+}
 
 interface EquipmentChecklistProps {
   equipment: BuilderEquipmentOption[];
   selectedClass?: BuilderClass;
-  acquisitionMode: EquipmentAcquisitionMode;
+  selectedBackground?: BuilderBackground;
+  selectedSpecies?: BuilderSpecies;
+  choicesBySource: EquipmentChoicesBySource;
   selectedEquipmentIds: readonly string[];
-  onAcquisitionModeChange: (mode: EquipmentAcquisitionMode) => void;
+  onSourceModeChange: (source: EquipmentSourceKey, mode: EquipmentAcquisitionMode) => void;
+  onSourceOptionChange: (source: EquipmentSourceKey, optionId: string) => void;
   onToggleEquipment: (equipmentId: string) => void;
+}
+
+function buildEquipmentSources(
+  selectedClass?: BuilderClass,
+  selectedBackground?: BuilderBackground,
+): EquipmentSourceBlock[] {
+  const sources: EquipmentSourceBlock[] = [];
+
+  if (selectedClass?.startingEquipmentPackages.length) {
+    sources.push({
+      key: "class",
+      heading: "EQUIPAMENTO DA CLASSE",
+      kits: selectedClass.startingEquipmentPackages.map(
+        (entry: BuilderEquipmentPackage) => ({
+          id: entry.id,
+          label: entry.label,
+          summary: entry.summary,
+        }),
+      ),
+      goldLabel: selectedClass.startingEquipmentGold || "Ouro inicial",
+    });
+  }
+
+  if (selectedBackground?.equipmentSummary) {
+    sources.push({
+      key: "background",
+      heading: "EQUIPAMENTO DO ANTECEDENTE",
+      kits: [
+        {
+          id: "background-kit",
+          label: "Itens do Antecedente",
+          summary: selectedBackground.equipmentSummary,
+        },
+      ],
+      goldLabel: "Ouro do antecedente",
+    });
+  }
+
+  return sources;
 }
 
 export function EquipmentChecklist({
   equipment,
   selectedClass,
-  acquisitionMode,
+  selectedBackground,
+  choicesBySource,
   selectedEquipmentIds,
-  onAcquisitionModeChange,
+  onSourceModeChange,
+  onSourceOptionChange,
   onToggleEquipment,
 }: EquipmentChecklistProps) {
-  const itemMode = acquisitionMode === "items";
+  const sources = buildEquipmentSources(selectedClass, selectedBackground);
 
   return (
     <section aria-labelledby="equipment-title" className="grid gap-5">
@@ -39,67 +108,72 @@ export function EquipmentChecklist({
         </p>
       </div>
 
-      <fieldset className="rounded-lg border border-white/[0.06] bg-[#1c1e2a] p-4">
-        <legend className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-[#7a7e99]">
-          Opcao da classe
-        </legend>
-        {selectedClass?.startingEquipment.length ? (
-          <ul className="mb-4 grid gap-2 text-sm leading-6 text-[#b0b5cc]">
-            {selectedClass.startingEquipment.map((entry) => (
-              <li
-                key={entry}
-                className="rounded-md border border-white/[0.06] bg-white/[0.03] px-3 py-2"
-              >
-                {entry}
-              </li>
-            ))}
-          </ul>
-        ) : null}
-        <div className="grid gap-3 md:grid-cols-2">
-          <ModeCheckbox
-            label="Itens oferecidos"
-            checked={itemMode}
-            onChange={() => onAcquisitionModeChange("items")}
-          />
-          <ModeCheckbox
-            label={`Ouro${selectedClass?.startingEquipmentGold ? ` - ${selectedClass.startingEquipmentGold}` : ""}`}
-            checked={acquisitionMode === "gold"}
-            onChange={() => onAcquisitionModeChange("gold")}
-          />
-        </div>
-        {itemMode && selectedClass?.startingEquipmentPackages.length ? (
-          <div className="mt-4 grid gap-3">
-            {selectedClass.startingEquipmentPackages.map((equipmentPackage) => (
-              <button
-                key={equipmentPackage.id}
-                type="button"
-                onClick={() => {
-                  for (const item of equipmentPackage.items) {
-                    if (
-                      item.value === undefined &&
-                      !selectedEquipmentIds.includes(item.id)
-                    ) {
-                      onToggleEquipment(item.id);
-                    }
-                  }
-                }}
-                className="rounded-md border border-white/[0.08] bg-white/[0.03] px-3 py-2 text-left text-sm text-[#b0b5cc] outline-none transition hover:border-[#c41e1e]/60 hover:text-white focus-visible:ring-2 focus-visible:ring-[#c41e1e]/70"
-              >
-                <span className="block font-bold text-white">
-                  {equipmentPackage.label}
-                </span>
-                <span className="mt-1 block">{equipmentPackage.summary}</span>
-              </button>
-            ))}
-          </div>
-        ) : null}
-        {!itemMode ? (
-          <p className="mt-4 rounded-lg border border-[#f3c969]/20 bg-[#f3c969]/10 px-4 py-3 text-sm font-semibold text-[#f3c969]">
-            {selectedClass?.startingEquipmentGold ||
-              "O personagem usara a opcao de ouro inicial da classe selecionada."}
-          </p>
-        ) : null}
-      </fieldset>
+      {sources.map((source) => {
+        const choice = choicesBySource[source.key];
+        const mode: EquipmentAcquisitionMode = choice?.mode ?? "items";
+
+        return (
+          <Card key={source.key} className="bg-[#10121b] ring-white/10">
+            <CardHeader>
+              <p className="text-xs uppercase tracking-widest text-[#7a7e99]">
+                {source.heading}
+              </p>
+            </CardHeader>
+            <CardContent className="grid gap-4">
+              <div className="grid grid-cols-2 gap-2">
+                <ModeButton
+                  active={mode === "items"}
+                  label="Itens Oferecidos"
+                  onClick={() => onSourceModeChange(source.key, "items")}
+                />
+                <ModeButton
+                  active={mode === "gold"}
+                  label="Ouro Inicial"
+                  onClick={() => onSourceModeChange(source.key, "gold")}
+                />
+              </div>
+
+              {mode === "items" ? (
+                <div className="grid gap-3">
+                  {source.kits.map((kit) => {
+                    const selected = choice?.selectedOptionId === kit.id;
+
+                    return (
+                      <button
+                        key={kit.id}
+                        type="button"
+                        onClick={() => onSourceOptionChange(source.key, kit.id)}
+                        className={`grid grid-cols-[1fr_auto] items-start gap-3 rounded-md border p-3 text-left transition ${
+                          selected
+                            ? "border-[#e61c23] bg-[#e61c23]/5"
+                            : "border-white/10 hover:border-white/20"
+                        }`}
+                      >
+                        <span>
+                          <span className="block font-bold text-white">{kit.label}</span>
+                          <span className="mt-1 block text-sm text-[#b0b5cc]">
+                            {kit.summary}
+                          </span>
+                        </span>
+                        {selected ? (
+                          <CheckCircle2
+                            aria-hidden="true"
+                            className="h-5 w-5 text-[#e61c23]"
+                          />
+                        ) : null}
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="rounded-md border border-[#f3c969]/20 bg-[#f3c969]/10 px-4 py-3 text-sm font-semibold text-[#f3c969]">
+                  {source.goldLabel}
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        );
+      })}
 
       <section className="mt-8 border-t border-white/10 pt-6">
         <h3 className="font-serif text-lg font-bold tracking-wide text-white">
@@ -149,30 +223,27 @@ export function EquipmentChecklist({
   );
 }
 
-function ModeCheckbox({
+function ModeButton({
+  active,
   label,
-  checked,
-  onChange,
+  onClick,
 }: {
+  active: boolean;
   label: string;
-  checked: boolean;
-  onChange: () => void;
+  onClick: () => void;
 }) {
   return (
-    <label
-      className={`flex cursor-pointer items-center gap-3 rounded-md border px-3 py-3 transition ${
-        checked
-          ? "border-[#c41e1e] bg-[#c41e1e]/10 text-white"
-          : "border-white/[0.08] bg-white/[0.03] text-[#b0b5cc]"
+    <button
+      type="button"
+      aria-pressed={active}
+      onClick={onClick}
+      className={`rounded-md border px-3 py-2 text-xs font-bold uppercase tracking-[0.08em] transition ${
+        active
+          ? "border-[#e61c23] bg-[#e61c23] text-white"
+          : "border-white/10 bg-white/5 text-[#7a7e99] hover:text-white"
       }`}
     >
-      <input
-        type="checkbox"
-        checked={checked}
-        onChange={onChange}
-        className="h-4 w-4 rounded border-white/20 bg-[#12131a] accent-[#c41e1e] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c41e1e]"
-      />
-      <span className="text-sm font-bold uppercase tracking-[0.08em]">{label}</span>
-    </label>
+      {label}
+    </button>
   );
 }
