@@ -289,7 +289,7 @@ function ClassStep({
       />
 
       {filteredClasses.length ? (
-        <div className="grid min-w-0 grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid min-w-0 grid-cols-1 gap-3 md:gap-4 md:grid-cols-2 xl:grid-cols-3">
           {filteredClasses.map((entry) => (
             <ClassOptionCard
               key={entry.id}
@@ -771,7 +771,7 @@ function BackgroundStep({
       />
 
       {filteredBackgrounds.length ? (
-        <div className="grid w-full min-w-0 grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid w-full min-w-0 grid-cols-1 gap-3 md:gap-4 md:grid-cols-2 xl:grid-cols-3">
           {filteredBackgrounds.map((entry) => (
             <BackgroundCard
               key={entry.id}
@@ -885,7 +885,7 @@ function SpeciesStep({
       />
 
       {filteredSpecies.length ? (
-        <div className="grid min-w-0 grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid min-w-0 grid-cols-1 gap-3 md:gap-4 md:grid-cols-2 xl:grid-cols-3">
           {filteredSpecies.map((entry) => (
             <SpeciesOptionCard
               key={entry.id}

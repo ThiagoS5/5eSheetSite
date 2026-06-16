@@ -360,9 +360,10 @@ describe("BuilderStepPanel", () => {
     expect(speciesGrid).toHaveClass(
       "grid-cols-1",
       "md:grid-cols-2",
-      "lg:grid-cols-3",
-      "xl:grid-cols-4",
+      "xl:grid-cols-3",
     );
+    expect(speciesGrid).not.toHaveClass("lg:grid-cols-3");
+    expect(speciesGrid).not.toHaveClass("xl:grid-cols-4");
     expect(screen.getAllByText(firstSpecies.source)[0]).toBeInTheDocument();
     expect(screen.getByText(firstSpecies.summary)).toHaveClass("line-clamp-2");
     expect(screen.getAllByText("Tamanho")[0]).toBeInTheDocument();
