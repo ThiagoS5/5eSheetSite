@@ -9,11 +9,13 @@ import type {
   Ruleset,
 } from "@/types/dnd";
 
-export const CHARACTER_BUILD_SCHEMA_VERSION = 2;
+export const CHARACTER_BUILD_SCHEMA_VERSION = 3;
 
 export type AttributeGenerationMethod = "standard-array" | "point-buy" | "manual";
 export type EquipmentAcquisitionMode = "items" | "gold";
 export type SkillTrainingLevel = "none" | "half" | "proficient" | "expertise";
+
+export interface InventoryEntry { itemId: string; quantity: number; }
 
 export type EquipmentSourceKey = "class" | "background" | "species";
 
@@ -30,7 +32,7 @@ export interface CharacterBuildDraft {
   currentStepSlug: BuilderStepSlug;
   maxUnlockedStepIndex: number;
   pendingChoiceIds: string[];
-  selectedEquipmentIds: string[];
+  inventory: InventoryEntry[];
   equipmentChoicesBySource: EquipmentChoicesBySource;
   description: CharacterDescription;
 }

@@ -131,6 +131,12 @@ export interface Raw5eItem {
   value?: number;
   entries?: unknown[];
   builderSourceType?: "class" | "background" | "manual";
+  rarity?: string;
+  wondrous?: boolean;
+  staff?: boolean;
+  containerCapacity?: unknown;
+  reqAttune?: boolean | string;
+  reprintedAs?: string[];
 }
 
 export interface Raw5eItemFile {
