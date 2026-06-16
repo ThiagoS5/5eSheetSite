@@ -217,8 +217,8 @@ function useCharacterPreviewState(): CharacterBuilderState {
   const selectedEquipmentIds = useCharacterStore(
     (state) => state.selectedEquipmentIds,
   );
-  const equipmentAcquisitionMode = useCharacterStore(
-    (state) => state.equipmentAcquisitionMode,
+  const equipmentChoicesBySource = useCharacterStore(
+    (state) => state.equipmentChoicesBySource,
   );
   const maxUnlockedStepIndex = useCharacterStore(
     (state) => state.maxUnlockedStepIndex,
@@ -250,7 +250,7 @@ function useCharacterPreviewState(): CharacterBuilderState {
       selectedClassId,
       selectedBackgroundId,
       selectedEquipmentIds,
-      equipmentAcquisitionMode,
+      equipmentChoicesBySource,
       maxUnlockedStepIndex,
       pendingChoiceIds,
       classSkillProficiencies,
@@ -270,7 +270,7 @@ function useCharacterPreviewState(): CharacterBuilderState {
       selectedClassId,
       selectedBackgroundId,
       selectedEquipmentIds,
-      equipmentAcquisitionMode,
+      equipmentChoicesBySource,
       maxUnlockedStepIndex,
       pendingChoiceIds,
       classSkillProficiencies,
