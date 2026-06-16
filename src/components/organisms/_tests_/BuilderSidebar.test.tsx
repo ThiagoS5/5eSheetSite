@@ -20,7 +20,7 @@ vi.mock("@/src/store/useCharacterStore", () => ({
       selectedSpeciesId: "",
       selectedClassId: "fighter-xphb",
       selectedBackgroundId: "",
-      selectedEquipmentIds: [],
+      inventory: [],
       equipmentChoicesBySource: {},
       maxUnlockedStepIndex: 8,
       pendingChoiceIds: [],

@@ -5,7 +5,7 @@ import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { EquipmentChecklist } from "@/src/components/organisms/EquipmentChecklist";
-import type { BuilderClass, BuilderEquipmentOption } from "@/types/builder";
+import type { BuilderClass } from "@/types/builder";
 
 const selectedClass: BuilderClass = {
   id: "rogue-xphb",
@@ -46,48 +46,32 @@ const selectedClass: BuilderClass = {
   detail: "",
 };
 
-const equipment: BuilderEquipmentOption[] = [
-  {
-    id: "acid-xphb",
-    name: "Acid",
-    source: "XPHB",
-    sourceType: "manual",
-  },
-];
-
 describe("EquipmentChecklist", () => {
   afterEach(() => {
     cleanup();
   });
 
-  it("renders an isolated class card with selectable Option A and the extras section", () => {
+  it("renders an isolated class card with selectable Option A", () => {
     render(
       <EquipmentChecklist
-        equipment={equipment}
         selectedClass={selectedClass}
         choicesBySource={{ class: { mode: "items", selectedOptionId: "A" } }}
-        selectedEquipmentIds={[]}
         onSourceModeChange={vi.fn()}
         onSourceOptionChange={vi.fn()}
-        onToggleEquipment={vi.fn()}
       />,
     );
     expect(screen.getByText("EQUIPAMENTO DA CLASSE")).toBeInTheDocument();
     expect(screen.getByText("Option A")).toBeInTheDocument();
-    expect(screen.getByText("Adicionar Itens Opcionais / Equipamentos Extras")).toBeInTheDocument();
   });
 
   it("calls onSourceOptionChange with the source and option id when a kit is clicked", () => {
     const onSourceOptionChange = vi.fn();
     render(
       <EquipmentChecklist
-        equipment={equipment}
         selectedClass={selectedClass}
         choicesBySource={{ class: { mode: "items", selectedOptionId: null } }}
-        selectedEquipmentIds={[]}
         onSourceModeChange={vi.fn()}
         onSourceOptionChange={onSourceOptionChange}
-        onToggleEquipment={vi.fn()}
       />,
     );
     fireEvent.click(screen.getByText("Option A"));

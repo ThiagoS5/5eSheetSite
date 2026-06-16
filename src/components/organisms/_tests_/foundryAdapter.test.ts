@@ -9,7 +9,7 @@ const state: CharacterBuilderState = {
   selectedSpeciesId: "aasimar-xphb",
   selectedClassId: "fighter-xphb",
   selectedBackgroundId: "guard-xphb",
-  selectedEquipmentIds: ["chain-mail-xphb"],
+  inventory: [{ itemId: "chain-mail-xphb", quantity: 1 }],
   equipmentChoicesBySource: {},
   maxUnlockedStepIndex: 7,
   pendingChoiceIds: [],

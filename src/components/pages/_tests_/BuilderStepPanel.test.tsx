@@ -15,10 +15,10 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   getBuilderBackgrounds,
   getBuilderClasses,
-  getBuilderEquipmentOptions,
   getBuilderLanguages,
   getBuilderSpecies,
 } from "@/src/services/ruleService";
+import { getItemCatalog } from "@/src/services/itemCatalogService";
 import { CharacterStoreProvider, useCharacterStore } from "@/src/store/useCharacterStore";
 import { BuilderStepPanel } from "@/src/components/pages/BuilderStepPanel";
 
@@ -34,8 +34,8 @@ const builderData = {
   species: getBuilderSpecies(),
   classes: getBuilderClasses(),
   backgrounds: getBuilderBackgrounds(),
-  equipment: getBuilderEquipmentOptions(),
   languages: getBuilderLanguages(),
+  itemCatalog: getItemCatalog(),
 };
 
 describe("BuilderStepPanel", () => {
