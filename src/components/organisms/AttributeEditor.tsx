@@ -106,7 +106,7 @@ export function AttributeEditor({
       ) : null}
 
       <div className="rounded-md border border-white/10 bg-[#10121b]">
-        <Table>
+        <Table className="min-w-[480px]">
           <TableHeader className="bg-white/5">
             <TableRow className="border-white/[0.06] hover:bg-transparent">
               <TableHead className="text-xs font-bold uppercase tracking-wider text-[#7a7e99]">
