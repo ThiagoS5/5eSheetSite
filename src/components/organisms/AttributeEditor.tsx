@@ -1,18 +1,28 @@
 "use client";
 
+import { useState } from "react";
+import { Minus, Plus } from "lucide-react";
 import {
   canDecreasePointBuyAttribute,
   canIncreasePointBuyAttribute,
   decreasePointBuyAttribute,
-  getPointBuyCost,
   getPointBuyRemaining,
   getPointBuySpent,
   increasePointBuyAttribute,
 } from "@/rules/pointBuyRules";
+import { getAbilityModifier } from "@/src/adapters/characterDerivedAdapter";
+import { ATTRIBUTE_ICON_CLASS } from "@/src/components/atoms/attributeIcons";
+import { FontAwesomeIcon } from "@/src/components/atoms/FontAwesomeIcon";
+import { Button } from "@/src/components/ui/button";
+import { Input } from "@/src/components/ui/input";
 import {
-  calculateFinalAttributes,
-  getAbilityModifier,
-} from "@/src/adapters/characterDerivedAdapter";
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/src/components/ui/table";
 import { getAttributeMethodLabel } from "@/src/store/createCharacterStore";
 import type { AttributeGenerationMethod } from "@/src/store/characterStore.types";
 import {
@@ -29,6 +39,8 @@ const methods: readonly AttributeGenerationMethod[] = [
   "manual",
 ];
 const standardArrayValues = [15, 14, 13, 12, 10, 8] as const;
+const MANUAL_MIN = 3;
+const MANUAL_MAX = 20;
 
 interface AttributeEditorProps {
   method: AttributeGenerationMethod;
@@ -45,12 +57,13 @@ export function AttributeEditor({
   onMethodChange,
   onAttributeChange,
 }: AttributeEditorProps) {
-  const finalAttributes = calculateFinalAttributes(
-    baseAttributes,
-    backgroundBonuses,
-  );
+  const [otherModifiers, setOtherModifiers] = useState<AttributeBonuses>({});
   const pointBuySpent = getPointBuySpent(baseAttributes);
   const pointBuyRemaining = getPointBuyRemaining(baseAttributes);
+
+  function setOtherModifier(attribute: AttributeKey, value: number) {
+    setOtherModifiers((previous) => ({ ...previous, [attribute]: value }));
+  }
 
   return (
     <section aria-labelledby="attributes-title" className="grid gap-5">
@@ -92,121 +105,201 @@ export function AttributeEditor({
         </p>
       ) : null}
 
-      <div className="grid gap-3 sm:grid-cols-2 2xl:grid-cols-3">
-        {attributes.map((attribute) => {
-          const bonus = backgroundBonuses[attribute] ?? 0;
-          const finalValue = finalAttributes[attribute];
+      <div className="rounded-md border border-white/10 bg-[#10121b]">
+        <Table>
+          <TableHeader className="bg-white/5">
+            <TableRow className="border-white/[0.06] hover:bg-transparent">
+              <TableHead className="text-xs font-bold uppercase tracking-wider text-[#7a7e99]">
+                Atributo
+              </TableHead>
+              <TableHead className="text-center text-xs font-bold uppercase tracking-wider text-[#7a7e99]">
+                Valor Base
+              </TableHead>
+              <TableHead className="text-center text-xs font-bold uppercase tracking-wider text-[#7a7e99]">
+                Bonus
+              </TableHead>
+              <TableHead className="hidden text-center text-xs font-bold uppercase tracking-wider text-[#7a7e99] md:table-cell">
+                Outros Modificadores
+              </TableHead>
+              <TableHead className="text-center text-xs font-bold uppercase tracking-wider text-[#7a7e99]">
+                Total
+              </TableHead>
+              <TableHead className="text-center text-xs font-bold uppercase tracking-wider text-[#7a7e99]">
+                Modificador
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {attributes.map((attribute) => {
+              const bonus = backgroundBonuses[attribute] ?? 0;
+              const other = otherModifiers[attribute] ?? 0;
+              const total = baseAttributes[attribute] + bonus + other;
+              const modifier = getAbilityModifier(total);
+              const label = ATTRIBUTE_LABELS[attribute];
 
-          return (
-            <div
-              key={attribute}
-              className="rounded-lg border border-white/[0.06] bg-[#1c1e2a] p-4"
-            >
-              <label
-                className="text-sm font-semibold text-[#e8e9f0]"
-                htmlFor={`attribute-${attribute}`}
-              >
-                {ATTRIBUTE_LABELS[attribute]}
-              </label>
-              {method === "standard-array" ? (
-                <select
-                  id={`attribute-${attribute}`}
-                  value={baseAttributes[attribute]}
-                  onChange={(event) =>
-                    onAttributeChange(attribute, Number(event.target.value))
-                  }
-                  className="mt-2 w-full rounded-md border border-white/10 bg-[#12131a] px-3 py-2 text-white outline-none focus:border-[#c41e1e] focus:ring-2 focus:ring-[#c41e1e]/50"
+              return (
+                <TableRow
+                  key={attribute}
+                  className="border-white/[0.06] hover:bg-white/[0.02]"
                 >
-                  {standardArrayValues.map((value) => {
-                    const valueUsed = attributes.some(
-                      (candidate) =>
-                        candidate !== attribute && baseAttributes[candidate] === value,
-                    );
-
-                    return (
-                      <option key={value} value={value} disabled={valueUsed}>
-                        {value}
-                      </option>
-                    );
-                  })}
-                </select>
-              ) : method === "point-buy" ? (
-                <PointBuyStepper
-                  attribute={attribute}
-                  value={baseAttributes[attribute]}
-                  attributes={baseAttributes}
-                  onAttributeChange={onAttributeChange}
-                />
-              ) : (
-                <input
-                  id={`attribute-${attribute}`}
-                  type="number"
-                  min={3}
-                  max={20}
-                  value={baseAttributes[attribute]}
-                  onChange={(event) =>
-                    onAttributeChange(attribute, Number(event.target.value))
-                  }
-                  className="mt-2 w-full rounded-md border border-white/10 bg-[#12131a] px-3 py-2 text-white outline-none focus:border-[#c41e1e] focus:ring-2 focus:ring-[#c41e1e]/50"
-                />
-              )}
-              <span className="mt-2 block text-xs text-[#7a7e99]">
-                Bonus BG {formatSigned(bonus)} · Final {finalValue} · Mod{" "}
-                {formatSigned(getAbilityModifier(finalValue))}
-              </span>
-            </div>
-          );
-        })}
+                  <TableCell>
+                    <span className="flex items-center gap-2.5 font-semibold text-[#e8e9f0]">
+                      <FontAwesomeIcon
+                        iconClassName={ATTRIBUTE_ICON_CLASS[attribute]}
+                        className="w-5 text-center text-[#e61c23]"
+                      />
+                      {label}
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <BaseValueControl
+                      method={method}
+                      attribute={attribute}
+                      label={label}
+                      baseAttributes={baseAttributes}
+                      onAttributeChange={onAttributeChange}
+                    />
+                  </TableCell>
+                  <TableCell className="text-center font-semibold text-[#b0b5cc]">
+                    {bonus === 0 ? "—" : formatSigned(bonus)}
+                  </TableCell>
+                  <TableCell className="hidden text-center md:table-cell">
+                    <Input
+                      type="number"
+                      aria-label={`Outros modificadores de ${label}`}
+                      value={other}
+                      onChange={(event) =>
+                        setOtherModifier(
+                          attribute,
+                          Number(event.target.value) || 0,
+                        )
+                      }
+                      className="mx-auto w-16 border-white/10 bg-[#12131a] text-center text-white"
+                    />
+                  </TableCell>
+                  <TableCell className="text-center font-serif text-lg font-bold text-white">
+                    {total}
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <span className="font-serif text-2xl font-bold text-[#e61c23]">
+                      {formatSigned(modifier)}
+                    </span>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
       </div>
     </section>
   );
 }
 
-function PointBuyStepper({
+function BaseValueControl({
+  method,
   attribute,
-  value,
-  attributes,
+  label,
+  baseAttributes,
   onAttributeChange,
 }: {
+  method: AttributeGenerationMethod;
   attribute: AttributeKey;
-  value: number;
-  attributes: CharacterAttributes;
+  label: string;
+  baseAttributes: CharacterAttributes;
   onAttributeChange: (attribute: AttributeKey, value: number) => void;
 }) {
-  const label = ATTRIBUTE_LABELS[attribute];
-  const increased = increasePointBuyAttribute(attributes, attribute);
-  const decreased = decreasePointBuyAttribute(attributes, attribute);
+  const value = baseAttributes[attribute];
+
+  if (method === "standard-array") {
+    return (
+      <select
+        aria-label={`Valor base de ${label}`}
+        value={value}
+        onChange={(event) =>
+          onAttributeChange(attribute, Number(event.target.value))
+        }
+        className="mx-auto w-20 rounded-md border border-white/10 bg-[#12131a] px-2 py-1.5 text-center text-white outline-none focus:border-[#c41e1e] focus:ring-2 focus:ring-[#c41e1e]/50"
+      >
+        {standardArrayValues.map((arrayValue) => {
+          const valueUsed = attributes.some(
+            (candidate) =>
+              candidate !== attribute &&
+              baseAttributes[candidate] === arrayValue,
+          );
+
+          return (
+            <option key={arrayValue} value={arrayValue} disabled={valueUsed}>
+              {arrayValue}
+            </option>
+          );
+        })}
+      </select>
+    );
+  }
+
+  const canDecrease =
+    method === "point-buy"
+      ? canDecreasePointBuyAttribute(baseAttributes, attribute)
+      : value > MANUAL_MIN;
+  const canIncrease =
+    method === "point-buy"
+      ? canIncreasePointBuyAttribute(baseAttributes, attribute)
+      : value < MANUAL_MAX;
+
+  function handleDecrease() {
+    if (method === "point-buy") {
+      onAttributeChange(
+        attribute,
+        decreasePointBuyAttribute(baseAttributes, attribute)[attribute],
+      );
+      return;
+    }
+
+    onAttributeChange(attribute, value - 1);
+  }
+
+  function handleIncrease() {
+    if (method === "point-buy") {
+      onAttributeChange(
+        attribute,
+        increasePointBuyAttribute(baseAttributes, attribute)[attribute],
+      );
+      return;
+    }
+
+    onAttributeChange(attribute, value + 1);
+  }
 
   return (
-    <div className="mt-2 grid grid-cols-[2.5rem_1fr_2.5rem] items-center gap-2">
-      <button
+    <div className="flex items-center justify-center gap-1">
+      <Button
         type="button"
+        variant="ghost"
+        size="icon"
         aria-label={`Diminuir ${label}`}
-        disabled={!canDecreasePointBuyAttribute(attributes, attribute)}
-        onClick={() => onAttributeChange(attribute, decreased[attribute])}
-        className="h-10 rounded-md border border-white/10 bg-white/5 text-lg font-bold text-white outline-none transition hover:border-[#c41e1e]/70 focus-visible:ring-2 focus-visible:ring-[#c41e1e]/70 disabled:cursor-not-allowed disabled:opacity-40"
+        disabled={!canDecrease}
+        onClick={handleDecrease}
+        className="text-white"
       >
-        -
-      </button>
+        <Minus aria-hidden="true" />
+      </Button>
       <output
-        id={`attribute-${attribute}`}
         aria-label={`${label} ${value}`}
-        className="rounded-md border border-white/10 bg-[#12131a] px-3 py-2 text-center font-serif text-xl font-bold text-white"
+        className="w-8 text-center font-serif text-lg font-bold text-white"
       >
         {value}
       </output>
-      <button
+      <Button
         type="button"
+        variant="ghost"
+        size="icon"
         aria-label={`Aumentar ${label}`}
-        disabled={!canIncreasePointBuyAttribute(attributes, attribute)}
-        onClick={() => onAttributeChange(attribute, increased[attribute])}
-        className="h-10 rounded-md border border-white/10 bg-white/5 text-lg font-bold text-white outline-none transition hover:border-[#c41e1e]/70 focus-visible:ring-2 focus-visible:ring-[#c41e1e]/70 disabled:cursor-not-allowed disabled:opacity-40"
+        disabled={!canIncrease}
+        onClick={handleIncrease}
+        className="text-white"
       >
-        +
-      </button>
-      <span className="col-span-3 text-xs text-[#7a7e99]">
-        Custo atual: {getPointBuyCost(value)}
-      </span>
+        <Plus aria-hidden="true" />
+      </Button>
     </div>
   );
 }
