@@ -41,19 +41,10 @@ describe("character selectors", () => {
     expect(summary.selectedEquipment.length).toBeGreaterThan(0);
   });
 
-  it("stores wizard choices without embedding derived RPG calculations", () => {
+  it("includes inventory items in selectedEquipment", () => {
     const store = createCharacterStore();
-
-    store.getState().selectClass("fighter-xphb");
-    store.getState().setLevel(1);
-    store.getState().setDescriptionField("nome", "Aelar");
-    store.getState().toggleEquipment("chain-mail-xphb");
-
-    expect(store.getState()).toMatchObject({
-      selectedClassId: "fighter-xphb",
-      level: 1,
-      description: { nome: "Aelar" },
-      selectedEquipmentIds: ["chain-mail-xphb"],
-    });
+    store.getState().addInventoryItem("chain-mail-xphb");
+    const summary = selectCharacterSheetSummary(store.getState());
+    expect(summary.selectedEquipment.some((e) => e.id === "chain-mail-xphb")).toBe(true);
   });
 });

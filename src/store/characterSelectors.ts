@@ -1,9 +1,9 @@
 import {
   getBuilderBackgrounds,
   getBuilderClasses,
-  getBuilderEquipmentOptions,
   getBuilderSpecies,
 } from "@/src/services/ruleService";
+import { getItemCatalog } from "@/src/services/itemCatalogService";
 import { validateBuilderStep } from "@/rules/builderValidation";
 import {
   calculateArmorClass,
@@ -35,9 +35,16 @@ export function selectCharacterSheetSummary(
       : [];
   const inventoryItemIds = state.inventory.map((entry) => entry.itemId);
   const equipmentIds = new Set([...inventoryItemIds, ...classKitItemIds]);
-  const selectedEquipment = getBuilderEquipmentOptions().filter((equipment) =>
-    equipmentIds.has(equipment.id),
-  );
+  const selectedEquipment = getItemCatalog()
+    .filter((item) => equipmentIds.has(item.id))
+    .map((item) => ({
+      id: item.id,
+      name: item.name,
+      source: item.source,
+      sourceType: "manual" as const,
+      armorClass: item.armorClass,
+      value: item.value,
+    }));
   const finalAttributes = calculateFinalAttributes(
     state.baseAttributes,
     state.backgroundAbilityBonuses,

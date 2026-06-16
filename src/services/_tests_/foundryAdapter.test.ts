@@ -9,7 +9,7 @@ const state: CharacterBuilderState = {
   selectedSpeciesId: "aasimar-xphb",
   selectedClassId: "fighter-xphb",
   selectedBackgroundId: "guard-xphb",
-  selectedEquipmentIds: ["chain-mail-xphb"],
+  inventory: [{ itemId: "chain-mail-xphb", quantity: 3 }],
   equipmentChoicesBySource: {},
   maxUnlockedStepIndex: 7,
   pendingChoiceIds: [],
@@ -77,7 +77,7 @@ const summary: CharacterSheetSummary = {
       id: "chain-mail-xphb",
       name: "Chain Mail",
       source: "XPHB",
-      sourceType: "class",
+      sourceType: "manual",
       armorClass: 16,
     },
   ],
@@ -120,5 +120,7 @@ describe("foundryAdapter", () => {
         "Chain Mail",
       ]),
     );
+    const chainMailItem = actor.items.find((item) => item.name === "Chain Mail");
+    expect(chainMailItem?.system.quantity).toBe(3);
   });
 });

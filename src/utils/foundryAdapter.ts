@@ -136,7 +136,7 @@ export function createFoundryCharacterExport(
       value: state.speciesLanguages.map(toFoundrySlug),
     },
   };
-  actor.items = createFoundryItems(summary);
+  actor.items = createFoundryItems(state, summary);
 
   return actor;
 }
@@ -145,7 +145,7 @@ function cloneReference(): FoundryActorExport {
   return JSON.parse(JSON.stringify(foundryReference)) as FoundryActorExport;
 }
 
-function createFoundryItems(summary: CharacterSheetSummary): FoundryItemExport[] {
+function createFoundryItems(state: CharacterBuilderState, summary: CharacterSheetSummary): FoundryItemExport[] {
   const identityItems = [
     createFoundryItem(titleFromId(summary.classId), "class", "Classe selecionada."),
     createFoundryItem(titleFromId(summary.speciesId), "feat", "Espécie selecionada."),
@@ -161,9 +161,11 @@ function createFoundryItems(summary: CharacterSheetSummary): FoundryItemExport[]
     ([choiceId, values]) =>
       createFoundryItem(titleFromId(choiceId), "feat", values.join(", ")),
   );
-  const equipmentItems = summary.selectedEquipment.map((equipment) =>
-    createFoundryItem(equipment.name, "equipment", `Fonte: ${equipment.source}`),
-  );
+  const equipmentItems = summary.selectedEquipment.map((equipment) => {
+    const quantity = state.inventory.find((entry) => entry.itemId === equipment.id)?.quantity ?? 1;
+    const item = createFoundryItem(equipment.name, "equipment", `Fonte: ${equipment.source}`);
+    return { ...item, system: { ...item.system, quantity } };
+  });
 
   return [
     ...identityItems,
