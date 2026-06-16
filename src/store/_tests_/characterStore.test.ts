@@ -120,6 +120,28 @@ describe("createCharacterStore", () => {
     expect(store.getState().equipmentChoicesBySource).toStrictEqual({});
   });
 
+  it("sets per-source mode and option independently", () => {
+    const store = createCharacterStore();
+
+    store.getState().setEquipmentSourceOption("class", "A");
+    store.getState().setEquipmentSourceMode("background", "gold");
+
+    expect(store.getState().equipmentChoicesBySource).toStrictEqual({
+      class: { mode: "items", selectedOptionId: "A" },
+      background: { mode: "gold", selectedOptionId: null },
+    });
+  });
+
+  it("clears the selected option when a source switches to gold", () => {
+    const store = createCharacterStore();
+    store.getState().setEquipmentSourceOption("class", "A");
+    store.getState().setEquipmentSourceMode("class", "gold");
+    expect(store.getState().equipmentChoicesBySource.class).toStrictEqual({
+      mode: "gold",
+      selectedOptionId: null,
+    });
+  });
+
   it("resets the active build with a new save id", () => {
     const store = createCharacterStore();
     const initialSaveId = store.getState().characterBuild.exportMetadata.saveId;

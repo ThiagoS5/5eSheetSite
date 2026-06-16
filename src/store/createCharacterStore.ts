@@ -77,14 +77,28 @@ export function createCharacterStore(
             : [...state.selectedEquipmentIds, equipmentId],
         }),
       ),
-    setEquipmentAcquisitionMode: (equipmentAcquisitionMode) =>
+    setEquipmentSourceMode: (source, mode) =>
       set((state) =>
         patchCharacterState(state, {
-          equipmentAcquisitionMode,
-          selectedEquipmentIds:
-            equipmentAcquisitionMode === "gold"
-              ? []
-              : state.selectedEquipmentIds,
+          equipmentChoicesBySource: {
+            ...state.equipmentChoicesBySource,
+            [source]: {
+              mode,
+              selectedOptionId:
+                mode === "gold"
+                  ? null
+                  : state.equipmentChoicesBySource[source]?.selectedOptionId ?? null,
+            },
+          },
+        }),
+      ),
+    setEquipmentSourceOption: (source, optionId) =>
+      set((state) =>
+        patchCharacterState(state, {
+          equipmentChoicesBySource: {
+            ...state.equipmentChoicesBySource,
+            [source]: { mode: "items", selectedOptionId: optionId },
+          },
         }),
       ),
     unlockStep: (stepIndex) =>
@@ -342,7 +356,7 @@ function extractFlatState(state: FlatCharacterBuilderState): FlatCharacterBuilde
     selectedClassId: state.selectedClassId,
     selectedBackgroundId: state.selectedBackgroundId,
     selectedEquipmentIds: [...state.selectedEquipmentIds],
-    equipmentAcquisitionMode: state.equipmentAcquisitionMode,
+    equipmentChoicesBySource: { ...state.equipmentChoicesBySource },
     maxUnlockedStepIndex: state.maxUnlockedStepIndex,
     pendingChoiceIds: [...state.pendingChoiceIds],
     classSkillProficiencies: [...state.classSkillProficiencies],
