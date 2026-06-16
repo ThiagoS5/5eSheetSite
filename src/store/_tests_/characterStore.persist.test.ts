@@ -37,37 +37,60 @@ describe("createCharacterStore persistence", () => {
   });
 
   it("migrates legacy flat sessionStorage state into the canonical build", () => {
+    // Seed a v1-era save: a characterBuild whose draft has the old global
+    // `equipmentAcquisitionMode` field and NO `equipmentChoicesBySource`.
+    // The store partializes only { characterBuild }, so the persisted object mirrors
+    // that shape. The migration must map the legacy mode onto the class source.
     sessionStorage.setItem(
       "ficha-5e-builder",
       JSON.stringify({
         state: {
-          ruleset: "2024",
-          level: 3,
-          selectedSpeciesId: "human-xphb",
-          selectedClassId: "fighter-xphb",
-          selectedBackgroundId: "acolyte-xphb",
-          selectedEquipmentIds: ["chain-mail-xphb"],
-          equipmentAcquisitionMode: "items",
-          maxUnlockedStepIndex: 4,
-          pendingChoiceIds: [],
-          classSkillProficiencies: ["Athletics", "Perception"],
-          skillTraining: { Athletics: "proficient", Perception: "proficient" },
-          classFeatureChoices: { "weapon-mastery": ["longsword-xphb"] },
-          speciesChoices: {},
-          speciesLanguages: ["Common", "Draconic"],
-          attributeGenerationMethod: "standard-array",
-          baseAttributes: {
-            forca: 15,
-            destreza: 14,
-            constituicao: 13,
-            inteligencia: 12,
-            sabedoria: 10,
-            carisma: 8,
+          characterBuild: {
+            draft: {
+              currentStepSlug: "detalhes-especie",
+              maxUnlockedStepIndex: 4,
+              pendingChoiceIds: [],
+              selectedEquipmentIds: ["chain-mail-xphb"],
+              // v1 shape: single global mode, no equipmentChoicesBySource
+              equipmentAcquisitionMode: "gold",
+              description: { nome: "Migrated Hero" },
+            },
+            progression: {
+              level: 3,
+              levelChoices: {
+                "3": { classFeatureChoices: { "weapon-mastery": ["longsword-xphb"] } },
+              },
+            },
+            choices: {
+              ruleset: "2024",
+              selectedSpeciesId: "human-xphb",
+              selectedClassId: "fighter-xphb",
+              selectedBackgroundId: "acolyte-xphb",
+              classSkillProficiencies: ["Athletics", "Perception"],
+              skillTraining: { Athletics: "proficient", Perception: "proficient" },
+              classFeatureChoices: { "weapon-mastery": ["longsword-xphb"] },
+              speciesChoices: {},
+              speciesLanguages: ["Common", "Draconic"],
+              attributeGenerationMethod: "standard-array",
+              baseAttributes: {
+                forca: 15,
+                destreza: 14,
+                constituicao: 13,
+                inteligencia: 12,
+                sabedoria: 10,
+                carisma: 8,
+              },
+              backgroundAbilityBonuses: { inteligencia: 2, sabedoria: 1 },
+            },
+            exportMetadata: {
+              schemaVersion: 1,
+              saveId: "legacy-save-id",
+              createdAt: "2024-01-01T00:00:00.000Z",
+              updatedAt: "2024-01-01T00:00:00.000Z",
+            },
           },
-          backgroundAbilityBonuses: { inteligencia: 2, sabedoria: 1 },
-          description: { nome: "Migrated Hero" },
         },
-        version: 0,
+        version: 1,
       }),
     );
 
@@ -88,9 +111,13 @@ describe("createCharacterStore persistence", () => {
           currentStepSlug: "detalhes-especie",
           maxUnlockedStepIndex: 4,
           description: expect.objectContaining({ nome: "Migrated Hero" }),
+          // v1→v2 migration: legacy global "gold" mode must be mapped to the class source
+          equipmentChoicesBySource: {
+            class: { mode: "gold", selectedOptionId: null },
+          },
         },
         exportMetadata: {
-          schemaVersion: 1,
+          schemaVersion: 2,
           saveId: expect.any(String),
         },
       },

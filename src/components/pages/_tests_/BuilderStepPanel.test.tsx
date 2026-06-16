@@ -635,8 +635,8 @@ function UnlockedDescriptionInitializer() {
   const setAttributeGenerationMethod = useCharacterStore(
     (state) => state.setAttributeGenerationMethod,
   );
-  const setEquipmentAcquisitionMode = useCharacterStore(
-    (state) => state.setEquipmentAcquisitionMode,
+  const setEquipmentSourceMode = useCharacterStore(
+    (state) => state.setEquipmentSourceMode,
   );
   const unlockStep = useCharacterStore((state) => state.unlockStep);
 
@@ -649,7 +649,7 @@ function UnlockedDescriptionInitializer() {
     selectSpecies("human-xphb");
     setSpeciesLanguages(["Common", "Draconic"]);
     setAttributeGenerationMethod("standard-array");
-    setEquipmentAcquisitionMode("gold");
+    setEquipmentSourceMode("class", "gold");
     unlockStep(7);
   }, [
     selectClass,
@@ -660,7 +660,7 @@ function UnlockedDescriptionInitializer() {
     selectSpecies,
     setSpeciesLanguages,
     setAttributeGenerationMethod,
-    setEquipmentAcquisitionMode,
+    setEquipmentSourceMode,
     unlockStep,
   ]);
 

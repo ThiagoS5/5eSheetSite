@@ -3,6 +3,8 @@ import type { CharacterBuild } from "@/src/types/characterBuild";
 import type {
   AttributeGenerationMethod,
   EquipmentAcquisitionMode,
+  EquipmentChoicesBySource,
+  EquipmentSourceKey,
   SkillTrainingLevel,
 } from "@/src/types/characterBuild";
 import type {
@@ -14,6 +16,8 @@ import type {
 export type {
   AttributeGenerationMethod,
   EquipmentAcquisitionMode,
+  EquipmentChoicesBySource,
+  EquipmentSourceKey,
   SkillTrainingLevel,
 } from "@/src/types/characterBuild";
 
@@ -24,7 +28,7 @@ export interface FlatCharacterBuilderState {
   selectedClassId: string;
   selectedBackgroundId: string;
   selectedEquipmentIds: string[];
-  equipmentAcquisitionMode: EquipmentAcquisitionMode;
+  equipmentChoicesBySource: EquipmentChoicesBySource;
   maxUnlockedStepIndex: number;
   pendingChoiceIds: string[];
   classSkillProficiencies: string[];
@@ -48,7 +52,14 @@ export interface CharacterBuilderActions {
   selectClass: (classId: string) => void;
   selectBackground: (backgroundId: string) => void;
   toggleEquipment: (equipmentId: string) => void;
-  setEquipmentAcquisitionMode: (mode: EquipmentAcquisitionMode) => void;
+  setEquipmentSourceMode: (
+    source: EquipmentSourceKey,
+    mode: EquipmentAcquisitionMode,
+  ) => void;
+  setEquipmentSourceOption: (
+    source: EquipmentSourceKey,
+    optionId: string,
+  ) => void;
   unlockStep: (stepIndex: number) => void;
   setPendingChoiceIds: (choiceIds: string[]) => void;
   setClassSkillProficiencies: (skills: string[]) => void;

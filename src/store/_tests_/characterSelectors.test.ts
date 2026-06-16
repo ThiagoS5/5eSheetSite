@@ -4,6 +4,7 @@ import {
   initialCharacterState,
 } from "@/src/store/createCharacterStore";
 import { selectCharacterSheetSummary } from "@/src/store/characterSelectors";
+import { getBuilderClasses } from "@/src/services/ruleService";
 
 describe("character selectors", () => {
   it("derives final attributes from 2024 background bonuses, not species", () => {
@@ -25,6 +26,19 @@ describe("character selectors", () => {
       initialCharacterState.baseAttributes.inteligencia + 2,
     );
     expect(summary.originFeat).toBe("Magic Initiate (Cleric)");
+  });
+
+  it("includes the chosen class package items in selectedEquipment", () => {
+    const store = createCharacterStore();
+    const fighter = getBuilderClasses().find((c) => c.id === "fighter-xphb");
+    if (!fighter || fighter.startingEquipmentPackages.length === 0) {
+      throw new Error("expected fighter to have starting equipment packages");
+    }
+    store.getState().selectClass("fighter-xphb");
+    store.getState().setEquipmentSourceOption("class", fighter.startingEquipmentPackages[0].id);
+
+    const summary = selectCharacterSheetSummary(store.getState());
+    expect(summary.selectedEquipment.length).toBeGreaterThan(0);
   });
 
   it("stores wizard choices without embedding derived RPG calculations", () => {
