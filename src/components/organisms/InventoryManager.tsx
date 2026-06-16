@@ -15,6 +15,7 @@ import {
   type CatalogFilterCriteria,
 } from "@/rules/itemCatalogFilters";
 import type { CatalogItem, ItemCategory } from "@/types/builder";
+import type { InventoryEntry } from "@/src/types/characterBuild";
 import { Minus, Plus, Trash2 } from "lucide-react";
 
 const ALL_CATEGORIES: ItemCategory[] = [
@@ -29,11 +30,6 @@ const ALL_CATEGORIES: ItemCategory[] = [
   "Wondrous",
   "Other Gear",
 ];
-
-interface InventoryEntry {
-  itemId: string;
-  quantity: number;
-}
 
 interface InventoryManagerProps {
   catalog: CatalogItem[];
@@ -229,7 +225,9 @@ export function InventoryManager({
 
             {/* Results count */}
             <p className="mb-2 text-xs text-[#7a7e99]">
-              {visibleResults.length} itens
+              {results.length > 100
+                ? `Mostrando 100 de ${results.length} itens`
+                : `${results.length} itens`}
             </p>
 
             {/* Results list */}

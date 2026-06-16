@@ -33,6 +33,7 @@ export function selectCharacterSheetSummary(
           (entry) => entry.id === classChoice.selectedOptionId,
         )?.items ?? []).map((item) => item.id)
       : [];
+  const classKitItemIdSet = new Set(classKitItemIds);
   const inventoryItemIds = state.inventory.map((entry) => entry.itemId);
   const equipmentIds = new Set([...inventoryItemIds, ...classKitItemIds]);
   const selectedEquipment = getItemCatalog()
@@ -41,7 +42,9 @@ export function selectCharacterSheetSummary(
       id: item.id,
       name: item.name,
       source: item.source,
-      sourceType: "manual" as const,
+      sourceType: classKitItemIdSet.has(item.id)
+        ? ("class" as const)
+        : ("manual" as const),
       armorClass: item.armorClass,
       value: item.value,
     }));

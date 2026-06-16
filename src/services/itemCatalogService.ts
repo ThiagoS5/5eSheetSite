@@ -29,6 +29,3 @@ export function getItemCatalog(): CatalogItem[] {
   return cachedCatalog;
 }
 
-export function getCatalogItemMap(): Map<string, CatalogItem> {
-  return new Map(getItemCatalog().map((item) => [item.id, item]));
-}
