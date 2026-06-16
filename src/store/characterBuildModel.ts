@@ -146,7 +146,7 @@ export function flattenCharacterBuild(
     selectedClassId: build.choices?.selectedClassId,
     selectedBackgroundId: build.choices?.selectedBackgroundId,
     selectedEquipmentIds: build.draft?.selectedEquipmentIds,
-    equipmentAcquisitionMode: build.draft?.equipmentAcquisitionMode,
+    equipmentChoicesBySource: build.draft?.equipmentChoicesBySource,
     maxUnlockedStepIndex: build.draft?.maxUnlockedStepIndex,
     pendingChoiceIds: build.draft?.pendingChoiceIds,
     classSkillProficiencies: build.choices?.classSkillProficiencies,
@@ -187,7 +187,7 @@ export function getDefaultFlatState(): FlatCharacterBuilderState {
     selectedClassId: "",
     selectedBackgroundId: "",
     selectedEquipmentIds: [],
-    equipmentAcquisitionMode: "items",
+    equipmentChoicesBySource: {},
     maxUnlockedStepIndex: 0,
     pendingChoiceIds: [],
     classSkillProficiencies: [],
@@ -254,7 +254,7 @@ function createBuildFromFlatState(
       maxUnlockedStepIndex: normalizedState.maxUnlockedStepIndex,
       pendingChoiceIds: normalizedState.pendingChoiceIds,
       selectedEquipmentIds: normalizedState.selectedEquipmentIds,
-      equipmentAcquisitionMode: normalizedState.equipmentAcquisitionMode,
+      equipmentChoicesBySource: normalizedState.equipmentChoicesBySource,
       description: normalizedState.description,
     },
     progression: {
@@ -304,8 +304,8 @@ function normalizeFlatState(
       state.selectedBackgroundId ?? defaults.selectedBackgroundId,
     selectedEquipmentIds:
       state.selectedEquipmentIds ?? defaults.selectedEquipmentIds,
-    equipmentAcquisitionMode:
-      state.equipmentAcquisitionMode ?? defaults.equipmentAcquisitionMode,
+    equipmentChoicesBySource:
+      state.equipmentChoicesBySource ?? defaults.equipmentChoicesBySource,
     maxUnlockedStepIndex:
       state.maxUnlockedStepIndex ?? defaults.maxUnlockedStepIndex,
     pendingChoiceIds: state.pendingChoiceIds ?? defaults.pendingChoiceIds,

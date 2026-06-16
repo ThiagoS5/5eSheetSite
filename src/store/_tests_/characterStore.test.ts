@@ -115,6 +115,11 @@ describe("createCharacterStore", () => {
     expect(store.getState().characterBuild.draft.selectedEquipmentIds).toStrictEqual([]);
   });
 
+  it("defaults equipmentChoicesBySource to an empty object", () => {
+    const store = createCharacterStore();
+    expect(store.getState().equipmentChoicesBySource).toStrictEqual({});
+  });
+
   it("resets the active build with a new save id", () => {
     const store = createCharacterStore();
     const initialSaveId = store.getState().characterBuild.exportMetadata.saveId;
