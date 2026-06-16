@@ -32,7 +32,7 @@ interface EquipmentChecklistProps {
   equipment: BuilderEquipmentOption[];
   selectedClass?: BuilderClass;
   selectedBackground?: BuilderBackground;
-  selectedSpecies?: BuilderSpecies;
+  selectedSpecies?: BuilderSpecies; // reserved for future species equipment source
   choicesBySource: EquipmentChoicesBySource;
   selectedEquipmentIds: readonly string[];
   onSourceModeChange: (source: EquipmentSourceKey, mode: EquipmentAcquisitionMode) => void;
@@ -62,6 +62,8 @@ function buildEquipmentSources(
   }
 
   if (selectedBackground?.equipmentSummary) {
+    // Background equipment has no structured item data yet — this block is presentational
+    // only; the selector currently resolves real items from the class source.
     sources.push({
       key: "background",
       heading: "EQUIPAMENTO DO ANTECEDENTE",

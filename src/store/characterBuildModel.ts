@@ -7,6 +7,8 @@ import type {
 import {
   CHARACTER_BUILD_SCHEMA_VERSION,
   type CharacterBuild,
+  type EquipmentAcquisitionMode,
+  type EquipmentChoicesBySource,
 } from "@/src/types/characterBuild";
 import type {
   BuilderStepSlug,
@@ -132,6 +134,21 @@ export function createStoreStateFromBuild(
   };
 }
 
+function legacyEquipmentChoices(
+  draft?: Partial<CharacterBuild["draft"]>,
+): EquipmentChoicesBySource | undefined {
+  // Backward-compat: schema v1 stored a single global `equipmentAcquisitionMode`.
+  // Map it onto the class source so an in-progress save keeps its gold/items choice.
+  const legacyMode = (draft as { equipmentAcquisitionMode?: EquipmentAcquisitionMode } | undefined)
+    ?.equipmentAcquisitionMode;
+
+  if (!legacyMode) {
+    return undefined;
+  }
+
+  return { class: { mode: legacyMode, selectedOptionId: null } };
+}
+
 export function flattenCharacterBuild(
   build?: Partial<CharacterBuild>,
 ): Partial<FlatCharacterBuilderState> {
@@ -146,7 +163,8 @@ export function flattenCharacterBuild(
     selectedClassId: build.choices?.selectedClassId,
     selectedBackgroundId: build.choices?.selectedBackgroundId,
     selectedEquipmentIds: build.draft?.selectedEquipmentIds,
-    equipmentChoicesBySource: build.draft?.equipmentChoicesBySource,
+    equipmentChoicesBySource:
+      build.draft?.equipmentChoicesBySource ?? legacyEquipmentChoices(build.draft),
     maxUnlockedStepIndex: build.draft?.maxUnlockedStepIndex,
     pendingChoiceIds: build.draft?.pendingChoiceIds,
     classSkillProficiencies: build.choices?.classSkillProficiencies,
