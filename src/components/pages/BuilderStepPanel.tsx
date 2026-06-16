@@ -25,7 +25,7 @@ import type {
   BuilderBackground,
   BuilderClass,
   BuilderClassFeatureChoiceGroup,
-  BuilderEquipmentOption,
+  CatalogItem,
   BuilderFeatureBlock,
   BuilderLanguage,
   BuilderSpecies,
@@ -50,6 +50,7 @@ import {
 import { AttributeEditor } from "@/src/components/organisms/AttributeEditor";
 import { DescriptionFields } from "@/src/components/organisms/DescriptionFields";
 import { EquipmentChecklist } from "@/src/components/organisms/EquipmentChecklist";
+import { InventoryManager } from "@/src/components/organisms/InventoryManager";
 import { builderStepNavigation } from "@/src/components/templates/builderStepNavigation";
 import { SummaryTemplate } from "@/src/components/templates/SummaryTemplate";
 
@@ -58,8 +59,8 @@ interface BuilderStepPanelProps {
   species: BuilderSpecies[];
   classes: BuilderClass[];
   backgrounds: BuilderBackground[];
-  equipment: BuilderEquipmentOption[];
   languages: BuilderLanguage[];
+  itemCatalog: CatalogItem[];
 }
 
 export function BuilderStepPanel({
@@ -67,8 +68,8 @@ export function BuilderStepPanel({
   species,
   classes,
   backgrounds,
-  equipment,
   languages,
+  itemCatalog,
 }: BuilderStepPanelProps) {
   const router = useRouter();
   const characterState = useCharacterBuilderState();
@@ -198,17 +199,23 @@ export function BuilderStepPanel({
       ) : null}
 
       {step === "equipamento" ? (
-        <EquipmentChecklist
-          equipment={equipment}
-          selectedClass={selectedClass}
-          selectedBackground={selectedBackground}
-          selectedSpecies={selectedSpecies}
-          choicesBySource={characterState.equipmentChoicesBySource}
-          selectedEquipmentIds={characterState.selectedEquipmentIds}
-          onSourceModeChange={actions.setEquipmentSourceMode}
-          onSourceOptionChange={actions.setEquipmentSourceOption}
-          onToggleEquipment={actions.toggleEquipment}
-        />
+        <>
+          <EquipmentChecklist
+            selectedClass={selectedClass}
+            selectedBackground={selectedBackground}
+            selectedSpecies={selectedSpecies}
+            choicesBySource={characterState.equipmentChoicesBySource}
+            onSourceModeChange={actions.setEquipmentSourceMode}
+            onSourceOptionChange={actions.setEquipmentSourceOption}
+          />
+          <InventoryManager
+            catalog={itemCatalog}
+            inventory={characterState.inventory}
+            onAddItem={actions.addInventoryItem}
+            onSetQuantity={actions.setInventoryQuantity}
+            onRemoveItem={actions.removeInventoryItem}
+          />
+        </>
       ) : null}
 
       {step === "descricao" ? (
@@ -1831,8 +1838,8 @@ function useCharacterBuilderState(): CharacterBuilderState {
   const selectedBackgroundId = useCharacterStore(
     (state) => state.selectedBackgroundId,
   );
-  const selectedEquipmentIds = useCharacterStore(
-    (state) => state.selectedEquipmentIds,
+  const inventory = useCharacterStore(
+    (state) => state.inventory,
   );
   const equipmentChoicesBySource = useCharacterStore(
     (state) => state.equipmentChoicesBySource,
@@ -1866,7 +1873,7 @@ function useCharacterBuilderState(): CharacterBuilderState {
       selectedSpeciesId,
       selectedClassId,
       selectedBackgroundId,
-      selectedEquipmentIds,
+      inventory,
       equipmentChoicesBySource,
       maxUnlockedStepIndex,
       pendingChoiceIds,
@@ -1886,7 +1893,7 @@ function useCharacterBuilderState(): CharacterBuilderState {
       selectedSpeciesId,
       selectedClassId,
       selectedBackgroundId,
-      selectedEquipmentIds,
+      inventory,
       equipmentChoicesBySource,
       maxUnlockedStepIndex,
       pendingChoiceIds,
@@ -1908,7 +1915,9 @@ function useCharacterBuilderActions() {
     selectSpecies: useCharacterStore((state) => state.selectSpecies),
     selectClass: useCharacterStore((state) => state.selectClass),
     selectBackground: useCharacterStore((state) => state.selectBackground),
-    toggleEquipment: useCharacterStore((state) => state.toggleEquipment),
+    addInventoryItem: useCharacterStore((state) => state.addInventoryItem),
+    setInventoryQuantity: useCharacterStore((state) => state.setInventoryQuantity),
+    removeInventoryItem: useCharacterStore((state) => state.removeInventoryItem),
     setEquipmentSourceMode: useCharacterStore(
       (state) => state.setEquipmentSourceMode,
     ),

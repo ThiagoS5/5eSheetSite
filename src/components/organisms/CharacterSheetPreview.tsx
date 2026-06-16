@@ -214,8 +214,8 @@ function useCharacterPreviewState(): CharacterBuilderState {
   const selectedBackgroundId = useCharacterStore(
     (state) => state.selectedBackgroundId,
   );
-  const selectedEquipmentIds = useCharacterStore(
-    (state) => state.selectedEquipmentIds,
+  const inventory = useCharacterStore(
+    (state) => state.inventory,
   );
   const equipmentChoicesBySource = useCharacterStore(
     (state) => state.equipmentChoicesBySource,
@@ -249,7 +249,7 @@ function useCharacterPreviewState(): CharacterBuilderState {
       selectedSpeciesId,
       selectedClassId,
       selectedBackgroundId,
-      selectedEquipmentIds,
+      inventory,
       equipmentChoicesBySource,
       maxUnlockedStepIndex,
       pendingChoiceIds,
@@ -269,7 +269,7 @@ function useCharacterPreviewState(): CharacterBuilderState {
       selectedSpeciesId,
       selectedClassId,
       selectedBackgroundId,
-      selectedEquipmentIds,
+      inventory,
       equipmentChoicesBySource,
       maxUnlockedStepIndex,
       pendingChoiceIds,

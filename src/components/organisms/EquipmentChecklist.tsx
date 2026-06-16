@@ -10,7 +10,6 @@ import type {
 import type {
   BuilderBackground,
   BuilderClass,
-  BuilderEquipmentOption,
   BuilderEquipmentPackage,
   BuilderSpecies,
 } from "@/types/builder";
@@ -29,15 +28,12 @@ interface EquipmentSourceBlock {
 }
 
 interface EquipmentChecklistProps {
-  equipment: BuilderEquipmentOption[];
   selectedClass?: BuilderClass;
   selectedBackground?: BuilderBackground;
   selectedSpecies?: BuilderSpecies; // reserved for future species equipment source
   choicesBySource: EquipmentChoicesBySource;
-  selectedEquipmentIds: readonly string[];
   onSourceModeChange: (source: EquipmentSourceKey, mode: EquipmentAcquisitionMode) => void;
   onSourceOptionChange: (source: EquipmentSourceKey, optionId: string) => void;
-  onToggleEquipment: (equipmentId: string) => void;
 }
 
 function buildEquipmentSources(
@@ -82,14 +78,11 @@ function buildEquipmentSources(
 }
 
 export function EquipmentChecklist({
-  equipment,
   selectedClass,
   selectedBackground,
   choicesBySource,
-  selectedEquipmentIds,
   onSourceModeChange,
   onSourceOptionChange,
-  onToggleEquipment,
 }: EquipmentChecklistProps) {
   const sources = buildEquipmentSources(selectedClass, selectedBackground);
 
@@ -177,50 +170,6 @@ export function EquipmentChecklist({
         );
       })}
 
-      <section className="mt-8 border-t border-white/10 pt-6">
-        <h3 className="font-serif text-lg font-bold tracking-wide text-white">
-          Adicionar Itens Opcionais / Equipamentos Extras
-        </h3>
-        <p className="mt-2 text-sm leading-6 text-[#7a7e99]">
-          Use esta area apenas para equipamentos adicionais fora da escolha principal da
-          classe.
-        </p>
-        <div className="mt-4 grid gap-3 md:grid-cols-2">
-          {equipment.map((item) => {
-            const checked = selectedEquipmentIds.includes(item.id);
-
-            return (
-              <label
-                key={item.id}
-                className={`grid cursor-pointer grid-cols-[auto_1fr_auto] items-start gap-3 rounded-lg border p-3 transition ${
-                  checked
-                    ? "border-[#c41e1e] bg-[#c41e1e]/10"
-                    : "border-white/[0.06] bg-[#1c1e2a] hover:border-white/15"
-                }`}
-              >
-                <input
-                  type="checkbox"
-                  checked={checked}
-                  onChange={() => onToggleEquipment(item.id)}
-                  className="mt-1 h-4 w-4 rounded border-white/20 bg-[#12131a] accent-[#c41e1e] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c41e1e]"
-                />
-                <span>
-                  <span className="block font-serif text-sm font-bold tracking-wide text-white">
-                    {item.name}
-                  </span>
-                  <span className="mt-1 block text-xs text-[#7a7e99]">
-                    {item.sourceType === "class" ? "Classe" : "Antecedente"}
-                    {item.armorClass ? ` - CA ${item.armorClass}` : ""}
-                  </span>
-                </span>
-                <span className="rounded border border-white/[0.08] bg-white/5 px-2 py-1 text-[0.58rem] font-bold uppercase tracking-[0.1em] text-[#b0b5cc]">
-                  {item.source}
-                </span>
-              </label>
-            );
-          })}
-        </div>
-      </section>
     </section>
   );
 }

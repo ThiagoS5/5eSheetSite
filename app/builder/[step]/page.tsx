@@ -1,10 +1,10 @@
 import {
   getBuilderBackgrounds,
   getBuilderClasses,
-  getBuilderEquipmentOptions,
   getBuilderLanguages,
   getBuilderSpecies,
 } from "@/src/services/ruleService";
+import { getItemCatalog } from "@/src/services/itemCatalogService";
 import { BuilderStepPanel } from "@/src/components/pages/BuilderStepPanel";
 import type { BuilderStepSlug } from "@/types/builder";
 
@@ -86,8 +86,8 @@ export default async function BuilderStepPage({ params }: BuilderStepPageProps) 
         species={getBuilderSpecies()}
         classes={getBuilderClasses()}
         backgrounds={getBuilderBackgrounds()}
-        equipment={getBuilderEquipmentOptions()}
         languages={getBuilderLanguages()}
+        itemCatalog={getItemCatalog()}
       />
     </article>
   );
