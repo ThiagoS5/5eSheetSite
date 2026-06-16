@@ -164,7 +164,10 @@ export function BuilderStepPanel({
           species={species}
           selectedSpeciesId={characterState.selectedSpeciesId}
           disabled={!canUseCurrentStep}
-          onSelectSpecies={actions.selectSpecies}
+          onSelectSpecies={(speciesId) => {
+            actions.selectSpecies(speciesId);
+            void unlockAndGo(4);
+          }}
         />
       ) : null}
 

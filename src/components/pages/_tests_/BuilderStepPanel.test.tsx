@@ -419,7 +419,7 @@ describe("BuilderStepPanel", () => {
     ).toHaveAttribute("aria-pressed", "false");
   });
 
-  it("selects a species from the details modal without changing the wizard route", async () => {
+  it("selects a species from the details modal and advances to species details", async () => {
     render(
       <CharacterStoreProvider>
         <UnlockedSpeciesInitializer />
@@ -431,12 +431,27 @@ describe("BuilderStepPanel", () => {
     fireEvent.click(screen.getByRole("button", { name: "Selecionar Raça" }));
 
     await waitFor(() => {
-      expect(screen.getByRole("button", { name: "Espécie Selecionada" })).toHaveAttribute(
-        "aria-pressed",
-        "true",
-      );
+      expect(pushMock).toHaveBeenCalledWith("/builder/detalhes-especie");
     });
-    expect(pushMock).not.toHaveBeenCalled();
+  });
+
+  it("selects a species via the card SELECT button and advances to species details", async () => {
+    render(
+      <CharacterStoreProvider>
+        <UnlockedSpeciesInitializer />
+        <BuilderStepPanel step="especie" {...builderData} />
+      </CharacterStoreProvider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getAllByRole("button", { name: "SELECT" })[0]).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getAllByRole("button", { name: "SELECT" })[0]);
+
+    await waitFor(() => {
+      expect(pushMock).toHaveBeenCalledWith("/builder/detalhes-especie");
+    });
   });
 
   it("lists rare and exotic languages in species details", async () => {
