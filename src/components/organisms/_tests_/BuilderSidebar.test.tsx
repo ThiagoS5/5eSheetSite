@@ -21,7 +21,7 @@ vi.mock("@/src/store/useCharacterStore", () => ({
       selectedClassId: "fighter-xphb",
       selectedBackgroundId: "",
       selectedEquipmentIds: [],
-      equipmentAcquisitionMode: "items",
+      equipmentChoicesBySource: {},
       maxUnlockedStepIndex: 8,
       pendingChoiceIds: [],
       classSkillProficiencies: [],

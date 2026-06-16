@@ -31,6 +31,17 @@ describe("builder validation", () => {
     expect(validateBuilderStep("equipamento", initialCharacterState)).toHaveLength(1);
   });
 
+  it("clears the equipment error once the class source has a resolved choice", () => {
+    expect(
+      validateBuilderStep("equipamento", {
+        ...initialCharacterState,
+        equipmentChoicesBySource: {
+          class: { mode: "items", selectedOptionId: "A" },
+        },
+      }),
+    ).toHaveLength(0);
+  });
+
   it("requires point buy to spend exactly 27 points within the 8 to 15 range", () => {
     expect(
       validateBuilderStep("atributos", {

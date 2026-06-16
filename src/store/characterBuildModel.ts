@@ -7,6 +7,8 @@ import type {
 import {
   CHARACTER_BUILD_SCHEMA_VERSION,
   type CharacterBuild,
+  type EquipmentAcquisitionMode,
+  type EquipmentChoicesBySource,
 } from "@/src/types/characterBuild";
 import type {
   BuilderStepSlug,
@@ -132,6 +134,21 @@ export function createStoreStateFromBuild(
   };
 }
 
+function legacyEquipmentChoices(
+  draft?: Partial<CharacterBuild["draft"]>,
+): EquipmentChoicesBySource | undefined {
+  // Backward-compat: schema v1 stored a single global `equipmentAcquisitionMode`.
+  // Map it onto the class source so an in-progress save keeps its gold/items choice.
+  const legacyMode = (draft as { equipmentAcquisitionMode?: EquipmentAcquisitionMode } | undefined)
+    ?.equipmentAcquisitionMode;
+
+  if (!legacyMode) {
+    return undefined;
+  }
+
+  return { class: { mode: legacyMode, selectedOptionId: null } };
+}
+
 export function flattenCharacterBuild(
   build?: Partial<CharacterBuild>,
 ): Partial<FlatCharacterBuilderState> {
@@ -146,7 +163,8 @@ export function flattenCharacterBuild(
     selectedClassId: build.choices?.selectedClassId,
     selectedBackgroundId: build.choices?.selectedBackgroundId,
     selectedEquipmentIds: build.draft?.selectedEquipmentIds,
-    equipmentAcquisitionMode: build.draft?.equipmentAcquisitionMode,
+    equipmentChoicesBySource:
+      build.draft?.equipmentChoicesBySource ?? legacyEquipmentChoices(build.draft),
     maxUnlockedStepIndex: build.draft?.maxUnlockedStepIndex,
     pendingChoiceIds: build.draft?.pendingChoiceIds,
     classSkillProficiencies: build.choices?.classSkillProficiencies,
@@ -187,7 +205,7 @@ export function getDefaultFlatState(): FlatCharacterBuilderState {
     selectedClassId: "",
     selectedBackgroundId: "",
     selectedEquipmentIds: [],
-    equipmentAcquisitionMode: "items",
+    equipmentChoicesBySource: {},
     maxUnlockedStepIndex: 0,
     pendingChoiceIds: [],
     classSkillProficiencies: [],
@@ -254,7 +272,7 @@ function createBuildFromFlatState(
       maxUnlockedStepIndex: normalizedState.maxUnlockedStepIndex,
       pendingChoiceIds: normalizedState.pendingChoiceIds,
       selectedEquipmentIds: normalizedState.selectedEquipmentIds,
-      equipmentAcquisitionMode: normalizedState.equipmentAcquisitionMode,
+      equipmentChoicesBySource: normalizedState.equipmentChoicesBySource,
       description: normalizedState.description,
     },
     progression: {
@@ -304,8 +322,8 @@ function normalizeFlatState(
       state.selectedBackgroundId ?? defaults.selectedBackgroundId,
     selectedEquipmentIds:
       state.selectedEquipmentIds ?? defaults.selectedEquipmentIds,
-    equipmentAcquisitionMode:
-      state.equipmentAcquisitionMode ?? defaults.equipmentAcquisitionMode,
+    equipmentChoicesBySource:
+      state.equipmentChoicesBySource ?? defaults.equipmentChoicesBySource,
     maxUnlockedStepIndex:
       state.maxUnlockedStepIndex ?? defaults.maxUnlockedStepIndex,
     pendingChoiceIds: state.pendingChoiceIds ?? defaults.pendingChoiceIds,

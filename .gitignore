@@ -48,7 +48,10 @@ yarn-error.log*
 .cursorrules
 .cline/
 .agent/
+.agents/
 .codex/
+.claude/
+.mcp.json
 .playwright-mcp/
 ai-prompts/
 scratchpad.md

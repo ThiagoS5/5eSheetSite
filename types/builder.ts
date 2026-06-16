@@ -156,6 +156,22 @@ export interface BuilderClass {
   detail: string;
 }
 
+export type ItemCategory =
+  | "Armor" | "Potion" | "Ring" | "Rod" | "Scroll"
+  | "Staff" | "Wand" | "Weapon" | "Wondrous" | "Other Gear";
+
+export interface CatalogItem {
+  id: string;
+  name: string;
+  source: string;
+  category: ItemCategory;
+  isMagical: boolean;
+  isCommon: boolean;
+  isContainer: boolean;
+  armorClass?: number;
+  value?: number;
+}
+
 export interface BuilderEquipmentOption {
   id: string;
   name: string;

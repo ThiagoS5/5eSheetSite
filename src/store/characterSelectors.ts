@@ -26,8 +26,16 @@ export function selectCharacterSheetSummary(
   const background = getBuilderBackgrounds().find(
     (entry) => entry.id === state.selectedBackgroundId,
   );
+  const classChoice = state.equipmentChoicesBySource.class;
+  const classKitItemIds =
+    classChoice?.mode === "items" && classChoice.selectedOptionId
+      ? (characterClass?.startingEquipmentPackages.find(
+          (entry) => entry.id === classChoice.selectedOptionId,
+        )?.items ?? []).map((item) => item.id)
+      : [];
+  const equipmentIds = new Set([...state.selectedEquipmentIds, ...classKitItemIds]);
   const selectedEquipment = getBuilderEquipmentOptions().filter((equipment) =>
-    state.selectedEquipmentIds.includes(equipment.id),
+    equipmentIds.has(equipment.id),
   );
   const finalAttributes = calculateFinalAttributes(
     state.baseAttributes,

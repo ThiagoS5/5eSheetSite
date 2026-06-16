@@ -127,12 +127,12 @@ export function validateBuilderStep(
     }
   }
 
-  if (
-    step === "equipamento" &&
-    state.equipmentAcquisitionMode === "items" &&
-    state.selectedEquipmentIds.length === 0
-  ) {
-    return ["Selecione ao menos um equipamento inicial."];
+  if (step === "equipamento") {
+    const classChoice = state.equipmentChoicesBySource.class;
+
+    if (!classChoice || (classChoice.mode === "items" && !classChoice.selectedOptionId)) {
+      return ["Selecione o equipamento inicial da classe."];
+    }
   }
 
   if (step === "conclusao") {

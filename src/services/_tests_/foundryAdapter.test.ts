@@ -10,7 +10,7 @@ const state: CharacterBuilderState = {
   selectedClassId: "fighter-xphb",
   selectedBackgroundId: "guard-xphb",
   selectedEquipmentIds: ["chain-mail-xphb"],
-  equipmentAcquisitionMode: "items",
+  equipmentChoicesBySource: {},
   maxUnlockedStepIndex: 7,
   pendingChoiceIds: [],
   classSkillProficiencies: ["Athletics", "Perception"],

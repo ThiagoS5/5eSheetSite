@@ -84,6 +84,9 @@ export function BuilderStepPanel({
   const selectedClass = classes.find(
     (entry) => entry.id === characterState.selectedClassId,
   );
+  const selectedBackground = backgrounds.find(
+    (entry) => entry.id === characterState.selectedBackgroundId,
+  );
   const selectedSpecies = species.find(
     (entry) => entry.id === characterState.selectedSpeciesId,
   );
@@ -198,9 +201,12 @@ export function BuilderStepPanel({
         <EquipmentChecklist
           equipment={equipment}
           selectedClass={selectedClass}
-          acquisitionMode={characterState.equipmentAcquisitionMode}
+          selectedBackground={selectedBackground}
+          selectedSpecies={selectedSpecies}
+          choicesBySource={characterState.equipmentChoicesBySource}
           selectedEquipmentIds={characterState.selectedEquipmentIds}
-          onAcquisitionModeChange={actions.setEquipmentAcquisitionMode}
+          onSourceModeChange={actions.setEquipmentSourceMode}
+          onSourceOptionChange={actions.setEquipmentSourceOption}
           onToggleEquipment={actions.toggleEquipment}
         />
       ) : null}
@@ -1828,8 +1834,8 @@ function useCharacterBuilderState(): CharacterBuilderState {
   const selectedEquipmentIds = useCharacterStore(
     (state) => state.selectedEquipmentIds,
   );
-  const equipmentAcquisitionMode = useCharacterStore(
-    (state) => state.equipmentAcquisitionMode,
+  const equipmentChoicesBySource = useCharacterStore(
+    (state) => state.equipmentChoicesBySource,
   );
   const maxUnlockedStepIndex = useCharacterStore(
     (state) => state.maxUnlockedStepIndex,
@@ -1861,7 +1867,7 @@ function useCharacterBuilderState(): CharacterBuilderState {
       selectedClassId,
       selectedBackgroundId,
       selectedEquipmentIds,
-      equipmentAcquisitionMode,
+      equipmentChoicesBySource,
       maxUnlockedStepIndex,
       pendingChoiceIds,
       classSkillProficiencies,
@@ -1881,7 +1887,7 @@ function useCharacterBuilderState(): CharacterBuilderState {
       selectedClassId,
       selectedBackgroundId,
       selectedEquipmentIds,
-      equipmentAcquisitionMode,
+      equipmentChoicesBySource,
       maxUnlockedStepIndex,
       pendingChoiceIds,
       classSkillProficiencies,
@@ -1903,8 +1909,11 @@ function useCharacterBuilderActions() {
     selectClass: useCharacterStore((state) => state.selectClass),
     selectBackground: useCharacterStore((state) => state.selectBackground),
     toggleEquipment: useCharacterStore((state) => state.toggleEquipment),
-    setEquipmentAcquisitionMode: useCharacterStore(
-      (state) => state.setEquipmentAcquisitionMode,
+    setEquipmentSourceMode: useCharacterStore(
+      (state) => state.setEquipmentSourceMode,
+    ),
+    setEquipmentSourceOption: useCharacterStore(
+      (state) => state.setEquipmentSourceOption,
     ),
     unlockStep: useCharacterStore((state) => state.unlockStep),
     commitCurrentBuild: useCharacterStore((state) => state.commitCurrentBuild),
