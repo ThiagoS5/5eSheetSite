@@ -47,7 +47,7 @@ describe("createCharacterStore persistence", () => {
           selectedClassId: "fighter-xphb",
           selectedBackgroundId: "acolyte-xphb",
           selectedEquipmentIds: ["chain-mail-xphb"],
-          equipmentAcquisitionMode: "items",
+          equipmentChoicesBySource: {},
           maxUnlockedStepIndex: 4,
           pendingChoiceIds: [],
           classSkillProficiencies: ["Athletics", "Perception"],
@@ -90,7 +90,7 @@ describe("createCharacterStore persistence", () => {
           description: expect.objectContaining({ nome: "Migrated Hero" }),
         },
         exportMetadata: {
-          schemaVersion: 1,
+          schemaVersion: 2,
           saveId: expect.any(String),
         },
       },
