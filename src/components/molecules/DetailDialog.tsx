@@ -33,7 +33,7 @@ export function DetailDialog({
       </Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 grid place-items-center overflow-y-auto bg-black/70 p-4 backdrop-blur-sm">
-          <Dialog.Content className="relative max-h-[88vh] w-full max-w-4xl overflow-y-auto rounded-lg border border-[#c41e1e]/50 bg-[#12131a] p-6 text-[#e8e9f0] shadow-2xl shadow-black/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#c41e1e]/70">
+          <Dialog.Content className="relative max-h-[90dvh] w-[calc(100vw-2rem)] overflow-x-hidden overflow-y-auto rounded-lg border border-[#c41e1e]/50 bg-[#12131a] p-4 text-[#e8e9f0] shadow-2xl shadow-black/50 outline-none focus-visible:ring-2 focus-visible:ring-[#c41e1e]/70 sm:max-w-2xl sm:p-6 lg:max-w-4xl">
             <Dialog.Title className="font-serif text-2xl font-bold text-white">
               {title}
             </Dialog.Title>
