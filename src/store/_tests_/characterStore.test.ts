@@ -34,7 +34,7 @@ describe("createCharacterStore", () => {
           selectedBackgroundId: "",
         },
         exportMetadata: {
-          schemaVersion: 2,
+          schemaVersion: 3,
           saveId: expect.any(String),
           createdAt: expect.any(String),
           updatedAt: expect.any(String),
@@ -105,14 +105,25 @@ describe("createCharacterStore", () => {
     });
   });
 
-  it("toggles selected equipment without duplicates", () => {
+  it("adds inventory items and increments quantity on repeat", () => {
     const store = createCharacterStore();
-
-    store.getState().toggleEquipment("chain-mail-xphb");
-    store.getState().toggleEquipment("chain-mail-xphb");
-
-    expect(store.getState().selectedEquipmentIds).toStrictEqual([]);
-    expect(store.getState().characterBuild.draft.selectedEquipmentIds).toStrictEqual([]);
+    store.getState().addInventoryItem("chain-mail-xphb");
+    store.getState().addInventoryItem("chain-mail-xphb");
+    expect(store.getState().inventory).toStrictEqual([{ itemId: "chain-mail-xphb", quantity: 2 }]);
+  });
+  it("sets and clamps quantity, removing at zero", () => {
+    const store = createCharacterStore();
+    store.getState().addInventoryItem("rope-xphb");
+    store.getState().setInventoryQuantity("rope-xphb", 5);
+    expect(store.getState().inventory).toStrictEqual([{ itemId: "rope-xphb", quantity: 5 }]);
+    store.getState().setInventoryQuantity("rope-xphb", 0);
+    expect(store.getState().inventory).toStrictEqual([]);
+  });
+  it("removes an inventory entry", () => {
+    const store = createCharacterStore();
+    store.getState().addInventoryItem("rope-xphb");
+    store.getState().removeInventoryItem("rope-xphb");
+    expect(store.getState().inventory).toStrictEqual([]);
   });
 
   it("defaults equipmentChoicesBySource to an empty object", () => {

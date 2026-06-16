@@ -69,12 +69,31 @@ export function createCharacterStore(
               : {},
         }),
       ),
-    toggleEquipment: (equipmentId) =>
+    addInventoryItem: (itemId) =>
+      set((state) => {
+        const existing = state.inventory.find((entry) => entry.itemId === itemId);
+        const inventory = existing
+          ? state.inventory.map((entry) =>
+              entry.itemId === itemId ? { ...entry, quantity: entry.quantity + 1 } : entry,
+            )
+          : [...state.inventory, { itemId, quantity: 1 }];
+        return patchCharacterState(state, { inventory });
+      }),
+    setInventoryQuantity: (itemId, quantity) =>
       set((state) =>
         patchCharacterState(state, {
-          selectedEquipmentIds: state.selectedEquipmentIds.includes(equipmentId)
-            ? state.selectedEquipmentIds.filter((id) => id !== equipmentId)
-            : [...state.selectedEquipmentIds, equipmentId],
+          inventory:
+            quantity <= 0
+              ? state.inventory.filter((entry) => entry.itemId !== itemId)
+              : state.inventory.map((entry) =>
+                  entry.itemId === itemId ? { ...entry, quantity } : entry,
+                ),
+        }),
+      ),
+    removeInventoryItem: (itemId) =>
+      set((state) =>
+        patchCharacterState(state, {
+          inventory: state.inventory.filter((entry) => entry.itemId !== itemId),
         }),
       ),
     setEquipmentSourceMode: (source, mode) =>
@@ -355,7 +374,7 @@ function extractFlatState(state: FlatCharacterBuilderState): FlatCharacterBuilde
     selectedSpeciesId: state.selectedSpeciesId,
     selectedClassId: state.selectedClassId,
     selectedBackgroundId: state.selectedBackgroundId,
-    selectedEquipmentIds: [...state.selectedEquipmentIds],
+    inventory: state.inventory.map((entry) => ({ ...entry })),
     equipmentChoicesBySource: { ...state.equipmentChoicesBySource },
     maxUnlockedStepIndex: state.maxUnlockedStepIndex,
     pendingChoiceIds: [...state.pendingChoiceIds],

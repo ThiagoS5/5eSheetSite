@@ -9,6 +9,7 @@ import {
   type CharacterBuild,
   type EquipmentAcquisitionMode,
   type EquipmentChoicesBySource,
+  type InventoryEntry,
 } from "@/src/types/characterBuild";
 import type {
   BuilderStepSlug,
@@ -149,6 +150,13 @@ function legacyEquipmentChoices(
   return { class: { mode: legacyMode, selectedOptionId: null } };
 }
 
+function legacyInventory(
+  draft?: Partial<CharacterBuild["draft"]>,
+): InventoryEntry[] | undefined {
+  const legacyIds = (draft as { selectedEquipmentIds?: string[] } | undefined)?.selectedEquipmentIds;
+  return legacyIds?.map((itemId) => ({ itemId, quantity: 1 }));
+}
+
 export function flattenCharacterBuild(
   build?: Partial<CharacterBuild>,
 ): Partial<FlatCharacterBuilderState> {
@@ -162,7 +170,7 @@ export function flattenCharacterBuild(
     selectedSpeciesId: build.choices?.selectedSpeciesId,
     selectedClassId: build.choices?.selectedClassId,
     selectedBackgroundId: build.choices?.selectedBackgroundId,
-    selectedEquipmentIds: build.draft?.selectedEquipmentIds,
+    inventory: build.draft?.inventory ?? legacyInventory(build.draft),
     equipmentChoicesBySource:
       build.draft?.equipmentChoicesBySource ?? legacyEquipmentChoices(build.draft),
     maxUnlockedStepIndex: build.draft?.maxUnlockedStepIndex,
@@ -204,7 +212,7 @@ export function getDefaultFlatState(): FlatCharacterBuilderState {
     selectedSpeciesId: "",
     selectedClassId: "",
     selectedBackgroundId: "",
-    selectedEquipmentIds: [],
+    inventory: [],
     equipmentChoicesBySource: {},
     maxUnlockedStepIndex: 0,
     pendingChoiceIds: [],
@@ -271,7 +279,7 @@ function createBuildFromFlatState(
       currentStepSlug: metadata.currentStepSlug,
       maxUnlockedStepIndex: normalizedState.maxUnlockedStepIndex,
       pendingChoiceIds: normalizedState.pendingChoiceIds,
-      selectedEquipmentIds: normalizedState.selectedEquipmentIds,
+      inventory: normalizedState.inventory,
       equipmentChoicesBySource: normalizedState.equipmentChoicesBySource,
       description: normalizedState.description,
     },
@@ -320,8 +328,7 @@ function normalizeFlatState(
     selectedClassId: state.selectedClassId ?? defaults.selectedClassId,
     selectedBackgroundId:
       state.selectedBackgroundId ?? defaults.selectedBackgroundId,
-    selectedEquipmentIds:
-      state.selectedEquipmentIds ?? defaults.selectedEquipmentIds,
+    inventory: state.inventory ?? defaults.inventory,
     equipmentChoicesBySource:
       state.equipmentChoicesBySource ?? defaults.equipmentChoicesBySource,
     maxUnlockedStepIndex:

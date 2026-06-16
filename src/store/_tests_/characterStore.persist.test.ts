@@ -37,10 +37,8 @@ describe("createCharacterStore persistence", () => {
   });
 
   it("migrates legacy flat sessionStorage state into the canonical build", () => {
-    // Seed a v1-era save: a characterBuild whose draft has the old global
-    // `equipmentAcquisitionMode` field and NO `equipmentChoicesBySource`.
-    // The store partializes only { characterBuild }, so the persisted object mirrors
-    // that shape. The migration must map the legacy mode onto the class source.
+    // Seed a v2-era save: a characterBuild whose draft has the old `selectedEquipmentIds`
+    // array and NO `inventory` field. The migration must map each id to { itemId, quantity: 1 }.
     sessionStorage.setItem(
       "ficha-5e-builder",
       JSON.stringify({
@@ -51,8 +49,9 @@ describe("createCharacterStore persistence", () => {
               maxUnlockedStepIndex: 4,
               pendingChoiceIds: [],
               selectedEquipmentIds: ["chain-mail-xphb"],
-              // v1 shape: single global mode, no equipmentChoicesBySource
-              equipmentAcquisitionMode: "gold",
+              equipmentChoicesBySource: {
+                class: { mode: "gold", selectedOptionId: null },
+              },
               description: { nome: "Migrated Hero" },
             },
             progression: {
@@ -83,14 +82,14 @@ describe("createCharacterStore persistence", () => {
               backgroundAbilityBonuses: { inteligencia: 2, sabedoria: 1 },
             },
             exportMetadata: {
-              schemaVersion: 1,
+              schemaVersion: 2,
               saveId: "legacy-save-id",
               createdAt: "2024-01-01T00:00:00.000Z",
               updatedAt: "2024-01-01T00:00:00.000Z",
             },
           },
         },
-        version: 1,
+        version: 2,
       }),
     );
 
@@ -99,6 +98,7 @@ describe("createCharacterStore persistence", () => {
     expect(store.getState()).toMatchObject({
       level: 3,
       selectedClassId: "fighter-xphb",
+      inventory: [{ itemId: "chain-mail-xphb", quantity: 1 }],
       characterBuild: {
         progression: { level: 3 },
         choices: {
@@ -111,13 +111,14 @@ describe("createCharacterStore persistence", () => {
           currentStepSlug: "detalhes-especie",
           maxUnlockedStepIndex: 4,
           description: expect.objectContaining({ nome: "Migrated Hero" }),
-          // v1→v2 migration: legacy global "gold" mode must be mapped to the class source
+          // v2→v3 migration: legacy selectedEquipmentIds must be mapped to inventory
+          inventory: [{ itemId: "chain-mail-xphb", quantity: 1 }],
           equipmentChoicesBySource: {
             class: { mode: "gold", selectedOptionId: null },
           },
         },
         exportMetadata: {
-          schemaVersion: 2,
+          schemaVersion: 3,
           saveId: expect.any(String),
         },
       },

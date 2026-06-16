@@ -33,7 +33,8 @@ export function selectCharacterSheetSummary(
           (entry) => entry.id === classChoice.selectedOptionId,
         )?.items ?? []).map((item) => item.id)
       : [];
-  const equipmentIds = new Set([...state.selectedEquipmentIds, ...classKitItemIds]);
+  const inventoryItemIds = state.inventory.map((entry) => entry.itemId);
+  const equipmentIds = new Set([...inventoryItemIds, ...classKitItemIds]);
   const selectedEquipment = getBuilderEquipmentOptions().filter((equipment) =>
     equipmentIds.has(equipment.id),
   );

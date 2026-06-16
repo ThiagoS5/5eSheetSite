@@ -5,6 +5,7 @@ import type {
   EquipmentAcquisitionMode,
   EquipmentChoicesBySource,
   EquipmentSourceKey,
+  InventoryEntry,
   SkillTrainingLevel,
 } from "@/src/types/characterBuild";
 import type {
@@ -18,6 +19,7 @@ export type {
   EquipmentAcquisitionMode,
   EquipmentChoicesBySource,
   EquipmentSourceKey,
+  InventoryEntry,
   SkillTrainingLevel,
 } from "@/src/types/characterBuild";
 
@@ -27,7 +29,7 @@ export interface FlatCharacterBuilderState {
   selectedSpeciesId: string;
   selectedClassId: string;
   selectedBackgroundId: string;
-  selectedEquipmentIds: string[];
+  inventory: InventoryEntry[];
   equipmentChoicesBySource: EquipmentChoicesBySource;
   maxUnlockedStepIndex: number;
   pendingChoiceIds: string[];
@@ -51,7 +53,9 @@ export interface CharacterBuilderActions {
   selectSpecies: (speciesId: string) => void;
   selectClass: (classId: string) => void;
   selectBackground: (backgroundId: string) => void;
-  toggleEquipment: (equipmentId: string) => void;
+  addInventoryItem: (itemId: string) => void;
+  setInventoryQuantity: (itemId: string, quantity: number) => void;
+  removeInventoryItem: (itemId: string) => void;
   setEquipmentSourceMode: (
     source: EquipmentSourceKey,
     mode: EquipmentAcquisitionMode,
