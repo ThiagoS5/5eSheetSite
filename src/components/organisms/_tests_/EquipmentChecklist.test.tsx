@@ -5,7 +5,7 @@ import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { EquipmentChecklist } from "@/src/components/organisms/EquipmentChecklist";
-import type { BuilderClass } from "@/types/builder";
+import type { BuilderClass, BuilderBackground } from "@/types/builder";
 
 const selectedClass: BuilderClass = {
   id: "rogue-xphb",
@@ -41,6 +41,7 @@ const selectedClass: BuilderClass = {
       items: [
         { id: "studded-leather-armor-xphb", label: "Studded Leather Armor", quantity: 1 },
         { id: "dagger-xphb", label: "Dagger", quantity: 1 },
+        { id: "gold-2", label: "Gold", quantity: 1, value: 1500 },
       ],
     },
   ],
@@ -69,6 +70,42 @@ describe("EquipmentChecklist", () => {
     expect(screen.queryByRole("button", { name: /Option A/i })).toBeNull();
   });
 
+  it("only renders items from the selected kit when selectedOptionId is set", () => {
+    const classWithTwoKits: BuilderClass = {
+      ...selectedClass,
+      startingEquipmentPackages: [
+        {
+          id: "A",
+          label: "Option A",
+          summary: "Studded Leather Armor, Dagger, Thieves' Tools",
+          goldValue: 0,
+          items: [
+            { id: "studded-leather-armor-xphb", label: "Studded Leather Armor", quantity: 1 },
+          ],
+        },
+        {
+          id: "B",
+          label: "Option B",
+          summary: "Chain Mail, Longsword",
+          goldValue: 0,
+          items: [{ id: "chain-mail-xphb", label: "Chain Mail", quantity: 1 }],
+        },
+      ],
+    };
+
+    render(
+      <EquipmentChecklist
+        selectedClass={classWithTwoKits}
+        choicesBySource={{ class: { mode: "items", selectedOptionId: "A" } }}
+        onSourceModeChange={vi.fn()}
+        onSourceOptionChange={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByText("Studded Leather Armor")).toBeInTheDocument();
+    expect(screen.queryByText("Chain Mail")).toBeNull();
+  });
+
   it("clicking Itens Oferecidos tab calls both onSourceModeChange and onSourceOptionChange with first kit", () => {
     const onSourceModeChange = vi.fn();
     const onSourceOptionChange = vi.fn();
@@ -85,5 +122,76 @@ describe("EquipmentChecklist", () => {
 
     expect(onSourceModeChange).toHaveBeenCalledWith("class", "items");
     expect(onSourceOptionChange).toHaveBeenCalledWith("class", "A");
+  });
+
+  it("renders a gold-value item as 'X GP' instead of quantity and label", () => {
+    render(
+      <EquipmentChecklist
+        selectedClass={selectedClass}
+        choicesBySource={{ class: { mode: "items", selectedOptionId: "A" } }}
+        onSourceModeChange={vi.fn()}
+        onSourceOptionChange={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByText("15 GP")).toBeInTheDocument();
+    expect(screen.queryByText("Gold")).toBeNull();
+  });
+
+  const selectedBackground: BuilderBackground = {
+    id: "aberrant-heir-xphb",
+    name: "Aberrant Heir",
+    source: "XPHB",
+    ruleset: "2024",
+    summary: "Aberrant Heir background.",
+    description: "Aberrant Heir description.",
+    descriptionBlocks: [],
+    abilityOptions: [],
+    originFeat: "",
+    skillProficiencies: [],
+    toolProficiencies: [],
+    languageChoiceCount: 0,
+    equipmentSummary: "Choose A or B: (A) Dagger, 16 GP; or (B) 50 GP",
+    equipmentGold: "50 GP",
+    equipmentItemsA: [
+      { id: "dagger-xphb", label: "Dagger", quantity: 1 },
+      { id: "gold-4", label: "Gold", quantity: 1, value: 1600 },
+    ],
+    rewardSummary: [],
+    detail: "",
+  };
+
+  it("renders background items from equipmentItemsA as a structured list", () => {
+    render(
+      <EquipmentChecklist
+        selectedBackground={selectedBackground}
+        choicesBySource={{ background: { mode: "items", selectedOptionId: "background-kit" } }}
+        onSourceModeChange={vi.fn()}
+        onSourceOptionChange={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByText("EQUIPAMENTO DO ANTECEDENTE")).toBeInTheDocument();
+    expect(screen.getByText("Dagger")).toBeInTheDocument();
+    expect(screen.getByText("16 GP")).toBeInTheDocument();
+    expect(screen.queryByText(/Choose A or B/)).toBeNull();
+  });
+
+  it("falls back to equipmentSummary text for backgrounds without equipmentItemsA", () => {
+    const bgNoItems: BuilderBackground = {
+      ...selectedBackground,
+      equipmentItemsA: undefined,
+    };
+
+    render(
+      <EquipmentChecklist
+        selectedBackground={bgNoItems}
+        choicesBySource={{ background: { mode: "items", selectedOptionId: "background-kit" } }}
+        onSourceModeChange={vi.fn()}
+        onSourceOptionChange={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByText(/Choose A or B/)).toBeInTheDocument();
   });
 });

@@ -60,8 +60,6 @@ function buildEquipmentSources(
   }
 
   if (selectedBackground?.equipmentSummary) {
-    // Background equipment has no structured item data yet — this block is presentational
-    // only; the selector currently resolves real items from the class source.
     sources.push({
       key: "background",
       heading: "EQUIPAMENTO DO ANTECEDENTE",
@@ -70,7 +68,7 @@ function buildEquipmentSources(
           id: "background-kit",
           label: "Itens do Antecedente",
           summary: selectedBackground.equipmentSummary,
-          items: [],
+          items: selectedBackground.equipmentItemsA ?? [],
         },
       ],
       goldLabel: selectedBackground.equipmentGold ?? "Ouro do antecedente",
@@ -136,14 +134,22 @@ export function EquipmentChecklist({
 
               {mode === "items" ? (
                 <div className="rounded-md border border-white/10 p-3">
-                  {source.kits.map((kit) => (
+                  {source.kits
+                    .filter((kit) => !choice?.selectedOptionId || kit.id === choice.selectedOptionId)
+                    .map((kit) => (
                     <div key={kit.id}>
                       {kit.items.length > 0 ? (
                         <ul className="grid gap-1 text-sm text-[#b0b5cc]">
                           {kit.items.map((item) => (
                             <li key={item.id} className="flex gap-2">
-                              <span className="font-semibold text-white">{item.quantity}×</span>
-                              <span>{item.label}</span>
+                              {item.value !== undefined ? (
+                                <span className="text-white">{item.value / 100} GP</span>
+                              ) : (
+                                <>
+                                  <span className="font-semibold text-white">{item.quantity}×</span>
+                                  <span>{item.label}</span>
+                                </>
+                              )}
                             </li>
                           ))}
                         </ul>
