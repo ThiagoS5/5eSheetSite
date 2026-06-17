@@ -48,7 +48,7 @@ import {
   AccordionTrigger,
 } from "@/src/components/ui/accordion";
 import { AttributeEditor } from "@/src/components/organisms/AttributeEditor";
-import { DescriptionFields } from "@/src/components/organisms/DescriptionFields";
+import { PersonalDetailsEditor } from "@/src/components/organisms/PersonalDetailsEditor";
 import { EquipmentChecklist } from "@/src/components/organisms/EquipmentChecklist";
 import { InventoryManager } from "@/src/components/organisms/InventoryManager";
 import { builderStepNavigation } from "@/src/components/templates/builderStepNavigation";
@@ -221,12 +221,7 @@ export function BuilderStepPanel({
         </>
       ) : null}
 
-      {step === "descricao" ? (
-        <DescriptionFields
-          description={characterState.description}
-          onFieldChange={actions.setDescriptionField}
-        />
-      ) : null}
+      {step === "descricao" ? <PersonalDetailsEditor /> : null}
 
       {step === "conclusao" ? <SummaryTemplate /> : null}
 
