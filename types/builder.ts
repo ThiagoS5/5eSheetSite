@@ -213,7 +213,51 @@ export interface CharacterDescription {
   notas: string;
 }
 
+export interface SheetAttribute {
+  key: AttributeKey;
+  label: string;   // "Força"
+  abbr: string;    // "FOR"
+  score: number;
+  modifier: number;
+}
+
+export interface SheetSkill {
+  name: string;          // "Acrobatics" (canonical key for lookups)
+  label: string;         // "Acrobacia" (display, Portuguese)
+  attributeKey: AttributeKey;
+  modifier: number;
+  isProficient: boolean;
+  isExpert: boolean;
+}
+
+export interface SheetSavingThrow {
+  attributeKey: AttributeKey;
+  label: string;         // "Força"
+  abbr: string;          // "FOR"
+  modifier: number;
+  isProficient: boolean;
+}
+
+export interface SheetSense {
+  name: string;
+  rangeFeet?: number;
+}
+
+export interface SheetFeature {
+  name: string;
+  description: string;
+  source: "class" | "species" | "background";
+}
+
+export interface SheetWeapon {
+  name: string;
+  attackBonus: string;  // "+5" or "—"
+  damage: string;       // "1d6+3 Cortante"
+  notes: string;        // "Versátil (1d8)"
+}
+
 export interface CharacterSheetSummary {
+  // — existing fields (unchanged) —
   ruleset: Ruleset;
   level: number;
   speciesId: string;
@@ -235,4 +279,26 @@ export interface CharacterSheetSummary {
   speciesChoices: Record<string, string>;
   speciesLanguages: string[];
   validationMessages: string[];
+
+  // — new fields —
+  name: string;
+  className: string;
+  speciesName: string;
+  backgroundName: string;
+  currentHp: number;
+  tempHp: number;
+  initiative: number;
+  speedFeet: number;
+  isSpellcaster: boolean;
+  attributes: SheetAttribute[];
+  skills: SheetSkill[];
+  savingThrows: SheetSavingThrow[];
+  passives: { perception: number; investigation: number; insight: number };
+  senses: SheetSense[];
+  languages: string[];
+  resistances: string[];
+  immunities: string[];
+  vulnerabilities: string[];
+  features: SheetFeature[];
+  weapons: SheetWeapon[];
 }
