@@ -13,19 +13,19 @@ export function AttributeBlock({ attribute }: AttributeBlockProps) {
 
   return (
     <StatFrame width={88} height={108} accentColor="#e61c23">
-      <span className="select-none text-[9px] font-semibold uppercase tracking-widest text-[#7a7e99]">
+      <span className="select-none text-[9px] font-semibold uppercase tracking-widest text-muted-foreground">
         {attribute.abbr}
       </span>
       <span
         className={cn(
           "font-serif text-2xl font-bold leading-none",
-          isNegative ? "text-[#7a7e99]" : "text-white",
+          isNegative ? "text-muted-foreground" : "text-foreground",
         )}
       >
         {modifierStr}
       </span>
-      <div className="flex h-5 w-10 items-center justify-center rounded-full border border-white/10 bg-[#0a0b10]">
-        <span className="text-[11px] leading-none text-[#7a7e99]">{attribute.score}</span>
+      <div className="flex h-5 w-10 items-center justify-center rounded-full border border-border bg-background">
+        <span className="text-[11px] leading-none text-muted-foreground">{attribute.score}</span>
       </div>
     </StatFrame>
   );

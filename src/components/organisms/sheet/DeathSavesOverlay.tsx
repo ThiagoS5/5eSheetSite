@@ -20,13 +20,13 @@ export function DeathSavesOverlay({ onReset }: DeathSavesOverlayProps) {
   }
 
   return (
-    <div className="rounded-lg border border-[#e61c23]/50 bg-[#e61c23]/5 p-3">
-      <p className="mb-2 text-[0.65rem] uppercase tracking-widest text-[#7a7e99]">
+    <div className="rounded-lg border border-primary/50 bg-primary/5 p-3">
+      <p className="mb-2 text-[0.65rem] uppercase tracking-widest text-muted-foreground">
         Testes de Morte
       </p>
       <div className="flex gap-4">
         <div className="flex flex-col gap-1">
-          <span className="text-[10px] text-[#b0b5cc]">Sucessos</span>
+          <span className="text-[10px] text-subdued">Sucessos</span>
           <div className="flex gap-1.5">
             {[0, 1, 2].map((i) => (
               <button
@@ -37,7 +37,7 @@ export function DeathSavesOverlay({ onReset }: DeathSavesOverlayProps) {
                 className={cn(
                   "h-5 w-5 rounded-full border transition-colors",
                   successes > i
-                    ? "border-[#4ade80] bg-[#4ade80]/20"
+                    ? "border-brand-green bg-brand-green/20"
                     : "border-white/30",
                 )}
               />
@@ -45,7 +45,7 @@ export function DeathSavesOverlay({ onReset }: DeathSavesOverlayProps) {
           </div>
         </div>
         <div className="flex flex-col gap-1">
-          <span className="text-[10px] text-[#b0b5cc]">Falhas</span>
+          <span className="text-[10px] text-subdued">Falhas</span>
           <div className="flex gap-1.5">
             {[0, 1, 2].map((i) => (
               <button
@@ -56,7 +56,7 @@ export function DeathSavesOverlay({ onReset }: DeathSavesOverlayProps) {
                 className={cn(
                   "h-5 w-5 rounded-full border transition-colors",
                   failures > i
-                    ? "border-[#e61c23] bg-[#e61c23]/20"
+                    ? "border-primary bg-primary/20"
                     : "border-white/30",
                 )}
               />
@@ -67,7 +67,7 @@ export function DeathSavesOverlay({ onReset }: DeathSavesOverlayProps) {
           <button
             type="button"
             onClick={onReset}
-            className="ml-auto self-end text-[10px] text-[#7a7e99] underline"
+            className="ml-auto self-end text-[10px] text-muted-foreground underline"
           >
             Resetar
           </button>

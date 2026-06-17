@@ -31,18 +31,18 @@ export function SkillsColumn({ summary }: SkillsColumnProps) {
     <section aria-labelledby="skills-col-title" className="flex flex-col gap-3">
       <h2
         id="skills-col-title"
-        className="flex items-center gap-1.5 text-[0.65rem] font-semibold uppercase tracking-widest text-[#7a7e99]"
+        className="flex items-center gap-1.5 text-[0.65rem] font-semibold uppercase tracking-widest text-muted-foreground"
       >
         <i aria-hidden="true" className="fa-solid fa-list-check" />
         Salvaguardas & Perícias
       </h2>
 
-      <div className="rounded-lg border border-white/[0.08] bg-[#1c1e2a] px-3 py-2">
+      <div className="rounded-lg border border-white/[0.08] bg-card px-3 py-2">
         {ATTRIBUTE_ORDER.map((key) => {
           const save = summary.savingThrows.find((s) => s.attributeKey === key);
           const skills = skillsByAttr[key] ?? [];
           return (
-            <div key={key} className="border-b border-white/5 py-1.5 last:border-0">
+            <div key={key} className="border-b border-border/50 py-1.5 last:border-0">
               {/* Saving throw row */}
               {save && (
                 <div className="flex items-center gap-2 py-0.5">
@@ -50,18 +50,18 @@ export function SkillsColumn({ summary }: SkillsColumnProps) {
                     className={cn(
                       "flex h-3 w-3 shrink-0 items-center justify-center rounded border",
                       save.isProficient
-                        ? "border-[#e61c23] bg-[#e61c23]/20"
+                        ? "border-primary bg-primary/20"
                         : "border-white/30",
                     )}
                   >
                     {save.isProficient && (
-                      <div className="h-1.5 w-1.5 rounded-sm bg-[#e61c23]" />
+                      <div className="h-1.5 w-1.5 rounded-sm bg-primary" />
                     )}
                   </div>
-                  <span className="min-w-[1.5rem] text-right text-[0.72rem] font-bold text-white">
+                  <span className="min-w-[1.5rem] text-right text-[0.72rem] font-bold text-foreground">
                     {save.modifier >= 0 ? "+" : ""}{save.modifier}
                   </span>
-                  <span className="text-[0.72rem] font-semibold text-[#e8e9f0]">
+                  <span className="text-[0.72rem] font-semibold text-foreground">
                     Salv. {ATTRIBUTE_ABBR[key]}
                   </span>
                 </div>

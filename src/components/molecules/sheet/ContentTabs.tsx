@@ -39,9 +39,9 @@ const FEATURE_SECTIONS: {
   accent: string;
   border: string;
 }[] = [
-  { id: "class",      label: "Features de Classe",  icon: "fa-hat-wizard",   accent: "text-[#e61c23]", border: "border-[#e61c23]/30" },
-  { id: "species",    label: "Traços de Espécie",   icon: "fa-dna",          accent: "text-[#4a9eff]", border: "border-[#4a9eff]/30" },
-  { id: "background", label: "Antecedente",          icon: "fa-book-open",    accent: "text-[#f3c969]", border: "border-[#f3c969]/30" },
+  { id: "class",      label: "Features de Classe",  icon: "fa-hat-wizard",   accent: "text-primary",    border: "border-primary/30" },
+  { id: "species",    label: "Traços de Espécie",   icon: "fa-dna",          accent: "text-brand-blue", border: "border-brand-blue/30" },
+  { id: "background", label: "Antecedente",          icon: "fa-book-open",    accent: "text-accent",     border: "border-accent/30" },
 ];
 
 interface ContentTabsProps {
@@ -61,15 +61,15 @@ export function ContentTabs({ summary }: ContentTabsProps) {
       : summary.features.filter((f) => f.source === actionFilter);
 
   return (
-    <div className="relative flex flex-1 flex-col overflow-hidden rounded-xl border border-white/10 bg-[#1c1e2a]">
+    <div className="relative flex flex-1 flex-col overflow-hidden rounded-xl border border-border bg-card">
       {/* Linha decorativa no topo */}
       <div
         aria-hidden="true"
-        className="absolute left-0 right-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-[#e61c23]/40 to-transparent"
+        className="absolute left-0 right-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-primary/40 to-transparent"
       />
 
       {/* Barra de abas — parte do card */}
-      <div className="border-b border-white/10 bg-[#12131a] px-2 pt-3">
+      <div className="border-b border-border bg-surface-nested px-2 pt-3">
         <div
           role="tablist"
           aria-label="Conteúdo da ficha"
@@ -85,8 +85,8 @@ export function ContentTabs({ summary }: ContentTabsProps) {
               className={cn(
                 "flex shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 px-3 py-2 text-[10px] font-semibold uppercase tracking-widest transition-colors",
                 activeTab === tab.id
-                  ? "border-[#e61c23] text-white"
-                  : "border-transparent text-[#7a7e99] hover:text-white",
+                  ? "border-primary text-foreground"
+                  : "border-transparent text-muted-foreground hover:text-foreground",
               )}
             >
               <i aria-hidden="true" className={`fa-solid ${tab.icon}`} />
@@ -98,7 +98,7 @@ export function ContentTabs({ summary }: ContentTabsProps) {
 
       {/* Sub-filtros — visível apenas na aba AÇÕES */}
       {activeTab === "actions" && (
-        <div className="border-b border-white/5 bg-[#12131a] px-3 py-2">
+        <div className="border-b border-border/50 bg-surface-nested px-3 py-2">
           <div className="flex gap-1.5 overflow-x-auto">
             {ACTION_FILTERS.map((f) => (
               <button
@@ -108,8 +108,8 @@ export function ContentTabs({ summary }: ContentTabsProps) {
                 className={cn(
                   "whitespace-nowrap rounded border px-2.5 py-1 text-[9px] font-semibold uppercase tracking-widest transition-colors",
                   actionFilter === f.id
-                    ? "border-[#e61c23]/30 bg-[#e61c23]/10 text-white"
-                    : "border-transparent text-[#7a7e99] hover:border-white/10 hover:text-white",
+                    ? "border-primary/30 bg-primary/10 text-foreground"
+                    : "border-transparent text-muted-foreground hover:border-border hover:text-foreground",
                 )}
               >
                 {f.label}
@@ -131,16 +131,16 @@ export function ContentTabs({ summary }: ContentTabsProps) {
               ))}
             </div>
           ) : (
-            <p className="text-sm text-[#7a7e99]">Nenhuma ação encontrada.</p>
+            <p className="text-sm text-muted-foreground">Nenhuma ação encontrada.</p>
           )}
         </div>
       )}
 
       {/* MAGIAS */}
       {activeTab === "spells" && (
-        <div className="rounded-lg border border-white/[0.08] bg-[#1c1e2a] p-4 text-center">
-          <i aria-hidden="true" className="fa-solid fa-wand-sparkles mb-2 text-2xl text-[#7a7e99]" />
-          <p className="text-sm font-semibold text-[#b0b5cc]">
+        <div className="rounded-lg border border-white/[0.08] bg-card p-4 text-center">
+          <i aria-hidden="true" className="fa-solid fa-wand-sparkles mb-2 text-2xl text-muted-foreground" />
+          <p className="text-sm font-semibold text-subdued">
             {summary.isSpellcaster ? "Magias serão listadas em breve." : "Este personagem não possui magias."}
           </p>
         </div>
@@ -150,17 +150,17 @@ export function ContentTabs({ summary }: ContentTabsProps) {
       {activeTab === "inventory" && (
         <div>
           {summary.selectedEquipment.length > 0 ? (
-            <ul className="divide-y divide-white/5 rounded-lg border border-white/[0.08] bg-[#1c1e2a] overflow-hidden">
+            <ul className="divide-y divide-white/5 rounded-lg border border-white/[0.08] bg-card overflow-hidden">
               {summary.selectedEquipment.map((item) => (
                 <li
                   key={item.id}
                   className="flex items-center gap-3 px-3 py-2.5"
                 >
-                  <i aria-hidden="true" className="fa-solid fa-circle-dot text-[0.5rem] text-[#7a7e99]" />
-                  <span className="flex-1 text-[0.8rem] text-[#e8e9f0]">{item.name}</span>
+                  <i aria-hidden="true" className="fa-solid fa-circle-dot text-[0.5rem] text-muted-foreground" />
+                  <span className="flex-1 text-[0.8rem] text-foreground">{item.name}</span>
                   <span className={cn(
                     "text-[0.6rem] font-semibold uppercase tracking-widest",
-                    item.sourceType === "class" ? "text-[#e61c23]" : "text-[#7a7e99]",
+                    item.sourceType === "class" ? "text-primary" : "text-muted-foreground",
                   )}>
                     {item.sourceType === "class" ? "Classe" : "Manual"}
                   </span>
@@ -168,7 +168,7 @@ export function ContentTabs({ summary }: ContentTabsProps) {
               ))}
             </ul>
           ) : (
-            <p className="text-sm text-[#7a7e99]">Nenhum equipamento selecionado.</p>
+            <p className="text-sm text-muted-foreground">Nenhum equipamento selecionado.</p>
           )}
         </div>
       )}
@@ -186,8 +186,8 @@ export function ContentTabs({ summary }: ContentTabsProps) {
                 className={cn(
                   "whitespace-nowrap rounded border px-2.5 py-1 text-[0.6rem] font-semibold uppercase tracking-widest transition-colors",
                   featureFilter === f.id
-                    ? "border-[#e61c23]/40 bg-[#e61c23]/10 text-[#e61c23]"
-                    : "border-white/10 text-[#7a7e99] hover:text-[#b0b5cc]",
+                    ? "border-primary/40 bg-primary/10 text-primary"
+                    : "border-border text-muted-foreground hover:text-subdued",
                 )}
               >
                 {f.label}
@@ -196,7 +196,7 @@ export function ContentTabs({ summary }: ContentTabsProps) {
           </div>
 
           {summary.features.length === 0 ? (
-            <p className="text-sm text-[#7a7e99]">Nenhuma característica listada.</p>
+            <p className="text-sm text-muted-foreground">Nenhuma característica listada.</p>
           ) : (
             <div className="flex flex-col gap-6">
               {FEATURE_SECTIONS.filter((sec) =>
@@ -217,11 +217,11 @@ export function ContentTabs({ summary }: ContentTabsProps) {
                     <div className="flex flex-col divide-y divide-white/5">
                       {items.map((feat) => (
                         <div key={feat.name} className="py-3 first:pt-0">
-                          <p className="mb-1 text-[0.85rem] font-semibold text-white">
+                          <p className="mb-1 text-[0.85rem] font-semibold text-foreground">
                             {feat.name}
                           </p>
                           {feat.description && (
-                            <p className="text-[0.75rem] leading-relaxed text-[#b0b5cc]">
+                            <p className="text-[0.75rem] leading-relaxed text-subdued">
                               {feat.description}
                             </p>
                           )}
@@ -245,7 +245,7 @@ export function ContentTabs({ summary }: ContentTabsProps) {
             onChange={(e) => setDescriptionField("notas", e.target.value)}
             rows={8}
             placeholder="Anotações livres, segredos, objetivos…"
-            className="w-full resize-none rounded-lg border border-white/10 bg-[#12131a] px-3 py-2 text-sm text-white placeholder:text-[#7a7e99] outline-none focus:border-[#e61c23] focus:ring-2 focus:ring-[#e61c23]/30"
+            className="w-full resize-none rounded-lg border border-border bg-surface-nested px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/30"
           />
         </div>
       )}

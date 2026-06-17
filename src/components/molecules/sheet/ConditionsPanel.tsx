@@ -24,18 +24,18 @@ export function ConditionsPanel() {
   }
 
   return (
-    <section className="rounded-lg border border-white/[0.08] bg-[#1c1e2a] p-3">
+    <section className="rounded-lg border border-white/[0.08] bg-card p-3">
       <div className="mb-2 flex items-center justify-between">
         <div className="flex items-center gap-1.5">
-          <i aria-hidden="true" className="fa-solid fa-circle-exclamation text-[#7a7e99] text-[0.6rem]" />
-          <p className="text-[0.6rem] font-semibold uppercase tracking-widest text-[#7a7e99]">
+          <i aria-hidden="true" className="fa-solid fa-circle-exclamation text-muted-foreground text-[0.6rem]" />
+          <p className="text-[0.6rem] font-semibold uppercase tracking-widest text-muted-foreground">
             Condições
           </p>
         </div>
         <button
           type="button"
           onClick={() => setExpanded((v) => !v)}
-          className="text-[0.6rem] text-[#e61c23] hover:underline"
+          className="text-[0.6rem] text-primary hover:underline"
         >
           {expanded ? "Fechar" : "+ Adicionar"}
         </button>
@@ -49,7 +49,7 @@ export function ConditionsPanel() {
               key={name}
               type="button"
               onClick={() => toggle(name)}
-              className="flex items-center gap-1 rounded border border-[#e61c23]/40 bg-[#e61c23]/10 px-1.5 py-0.5 text-[0.65rem] text-[#e61c23]"
+              className="flex items-center gap-1 rounded border border-primary/40 bg-primary/10 px-1.5 py-0.5 text-[0.65rem] text-primary"
             >
               {name}
               <i aria-hidden="true" className="fa-solid fa-xmark text-[0.55rem]" />
@@ -59,7 +59,7 @@ export function ConditionsPanel() {
       )}
 
       {active.size === 0 && !expanded && (
-        <p className="text-[0.72rem] text-[#7a7e99]">Nenhuma condição ativa.</p>
+        <p className="text-[0.72rem] text-muted-foreground">Nenhuma condição ativa.</p>
       )}
 
       {/* Condition picker */}
@@ -73,8 +73,8 @@ export function ConditionsPanel() {
               className={cn(
                 "rounded border px-1.5 py-0.5 text-[0.65rem] transition-colors",
                 active.has(name)
-                  ? "border-[#e61c23]/40 bg-[#e61c23]/10 text-[#e61c23]"
-                  : "border-white/20 text-[#b0b5cc] hover:border-white/40",
+                  ? "border-primary/40 bg-primary/10 text-primary"
+                  : "border-white/20 text-subdued hover:border-white/40",
               )}
             >
               {name}
