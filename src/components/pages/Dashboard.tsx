@@ -26,6 +26,7 @@ import { useCharacterStore } from "@/src/store/useCharacterStore";
 import type { Character } from "@/types/Character";
 
 const builderStartHref = "/builder/classe";
+const sheetHref = "/sheet";
 const emptyCharactersSnapshot: readonly Character[] = [];
 const logoUrl =
   "https://lh3.googleusercontent.com/aida/AP1WRLs6nBKMZFXZPQWc3Dz44sd79kupXgFWy3_yGtyD_0pCoeQxNVqB_QUwSfqIpLA1hl-IVPXhnNf5ilC7E2rHE77Byl-_k6fE1pWeVQ34b3ewaoU9cNIx7DA-qNPTeftY3LpW8BX4__-HMQIu3eMmr335p7fBUXDeifo1qzI8SfHC96x6ONDvLU926xzzi2pHr4IYop0-hizeYiiLJ-KpoI-7yuXhvXl1jakw-iUuIWMbzYR2Fc440hKXTyw";
@@ -59,6 +60,15 @@ export function Dashboard() {
     router.push(character.currentStepHref ?? builderStartHref);
   }
 
+  function viewCharacter(character: Character) {
+    void getCharacter(character.id).then((build) => {
+      if (build) {
+        loadCharacterBuild(build);
+        router.push(sheetHref);
+      }
+    });
+  }
+
   return (
     <div className="min-h-screen overflow-x-hidden bg-[#0a0b10] text-[#e8e9f0] selection:bg-[#e61c23] selection:text-white">
       <DashboardTopNav />
@@ -68,6 +78,7 @@ export function Dashboard() {
             characters={characters}
             onCreate={goToBuilder}
             onContinue={continueCharacter}
+            onView={viewCharacter}
           />
         ) : (
           <EmptyState onCreate={goToBuilder} />
@@ -188,10 +199,12 @@ function PopulatedState({
   characters,
   onCreate,
   onContinue,
+  onView,
 }: {
   characters: readonly Character[];
   onCreate: () => void;
   onContinue: (character: Character) => void;
+  onView: (character: Character) => void;
 }) {
   return (
     <section id="populated-state" aria-labelledby="dashboard-title">
@@ -235,6 +248,7 @@ function PopulatedState({
             key={character.id}
             character={character}
             onContinue={() => onContinue(character)}
+            onView={() => onView(character)}
           />
         ))}
       </div>
@@ -245,9 +259,11 @@ function PopulatedState({
 function DashboardCharacterCard({
   character,
   onContinue,
+  onView,
 }: {
   character: Character;
   onContinue: () => void;
+  onView: () => void;
 }) {
   return (
     <article className="glass-card parchment-grain flex min-h-[280px] flex-col justify-between rounded-xl p-6">
@@ -288,6 +304,7 @@ function DashboardCharacterCard({
         </button>
         <button
           type="button"
+          onClick={onView}
           aria-label={`Ver ${character.nome}`}
           className="rounded-lg border border-white/[0.08] px-3 py-2 text-[#b0b5cc] outline-none transition-all hover:border-[#e61c23]/60 hover:bg-white/[0.04] hover:text-white active:scale-95 focus-visible:ring-2 focus-visible:ring-[#e61c23]"
         >

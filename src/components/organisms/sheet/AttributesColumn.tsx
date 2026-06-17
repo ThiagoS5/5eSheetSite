@@ -7,14 +7,18 @@ interface AttributesColumnProps {
 
 export function AttributesColumn({ summary }: AttributesColumnProps) {
   return (
-    <section aria-labelledby="attrs-col-title" className="flex flex-col gap-2">
+    <section
+      aria-labelledby="attrs-col-title"
+      className="flex flex-col gap-2 md:w-fit md:self-start"
+    >
       <h2
         id="attrs-col-title"
-        className="text-[0.65rem] font-semibold uppercase tracking-widest text-[#7a7e99]"
+        className="flex items-center justify-center gap-1.5 border-b border-white/10 pb-1 text-[0.65rem] font-semibold uppercase tracking-widest text-[#7a7e99]"
       >
+        <i aria-hidden="true" className="fa-solid fa-dumbbell" />
         Atributos
       </h2>
-      <div className="grid grid-cols-2 gap-2 md:grid-cols-1">
+      <div className="grid grid-cols-3 justify-items-center gap-2 sm:grid-cols-6 md:grid-cols-1">
         {summary.attributes.map((attr) => (
           <AttributeBlock key={attr.key} attribute={attr} />
         ))}

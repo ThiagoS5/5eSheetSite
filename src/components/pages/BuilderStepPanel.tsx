@@ -52,7 +52,7 @@ import { PersonalDetailsEditor } from "@/src/components/organisms/PersonalDetail
 import { EquipmentChecklist } from "@/src/components/organisms/EquipmentChecklist";
 import { InventoryManager } from "@/src/components/organisms/InventoryManager";
 import { builderStepNavigation } from "@/src/components/templates/builderStepNavigation";
-import { SummaryTemplate } from "@/src/components/templates/SummaryTemplate";
+import { CharacterSheetView } from "@/src/components/pages/CharacterSheetView";
 
 interface BuilderStepPanelProps {
   step: BuilderStepSlug;
@@ -223,7 +223,7 @@ export function BuilderStepPanel({
 
       {step === "descricao" ? <PersonalDetailsEditor /> : null}
 
-      {step === "conclusao" ? <SummaryTemplate /> : null}
+      {step === "conclusao" ? <CharacterSheetView embedded /> : null}
 
       {nextStep || previousStep ? (
         <div className="sticky bottom-0 z-10 flex justify-between gap-3 border-t border-white/[0.06] bg-[#12131a]/95 py-4 backdrop-blur">

@@ -286,9 +286,14 @@ export interface CharacterSheetSummary {
   speciesName: string;
   backgroundName: string;
   currentHp: number;
+  maxHp: number;
   tempHp: number;
+  hitDice: string;
   initiative: number;
   speedFeet: number;
+  speedMeters: number;
+  xp: number;
+  xpThreshold: number;
   isSpellcaster: boolean;
   attributes: SheetAttribute[];
   skills: SheetSkill[];

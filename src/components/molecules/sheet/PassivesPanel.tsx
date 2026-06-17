@@ -13,9 +13,12 @@ export function PassivesPanel({ perception, investigation, insight }: PassivesPa
 
   return (
     <section className="rounded-lg border border-white/[0.08] bg-[#1c1e2a] p-3">
-      <p className="mb-2 text-[0.6rem] font-semibold uppercase tracking-widest text-[#7a7e99]">
-        Sentidos Passivos
-      </p>
+      <div className="mb-2 flex items-center gap-1.5">
+        <i aria-hidden="true" className="fa-solid fa-eye text-[#7a7e99]" />
+        <p className="text-[0.6rem] font-semibold uppercase tracking-widest text-[#7a7e99]">
+          Sentidos Passivos
+        </p>
+      </div>
       <dl className="space-y-1">
         {items.map(({ label, value }) => (
           <div key={label} className="flex items-baseline gap-2">

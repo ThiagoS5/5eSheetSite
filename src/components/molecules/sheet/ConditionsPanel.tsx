@@ -26,9 +26,12 @@ export function ConditionsPanel() {
   return (
     <section className="rounded-lg border border-white/[0.08] bg-[#1c1e2a] p-3">
       <div className="mb-2 flex items-center justify-between">
-        <p className="text-[0.6rem] font-semibold uppercase tracking-widest text-[#7a7e99]">
-          Condições
-        </p>
+        <div className="flex items-center gap-1.5">
+          <i aria-hidden="true" className="fa-solid fa-circle-exclamation text-[#7a7e99] text-[0.6rem]" />
+          <p className="text-[0.6rem] font-semibold uppercase tracking-widest text-[#7a7e99]">
+            Condições
+          </p>
+        </div>
         <button
           type="button"
           onClick={() => setExpanded((v) => !v)}

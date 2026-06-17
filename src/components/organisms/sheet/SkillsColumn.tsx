@@ -31,8 +31,9 @@ export function SkillsColumn({ summary }: SkillsColumnProps) {
     <section aria-labelledby="skills-col-title" className="flex flex-col gap-3">
       <h2
         id="skills-col-title"
-        className="text-[0.65rem] font-semibold uppercase tracking-widest text-[#7a7e99]"
+        className="flex items-center gap-1.5 text-[0.65rem] font-semibold uppercase tracking-widest text-[#7a7e99]"
       >
+        <i aria-hidden="true" className="fa-solid fa-list-check" />
         Salvaguardas & Perícias
       </h2>
 

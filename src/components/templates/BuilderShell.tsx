@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
+import { usePathname } from "next/navigation";
 import { BuilderSidebar } from "@/src/components/organisms/BuilderSidebar";
 import { CharacterSheetPreview } from "@/src/components/organisms/CharacterSheetPreview";
 import { Header } from "@/src/components/organisms/Header";
@@ -11,9 +12,18 @@ interface BuilderShellProps {
 }
 
 export function BuilderShell({ children }: BuilderShellProps) {
+  const pathname = usePathname();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [sheetCollapsed, setSheetCollapsed] = useState(false);
-  const gridClass = getGridClass(sidebarCollapsed, sheetCollapsed);
+  // The conclusão step is the full character sheet itself, so the live preview
+  // aside is redundant there and is hidden.
+  const isSummaryStep = pathname?.endsWith("/conclusao") ?? false;
+  const showSheetPreview = !isSummaryStep;
+  const gridClass = getGridClass(
+    sidebarCollapsed,
+    sheetCollapsed,
+    showSheetPreview,
+  );
 
   return (
     <SidebarProvider
@@ -39,17 +49,29 @@ export function BuilderShell({ children }: BuilderShellProps) {
             <div className="px-4 py-5 md:px-6">{children}</div>
           </section>
 
-          <CharacterSheetPreview
-            collapsed={sheetCollapsed}
-            onToggleCollapsed={() => setSheetCollapsed((value) => !value)}
-          />
+          {showSheetPreview ? (
+            <CharacterSheetPreview
+              collapsed={sheetCollapsed}
+              onToggleCollapsed={() => setSheetCollapsed((value) => !value)}
+            />
+          ) : null}
         </div>
       </main>
     </SidebarProvider>
   );
 }
 
-function getGridClass(sidebarCollapsed: boolean, sheetCollapsed: boolean): string {
+function getGridClass(
+  sidebarCollapsed: boolean,
+  sheetCollapsed: boolean,
+  showSheetPreview: boolean,
+): string {
+  if (!showSheetPreview) {
+    return sidebarCollapsed
+      ? "xl:grid-cols-[4.5rem_minmax(0,1fr)]"
+      : "xl:grid-cols-[16rem_minmax(0,1fr)]";
+  }
+
   if (sidebarCollapsed && sheetCollapsed) {
     return "xl:grid-cols-[4.5rem_minmax(0,1fr)_4.5rem]";
   }

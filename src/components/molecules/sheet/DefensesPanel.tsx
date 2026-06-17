@@ -9,9 +9,12 @@ export function DefensesPanel({ resistances, immunities, vulnerabilities }: Defe
 
   return (
     <section className="rounded-lg border border-white/[0.08] bg-[#1c1e2a] p-3">
-      <p className="mb-2 text-[0.6rem] font-semibold uppercase tracking-widest text-[#7a7e99]">
-        Defesas
-      </p>
+      <div className="mb-2 flex items-center gap-1.5">
+        <i aria-hidden="true" className="fa-solid fa-shield-halved text-[#7a7e99]" />
+        <p className="text-[0.6rem] font-semibold uppercase tracking-widest text-[#7a7e99]">
+          Defesas
+        </p>
+      </div>
       {hasContent ? (
         <ul className="space-y-0.5">
           {resistances.map((r) => (

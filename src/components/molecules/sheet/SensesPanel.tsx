@@ -10,9 +10,12 @@ export function SensesPanel({ senses, languages }: SensesPanelProps) {
     <section className="rounded-lg border border-white/[0.08] bg-[#1c1e2a] p-3">
       {senses.length > 0 && (
         <>
-          <p className="mb-1 text-[0.6rem] font-semibold uppercase tracking-widest text-[#7a7e99]">
-            Sentidos
-          </p>
+          <div className="mb-1 flex items-center gap-1.5">
+            <i aria-hidden="true" className="fa-solid fa-tower-observation text-[#7a7e99]" />
+            <p className="text-[0.6rem] font-semibold uppercase tracking-widest text-[#7a7e99]">
+              Sentidos
+            </p>
+          </div>
           <ul className="mb-3 space-y-0.5">
             {senses.map((s) => (
               <li key={s.name} className="flex items-center gap-2 text-[0.72rem] text-[#b0b5cc]">
@@ -30,9 +33,12 @@ export function SensesPanel({ senses, languages }: SensesPanelProps) {
       )}
       {languages.length > 0 && (
         <>
-          <p className="mb-1 text-[0.6rem] font-semibold uppercase tracking-widest text-[#7a7e99]">
-            Idiomas
-          </p>
+          <div className="mb-1 flex items-center gap-1.5">
+            <i aria-hidden="true" className="fa-solid fa-language text-[#7a7e99]" />
+            <p className="text-[0.6rem] font-semibold uppercase tracking-widest text-[#7a7e99]">
+              Idiomas
+            </p>
+          </div>
           <p className="text-[0.72rem] text-[#b0b5cc]">{languages.join(", ")}</p>
         </>
       )}

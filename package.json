@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "preview-dev": "node -e \"const fs=require('fs');try{fs.rmSync('.next/dev/lock',{recursive:true,force:true})}catch(e){}\" && next dev -p 3001",
     "build": "next build",
     "typecheck": "next typegen && tsc --noEmit",
     "start": "next start",
