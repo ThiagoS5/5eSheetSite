@@ -30,20 +30,29 @@ A interface deve parecer um **"painel tático avançado"**, não um site corpora
 - **Estética:** Dark Fantasy. Fundo obsidiana, bordas sutis, foco em carmesim vibrante.
 - **Densidade & Acessibilidade:** alta densidade (tabelas, accordions, split-panes) sem poluição. Esconder complexidade até o usuário precisar dela. Sempre `aria-*` e foco visível.
 
-### 4.1 Paleta canônica (REALIDADE do código — use estes valores)
+### 4.1 Paleta canônica (design tokens — use as classes, nunca hex literais)
 
-> ⚠️ **Importante:** tokens nomeados como `bg-surface-nested`, `text-text-muted`, `border-crimson-vibrant` ou `font-label-caps` **NÃO existem** neste projeto. O Tailwind v4 é configurado via `@theme` em `app/globals.css` e o código usa **hex literais**. Não invente tokens — use a convenção abaixo:
+> ⚠️ **Importante:** as cores são **design tokens** definidos em OKLCH em `app/globals.css` (`:root, .dark` + `@theme inline`). **Não use hex literais** (`bg-[#…]`, `text-[#…]`, `border-[#…]`) em `className` — use as utilities de token abaixo. Para mudar uma cor, edite o token no `globals.css`; nunca espalhe hex pelos componentes.
 
-| Intenção | Classe real |
+| Intenção | Classe de token |
 |---|---|
-| Fundo base (obsidiana) | `bg-[#10121b]` / `bg-[#0a0b10]` |
-| Superfície/card | `bg-[#1c1e2a]` / `bg-[#12131a]` |
-| Borda sutil | `border-white/10` (inativa) / `border-white/[0.06]` |
-| Texto atenuado | `text-[#7a7e99]` / `text-[#b0b5cc]` |
-| Carmesim primário (foco/ativo) | `text-[#e61c23]` / `border-[#e61c23]` / `bg-[#e61c23]` |
-| Carmesim alternativo | `#c41e1e` |
-| Ouro (destaque/aviso) | `#f3c969` |
-| Hover de linha | `hover:bg-white/[0.02]` |
+| Fundo base (obsidiana) | `bg-background` |
+| Fundo atenuado | `bg-muted` |
+| Superfície/card | `bg-card` / `bg-surface-raised` |
+| Superfície interna (card dentro de card) | `bg-surface-nested` |
+| Superfície base / elevada | `bg-surface-base` / `bg-surface-elevated` |
+| Borda sutil | `border-border` (padrão) / `border-border/50` (mais sutil) |
+| Texto primário | `text-foreground` |
+| Texto secundário | `text-subdued` |
+| Texto atenuado (labels) | `text-muted-foreground` |
+| Texto muito fraco | `text-faint` |
+| Carmesim primário (foco/ativo) | `text-primary` / `border-primary` / `bg-primary` |
+| Carmesim alternativo | `text-brand-crimson-alt` / `bg-brand-crimson-alt` |
+| Ouro (destaque/aviso) | `text-accent` / `bg-accent` · alt: `brand-gold-alt` |
+| Verde / azul de marca | `brand-green` / `brand-blue` |
+| Tons decorativos de classe/antecedente | `tone-arcane*`, `tone-druid*`, `tone-gold*`, `tone-crimson*` |
+
+> **Acessibilidade (WCAG 2.2 AA):** carmesim (`text-primary`) **não** passa AA como texto pequeno em fundo escuro — use só em texto grande (≥24px), ícones e bordas. Para labels pequenos, use `text-foreground` com um indicador carmesim (`border-l-2 border-primary`, ícone ou sublinhado). Nenhum texto funcional abaixo de `text-[10px]`.
 
 Componentes shadcn ficam em `src/components/ui/`. Ícones via `src/components/atoms/FontAwesomeIcon.tsx` (classes `fa-*`) ou `lucide-react`.
 
