@@ -179,9 +179,9 @@ export function normalizeClass(
     startingEquipment: (rawClass.startingEquipment?.entries ?? []).map(
       formatTaggedTextAsPlain,
     ),
-    startingEquipmentGold: formatTaggedTextAsPlain(
-      rawClass.startingEquipment?.goldAlternative ?? "",
-    ),
+    startingEquipmentGold: rawClass.startingEquipment?.goldAlternative
+      ? formatTaggedTextAsPlain(rawClass.startingEquipment.goldAlternative)
+      : extractClassGoldAlternative(rawClass.startingEquipment?.defaultData),
     startingEquipmentPackages: normalizeEquipmentPackages(
       rawClass.startingEquipment?.defaultData?.[0],
     ),
@@ -399,6 +399,16 @@ export function extractBackgroundGold(
   const copper = (bArr[0] as Record<string, unknown>).value;
   if (typeof copper !== "number") return undefined;
   return `${Math.round(copper / 100)} GP`;
+}
+
+export function extractClassGoldAlternative(
+  defaultData: Array<Record<string, Raw5eStartingEquipmentItem[]>> | undefined,
+): string {
+  const packages = defaultData?.[0];
+  const bPackage = packages?.B ?? packages?.b;
+  if (!bPackage) return "";
+  const copper = bPackage.reduce((sum, item) => sum + (item.value ?? 0), 0);
+  return copper > 0 ? `${formatCopperAsGold(copper)} GP` : "";
 }
 
 function normalizeClassSkillChoices(rawClass: Raw5eClass): BuilderClass["skillChoices"] {

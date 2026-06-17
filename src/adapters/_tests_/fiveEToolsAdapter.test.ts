@@ -2,7 +2,7 @@
  * @vitest-environment node
  */
 import { describe, expect, it } from "vitest";
-import { extractBackgroundGold } from "@/src/adapters/fiveEToolsAdapter";
+import { extractBackgroundGold, extractClassGoldAlternative } from "@/src/adapters/fiveEToolsAdapter";
 
 describe("extractBackgroundGold", () => {
   it("returns formatted GP string when option b has a copper value", () => {
@@ -26,7 +26,30 @@ describe("extractBackgroundGold", () => {
     expect(extractBackgroundGold([{ b: [{}] }])).toBeUndefined();
   });
 
-  it("rounds correctly for non-round values", () => {
+  it("rounds up copper values that are not exact multiples of 100", () => {
     expect(extractBackgroundGold([{ b: [{ value: 4999 }] }])).toBe("50 GP");
+  });
+});
+
+describe("extractClassGoldAlternative", () => {
+  it("returns GP string from B package copper value", () => {
+    expect(extractClassGoldAlternative([{ B: [{ value: 7500 }] }])).toBe("75 GP");
+  });
+
+  it("returns empty string when defaultData is undefined", () => {
+    expect(extractClassGoldAlternative(undefined)).toBe("");
+  });
+
+  it("returns empty string when no B package exists", () => {
+    expect(extractClassGoldAlternative([{}])).toBe("");
+    expect(extractClassGoldAlternative([{ A: [{ value: 1500 }] }])).toBe("");
+  });
+
+  it("sums multiple copper values in B package", () => {
+    expect(extractClassGoldAlternative([{ B: [{ value: 5000 }, { value: 2500 }] }])).toBe("75 GP");
+  });
+
+  it("handles lowercase b key as fallback", () => {
+    expect(extractClassGoldAlternative([{ b: [{ value: 10000 }] }])).toBe("100 GP");
   });
 });
