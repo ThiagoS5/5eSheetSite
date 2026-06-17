@@ -1,6 +1,5 @@
 "use client";
 
-import { CheckCircle2 } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/src/components/ui/card";
 import type {
   EquipmentAcquisitionMode,
@@ -11,6 +10,7 @@ import type {
   BuilderBackground,
   BuilderClass,
   BuilderEquipmentPackage,
+  BuilderEquipmentPackageItem,
   BuilderSpecies,
 } from "@/types/builder";
 
@@ -18,6 +18,7 @@ interface EquipmentSourceKit {
   id: string;
   label: string;
   summary: string;
+  items: BuilderEquipmentPackageItem[];
 }
 
 interface EquipmentSourceBlock {
@@ -51,6 +52,7 @@ function buildEquipmentSources(
           id: entry.id,
           label: entry.label,
           summary: entry.summary,
+          items: entry.items,
         }),
       ),
       goldLabel: selectedClass.startingEquipmentGold || "Ouro inicial",
@@ -68,9 +70,10 @@ function buildEquipmentSources(
           id: "background-kit",
           label: "Itens do Antecedente",
           summary: selectedBackground.equipmentSummary,
+          items: [],
         },
       ],
-      goldLabel: "Ouro do antecedente",
+      goldLabel: selectedBackground.equipmentGold ?? "Ouro do antecedente",
     });
   }
 
@@ -119,7 +122,10 @@ export function EquipmentChecklist({
                 <ModeButton
                   active={mode === "items"}
                   label="Itens Oferecidos"
-                  onClick={() => onSourceModeChange(source.key, "items")}
+                  onClick={() => {
+                    onSourceModeChange(source.key, "items");
+                    if (source.kits[0]) onSourceOptionChange(source.key, source.kits[0].id);
+                  }}
                 />
                 <ModeButton
                   active={mode === "gold"}
@@ -129,36 +135,23 @@ export function EquipmentChecklist({
               </div>
 
               {mode === "items" ? (
-                <div className="grid gap-3">
-                  {source.kits.map((kit) => {
-                    const selected = choice?.selectedOptionId === kit.id;
-
-                    return (
-                      <button
-                        key={kit.id}
-                        type="button"
-                        onClick={() => onSourceOptionChange(source.key, kit.id)}
-                        className={`grid grid-cols-[1fr_auto] items-start gap-3 rounded-md border p-3 text-left transition ${
-                          selected
-                            ? "border-[#e61c23] bg-[#e61c23]/5"
-                            : "border-white/10 hover:border-white/20"
-                        }`}
-                      >
-                        <span>
-                          <span className="block font-bold text-white">{kit.label}</span>
-                          <span className="mt-1 block text-sm text-[#b0b5cc]">
-                            {kit.summary}
-                          </span>
-                        </span>
-                        {selected ? (
-                          <CheckCircle2
-                            aria-hidden="true"
-                            className="h-5 w-5 text-[#e61c23]"
-                          />
-                        ) : null}
-                      </button>
-                    );
-                  })}
+                <div className="rounded-md border border-white/10 p-3">
+                  {source.kits.map((kit) => (
+                    <div key={kit.id}>
+                      {kit.items.length > 0 ? (
+                        <ul className="grid gap-1 text-sm text-[#b0b5cc]">
+                          {kit.items.map((item) => (
+                            <li key={item.id} className="flex gap-2">
+                              <span className="font-semibold text-white">{item.quantity}×</span>
+                              <span>{item.label}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="text-sm text-[#b0b5cc]">{kit.summary}</p>
+                      )}
+                    </div>
+                  ))}
                 </div>
               ) : (
                 <p className="rounded-md border border-[#f3c969]/20 bg-[#f3c969]/10 px-4 py-3 text-sm font-semibold text-[#f3c969]">

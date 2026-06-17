@@ -40,6 +40,7 @@ const selectedClass: BuilderClass = {
       goldValue: 0,
       items: [
         { id: "studded-leather-armor-xphb", label: "Studded Leather Armor", quantity: 1 },
+        { id: "dagger-xphb", label: "Dagger", quantity: 1 },
       ],
     },
   ],
@@ -51,7 +52,7 @@ describe("EquipmentChecklist", () => {
     cleanup();
   });
 
-  it("renders an isolated class card with selectable Option A", () => {
+  it("renders class equipment items as a display list when mode is items", () => {
     render(
       <EquipmentChecklist
         selectedClass={selectedClass}
@@ -60,21 +61,29 @@ describe("EquipmentChecklist", () => {
         onSourceOptionChange={vi.fn()}
       />,
     );
+
     expect(screen.getByText("EQUIPAMENTO DA CLASSE")).toBeInTheDocument();
-    expect(screen.getByText("Option A")).toBeInTheDocument();
+    expect(screen.getByText("Studded Leather Armor")).toBeInTheDocument();
+    expect(screen.getByText("Dagger")).toBeInTheDocument();
+    // Items are rendered as list elements, not clickable buttons
+    expect(screen.queryByRole("button", { name: /Option A/i })).toBeNull();
   });
 
-  it("calls onSourceOptionChange with the source and option id when a kit is clicked", () => {
+  it("clicking Itens Oferecidos tab calls both onSourceModeChange and onSourceOptionChange with first kit", () => {
+    const onSourceModeChange = vi.fn();
     const onSourceOptionChange = vi.fn();
     render(
       <EquipmentChecklist
         selectedClass={selectedClass}
-        choicesBySource={{ class: { mode: "items", selectedOptionId: null } }}
-        onSourceModeChange={vi.fn()}
+        choicesBySource={{ class: { mode: "gold", selectedOptionId: null } }}
+        onSourceModeChange={onSourceModeChange}
         onSourceOptionChange={onSourceOptionChange}
       />,
     );
-    fireEvent.click(screen.getByText("Option A"));
+
+    fireEvent.click(screen.getByRole("button", { name: /Itens Oferecidos/i }));
+
+    expect(onSourceModeChange).toHaveBeenCalledWith("class", "items");
     expect(onSourceOptionChange).toHaveBeenCalledWith("class", "A");
   });
 });
