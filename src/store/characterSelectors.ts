@@ -9,10 +9,80 @@ import {
   calculateArmorClass,
   calculateFinalAttributes,
   calculateInitialHitPoints,
+  getAbilityModifier,
   getProficiencyBonus,
 } from "@/src/adapters/characterDerivedAdapter";
 import type { CharacterBuilderState } from "@/src/store/characterStore.types";
-import type { BuilderStepSlug, CharacterSheetSummary } from "@/types/builder";
+import type {
+  BuilderStepSlug,
+  CharacterSheetSummary,
+  SheetAttribute,
+  SheetFeature,
+  SheetSavingThrow,
+  SheetSkill,
+  SheetWeapon,
+} from "@/types/builder";
+import { ATTRIBUTE_LABELS } from "@/types/dnd";
+import type { AttributeKey } from "@/types/dnd";
+
+const ATTRIBUTE_KEYS: AttributeKey[] = [
+  "forca", "destreza", "constituicao", "inteligencia", "sabedoria", "carisma",
+];
+
+const ATTRIBUTE_ABBR: Record<AttributeKey, string> = {
+  forca: "FOR", destreza: "DES", constituicao: "CON",
+  inteligencia: "INT", sabedoria: "SAB", carisma: "CAR",
+};
+
+const SKILL_DISPLAY: Record<string, string> = {
+  "Acrobatics": "Acrobacia", "Animal Handling": "Trato c/ Animais",
+  "Arcana": "Arcanismo", "Athletics": "Atletismo", "Deception": "Enganação",
+  "History": "História", "Insight": "Intuição", "Intimidation": "Intimidação",
+  "Investigation": "Investigação", "Medicine": "Medicina", "Nature": "Natureza",
+  "Perception": "Percepção", "Performance": "Atuação", "Persuasion": "Persuasão",
+  "Religion": "Religião", "Sleight of Hand": "Prestidigitação",
+  "Stealth": "Furtividade", "Survival": "Sobrevivência",
+};
+
+const SKILL_ATTRIBUTE: Record<string, AttributeKey> = {
+  "Athletics": "forca",
+  "Acrobatics": "destreza", "Sleight of Hand": "destreza", "Stealth": "destreza",
+  "Arcana": "inteligencia", "History": "inteligencia", "Investigation": "inteligencia",
+  "Nature": "inteligencia", "Religion": "inteligencia",
+  "Animal Handling": "sabedoria", "Insight": "sabedoria", "Medicine": "sabedoria",
+  "Perception": "sabedoria", "Survival": "sabedoria",
+  "Deception": "carisma", "Intimidation": "carisma", "Performance": "carisma",
+  "Persuasion": "carisma",
+};
+
+const ALL_SKILLS = Object.keys(SKILL_DISPLAY);
+
+function computeSkills(
+  finalAttributes: Record<AttributeKey, number>,
+  classSkillProficiencies: string[],
+  skillTraining: Record<string, string>,
+  profBonus: number,
+): SheetSkill[] {
+  const profSet = new Set(classSkillProficiencies);
+  return ALL_SKILLS.map((name) => {
+    const attrKey = SKILL_ATTRIBUTE[name] ?? "inteligencia";
+    const attrScore = finalAttributes[attrKey];
+    const baseMod = getAbilityModifier(attrScore);
+    const training = skillTraining[name] ?? (profSet.has(name) ? "proficient" : "none");
+    const isProficient = training === "proficient" || training === "expertise";
+    const isExpert = training === "expertise";
+    const profMod = isExpert ? profBonus * 2 : isProficient ? profBonus : 0;
+    const halfMod = training === "half" ? Math.floor(profBonus / 2) : 0;
+    return {
+      name,
+      label: SKILL_DISPLAY[name] ?? name,
+      attributeKey: attrKey,
+      modifier: baseMod + profMod + halfMod,
+      isProficient,
+      isExpert,
+    };
+  });
+}
 
 export function selectCharacterSheetSummary(
   state: CharacterBuilderState,
@@ -53,6 +123,73 @@ export function selectCharacterSheetSummary(
     state.backgroundAbilityBonuses,
   );
 
+  const profBonus = getProficiencyBonus(state.level);
+
+  const skills = computeSkills(
+    finalAttributes,
+    state.classSkillProficiencies,
+    state.skillTraining,
+    profBonus,
+  );
+
+  const sheetAttributes: SheetAttribute[] = ATTRIBUTE_KEYS.map((key) => ({
+    key,
+    label: ATTRIBUTE_LABELS[key],
+    abbr: ATTRIBUTE_ABBR[key],
+    score: finalAttributes[key],
+    modifier: getAbilityModifier(finalAttributes[key]),
+  }));
+
+  const savingThrowProfLabels = new Set(characterClass?.savingThrows ?? []);
+  const savingThrows: SheetSavingThrow[] = ATTRIBUTE_KEYS.map((key) => {
+    const attrLabel = ATTRIBUTE_LABELS[key];
+    const isProficient = savingThrowProfLabels.has(attrLabel);
+    const baseMod = getAbilityModifier(finalAttributes[key]);
+    return {
+      attributeKey: key,
+      label: attrLabel,
+      abbr: ATTRIBUTE_ABBR[key],
+      modifier: baseMod + (isProficient ? profBonus : 0),
+      isProficient,
+    };
+  });
+
+  const findSkillMod = (name: string) =>
+    skills.find((s) => s.name === name)?.modifier ?? 0;
+
+  const weapons: SheetWeapon[] = [
+    {
+      name: "Ataque Desarmado",
+      attackBonus: `+${getAbilityModifier(finalAttributes.forca) + profBonus}`,
+      damage: `1+${getAbilityModifier(finalAttributes.forca)} Contundente`,
+      notes: "Corpo-a-corpo",
+    },
+    ...getItemCatalog()
+      .filter((item) => equipmentIds.has(item.id) && item.category === "Weapon")
+      .map((item) => ({
+        name: item.name,
+        attackBonus: `+${profBonus}`,
+        damage: "—",
+        notes: item.source,
+      })),
+  ];
+
+  const features: SheetFeature[] = [
+    ...(characterClass?.levelOneFeatures ?? []).map((f) => ({
+      name: f.name,
+      description: f.description ?? "",
+      source: "class" as const,
+    })),
+    ...(species?.traits ?? []).map((f) => ({
+      name: f.name,
+      description: f.description ?? "",
+      source: "species" as const,
+    })),
+    ...(background
+      ? [{ name: background.originFeat, description: background.equipmentSummary, source: "background" as const }]
+      : []),
+  ].filter((f) => f.name);
+
   return {
     ruleset: state.ruleset,
     level: state.level,
@@ -63,7 +200,7 @@ export function selectCharacterSheetSummary(
     baseAttributes: state.baseAttributes,
     backgroundAbilityBonuses: state.backgroundAbilityBonuses,
     finalAttributes,
-    proficiencyBonus: getProficiencyBonus(state.level),
+    proficiencyBonus: profBonus,
     hitPoints: calculateInitialHitPoints(
       characterClass?.hitDie ?? 6,
       finalAttributes.constituicao,
@@ -78,6 +215,31 @@ export function selectCharacterSheetSummary(
     speciesChoices: state.speciesChoices,
     speciesLanguages: state.speciesLanguages,
     validationMessages: getAllValidationMessages(state),
+    // new fields
+    name: state.description.nome,
+    className: characterClass?.name ?? "",
+    speciesName: species?.name ?? "",
+    backgroundName: background?.name ?? "",
+    currentHp: calculateInitialHitPoints(characterClass?.hitDie ?? 6, finalAttributes.constituicao),
+    tempHp: 0,
+    initiative: getAbilityModifier(finalAttributes.destreza),
+    speedFeet: species?.speed ?? 30,
+    isSpellcaster: Boolean(characterClass?.spellcastingAbility),
+    attributes: sheetAttributes,
+    skills,
+    savingThrows,
+    passives: {
+      perception: 10 + findSkillMod("Perception"),
+      investigation: 10 + findSkillMod("Investigation"),
+      insight: 10 + findSkillMod("Insight"),
+    },
+    senses: [],
+    languages: state.speciesLanguages,
+    resistances: [],
+    immunities: [],
+    vulnerabilities: [],
+    features,
+    weapons,
   };
 }
 
