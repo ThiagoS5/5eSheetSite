@@ -105,6 +105,7 @@ export interface BuilderBackground {
   toolProficiencies: string[];
   languageChoiceCount: number;
   equipmentSummary: string;
+  equipmentGold?: string;
   rewardSummary: string[];
   detail: string;
 }
