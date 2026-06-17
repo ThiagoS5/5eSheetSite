@@ -2,7 +2,7 @@
  * @vitest-environment node
  */
 import { describe, expect, it } from "vitest";
-import { extractBackgroundGold, extractClassGoldAlternative } from "@/src/adapters/fiveEToolsAdapter";
+import { extractBackgroundGold, extractBackgroundItemsA, extractClassGoldAlternative } from "@/src/adapters/fiveEToolsAdapter";
 
 describe("extractBackgroundGold", () => {
   it("returns formatted GP string when option b has a copper value", () => {
@@ -51,5 +51,47 @@ describe("extractClassGoldAlternative", () => {
 
   it("handles lowercase b key as fallback", () => {
     expect(extractClassGoldAlternative([{ b: [{ value: 10000 }] }])).toBe("100 GP");
+  });
+});
+
+describe("extractBackgroundItemsA", () => {
+  it("returns empty array when startingEquipment is undefined or missing a", () => {
+    expect(extractBackgroundItemsA(undefined)).toEqual([]);
+    expect(extractBackgroundItemsA([])).toEqual([]);
+    expect(extractBackgroundItemsA([{ b: [] }])).toEqual([]);
+  });
+
+  it("parses string item references into title-cased items", () => {
+    const result = extractBackgroundItemsA([{ a: ["dagger|xphb", "disguise kit|xphb"] }]);
+    expect(result).toHaveLength(2);
+    expect(result[0]).toMatchObject({ label: "Dagger", quantity: 1 });
+    expect(result[1]).toMatchObject({ label: "Disguise Kit", quantity: 1 });
+  });
+
+  it("parses gold value objects as items with value field", () => {
+    const result = extractBackgroundItemsA([{ a: [{ value: 1600 }] }]);
+    expect(result).toHaveLength(1);
+    expect(result[0]).toMatchObject({ label: "Gold", quantity: 1, value: 1600 });
+  });
+
+  it("uses displayName for object entries that provide it", () => {
+    const result = extractBackgroundItemsA([{
+      a: [{ item: "holy water|xphb", displayName: "Holy Water (1 flask)" }],
+    }]);
+    expect(result[0]?.label).toBe("Holy Water (1 flask)");
+  });
+
+  it("handles a full real-world option A (Aberrant Heir)", () => {
+    const result = extractBackgroundItemsA([{
+      a: [
+        "dagger|xphb",
+        "disguise kit|xphb",
+        "costume|xphb",
+        "traveler's clothes|xphb",
+        { value: 1600 },
+      ],
+    }]);
+    expect(result).toHaveLength(5);
+    expect(result[4]).toMatchObject({ value: 1600 });
   });
 });

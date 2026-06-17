@@ -118,6 +118,7 @@ export function normalizeBackground(
     languageChoiceCount: normalizeLanguageChoiceCount(background.languageProficiencies),
     equipmentSummary: formatTaggedTextAsPlain(extractEquipmentSummary(background.entries)),
     equipmentGold: extractBackgroundGold(background.startingEquipment),
+    equipmentItemsA: extractBackgroundItemsA(background.startingEquipment),
     rewardSummary,
     detail: detail || `${background.name} background details.`,
   };
@@ -409,6 +410,46 @@ export function extractClassGoldAlternative(
   if (!bPackage) return "";
   const copper = bPackage.reduce((sum, item) => sum + (item.value ?? 0), 0);
   return copper > 0 ? `${formatCopperAsGold(copper)} GP` : "";
+}
+
+export function extractBackgroundItemsA(
+  startingEquipment: unknown[] | undefined,
+): BuilderEquipmentPackageItem[] {
+  const first = (startingEquipment ?? [])[0];
+  if (!first || typeof first !== "object") return [];
+  const aArr = (first as Record<string, unknown>).a;
+  if (!Array.isArray(aArr)) return [];
+
+  return aArr.flatMap((entry, i): BuilderEquipmentPackageItem[] => {
+    if (typeof entry === "string") {
+      const name = toTitleCase(entry.split("|")[0] ?? "");
+      if (!name) return [];
+      return [{ id: toSlug(name, "xphb"), label: name, quantity: 1 }];
+    }
+    if (typeof entry === "object" && entry !== null) {
+      const obj = entry as Record<string, unknown>;
+      if (typeof obj.value === "number") {
+        return [{ id: `gold-${i}`, label: "Gold", quantity: 1, value: obj.value }];
+      }
+      const label =
+        typeof obj.displayName === "string"
+          ? obj.displayName
+          : typeof obj.item === "string"
+          ? toTitleCase(obj.item.split("|")[0] ?? "")
+          : null;
+      if (!label) return [];
+      const quantity = typeof obj.quantity === "number" ? obj.quantity : 1;
+      const ref = typeof obj.item === "string" ? obj.item : null;
+      return [{
+        id: ref
+          ? toSlug(toTitleCase(ref.split("|")[0] ?? label), "xphb")
+          : toKebabCase(label),
+        label,
+        quantity,
+      }];
+    }
+    return [];
+  });
 }
 
 function normalizeClassSkillChoices(rawClass: Raw5eClass): BuilderClass["skillChoices"] {

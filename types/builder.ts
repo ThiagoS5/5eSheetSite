@@ -106,6 +106,7 @@ export interface BuilderBackground {
   languageChoiceCount: number;
   equipmentSummary: string;
   equipmentGold?: string;
+  equipmentItemsA?: BuilderEquipmentPackageItem[];
   rewardSummary: string[];
   detail: string;
 }
