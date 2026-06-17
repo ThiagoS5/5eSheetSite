@@ -30,6 +30,7 @@ export interface Raw5eBackground {
   skillProficiencies?: Record<string, boolean>[];
   toolProficiencies?: Record<string, boolean>[];
   languageProficiencies?: Array<Record<string, boolean> | { any?: number }>;
+  startingEquipment?: unknown[];
   entries?: unknown[];
 }
 

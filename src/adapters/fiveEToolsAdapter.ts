@@ -117,6 +117,7 @@ export function normalizeBackground(
     toolProficiencies: normalizeProficiencyRecord(background.toolProficiencies?.[0]),
     languageChoiceCount: normalizeLanguageChoiceCount(background.languageProficiencies),
     equipmentSummary: formatTaggedTextAsPlain(extractEquipmentSummary(background.entries)),
+    equipmentGold: extractBackgroundGold(background.startingEquipment),
     rewardSummary,
     detail: detail || `${background.name} background details.`,
   };
@@ -386,6 +387,18 @@ function extractEquipmentSummary(entries: unknown[] | undefined): string {
   }
 
   return "Equipamento de antecedente 2024.";
+}
+
+export function extractBackgroundGold(
+  startingEquipment: unknown[] | undefined,
+): string | undefined {
+  const first = (startingEquipment ?? [])[0];
+  if (!first || typeof first !== "object") return undefined;
+  const bArr = (first as Record<string, unknown>).b;
+  if (!Array.isArray(bArr) || !bArr[0]) return undefined;
+  const copper = (bArr[0] as Record<string, unknown>).value;
+  if (typeof copper !== "number") return undefined;
+  return `${Math.round(copper / 100)} GP`;
 }
 
 function normalizeClassSkillChoices(rawClass: Raw5eClass): BuilderClass["skillChoices"] {
