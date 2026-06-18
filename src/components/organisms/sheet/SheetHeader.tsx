@@ -73,7 +73,7 @@ export function SheetHeader({ summary }: SheetHeaderProps) {
               </span>
             </div>
             <div className="flex items-baseline gap-2">
-              <span className="text-[32px] font-bold leading-none text-foreground">
+              <span className="text-3xl font-bold leading-none text-foreground">
                 {summary.currentHp}
               </span>
               <span className="text-lg text-muted-foreground">/ {summary.maxHp}</span>

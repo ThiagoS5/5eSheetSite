@@ -71,7 +71,7 @@ export function CharacterSheetView({ embedded = false }: CharacterSheetViewProps
           <button
             type="button"
             onClick={handleDownload}
-            className="inline-flex items-center gap-2 rounded-lg border border-primary/40 bg-primary/10 px-4 py-2 text-[0.7rem] font-bold uppercase tracking-widest text-foreground outline-none transition-colors hover:bg-primary/20 focus-visible:ring-2 focus-visible:ring-primary/40"
+            className="inline-flex items-center gap-2 rounded-lg border border-primary/40 bg-primary/10 px-4 py-2 text-xs font-bold uppercase tracking-widest text-foreground outline-none transition-colors hover:bg-primary/20 focus-visible:ring-2 focus-visible:ring-primary/40"
           >
             <i aria-hidden="true" className="fa-solid fa-file-export" />
             Exportar (Foundry VTT)

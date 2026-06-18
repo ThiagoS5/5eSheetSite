@@ -22,7 +22,7 @@ export function FeatureTagList({
       {features.map((feature) => (
         <li key={feature.name}>
           <HoverTooltip content={<p>{parseTaggedText(feature.description)}</p>}>
-            <span className="rounded border border-white/[0.08] bg-white/5 px-2 py-0.5 text-[0.65rem] font-medium text-subdued transition hover:border-accent/60 hover:text-foreground">
+            <span className="rounded border border-white/[0.08] bg-white/5 px-2 py-0.5 text-xs font-medium text-subdued transition hover:border-accent/60 hover:text-foreground">
               {feature.name}
             </span>
           </HoverTooltip>

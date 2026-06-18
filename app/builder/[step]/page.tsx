@@ -67,7 +67,7 @@ export default async function BuilderStepPage({ params }: BuilderStepPageProps) 
   return (
     <article aria-labelledby="step-title" className="grid gap-5">
       <header className="max-w-4xl border-b border-white/[0.06] pb-5">
-        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
           Builder 2024
         </p>
         <h2

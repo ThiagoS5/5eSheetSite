@@ -31,14 +31,14 @@ export function SkillRow({ skill, compact = false }: SkillRowProps) {
 
       <span
         className={cn(
-          "min-w-[1.5rem] text-right text-[0.72rem] font-semibold",
+          "min-w-[1.5rem] text-right text-xs font-semibold",
           skill.modifier >= 0 ? "text-foreground" : "text-subdued",
         )}
       >
         {sign}{skill.modifier}
       </span>
 
-      <span className="text-[0.72rem] text-subdued">{skill.label}</span>
+      <span className="text-xs text-subdued">{skill.label}</span>
       <span className="ml-auto text-[10px] text-muted-foreground">{skill.attributeKey.slice(0, 3).toUpperCase()}</span>
     </div>
   );

@@ -36,7 +36,7 @@ const textareaCls =
   "w-full rounded-lg border border-border bg-surface-nested px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/30 resize-none";
 
 const labelCls =
-  "mb-1.5 block text-[0.65rem] font-semibold uppercase tracking-widest text-muted-foreground";
+  "mb-1.5 block text-xs font-semibold uppercase tracking-widest text-muted-foreground";
 
 export function PersonalDetailsEditor() {
   const description = useCharacterStore((s) => s.description);

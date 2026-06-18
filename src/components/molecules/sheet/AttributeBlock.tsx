@@ -25,7 +25,7 @@ export function AttributeBlock({ attribute }: AttributeBlockProps) {
         {modifierStr}
       </span>
       <div className="flex h-5 w-10 items-center justify-center rounded-full border border-border bg-background">
-        <span className="text-[11px] leading-none text-muted-foreground">{attribute.score}</span>
+        <span className="text-[10px] leading-none text-muted-foreground">{attribute.score}</span>
       </div>
     </StatFrame>
   );

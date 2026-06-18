@@ -37,7 +37,7 @@ export function MainContentColumn({ summary, className }: MainContentColumnProps
           </p>
         </div>
         <div className="overflow-x-auto">
-          <table className="min-w-[400px] w-full text-[0.72rem]">
+          <table className="min-w-[400px] w-full text-xs">
             <thead>
               <tr className="border-b border-border text-muted-foreground">
                 <th className="py-1 pr-3 text-left font-semibold">NOME</th>
