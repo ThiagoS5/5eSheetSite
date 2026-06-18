@@ -117,7 +117,7 @@ describe("BuilderSidebar", () => {
     );
     expect(document.querySelector('[data-sidebar="menu-sub"]')).toHaveClass(
       "border-l",
-      "border-white/10",
+      "border-border",
       "ml-3",
       "pl-3",
     );
@@ -127,7 +127,7 @@ describe("BuilderSidebar", () => {
     renderSidebar();
 
     expect(screen.getByRole("link", { name: "Classe" })).toHaveClass(
-      "text-[#50c878]",
+      "text-brand-green",
     );
     expect(document.querySelector(".fa-check")).toBeInTheDocument();
   });

@@ -15,12 +15,12 @@
   [data-radix-scroll-area-viewport],
   * {
     scrollbar-width: thin;
-    scrollbar-color: #38393f #0d0e13;
+    scrollbar-color: var(--muted-foreground) var(--background);
   }
 
   html,
   body {
-    background: #12131a;
+    background: var(--surface-nested);
     overflow-x: hidden;
   }
 
@@ -30,18 +30,18 @@
   }
 
   ::-webkit-scrollbar-track {
-    background: #0d0e13;
+    background: var(--background);
     border-radius: 8px;
   }
 
   ::-webkit-scrollbar-thumb {
-    background: #38393f;
+    background: var(--muted-foreground);
     border-radius: 8px;
     border: 1px solid rgb(255 255 255 / 0.05);
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: #c41e1e;
+    background: var(--brand-crimson-alt);
   }
   * {
     @apply border-border outline-ring/50;
@@ -66,7 +66,7 @@
   }
 
   .glass-card:hover {
-    border-color: #e61c23;
+    border-color: var(--primary);
     box-shadow: 0 0 20px rgb(230 28 35 / 0.15);
     transform: translateY(-4px);
   }
@@ -132,40 +132,97 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+  /* Surfaces */
+  --color-surface-raised: var(--surface-raised);
+  --color-surface-nested: var(--surface-nested);
+  --color-surface-base: var(--surface-base);
+  --color-surface-elevated: var(--surface-elevated);
+  /* Text tones — exposed without "text-" prefix so utilities are text-subdued / text-faint */
+  --color-subdued: var(--text-subdued);
+  --color-faint: var(--text-faint);
+  /* Brand */
+  --color-brand-crimson: var(--brand-crimson);
+  --color-brand-crimson-alt: var(--brand-crimson-alt);
+  --color-brand-gold: var(--brand-gold);
+  --color-brand-gold-alt: var(--brand-gold-alt);
+  --color-brand-green: var(--brand-green);
+  --color-brand-blue: var(--brand-blue);
+  /* Named tones */
+  --color-tone-arcane: var(--tone-arcane);
+  --color-tone-arcane-deep: var(--tone-arcane-deep);
+  --color-tone-arcane-deepest: var(--tone-arcane-deepest);
+  --color-tone-druid-deep: var(--tone-druid-deep);
+  --color-tone-druid-deepest: var(--tone-druid-deepest);
+  --color-tone-gold-deep: var(--tone-gold-deep);
+  --color-tone-gold-deepest: var(--tone-gold-deepest);
+  --color-tone-crimson-deep: var(--tone-crimson-deep);
+  --color-tone-crimson-deepest: var(--tone-crimson-deepest);
 }
 
 :root,
 .dark {
-  --background: #0a0b10;
-  --foreground: #e8e9f0;
-  --card: #14151b;
-  --card-foreground: #e8e9f0;
-  --popover: #14151b;
-  --popover-foreground: #e8e9f0;
-  --primary: #e61c23;
-  --primary-foreground: #ffffff;
-  --secondary: #1c1e2a;
-  --secondary-foreground: #e8e9f0;
-  --muted: #0f1018;
-  --muted-foreground: #b0b5cc;
-  --accent: #1c1e2a;
-  --accent-foreground: #ffffff;
-  --destructive: #a91515;
-  --border: rgb(255 255 255 / 0.1);
-  --input: rgb(255 255 255 / 0.12);
-  --ring: #e61c23;
-  --chart-1: #e61c23;
-  --chart-2: #f3c969;
-  --chart-3: #50c878;
-  --chart-4: #4a9eff;
-  --chart-5: #f4a261;
+  /* ── Core shadcn tokens ── */
+  --background: oklch(0.15 0.01 276);
+  --foreground: oklch(0.93 0.006 270);
+  --card: oklch(0.24 0.02 277);
+  --card-foreground: oklch(0.93 0.006 270);
+  --popover: oklch(0.19 0.01 279);
+  --popover-foreground: oklch(0.93 0.006 270);
+  --primary: oklch(0.59 0.23 27);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.24 0.02 277);
+  --secondary-foreground: oklch(0.777 0.033 276);
+  --muted: oklch(0.19 0.01 279);
+  --muted-foreground: oklch(0.6 0.04 278);
+  --accent: oklch(0.854 0.124 86);
+  --accent-foreground: oklch(0.15 0.01 276);
+  --destructive: oklch(0.47 0.18 28);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(0.19 0.01 279);
+  --ring: oklch(0.59 0.23 27);
+  /* chart tokens — hex converted to OKLCH (colors unchanged) */
+  --chart-1: oklch(0.59 0.23 27);
+  --chart-2: oklch(0.854 0.124 86);
+  --chart-3: oklch(0.74 0.15 152);
+  --chart-4: oklch(0.69 0.16 255);
+  --chart-5: oklch(0.781 0.127 58);
   --radius: 0.5rem;
-  --sidebar: #0f1018;
-  --sidebar-foreground: #e8e9f0;
-  --sidebar-primary: #e61c23;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #1c1e2a;
-  --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: rgb(255 255 255 / 0.1);
-  --sidebar-ring: #e61c23;
+  /* sidebar tokens — hex converted to OKLCH (colors unchanged) */
+  --sidebar: oklch(0.19 0.01 279);
+  --sidebar-foreground: oklch(0.93 0.006 270);
+  --sidebar-primary: oklch(0.59 0.23 27);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.24 0.02 277);
+  --sidebar-accent-foreground: oklch(1 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.59 0.23 27);
+
+  /* ── Custom surface tokens ── */
+  --surface-raised: oklch(0.24 0.02 277);
+  --surface-nested: oklch(0.19 0.01 279);
+  --surface-base: oklch(0.2 0.01 278);
+  --surface-elevated: oklch(0.21 0.02 277);
+
+  /* ── Custom text tokens ── */
+  --text-subdued: oklch(0.777 0.033 276);
+  --text-faint: oklch(0.47 0.04 275);
+
+  /* ── Brand tokens ── */
+  --brand-crimson: oklch(0.59 0.23 27);
+  --brand-crimson-alt: oklch(0.53 0.2 28);
+  --brand-gold: oklch(0.854 0.124 86);
+  --brand-gold-alt: oklch(0.81 0.12 86);
+  --brand-green: oklch(0.74 0.15 152);
+  --brand-blue: oklch(0.69 0.16 255);
+
+  /* ── Named tone tokens (decorative gradients) ── */
+  --tone-arcane: oklch(0.82 0.07 258);
+  --tone-arcane-deep: oklch(0.49 0.15 255);
+  --tone-arcane-deepest: oklch(0.33 0.07 255);
+  --tone-druid-deep: oklch(0.59 0.13 152);
+  --tone-druid-deepest: oklch(0.33 0.06 152);
+  --tone-gold-deep: oklch(0.50 0.10 86);
+  --tone-gold-deepest: oklch(0.36 0.05 80);
+  --tone-crimson-deep: oklch(0.32 0.1 22);
+  --tone-crimson-deepest: oklch(0.27 0.06 8);
 }

@@ -57,6 +57,27 @@ const SKILL_ATTRIBUTE: Record<string, AttributeKey> = {
 
 const ALL_SKILLS = Object.keys(SKILL_DISPLAY);
 
+// Standard 5e XP-by-level table (XP required to reach each level).
+const XP_BY_LEVEL: number[] = [
+  0, 300, 900, 2700, 6500, 14000, 23000, 34000, 48000, 64000,
+  85000, 100000, 120000, 140000, 165000, 195000, 225000, 265000, 305000, 355000,
+];
+
+function xpForLevel(level: number): number {
+  const index = Math.min(Math.max(level, 1), XP_BY_LEVEL.length) - 1;
+  return XP_BY_LEVEL[index];
+}
+
+function xpThresholdForNextLevel(level: number): number {
+  const index = Math.min(Math.max(level, 1), XP_BY_LEVEL.length - 1);
+  return XP_BY_LEVEL[index];
+}
+
+// D&D PT-BR usa 1 pé ≈ 0,3 m (30 ft → 9 m).
+function feetToMeters(feet: number): number {
+  return Math.round(feet * 0.3);
+}
+
 function computeSkills(
   finalAttributes: Record<AttributeKey, number>,
   classSkillProficiencies: string[],
@@ -221,9 +242,14 @@ export function selectCharacterSheetSummary(
     speciesName: species?.name ?? "",
     backgroundName: background?.name ?? "",
     currentHp: calculateInitialHitPoints(characterClass?.hitDie ?? 6, finalAttributes.constituicao),
+    maxHp: calculateInitialHitPoints(characterClass?.hitDie ?? 6, finalAttributes.constituicao),
     tempHp: 0,
+    hitDice: `${state.level}d${characterClass?.hitDie ?? 6}`,
     initiative: getAbilityModifier(finalAttributes.destreza),
     speedFeet: species?.speed ?? 30,
+    speedMeters: feetToMeters(species?.speed ?? 30),
+    xp: xpForLevel(state.level),
+    xpThreshold: xpThresholdForNextLevel(state.level),
     isSpellcaster: Boolean(characterClass?.spellcastingAbility),
     attributes: sheetAttributes,
     skills,

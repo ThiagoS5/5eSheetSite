@@ -29,14 +29,17 @@ export function MainContentColumn({ summary, className }: MainContentColumnProps
       </div>
 
       {/* Weapons table */}
-      <section className="rounded-lg border border-white/[0.08] bg-[#1c1e2a] p-3">
-        <p className="mb-2 text-[0.6rem] font-semibold uppercase tracking-widest text-[#7a7e99]">
-          Armas
-        </p>
+      <section className="rounded-lg border border-white/[0.08] bg-card p-3">
+        <div className="mb-2 flex items-center gap-1.5">
+          <i aria-hidden="true" className="fa-solid fa-sword text-muted-foreground text-[10px]" />
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+            Armas
+          </p>
+        </div>
         <div className="overflow-x-auto">
           <table className="min-w-[400px] w-full text-[0.72rem]">
             <thead>
-              <tr className="border-b border-white/10 text-[#7a7e99]">
+              <tr className="border-b border-border text-muted-foreground">
                 <th className="py-1 pr-3 text-left font-semibold">NOME</th>
                 <th className="py-1 pr-3 text-left font-semibold">BÔNUS/CD</th>
                 <th className="py-1 pr-3 text-left font-semibold">DANO & TIPO</th>
@@ -47,12 +50,12 @@ export function MainContentColumn({ summary, className }: MainContentColumnProps
               {weaponRows.map((w, i) => (
                 <tr
                   key={w.name || `empty-${i}`}
-                  className="border-b border-white/5 last:border-0"
+                  className="border-b border-border/50 last:border-0"
                 >
-                  <td className="py-1.5 pr-3 text-[#e8e9f0]">{w.name || "—"}</td>
-                  <td className="py-1.5 pr-3 font-semibold text-white">{w.attackBonus || "—"}</td>
-                  <td className="py-1.5 pr-3 text-[#b0b5cc]">{w.damage || "—"}</td>
-                  <td className="py-1.5 text-[#7a7e99]">{w.notes || "—"}</td>
+                  <td className="py-1.5 pr-3 text-foreground">{w.name || "—"}</td>
+                  <td className="py-1.5 pr-3 font-semibold text-foreground">{w.attackBonus || "—"}</td>
+                  <td className="py-1.5 pr-3 text-subdued">{w.damage || "—"}</td>
+                  <td className="py-1.5 text-muted-foreground">{w.notes || "—"}</td>
                 </tr>
               ))}
             </tbody>

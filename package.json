@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "preview-dev": "node -e \"const fs=require('fs');try{fs.rmSync('.next/dev/lock',{recursive:true,force:true})}catch(e){}\" && next dev -p 3001",
     "build": "next build",
     "typecheck": "next typegen && tsc --noEmit",
     "start": "next start",
@@ -42,6 +43,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "culori": "^4.0.2",
     "eslint": "^9",
     "eslint-config-next": "16.2.9",
     "jsdom": "^29.1.1",

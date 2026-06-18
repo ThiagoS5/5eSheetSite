@@ -20,11 +20,11 @@ export function AbilityScoresGrid({ summary }: AbilityScoresGridProps) {
   return (
     <section
       aria-labelledby="ability-scores-title"
-      className="rounded-md border border-white/[0.08] bg-[#10121b] p-4"
+      className="rounded-md border border-white/[0.08] bg-background p-4"
     >
       <h3
         id="ability-scores-title"
-        className="font-serif text-lg font-bold tracking-wide text-white"
+        className="font-serif text-lg font-bold tracking-wide text-foreground"
       >
         Atributos
       </h3>

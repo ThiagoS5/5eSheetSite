@@ -53,7 +53,7 @@ function renderTaggedToken(type: string, rawContent: string, key: number): React
         key={`tag-${key}`}
         type="button"
         aria-label={accessibleLabel}
-        className="rounded-sm text-[#f3c969] underline decoration-[#f3c969]/40 underline-offset-4 outline-none transition hover:text-white focus-visible:ring-2 focus-visible:ring-[#c41e1e]/70"
+        className="rounded-sm text-accent underline decoration-accent/40 underline-offset-4 outline-none transition hover:text-foreground focus-visible:ring-2 focus-visible:ring-brand-crimson-alt/70"
       >
         {label}
       </button>
@@ -66,7 +66,7 @@ function renderTaggedToken(type: string, rawContent: string, key: number): React
         key={`tag-${key}`}
         aria-label={accessibleLabel}
         tabIndex={0}
-        className="cursor-help rounded-sm text-[#e8e9f0] no-underline outline-none focus-visible:ring-2 focus-visible:ring-[#c41e1e]/70"
+        className="cursor-help rounded-sm text-foreground no-underline outline-none focus-visible:ring-2 focus-visible:ring-brand-crimson-alt/70"
         title={accessibleLabel}
       >
         {label}
@@ -79,7 +79,7 @@ function renderTaggedToken(type: string, rawContent: string, key: number): React
       key={`tag-${key}`}
       aria-label={`unknown: ${label}`}
       tabIndex={0}
-      className="cursor-help rounded-sm text-[#b0b5cc] no-underline outline-none focus-visible:ring-2 focus-visible:ring-[#c41e1e]/70"
+      className="cursor-help rounded-sm text-subdued no-underline outline-none focus-visible:ring-2 focus-visible:ring-brand-crimson-alt/70"
       title={`unknown: ${label}`}
     >
       {label}

@@ -26,6 +26,7 @@ import { useCharacterStore } from "@/src/store/useCharacterStore";
 import type { Character } from "@/types/Character";
 
 const builderStartHref = "/builder/classe";
+const sheetHref = "/sheet";
 const emptyCharactersSnapshot: readonly Character[] = [];
 const logoUrl =
   "https://lh3.googleusercontent.com/aida/AP1WRLs6nBKMZFXZPQWc3Dz44sd79kupXgFWy3_yGtyD_0pCoeQxNVqB_QUwSfqIpLA1hl-IVPXhnNf5ilC7E2rHE77Byl-_k6fE1pWeVQ34b3ewaoU9cNIx7DA-qNPTeftY3LpW8BX4__-HMQIu3eMmr335p7fBUXDeifo1qzI8SfHC96x6ONDvLU926xzzi2pHr4IYop0-hizeYiiLJ-KpoI-7yuXhvXl1jakw-iUuIWMbzYR2Fc440hKXTyw";
@@ -59,8 +60,17 @@ export function Dashboard() {
     router.push(character.currentStepHref ?? builderStartHref);
   }
 
+  function viewCharacter(character: Character) {
+    void getCharacter(character.id).then((build) => {
+      if (build) {
+        loadCharacterBuild(build);
+        router.push(sheetHref);
+      }
+    });
+  }
+
   return (
-    <div className="min-h-screen overflow-x-hidden bg-[#0a0b10] text-[#e8e9f0] selection:bg-[#e61c23] selection:text-white">
+    <div className="min-h-screen overflow-x-hidden bg-background text-foreground selection:bg-primary selection:text-foreground">
       <DashboardTopNav />
       <main className="mx-auto max-w-7xl px-4 pb-24 pt-32 md:px-8">
         {hasCharacters ? (
@@ -68,6 +78,7 @@ export function Dashboard() {
             characters={characters}
             onCreate={goToBuilder}
             onContinue={continueCharacter}
+            onView={viewCharacter}
           />
         ) : (
           <EmptyState onCreate={goToBuilder} />
@@ -98,10 +109,10 @@ function getServerCharactersSnapshot(): readonly Character[] {
 
 function DashboardTopNav() {
   return (
-    <header className="fixed left-0 top-0 z-50 flex w-full items-center justify-between border-b border-white/[0.06] bg-[#0a0b10]/90 px-6 py-3 backdrop-blur-xl">
+    <header className="fixed left-0 top-0 z-50 flex w-full items-center justify-between border-b border-white/[0.06] bg-background/90 px-6 py-3 backdrop-blur-xl">
       <div className="flex items-center gap-4">
         <ForgeFateLogo className="h-10 w-10" />
-        <h1 className="font-serif text-3xl font-bold tracking-tight text-white">
+        <h1 className="font-serif text-3xl font-bold tracking-tight text-foreground">
           Forge & Fate
         </h1>
       </div>
@@ -113,8 +124,8 @@ function DashboardTopNav() {
             type="button"
             className={`font-serif text-2xl font-semibold transition-colors ${
               index === 0
-                ? "border-b-2 border-[#e61c23] pb-1 text-white"
-                : "text-[#b0b5cc] hover:text-white"
+                ? "border-b-2 border-primary pb-1 text-foreground"
+                : "text-subdued hover:text-foreground"
             }`}
           >
             {item}
@@ -128,7 +139,7 @@ function DashboardTopNav() {
         <button
           type="button"
           aria-label="Perfil"
-          className="h-10 w-10 overflow-hidden rounded-full border border-white/[0.1] outline-none transition-transform active:scale-95 focus-visible:ring-2 focus-visible:ring-[#e61c23]"
+          className="h-10 w-10 overflow-hidden rounded-full border border-white/[0.1] outline-none transition-transform active:scale-95 focus-visible:ring-2 focus-visible:ring-primary"
         >
           <Image
             unoptimized
@@ -153,27 +164,27 @@ function EmptyState({ onCreate }: { onCreate: () => void }) {
     >
       <Card
         size="default"
-        className="relative w-full max-w-3xl border-white/[0.08] bg-[#14151b]/80 py-12 shadow-[0_0_80px_rgba(230,28,35,0.08)] backdrop-blur"
+        className="relative w-full max-w-3xl border-white/[0.08] bg-surface-base/80 py-12 shadow-[0_0_80px_rgba(230,28,35,0.08)] backdrop-blur"
       >
         <CardContent className="flex flex-col items-center">
           <div className="relative mx-auto mb-8 w-full max-w-2xl">
-            <div className="absolute inset-0 rounded-full bg-[#e61c23]/10 blur-[100px]" />
+            <div className="absolute inset-0 rounded-full bg-primary/10 blur-[100px]" />
             <ForgeFateLogo
               decorative
               className="relative mx-auto h-56 w-56 animate-pulse opacity-40 mix-blend-screen sm:h-64 sm:w-64"
             />
           </div>
-          <h2 id="empty-state-title" className="mb-4 font-serif text-4xl font-bold text-white sm:text-5xl">
+          <h2 id="empty-state-title" className="mb-4 font-serif text-4xl font-bold text-foreground sm:text-5xl">
             Forje Sua Alma
           </h2>
-          <p className="mx-auto mb-8 max-w-lg font-sans text-lg leading-7 text-[#b0b5cc]">
+          <p className="mx-auto mb-8 max-w-lg font-sans text-lg leading-7 text-subdued">
             Nenhum heroi forjado ainda. Inicie sua jornada criando um novo personagem.
           </p>
           <Button
             type="button"
             onClick={onCreate}
             size="lg"
-            className="crimson-glow mx-auto h-auto gap-3 px-8 py-4 font-sans font-bold uppercase tracking-[0.08em] hover:bg-[#a91515] active:scale-95"
+            className="crimson-glow mx-auto h-auto gap-3 px-8 py-4 font-sans font-bold uppercase tracking-[0.08em] hover:bg-destructive active:scale-95"
           >
             <Plus className="h-5 w-5" />
             Criar Novo Personagem
@@ -188,28 +199,30 @@ function PopulatedState({
   characters,
   onCreate,
   onContinue,
+  onView,
 }: {
   characters: readonly Character[];
   onCreate: () => void;
   onContinue: (character: Character) => void;
+  onView: (character: Character) => void;
 }) {
   return (
     <section id="populated-state" aria-labelledby="dashboard-title">
       <header className="mb-8">
-        <h2 id="dashboard-title" className="mb-2 font-serif text-4xl font-semibold text-white">
+        <h2 id="dashboard-title" className="mb-2 font-serif text-4xl font-semibold text-foreground">
           Bem-vindo, Arquiteto
         </h2>
-        <p className="font-sans text-lg leading-7 text-[#b0b5cc]">Sua jornada continua.</p>
+        <p className="font-sans text-lg leading-7 text-subdued">Sua jornada continua.</p>
       </header>
 
       <div className="mb-6 flex items-center justify-between">
-        <h3 className="border-l-4 border-[#e61c23] pl-4 font-serif text-2xl font-semibold text-white">
+        <h3 className="border-l-4 border-primary pl-4 font-serif text-2xl font-semibold text-foreground">
           Seus Personagens
         </h3>
         <button
           type="button"
           onClick={onCreate}
-          className="flex items-center gap-2 font-sans font-bold text-white outline-none transition-colors hover:text-[#e61c23] md:hidden"
+          className="flex items-center gap-2 font-sans font-bold text-foreground outline-none transition-colors hover:text-primary md:hidden"
         >
           <Plus className="h-4 w-4" />
           Novo
@@ -220,12 +233,12 @@ function PopulatedState({
         <button
           type="button"
           onClick={onCreate}
-          className="glass-card group flex min-h-[280px] flex-col items-center justify-center rounded-xl border-2 border-dashed border-white/[0.1] outline-none transition-colors hover:border-[#e61c23] focus-visible:ring-2 focus-visible:ring-[#e61c23]"
+          className="glass-card group flex min-h-[280px] flex-col items-center justify-center rounded-xl border-2 border-dashed border-white/[0.1] outline-none transition-colors hover:border-primary focus-visible:ring-2 focus-visible:ring-primary"
         >
-          <span className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#1c1e2a] transition-colors group-hover:bg-[#e61c23]/15">
-            <Plus className="h-10 w-10 text-[#b0b5cc] transition-colors group-hover:text-white" />
+          <span className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-card transition-colors group-hover:bg-primary/15">
+            <Plus className="h-10 w-10 text-subdued transition-colors group-hover:text-foreground" />
           </span>
-          <span className="font-serif text-2xl font-semibold text-[#b0b5cc] transition-colors group-hover:text-white">
+          <span className="font-serif text-2xl font-semibold text-subdued transition-colors group-hover:text-foreground">
             Novo Heroi
           </span>
         </button>
@@ -235,6 +248,7 @@ function PopulatedState({
             key={character.id}
             character={character}
             onContinue={() => onContinue(character)}
+            onView={() => onView(character)}
           />
         ))}
       </div>
@@ -245,15 +259,17 @@ function PopulatedState({
 function DashboardCharacterCard({
   character,
   onContinue,
+  onView,
 }: {
   character: Character;
   onContinue: () => void;
+  onView: () => void;
 }) {
   return (
     <article className="glass-card parchment-grain flex min-h-[280px] flex-col justify-between rounded-xl p-6">
       <div>
         <div className="mb-4 flex items-start justify-between">
-          <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-lg border border-white/[0.08] bg-[#1c1e2a]">
+          <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-lg border border-white/[0.08] bg-card">
             {character.portraitUrl ? (
               <Image
                 unoptimized
@@ -264,17 +280,17 @@ function DashboardCharacterCard({
                 className="h-full w-full object-cover"
               />
             ) : (
-              <UserCircle className="h-9 w-9 text-[#b0b5cc]" />
+              <UserCircle className="h-9 w-9 text-subdued" />
             )}
           </div>
-          <span className="rounded-full border border-white/[0.08] bg-white/[0.04] px-3 py-1 font-mono text-xs font-bold uppercase tracking-[0.1em] text-white">
+          <span className="rounded-full border border-white/[0.08] bg-white/[0.04] px-3 py-1 font-mono text-xs font-bold uppercase tracking-[0.1em] text-foreground">
             Level {character.level ?? 1}
           </span>
         </div>
-        <h4 className="mb-2 font-serif text-2xl font-semibold text-white">
+        <h4 className="mb-2 font-serif text-2xl font-semibold text-foreground">
           {character.nome}
         </h4>
-        <p className="font-sans text-base text-[#b0b5cc]">
+        <p className="font-sans text-base text-subdued">
           {character.species} / {character.classe}
         </p>
       </div>
@@ -282,14 +298,15 @@ function DashboardCharacterCard({
         <button
           type="button"
           onClick={onContinue}
-          className="flex-1 rounded-lg bg-[#e61c23] py-2 font-mono text-xs font-bold uppercase tracking-[0.1em] text-white outline-none transition-all hover:bg-[#a91515] active:scale-95 focus-visible:ring-2 focus-visible:ring-[#e61c23]"
+          className="flex-1 rounded-lg bg-primary py-2 font-mono text-xs font-bold uppercase tracking-[0.1em] text-foreground outline-none transition-all hover:bg-destructive active:scale-95 focus-visible:ring-2 focus-visible:ring-primary"
         >
           Continuar
         </button>
         <button
           type="button"
+          onClick={onView}
           aria-label={`Ver ${character.nome}`}
-          className="rounded-lg border border-white/[0.08] px-3 py-2 text-[#b0b5cc] outline-none transition-all hover:border-[#e61c23]/60 hover:bg-white/[0.04] hover:text-white active:scale-95 focus-visible:ring-2 focus-visible:ring-[#e61c23]"
+          className="rounded-lg border border-white/[0.08] px-3 py-2 text-subdued outline-none transition-all hover:border-primary/60 hover:bg-white/[0.04] hover:text-foreground active:scale-95 focus-visible:ring-2 focus-visible:ring-primary"
         >
           <Eye className="h-5 w-5" />
         </button>
@@ -302,7 +319,7 @@ function DashboardBottomNav() {
   return (
     <nav
       aria-label="Navegacao mobile"
-      className="fixed bottom-0 left-0 z-50 flex w-full items-center justify-around rounded-t-xl border-t border-white/[0.06] bg-[#14151b]/95 px-4 py-2 shadow-2xl backdrop-blur-lg lg:hidden"
+      className="fixed bottom-0 left-0 z-50 flex w-full items-center justify-around rounded-t-xl border-t border-white/[0.06] bg-surface-base/95 px-4 py-2 shadow-2xl backdrop-blur-lg lg:hidden"
     >
       <MobileNavItem active icon={<WandSparkles className="h-5 w-5" />} label="Forge" />
       <MobileNavItem icon={<BookOpen className="h-5 w-5" />} label="Spells" />
@@ -326,8 +343,8 @@ function MobileNavItem({
       type="button"
       className={`flex flex-col items-center justify-center rounded-xl p-2 font-mono text-xs font-bold uppercase tracking-[0.1em] transition-colors ${
         active
-          ? "bg-[#e61c23]/15 text-white ring-2 ring-[#e61c23]/25"
-          : "text-[#b0b5cc] hover:text-white"
+          ? "bg-primary/15 text-foreground ring-2 ring-primary/25"
+          : "text-subdued hover:text-foreground"
       }`}
     >
       {icon}
@@ -341,7 +358,7 @@ function IconButton({ label, icon }: { label: string; icon: ReactNode }) {
     <button
       type="button"
       aria-label={label}
-      className="text-[#b0b5cc] outline-none transition-colors hover:text-white active:scale-95 focus-visible:ring-2 focus-visible:ring-[#e61c23]"
+      className="text-subdued outline-none transition-colors hover:text-foreground active:scale-95 focus-visible:ring-2 focus-visible:ring-primary"
     >
       {icon}
     </button>
@@ -362,7 +379,7 @@ function ForgeFateLogo({
       <span
         aria-hidden={decorative}
         aria-label={decorative ? undefined : "Forge & Fate"}
-        className={`${className} flex items-center justify-center rounded-full border border-white/[0.08] bg-[#14151b] text-[#e61c23]`}
+        className={`${className} flex items-center justify-center rounded-full border border-white/[0.08] bg-surface-base text-primary`}
       >
         <WandSparkles className="h-1/2 w-1/2" />
       </span>

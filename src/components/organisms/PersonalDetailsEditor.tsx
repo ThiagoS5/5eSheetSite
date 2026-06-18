@@ -27,16 +27,16 @@ const LIFESTYLES = [
 ];
 
 const inputCls =
-  "bg-[#12131a] border-white/10 text-white placeholder:text-[#7a7e99] focus-visible:border-[#e61c23] focus-visible:ring-[#e61c23]/30";
+  "bg-surface-nested border-border text-foreground placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-primary/30";
 
 const selectCls =
-  "w-full rounded-lg border border-white/10 bg-[#12131a] px-3 py-2 text-sm text-white outline-none transition focus:border-[#e61c23] focus:ring-2 focus:ring-[#e61c23]/30 appearance-none cursor-pointer";
+  "w-full rounded-lg border border-border bg-surface-nested px-3 py-2 text-sm text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/30 appearance-none cursor-pointer";
 
 const textareaCls =
-  "w-full rounded-lg border border-white/10 bg-[#12131a] px-3 py-2 text-sm text-white placeholder:text-[#7a7e99] outline-none transition focus:border-[#e61c23] focus:ring-2 focus:ring-[#e61c23]/30 resize-none";
+  "w-full rounded-lg border border-border bg-surface-nested px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/30 resize-none";
 
 const labelCls =
-  "mb-1.5 block text-[0.65rem] font-semibold uppercase tracking-widest text-[#7a7e99]";
+  "mb-1.5 block text-[0.65rem] font-semibold uppercase tracking-widest text-muted-foreground";
 
 export function PersonalDetailsEditor() {
   const description = useCharacterStore((s) => s.description);
@@ -57,8 +57,8 @@ export function PersonalDetailsEditor() {
     <div className="space-y-5">
       {/* Identidade */}
       <section className="glass-card rounded-xl p-4 sm:p-6">
-        <h3 className="mb-5 flex items-center gap-2.5 border-b border-white/5 pb-3 text-sm font-semibold uppercase tracking-widest text-white">
-          <i aria-hidden="true" className="fa-solid fa-fingerprint text-[#e61c23]" />
+        <h3 className="mb-5 flex items-center gap-2.5 border-b border-border/50 pb-3 text-sm font-semibold uppercase tracking-widest text-foreground">
+          <i aria-hidden="true" className="fa-solid fa-fingerprint text-primary" />
           Identidade
         </h3>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-5">
@@ -105,8 +105,8 @@ export function PersonalDetailsEditor() {
 
       {/* Características Físicas */}
       <section className="glass-card rounded-xl p-4 sm:p-6">
-        <h3 className="mb-5 flex items-center gap-2.5 border-b border-white/5 pb-3 text-sm font-semibold uppercase tracking-widest text-white">
-          <i aria-hidden="true" className="fa-solid fa-person text-[#e61c23]" />
+        <h3 className="mb-5 flex items-center gap-2.5 border-b border-border/50 pb-3 text-sm font-semibold uppercase tracking-widest text-foreground">
+          <i aria-hidden="true" className="fa-solid fa-person text-primary" />
           Características Físicas
         </h3>
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-5">
@@ -173,8 +173,8 @@ export function PersonalDetailsEditor() {
 
       {/* Narrativa & Histórico */}
       <section className="glass-card rounded-xl p-4 sm:p-6">
-        <h3 className="mb-5 flex items-center gap-2.5 border-b border-white/5 pb-3 text-sm font-semibold uppercase tracking-widest text-white">
-          <i aria-hidden="true" className="fa-solid fa-book-open text-[#e61c23]" />
+        <h3 className="mb-5 flex items-center gap-2.5 border-b border-border/50 pb-3 text-sm font-semibold uppercase tracking-widest text-foreground">
+          <i aria-hidden="true" className="fa-solid fa-book-open text-primary" />
           Narrativa & Histórico
         </h3>
         <div className="space-y-4 md:space-y-5">

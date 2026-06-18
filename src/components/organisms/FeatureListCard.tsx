@@ -18,9 +18,9 @@ export function FeatureListCard({
   return (
     <section
       aria-labelledby={headingId}
-      className="rounded-md border border-white/[0.08] bg-[#10121b] p-4"
+      className="rounded-md border border-white/[0.08] bg-background p-4"
     >
-      <h3 id={headingId} className="font-serif text-lg font-bold tracking-wide text-white">
+      <h3 id={headingId} className="font-serif text-lg font-bold tracking-wide text-foreground">
         {title}
       </h3>
       {features.length > 0 ? (
@@ -31,7 +31,7 @@ export function FeatureListCard({
               className="rounded-md border border-white/[0.06] bg-white/[0.03] px-3 py-3"
             >
               <HoverTooltip content={<p>{parseTaggedText(feature.description)}</p>}>
-                <span className="font-serif text-base font-bold tracking-wide text-[#f3c969]">
+                <span className="font-serif text-base font-bold tracking-wide text-accent">
                   {feature.name}
                 </span>
               </HoverTooltip>
@@ -39,7 +39,7 @@ export function FeatureListCard({
           ))}
         </ul>
       ) : (
-        <p className="mt-4 text-sm leading-6 text-[#7a7e99]">{emptyLabel}</p>
+        <p className="mt-4 text-sm leading-6 text-muted-foreground">{emptyLabel}</p>
       )}
     </section>
   );

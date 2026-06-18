@@ -18,12 +18,12 @@ export function SkillRow({ skill, compact = false }: SkillRowProps) {
     >
       {/* Proficiency circle */}
       {skill.isExpert ? (
-        <div className="flex h-3 w-3 shrink-0 items-center justify-center rounded-full border border-[#f3c969] bg-[#f3c969]/20">
-          <div className="h-1.5 w-1.5 rounded-full bg-[#f3c969]" />
+        <div className="flex h-3 w-3 shrink-0 items-center justify-center rounded-full border border-accent bg-accent/20">
+          <div className="h-1.5 w-1.5 rounded-full bg-accent" />
         </div>
       ) : skill.isProficient ? (
-        <div className="flex h-3 w-3 shrink-0 items-center justify-center rounded border border-[#e61c23] bg-[#e61c23]/20">
-          <div className="h-1.5 w-1.5 rounded-sm bg-[#e61c23]" />
+        <div className="flex h-3 w-3 shrink-0 items-center justify-center rounded border border-primary bg-primary/20">
+          <div className="h-1.5 w-1.5 rounded-sm bg-primary" />
         </div>
       ) : (
         <div className="h-3 w-3 shrink-0 rounded border border-white/30" />
@@ -32,14 +32,14 @@ export function SkillRow({ skill, compact = false }: SkillRowProps) {
       <span
         className={cn(
           "min-w-[1.5rem] text-right text-[0.72rem] font-semibold",
-          skill.modifier >= 0 ? "text-white" : "text-[#b0b5cc]",
+          skill.modifier >= 0 ? "text-foreground" : "text-subdued",
         )}
       >
         {sign}{skill.modifier}
       </span>
 
-      <span className="text-[0.72rem] text-[#b0b5cc]">{skill.label}</span>
-      <span className="ml-auto text-[0.6rem] text-[#7a7e99]">{skill.attributeKey.slice(0, 3).toUpperCase()}</span>
+      <span className="text-[0.72rem] text-subdued">{skill.label}</span>
+      <span className="ml-auto text-[10px] text-muted-foreground">{skill.attributeKey.slice(0, 3).toUpperCase()}</span>
     </div>
   );
 }

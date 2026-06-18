@@ -14,13 +14,13 @@ export function ActionBtn({
 }: ActionBtnProps) {
   const intentClass =
     intent === "primary"
-      ? "border-[#c41e1e] bg-[#c41e1e] text-white shadow-lg shadow-[#c41e1e]/20 hover:bg-[#a91515]"
-      : "border-white/10 bg-white/5 text-[#e8e9f0] hover:border-white/20 hover:bg-white/10";
+      ? "border-brand-crimson-alt bg-brand-crimson-alt text-foreground shadow-lg shadow-brand-crimson-alt/20 hover:bg-destructive"
+      : "border-border bg-white/5 text-foreground hover:border-white/20 hover:bg-white/10";
 
   return (
     <button
       type={type}
-      className={`inline-flex min-h-11 items-center justify-center rounded-md border px-4 py-2 text-sm font-bold uppercase tracking-[0.08em] outline-none transition focus-visible:ring-2 focus-visible:ring-[#f3c969] disabled:cursor-not-allowed disabled:opacity-50 ${intentClass} ${className}`}
+      className={`inline-flex min-h-11 items-center justify-center rounded-md border px-4 py-2 text-sm font-bold uppercase tracking-[0.08em] outline-none transition focus-visible:ring-2 focus-visible:ring-accent disabled:cursor-not-allowed disabled:opacity-50 ${intentClass} ${className}`}
       {...props}
     >
       {children}

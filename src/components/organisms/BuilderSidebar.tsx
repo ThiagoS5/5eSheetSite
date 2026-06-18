@@ -117,14 +117,14 @@ export function BuilderSidebar() {
 
   return (
     <aside
-      className={`hidden min-w-0 flex-col border-b border-white/5 bg-[#0f1018] text-[#e8e9f0] xl:flex xl:min-h-[calc(100dvh-4rem)] xl:border-b-0 xl:border-r ${
+      className={`hidden min-w-0 flex-col border-b border-border/50 bg-muted text-foreground xl:flex xl:min-h-[calc(100dvh-4rem)] xl:border-b-0 xl:border-r ${
         collapsed ? "xl:w-[4.5rem]" : "xl:w-full"
       }`}
     >
         <Sidebar collapsible="icon" contained className="w-full bg-transparent">
           <SidebarHeader
             className={cn(
-              "h-16 flex-row items-center border-b border-white/5 px-3 transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)]",
+              "h-16 flex-row items-center border-b border-border/50 px-3 transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)]",
               collapsed ? "justify-center" : "justify-between",
             )}
           >
@@ -136,7 +136,7 @@ export function BuilderSidebar() {
                 title="Abrir barra lateral (Ctrl+B)"
                 aria-label="Abrir barra lateral"
                 onClick={toggleSidebar}
-                className="h-10 w-10 text-[#b0b5cc] transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)] hover:bg-white/5 hover:text-white focus-visible:ring-2 focus-visible:ring-[#e61c23]/70"
+                className="h-10 w-10 text-subdued transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)] hover:bg-white/5 hover:text-foreground focus-visible:ring-2 focus-visible:ring-primary/70"
               >
                 <PanelLeftOpen className="h-5 w-5" />
               </Button>
@@ -145,11 +145,11 @@ export function BuilderSidebar() {
                 <div className="flex min-w-0 items-center gap-2">
                   <span
                     aria-hidden="true"
-                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-[#e61c23] text-white shadow-[0_0_18px_rgba(230,28,35,0.32)]"
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-primary text-foreground shadow-[0_0_18px_rgba(230,28,35,0.32)]"
                   >
                     <Swords className="h-5 w-5" />
                   </span>
-                  <span className="truncate font-serif text-sm font-bold uppercase tracking-[0.12em] text-[#e61c23]">
+                  <span className="truncate font-serif text-sm font-bold uppercase tracking-[0.12em] text-foreground">
                     FORGE & FATE
                   </span>
                 </div>
@@ -160,7 +160,7 @@ export function BuilderSidebar() {
                   title="Fechar barra lateral (Ctrl+B)"
                   aria-label="Fechar barra lateral"
                   onClick={toggleSidebar}
-                  className="h-10 w-10 shrink-0 text-[#b0b5cc] transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)] hover:bg-white/5 hover:text-white focus-visible:ring-2 focus-visible:ring-[#e61c23]/70"
+                  className="h-10 w-10 shrink-0 text-subdued transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)] hover:bg-white/5 hover:text-foreground focus-visible:ring-2 focus-visible:ring-primary/70"
                 >
                   <PanelLeftClose className="h-5 w-5" />
                 </Button>
@@ -185,7 +185,7 @@ export function BuilderSidebar() {
                 1,
               )} de ${totalSteps}`}
               className={cn(
-                "mb-4 h-1 bg-white/5 transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)] [&>div]:bg-[#e61c23] [&>div]:shadow-[0_0_8px_rgba(230,28,35,0.4)]",
+                "mb-4 h-1 bg-white/5 transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)] [&>div]:bg-primary [&>div]:shadow-[0_0_8px_rgba(230,28,35,0.4)]",
                 collapsed && "xl:hidden",
               )}
             />
@@ -224,13 +224,13 @@ export function BuilderSidebar() {
           </SidebarContent>
 
           <SidebarFooter
-            className={`mt-auto border-t border-white/5 px-4 pt-4 ${
+            className={`mt-auto border-t border-border/50 px-4 pt-4 ${
               collapsed ? "xl:hidden" : ""
             }`}
           >
             <button
               type="button"
-              className="flex w-full items-center justify-center gap-2 rounded border border-white/10 px-4 py-2 font-mono text-[0.62rem] font-bold uppercase tracking-[0.16em] text-[#7a7e99] outline-none transition-colors hover:bg-white/5 hover:text-white focus-visible:ring-2 focus-visible:ring-[#e61c23]/70"
+              className="flex w-full items-center justify-center gap-2 rounded border border-border px-4 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground outline-none transition-colors hover:bg-white/5 hover:text-foreground focus-visible:ring-2 focus-visible:ring-primary/70"
             >
               <Save className="h-4 w-4" />
               SAVE DRAFT
@@ -238,14 +238,14 @@ export function BuilderSidebar() {
             <div className="flex justify-between gap-4 pb-4 pt-4">
               <button
                 type="button"
-                className="flex items-center gap-2 font-mono text-[0.62rem] font-bold uppercase tracking-[0.12em] text-[#7a7e99] outline-none transition-colors hover:text-white focus-visible:ring-2 focus-visible:ring-[#e61c23]/70"
+                className="flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-primary/70"
               >
                 <HelpCircle className="h-4 w-4" />
                 Help
               </button>
               <button
                 type="button"
-                className="flex items-center gap-2 font-mono text-[0.62rem] font-bold uppercase tracking-[0.12em] text-[#7a7e99] outline-none transition-colors hover:text-white focus-visible:ring-2 focus-visible:ring-[#e61c23]/70"
+                className="flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-primary/70"
               >
                 <MessageCircle className="h-4 w-4" />
                 Feedback
@@ -307,7 +307,7 @@ function GroupedStepItem({
             />
             <ChevronDown
               className={cn(
-                "ml-auto h-4 w-4 text-[#7a7e99] transition-transform",
+                "ml-auto h-4 w-4 text-muted-foreground transition-transform",
                 open && "rotate-180",
                 collapsed && "xl:hidden",
               )}
@@ -315,7 +315,7 @@ function GroupedStepItem({
           </SidebarMenuButton>
         </CollapsibleTrigger>
         <CollapsibleContent className={collapsed ? "xl:hidden" : ""}>
-          <SidebarMenuSub className="ml-3 border-l border-white/10 px-0 pl-3">
+          <SidebarMenuSub className="ml-3 border-l border-border px-0 pl-3">
             {group.childSlugs.map((slug) => (
               <SubStepItem
                 key={slug}
@@ -453,15 +453,15 @@ function SubStepItem({
 }
 
 const baseStepClass =
-  "min-h-12 gap-3 rounded-none border-l-4 px-4 py-3 text-left text-sm outline-none transition-all hover:bg-white/5 focus-visible:ring-2 focus-visible:ring-[#e61c23]/70 data-[active=true]:bg-[#e61c23]/15 data-[active=true]:text-white";
+  "min-h-12 gap-3 rounded-none border-l-4 px-4 py-3 text-left text-sm outline-none transition-all hover:bg-white/5 focus-visible:ring-2 focus-visible:ring-primary/70 data-[active=true]:bg-primary/15 data-[active=true]:text-foreground";
 
-const activeStepClass = "border-[#e61c23] bg-[#e61c23]/15 text-white";
-const completeStepClass = "border-transparent text-[#50c878] hover:text-[#50c878]";
-const availableStepClass = "border-transparent text-[#7a7e99] hover:text-[#b0b5cc]";
+const activeStepClass = "border-primary bg-primary/15 text-foreground";
+const completeStepClass = "border-transparent text-brand-green hover:text-brand-green";
+const availableStepClass = "border-transparent text-muted-foreground hover:text-subdued";
 const lockedStepClass =
-  "cursor-not-allowed border-transparent text-[#555a70] opacity-70 hover:bg-transparent hover:text-[#555a70]";
+  "cursor-not-allowed border-transparent text-faint opacity-70 hover:bg-transparent hover:text-faint";
 const subStepClass =
-  "h-9 rounded-md px-2 font-sans text-sm outline-none focus-visible:ring-2 focus-visible:ring-[#e61c23]/70";
+  "h-9 rounded-md px-2 font-sans text-sm outline-none focus-visible:ring-2 focus-visible:ring-primary/70";
 
 function getStepClass(status: StepStatus): string {
   if (status === "active") {
@@ -481,18 +481,18 @@ function getStepClass(status: StepStatus): string {
 
 function getSubStepClass(status: StepStatus): string {
   if (status === "active") {
-    return "bg-[#e61c23]/15 text-[#e61c23] hover:text-[#e61c23]";
+    return "bg-primary/15 text-foreground hover:text-foreground";
   }
 
   if (status === "complete") {
-    return "text-[#50c878] hover:text-[#50c878]";
+    return "text-brand-green hover:text-brand-green";
   }
 
   if (status === "locked") {
-    return "cursor-not-allowed text-[#555a70] hover:bg-transparent hover:text-[#555a70]";
+    return "cursor-not-allowed text-faint hover:bg-transparent hover:text-faint";
   }
 
-  return "text-[#7a7e99] hover:text-[#b0b5cc]";
+  return "text-muted-foreground hover:text-subdued";
 }
 
 function getStepStatus(
@@ -565,7 +565,7 @@ function StepIcon({
     <FontAwesomeIcon
       iconClassName={icon}
       className={`h-5 w-5 shrink-0 ${
-        active ? "text-[#e61c23]" : done ? "text-[#50c878]" : "text-current"
+        active ? "text-primary" : done ? "text-brand-green" : "text-current"
       }`}
     />
   );
@@ -576,7 +576,7 @@ function SubStepStatusIcon({ status }: { status: StepStatus }) {
     return (
       <FontAwesomeIcon
         iconClassName="fa-solid fa-check"
-        className="h-3 w-3 shrink-0 text-[#50c878]"
+        className="h-3 w-3 shrink-0 text-brand-green"
       />
     );
   }
@@ -586,7 +586,7 @@ function SubStepStatusIcon({ status }: { status: StepStatus }) {
       aria-hidden="true"
       className={cn(
         "h-2 w-2 shrink-0 rounded-full",
-        status === "active" ? "bg-[#e61c23]" : "bg-[#555a70]",
+        status === "active" ? "bg-primary" : "bg-faint",
       )}
     />
   );
