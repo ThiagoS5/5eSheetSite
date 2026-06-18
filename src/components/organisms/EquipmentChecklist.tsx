@@ -187,10 +187,10 @@ function ModeButton({
       type="button"
       aria-pressed={active}
       onClick={onClick}
-      className={`rounded-md border px-3 py-2 text-xs font-bold uppercase tracking-[0.08em] transition ${
+      className={`cursor-pointer rounded-md border px-3 py-2 text-xs font-bold uppercase tracking-[0.08em] transition ${
         active
           ? "border-primary bg-primary text-foreground"
-          : "border-border bg-white/5 text-muted-foreground hover:text-foreground"
+          : "border-border bg-white/5 text-muted-foreground hover:border-border/80 hover:bg-surface-raised hover:text-foreground"
       }`}
     >
       {label}
