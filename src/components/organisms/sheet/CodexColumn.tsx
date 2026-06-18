@@ -2,6 +2,7 @@
 
 import type { CharacterDescription, CharacterSheetSummary } from "@/types/builder";
 import { cn } from "@/src/lib/utils";
+import { truncate } from "@/src/utils/truncate";
 
 interface CodexColumnProps {
   summary: CharacterSheetSummary;
@@ -13,48 +14,61 @@ function isFilled(value: string | undefined | null): boolean {
   return Boolean(value && value.trim() !== "");
 }
 
-function fieldValue(value: string | undefined | null): string {
-  return isFilled(value) ? (value as string) : "—";
-}
-
 const labelClass =
   "text-[10px] font-semibold uppercase tracking-widest text-muted-foreground";
 
-function CodexField({ label, value }: { label: string; value: string | undefined | null }) {
+function CodexField({
+  label,
+  value,
+  limit,
+}: {
+  label: string;
+  value: string | undefined | null;
+  limit: number;
+}) {
   const filled = isFilled(value);
   return (
     <div className="flex flex-col gap-0.5">
       <span className={labelClass}>{label}</span>
       <span
         className={cn(
-          "text-[0.8rem]",
+          "text-sm",
           filled ? "text-foreground" : "select-none text-muted-foreground",
         )}
       >
-        {fieldValue(value)}
+        {truncate(value, limit)}
       </span>
     </div>
   );
 }
 
-function CodexTextField({
+function NarrativeField({
   label,
   value,
+  limit,
+  withCard = false,
 }: {
   label: string;
   value: string | undefined | null;
+  limit: number;
+  withCard?: boolean;
 }) {
   const filled = isFilled(value);
   return (
-    <div className="flex flex-col gap-1.5 rounded-lg border border-border/50 bg-surface-nested p-3">
+    <div
+      className={cn(
+        "flex flex-col gap-1.5",
+        withCard && "rounded-lg border border-border/50 bg-surface-nested p-3",
+      )}
+    >
       <span className={labelClass}>{label}</span>
       <p
         className={cn(
-          "text-[0.8rem] leading-relaxed",
-          filled ? "text-subdued" : "select-none text-muted-foreground",
+          "text-base leading-relaxed",
+          filled ? "text-subdued" : "select-none italic text-muted-foreground",
         )}
       >
-        {fieldValue(value)}
+        {truncate(value, limit)}
       </p>
     </div>
   );
@@ -88,53 +102,33 @@ export function CodexColumn({ summary: _summary, description, className }: Codex
         <div className="flex aspect-[3/4] w-full items-center justify-center rounded-lg border border-border/50 bg-muted">
           <i aria-hidden="true" className="fa-solid fa-user text-5xl text-muted-foreground" />
         </div>
-        <CodexFieldInline label="Aparência Fiel" value={description.aparencia} />
+        <NarrativeField label="Aparência Fiel" value={description.aparencia} limit={150} />
       </div>
 
       {/* Dados pessoais */}
       <div className="flex flex-col gap-3 rounded-lg border border-border/50 bg-surface-nested p-3">
-        <CodexField label="Tendência" value={description.alinhamento} />
-        <CodexField label="Fé" value={description.faith} />
-        <CodexField label="Estilo de Vida" value={description.lifestyle} />
+        <CodexField label="Tendência" value={description.alinhamento} limit={25} />
+        <CodexField label="Fé" value={description.faith} limit={40} />
+        <CodexField label="Estilo de Vida" value={description.lifestyle} limit={40} />
         <div className="grid grid-cols-2 gap-3">
-          <CodexField label="Idade" value={description.age} />
-          <CodexField label="Gênero" value={description.gender} />
+          <CodexField label="Idade" value={description.age} limit={12} />
+          <CodexField label="Gênero" value={description.gender} limit={20} />
         </div>
         <div className="grid grid-cols-2 gap-3">
-          <CodexField label="Altura" value={description.height} />
-          <CodexField label="Peso" value={description.weight} />
+          <CodexField label="Altura" value={description.height} limit={12} />
+          <CodexField label="Peso" value={description.weight} limit={12} />
         </div>
       </div>
 
-      {/* Personalidade */}
-      <CodexTextField
-        label="Traços de Personalidade"
-        value={description.personalidade}
-      />
+      {/* Traços de Personalidade — campos narrativos */}
+      <section className="flex flex-col gap-4 rounded-lg border border-border/50 bg-surface-nested p-3">
+        <h3 className="border-b border-border/50 pb-2 text-base font-semibold text-foreground">
+          Traços de Personalidade
+        </h3>
+        <NarrativeField label="Personalidade & Maneirismos" value={description.personalidade} limit={100} />
+        <NarrativeField label="História Prévia" value={description.tracos} limit={200} />
+        <NarrativeField label="Notas" value={description.notas} limit={150} />
+      </section>
     </aside>
-  );
-}
-
-/** Texto longo dentro de um sub-card já existente (sem container próprio). */
-function CodexFieldInline({
-  label,
-  value,
-}: {
-  label: string;
-  value: string | undefined | null;
-}) {
-  const filled = isFilled(value);
-  return (
-    <div className="flex flex-col gap-1.5">
-      <span className={labelClass}>{label}</span>
-      <p
-        className={cn(
-          "text-[0.8rem] leading-relaxed",
-          filled ? "text-subdued" : "select-none text-muted-foreground",
-        )}
-      >
-        {fieldValue(value)}
-      </p>
-    </div>
   );
 }
