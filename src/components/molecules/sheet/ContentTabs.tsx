@@ -151,9 +151,9 @@ export function ContentTabs({ summary }: ContentTabsProps) {
         <div>
           {summary.selectedEquipment.length > 0 ? (
             <ul className="divide-y divide-white/5 rounded-lg border border-white/[0.08] bg-card overflow-hidden">
-              {summary.selectedEquipment.map((item) => (
+              {summary.selectedEquipment.map((item, index) => (
                 <li
-                  key={item.id}
+                  key={`${item.id}-${index}`}
                   className="flex items-center gap-3 px-3 py-2.5"
                 >
                   <i aria-hidden="true" className="fa-solid fa-circle-dot text-[10px] text-muted-foreground" />
