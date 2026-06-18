@@ -188,7 +188,7 @@ function BackgroundDetailsModal({
                 className="absolute inset-0 bg-gradient-to-t from-card via-card/40 to-transparent"
               />
               <div className="absolute bottom-0 left-0 w-full p-6">
-                <span className="mb-1 block text-[10px] font-bold uppercase tracking-[0.14em] text-primary">
+                <span className="mb-1 block text-[10px] font-bold uppercase tracking-[0.14em] text-foreground">
                   Antecedente
                 </span>
                 <h2 className="font-serif text-3xl font-bold text-foreground">
@@ -228,7 +228,7 @@ function BackgroundDetailsModal({
                       title="Talento de Origem"
                       accent
                     >
-                      <p className="font-medium text-primary">
+                      <p className="font-medium text-foreground">
                         {background.originFeat || "-"}
                       </p>
                     </RewardPanel>
@@ -320,7 +320,7 @@ function BackgroundRewardCallout({
           aria-hidden="true"
           className="fa-solid fa-wand-sparkles text-sm text-primary"
         />
-        <h4 className="text-[10px] font-bold uppercase tracking-[0.14em] text-primary">
+        <h4 className="text-[10px] font-bold uppercase tracking-[0.14em] text-foreground">
           Talento de Origem
         </h4>
       </div>

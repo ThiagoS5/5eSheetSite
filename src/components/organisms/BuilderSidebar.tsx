@@ -149,7 +149,7 @@ export function BuilderSidebar() {
                   >
                     <Swords className="h-5 w-5" />
                   </span>
-                  <span className="truncate font-serif text-sm font-bold uppercase tracking-[0.12em] text-primary">
+                  <span className="truncate font-serif text-sm font-bold uppercase tracking-[0.12em] text-foreground">
                     FORGE & FATE
                   </span>
                 </div>
@@ -481,7 +481,7 @@ function getStepClass(status: StepStatus): string {
 
 function getSubStepClass(status: StepStatus): string {
   if (status === "active") {
-    return "bg-primary/15 text-primary hover:text-primary";
+    return "bg-primary/15 text-foreground hover:text-foreground";
   }
 
   if (status === "complete") {

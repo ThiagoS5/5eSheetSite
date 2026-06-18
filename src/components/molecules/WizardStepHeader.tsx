@@ -30,7 +30,7 @@ export function WizardStepHeader({
     <div className="flex flex-col gap-4 border-b border-white/[0.06] pb-5 lg:flex-row lg:items-end lg:justify-between">
       <div>
         {eyebrow ? (
-          <p className="text-[0.68rem] font-bold uppercase tracking-[0.18em] text-brand-crimson-alt">
+          <p className="text-[0.68rem] font-bold uppercase tracking-[0.18em] text-foreground">
             {eyebrow}
           </p>
         ) : null}

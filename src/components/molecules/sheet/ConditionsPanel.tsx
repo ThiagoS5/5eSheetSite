@@ -35,7 +35,7 @@ export function ConditionsPanel() {
         <button
           type="button"
           onClick={() => setExpanded((v) => !v)}
-          className="text-[10px] text-primary hover:underline"
+          className="text-[10px] text-foreground hover:underline"
         >
           {expanded ? "Fechar" : "+ Adicionar"}
         </button>
@@ -49,7 +49,7 @@ export function ConditionsPanel() {
               key={name}
               type="button"
               onClick={() => toggle(name)}
-              className="flex items-center gap-1 rounded border border-primary/40 bg-primary/10 px-1.5 py-0.5 text-[0.65rem] text-primary"
+              className="flex items-center gap-1 rounded border border-primary/40 bg-primary/10 px-1.5 py-0.5 text-[0.65rem] text-foreground"
             >
               {name}
               <i aria-hidden="true" className="fa-solid fa-xmark text-[10px]" />
@@ -73,7 +73,7 @@ export function ConditionsPanel() {
               className={cn(
                 "rounded border px-1.5 py-0.5 text-[0.65rem] transition-colors",
                 active.has(name)
-                  ? "border-primary/40 bg-primary/10 text-primary"
+                  ? "border-primary/40 bg-primary/10 text-foreground"
                   : "border-white/20 text-subdued hover:border-white/40",
               )}
             >

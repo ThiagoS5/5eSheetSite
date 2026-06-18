@@ -152,7 +152,7 @@ export function CharacterSheetPreview({
                   <dd className="mt-1 font-serif text-xl font-bold text-foreground">
                     {value}
                   </dd>
-                  <dd className="mt-1 rounded border border-brand-crimson-alt/25 bg-brand-crimson-alt/15 px-1 py-0.5 text-[10px] font-bold text-primary">
+                  <dd className="mt-1 rounded border border-brand-crimson-alt/25 bg-brand-crimson-alt/15 px-1 py-0.5 text-[10px] font-bold text-foreground">
                     {formatSigned(getAbilityModifier(value))}
                   </dd>
                 </div>

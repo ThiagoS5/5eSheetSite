@@ -1791,7 +1791,7 @@ function StepHeader({
 }) {
   return (
     <div>
-      <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-brand-crimson-alt">
+      <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-foreground">
         {eyebrow}
       </p>
       <h2 id={id} className="mt-1 font-serif text-xl font-bold tracking-wide text-foreground">

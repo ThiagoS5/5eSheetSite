@@ -47,7 +47,7 @@ export function SheetHeader({ summary }: SheetHeaderProps) {
                 </p>
               </div>
               <div className="ml-2 shrink-0 text-right">
-                <span className="block text-sm font-bold text-primary">
+                <span className="block text-sm font-bold text-foreground">
                   {summary.xp} / {summary.xpThreshold}
                 </span>
                 <span className="text-[10px] uppercase tracking-widest text-muted-foreground">

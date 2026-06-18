@@ -160,7 +160,7 @@ export function ContentTabs({ summary }: ContentTabsProps) {
                   <span className="flex-1 text-[0.8rem] text-foreground">{item.name}</span>
                   <span className={cn(
                     "text-[10px] font-semibold uppercase tracking-widest",
-                    item.sourceType === "class" ? "text-primary" : "text-muted-foreground",
+                    item.sourceType === "class" ? "text-foreground" : "text-muted-foreground",
                   )}>
                     {item.sourceType === "class" ? "Classe" : "Manual"}
                   </span>
@@ -186,7 +186,7 @@ export function ContentTabs({ summary }: ContentTabsProps) {
                 className={cn(
                   "whitespace-nowrap rounded border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-widest transition-colors",
                   featureFilter === f.id
-                    ? "border-primary/40 bg-primary/10 text-primary"
+                    ? "border-primary/40 bg-primary/10 text-foreground"
                     : "border-border text-muted-foreground hover:text-subdued",
                 )}
               >

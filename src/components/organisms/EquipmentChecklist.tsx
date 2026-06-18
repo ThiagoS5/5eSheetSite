@@ -90,7 +90,7 @@ export function EquipmentChecklist({
   return (
     <section aria-labelledby="equipment-title" className="grid gap-5">
       <div>
-        <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-brand-crimson-alt">
+        <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-foreground">
           Starting Gear
         </p>
         <h2
