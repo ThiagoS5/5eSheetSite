@@ -79,7 +79,7 @@ export function CharacterSheetPreview({
               {description.nome.trim().charAt(0).toUpperCase() || "?"}
             </span>
             <div className="min-w-0">
-              <p className="text-[0.62rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                 Nível {summary.level} · Regras {summary.ruleset}
               </p>
               <h2
@@ -98,7 +98,7 @@ export function CharacterSheetPreview({
         <section aria-labelledby="sheet-core-title" className="border-b border-white/[0.06] py-4">
           <h3
             id="sheet-core-title"
-            className="text-[0.62rem] font-bold uppercase tracking-[0.14em] text-muted-foreground"
+            className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground"
           >
             Resumo
           </h3>
@@ -133,7 +133,7 @@ export function CharacterSheetPreview({
         <section aria-labelledby="sheet-attributes-title" className="border-b border-white/[0.06] py-4">
           <h3
             id="sheet-attributes-title"
-            className="text-[0.62rem] font-bold uppercase tracking-[0.14em] text-muted-foreground"
+            className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground"
           >
             Atributos
           </h3>
@@ -146,13 +146,13 @@ export function CharacterSheetPreview({
                   key={attribute}
                   className="rounded-lg border border-white/[0.06] bg-card px-2 py-2 text-center"
                 >
-                  <dt className="text-[0.56rem] font-bold uppercase tracking-[0.1em] text-muted-foreground">
+                  <dt className="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground">
                     {ATTRIBUTE_LABELS[attribute].slice(0, 3)}
                   </dt>
                   <dd className="mt-1 font-serif text-xl font-bold text-foreground">
                     {value}
                   </dd>
-                  <dd className="mt-1 rounded border border-brand-crimson-alt/25 bg-brand-crimson-alt/15 px-1 py-0.5 text-[0.62rem] font-bold text-primary">
+                  <dd className="mt-1 rounded border border-brand-crimson-alt/25 bg-brand-crimson-alt/15 px-1 py-0.5 text-[10px] font-bold text-primary">
                     {formatSigned(getAbilityModifier(value))}
                   </dd>
                 </div>
@@ -164,7 +164,7 @@ export function CharacterSheetPreview({
         <section aria-labelledby="sheet-features-title" className="border-b border-white/[0.06] py-4">
           <h3
             id="sheet-features-title"
-            className="text-[0.62rem] font-bold uppercase tracking-[0.14em] text-muted-foreground"
+            className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground"
           >
             Traços e Recursos
           </h3>
@@ -183,7 +183,7 @@ export function CharacterSheetPreview({
         <section aria-labelledby="sheet-status-title" className="py-4">
           <h3
             id="sheet-status-title"
-            className="text-[0.62rem] font-bold uppercase tracking-[0.14em] text-muted-foreground"
+            className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground"
           >
             Pendências
           </h3>
@@ -308,7 +308,7 @@ function Metric({
     <div
       className={`relative overflow-hidden rounded-lg border border-white/[0.06] bg-card px-3 py-3 text-center before:absolute before:left-0 before:top-0 before:h-0.5 before:w-full ${toneClasses[tone]}`}
     >
-      <dt className="text-[0.58rem] uppercase tracking-[0.12em] text-muted-foreground">
+      <dt className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
         {label}
       </dt>
       <dd className="mt-1 font-serif text-xl font-bold text-foreground">{value}</dd>

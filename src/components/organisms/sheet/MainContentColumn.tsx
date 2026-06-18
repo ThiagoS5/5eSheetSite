@@ -31,8 +31,8 @@ export function MainContentColumn({ summary, className }: MainContentColumnProps
       {/* Weapons table */}
       <section className="rounded-lg border border-white/[0.08] bg-card p-3">
         <div className="mb-2 flex items-center gap-1.5">
-          <i aria-hidden="true" className="fa-solid fa-sword text-muted-foreground text-[0.6rem]" />
-          <p className="text-[0.6rem] font-semibold uppercase tracking-widest text-muted-foreground">
+          <i aria-hidden="true" className="fa-solid fa-sword text-muted-foreground text-[10px]" />
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
             Armas
           </p>
         </div>

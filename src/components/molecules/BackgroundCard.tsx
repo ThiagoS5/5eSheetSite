@@ -188,7 +188,7 @@ function BackgroundDetailsModal({
                 className="absolute inset-0 bg-gradient-to-t from-card via-card/40 to-transparent"
               />
               <div className="absolute bottom-0 left-0 w-full p-6">
-                <span className="mb-1 block text-[0.62rem] font-bold uppercase tracking-[0.14em] text-primary">
+                <span className="mb-1 block text-[10px] font-bold uppercase tracking-[0.14em] text-primary">
                   Antecedente
                 </span>
                 <h2 className="font-serif text-3xl font-bold text-foreground">
@@ -320,7 +320,7 @@ function BackgroundRewardCallout({
           aria-hidden="true"
           className="fa-solid fa-wand-sparkles text-sm text-primary"
         />
-        <h4 className="text-[0.62rem] font-bold uppercase tracking-[0.14em] text-primary">
+        <h4 className="text-[10px] font-bold uppercase tracking-[0.14em] text-primary">
           Talento de Origem
         </h4>
       </div>
@@ -369,7 +369,7 @@ function BackgroundAbilitySelector({
 
   return (
     <fieldset ref={controlsRef} className="mb-0">
-      <legend className="mb-3 block text-[0.62rem] font-bold uppercase tracking-[0.14em] text-muted-foreground">
+      <legend className="mb-3 block text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
         Bonus de Atributo ({formatAbilityAttributes(splitOption?.attributes)})
       </legend>
       <p id={`${background.id}-bonus-help`} className="sr-only">
@@ -468,7 +468,7 @@ function SelectBonusControl({
 }) {
   return (
     <span className="grid gap-1">
-      <span className="text-[0.62rem] font-bold uppercase tracking-[0.14em] text-muted-foreground">
+      <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
         {label}
       </span>
       <select
@@ -536,7 +536,7 @@ function RewardPanel({
 function RewardList({ title, items }: { title: string; items: string[] }) {
   return (
     <div className="rounded-lg border border-white/[0.06] bg-muted p-4">
-      <h4 className="mb-2 text-[0.62rem] font-bold uppercase tracking-[0.14em] text-muted-foreground">
+      <h4 className="mb-2 text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
         {title}
       </h4>
       {items.length ? (

@@ -46,7 +46,7 @@ export function WizardStepHeader({
         <div className="w-full lg:max-w-xs">
           <label
             htmlFor={searchId}
-            className="mb-2 block text-[0.62rem] font-bold uppercase tracking-[0.14em] text-subdued"
+            className="mb-2 block text-[10px] font-bold uppercase tracking-[0.14em] text-subdued"
           >
             {searchLabel}
           </label>

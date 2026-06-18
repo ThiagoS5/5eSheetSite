@@ -13,7 +13,7 @@ export function AttributeBlock({ attribute }: AttributeBlockProps) {
 
   return (
     <StatFrame width={88} height={108} accentColor="#e61c23">
-      <span className="select-none text-[9px] font-semibold uppercase tracking-widest text-muted-foreground">
+      <span className="select-none text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
         {attribute.abbr}
       </span>
       <span

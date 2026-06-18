@@ -230,7 +230,7 @@ export function BuilderSidebar() {
           >
             <button
               type="button"
-              className="flex w-full items-center justify-center gap-2 rounded border border-border px-4 py-2 font-mono text-[0.62rem] font-bold uppercase tracking-[0.16em] text-muted-foreground outline-none transition-colors hover:bg-white/5 hover:text-foreground focus-visible:ring-2 focus-visible:ring-primary/70"
+              className="flex w-full items-center justify-center gap-2 rounded border border-border px-4 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground outline-none transition-colors hover:bg-white/5 hover:text-foreground focus-visible:ring-2 focus-visible:ring-primary/70"
             >
               <Save className="h-4 w-4" />
               SAVE DRAFT
@@ -238,14 +238,14 @@ export function BuilderSidebar() {
             <div className="flex justify-between gap-4 pb-4 pt-4">
               <button
                 type="button"
-                className="flex items-center gap-2 font-mono text-[0.62rem] font-bold uppercase tracking-[0.12em] text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-primary/70"
+                className="flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-primary/70"
               >
                 <HelpCircle className="h-4 w-4" />
                 Help
               </button>
               <button
                 type="button"
-                className="flex items-center gap-2 font-mono text-[0.62rem] font-bold uppercase tracking-[0.12em] text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-primary/70"
+                className="flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-primary/70"
               >
                 <MessageCircle className="h-4 w-4" />
                 Feedback

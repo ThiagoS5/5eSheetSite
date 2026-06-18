@@ -62,7 +62,7 @@ export function WizardChoiceCard({
   const subtitleClassName =
     subtitleVariant === "summary"
       ? "mt-2 line-clamp-2 text-sm leading-5 text-subdued"
-      : "mt-1 text-[0.62rem] font-bold uppercase tracking-[0.14em] text-muted-foreground";
+      : "mt-1 text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground";
 
   return (
     <article

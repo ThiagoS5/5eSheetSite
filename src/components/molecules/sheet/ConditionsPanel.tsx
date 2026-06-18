@@ -27,15 +27,15 @@ export function ConditionsPanel() {
     <section className="rounded-lg border border-white/[0.08] bg-card p-3">
       <div className="mb-2 flex items-center justify-between">
         <div className="flex items-center gap-1.5">
-          <i aria-hidden="true" className="fa-solid fa-circle-exclamation text-muted-foreground text-[0.6rem]" />
-          <p className="text-[0.6rem] font-semibold uppercase tracking-widest text-muted-foreground">
+          <i aria-hidden="true" className="fa-solid fa-circle-exclamation text-muted-foreground text-[10px]" />
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
             Condições
           </p>
         </div>
         <button
           type="button"
           onClick={() => setExpanded((v) => !v)}
-          className="text-[0.6rem] text-primary hover:underline"
+          className="text-[10px] text-primary hover:underline"
         >
           {expanded ? "Fechar" : "+ Adicionar"}
         </button>
@@ -52,7 +52,7 @@ export function ConditionsPanel() {
               className="flex items-center gap-1 rounded border border-primary/40 bg-primary/10 px-1.5 py-0.5 text-[0.65rem] text-primary"
             >
               {name}
-              <i aria-hidden="true" className="fa-solid fa-xmark text-[0.55rem]" />
+              <i aria-hidden="true" className="fa-solid fa-xmark text-[10px]" />
             </button>
           ))}
         </div>

@@ -344,7 +344,7 @@ function ClassOptionCard({
           {tags.map((tag) => (
             <span
               key={tag}
-              className="rounded border border-border bg-muted px-2 py-0.5 text-[0.62rem] font-bold uppercase tracking-[0.14em] text-subdued"
+              className="rounded border border-border bg-muted px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-subdued"
             >
               {tag}
             </span>
@@ -373,7 +373,7 @@ function ClassOptionCard({
             value={formatList(classEntry.savingThrows)}
           />
           <div>
-            <h4 className="mb-2 text-[0.62rem] font-bold uppercase tracking-[0.14em] text-subdued">
+            <h4 className="mb-2 text-[10px] font-bold uppercase tracking-[0.14em] text-subdued">
               Recursos de Nível 1
             </h4>
             <FeatureTagList
@@ -408,7 +408,7 @@ function ClassMetric({
 }) {
   return (
     <div className="rounded border border-white/[0.06] bg-muted px-3 py-2">
-      <p className="flex items-center gap-1.5 text-[0.58rem] font-bold uppercase tracking-[0.14em] text-muted-foreground">
+      <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
         {iconClassName ? (
           <FontAwesomeIcon iconClassName={iconClassName} className="text-primary" />
         ) : null}
@@ -936,7 +936,7 @@ function SpeciesOptionCard({
         onClickSelect={onSelect}
       >
         <div className="mb-3 flex flex-wrap gap-2">
-          <span className="rounded border border-border bg-muted px-2 py-0.5 text-[0.62rem] font-bold uppercase tracking-[0.14em] text-subdued">
+          <span className="rounded border border-border bg-muted px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-subdued">
             {species.source}
           </span>
         </div>
@@ -947,7 +947,7 @@ function SpeciesOptionCard({
         </div>
 
         <div className="mt-5 grid gap-3 border-t border-white/[0.06] pt-4">
-          <h4 className="text-[0.62rem] font-bold uppercase tracking-[0.14em] text-subdued">
+          <h4 className="text-[10px] font-bold uppercase tracking-[0.14em] text-subdued">
             Tracos Raciais
           </h4>
           <FeatureTagList
@@ -1053,10 +1053,10 @@ function SpeciesDetailsSidebar({
         />
         <div className="absolute bottom-0 left-0 right-0 p-4">
           <div className="mb-2 flex flex-wrap gap-2">
-            <span className="rounded border border-border bg-black/45 px-2 py-1 text-[0.62rem] font-bold uppercase tracking-[0.14em] text-subdued backdrop-blur">
+            <span className="rounded border border-border bg-black/45 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-subdued backdrop-blur">
               {species.source}
             </span>
-            <span className="rounded border border-border bg-black/45 px-2 py-1 text-[0.62rem] font-bold uppercase tracking-[0.14em] text-subdued backdrop-blur">
+            <span className="rounded border border-border bg-black/45 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-subdued backdrop-blur">
               {species.ruleset}
             </span>
           </div>
@@ -1073,7 +1073,7 @@ function SpeciesDetailsSidebar({
         <section aria-labelledby={`${species.id}-biology-title`} className="grid gap-3">
           <h3
             id={`${species.id}-biology-title`}
-            className="text-[0.62rem] font-bold uppercase tracking-[0.14em] text-muted-foreground"
+            className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground"
           >
             Biologia da especie
           </h3>
@@ -1437,7 +1437,7 @@ function ClassDetailsSidebar({
             {tags.map((tag) => (
               <span
                 key={tag}
-                className="rounded border border-border bg-black/45 px-2 py-1 text-[0.62rem] font-bold uppercase tracking-[0.14em] text-subdued backdrop-blur"
+                className="rounded border border-border bg-black/45 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-subdued backdrop-blur"
               >
                 {tag}
               </span>
@@ -1456,7 +1456,7 @@ function ClassDetailsSidebar({
         <section aria-labelledby={`${classEntry.id}-identity-title`} className="grid gap-3">
           <h3
             id={`${classEntry.id}-identity-title`}
-            className="text-[0.62rem] font-bold uppercase tracking-[0.14em] text-muted-foreground"
+            className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground"
           >
             Identidade da classe
           </h3>
@@ -1491,7 +1491,7 @@ function ClassDetailsSidebar({
         </section>
 
         <section>
-          <h3 className="border-b border-white/[0.06] pb-2 text-[0.62rem] font-bold uppercase tracking-[0.14em] text-muted-foreground">
+          <h3 className="border-b border-white/[0.06] pb-2 text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
             Proficiencias Iniciais
           </h3>
           <dl className="mt-3 grid gap-3 text-sm leading-6">
@@ -1631,7 +1631,7 @@ function ClassDetailStat({
         {icon}
       </div>
       <div>
-        <p className="text-[0.62rem] font-bold uppercase tracking-[0.14em] text-muted-foreground">
+        <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
           {label}
         </p>
         <p className="mt-1 font-mono text-base font-bold text-foreground">
@@ -1791,7 +1791,7 @@ function StepHeader({
 }) {
   return (
     <div>
-      <p className="text-[0.58rem] font-bold uppercase tracking-[0.14em] text-brand-crimson-alt">
+      <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-brand-crimson-alt">
         {eyebrow}
       </p>
       <h2 id={id} className="mt-1 font-serif text-xl font-bold tracking-wide text-foreground">

@@ -39,7 +39,7 @@ export function ChoiceCard({
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
             {eyebrow ? (
-              <p className="mb-1 text-[0.58rem] font-bold uppercase tracking-[0.14em] text-brand-crimson-alt">
+              <p className="mb-1 text-[10px] font-bold uppercase tracking-[0.14em] text-brand-crimson-alt">
                 {eyebrow}
               </p>
             ) : null}

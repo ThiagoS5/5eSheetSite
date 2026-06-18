@@ -18,7 +18,7 @@ function fieldValue(value: string | undefined | null): string {
 }
 
 const labelClass =
-  "text-[0.6rem] font-semibold uppercase tracking-widest text-muted-foreground";
+  "text-[10px] font-semibold uppercase tracking-widest text-muted-foreground";
 
 function CodexField({ label, value }: { label: string; value: string | undefined | null }) {
   const filled = isFilled(value);

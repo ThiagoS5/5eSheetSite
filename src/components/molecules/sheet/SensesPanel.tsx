@@ -12,7 +12,7 @@ export function SensesPanel({ senses, languages }: SensesPanelProps) {
         <>
           <div className="mb-1 flex items-center gap-1.5">
             <i aria-hidden="true" className="fa-solid fa-tower-observation text-muted-foreground" />
-            <p className="text-[0.6rem] font-semibold uppercase tracking-widest text-muted-foreground">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
               Sentidos
             </p>
           </div>
@@ -35,7 +35,7 @@ export function SensesPanel({ senses, languages }: SensesPanelProps) {
         <>
           <div className="mb-1 flex items-center gap-1.5">
             <i aria-hidden="true" className="fa-solid fa-language text-muted-foreground" />
-            <p className="text-[0.6rem] font-semibold uppercase tracking-widest text-muted-foreground">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
               Idiomas
             </p>
           </div>

@@ -39,7 +39,7 @@ export function SkillRow({ skill, compact = false }: SkillRowProps) {
       </span>
 
       <span className="text-[0.72rem] text-subdued">{skill.label}</span>
-      <span className="ml-auto text-[0.6rem] text-muted-foreground">{skill.attributeKey.slice(0, 3).toUpperCase()}</span>
+      <span className="ml-auto text-[10px] text-muted-foreground">{skill.attributeKey.slice(0, 3).toUpperCase()}</span>
     </div>
   );
 }

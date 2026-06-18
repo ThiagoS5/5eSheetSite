@@ -50,7 +50,7 @@ export function SheetHeader({ summary }: SheetHeaderProps) {
                 <span className="block text-sm font-bold text-primary">
                   {summary.xp} / {summary.xpThreshold}
                 </span>
-                <span className="text-[8px] uppercase tracking-widest text-muted-foreground">
+                <span className="text-[10px] uppercase tracking-widest text-muted-foreground">
                   XP Total
                 </span>
               </div>
@@ -80,13 +80,13 @@ export function SheetHeader({ summary }: SheetHeaderProps) {
             </div>
             <div className="mt-2 flex gap-1">
               <div className="flex flex-1 items-center justify-between rounded bg-surface-nested px-2 py-1">
-                <span className="text-[8px] text-muted-foreground">Temp</span>
+                <span className="text-[10px] text-muted-foreground">Temp</span>
                 <span className="text-xs text-foreground">
                   {summary.tempHp > 0 ? summary.tempHp : "--"}
                 </span>
               </div>
               <div className="flex flex-1 items-center justify-between rounded bg-surface-nested px-2 py-1">
-                <span className="text-[8px] text-muted-foreground">Dados</span>
+                <span className="text-[10px] text-muted-foreground">Dados</span>
                 <span className="text-xs text-foreground">{summary.hitDice}</span>
               </div>
             </div>
@@ -99,7 +99,7 @@ export function SheetHeader({ summary }: SheetHeaderProps) {
 
           {/* Classe de Armadura — variante escudo */}
           <CombatStatFrame variant="shield" accentColor="#7a7e99">
-            <span className="text-center text-[8px] uppercase leading-tight tracking-widest text-muted-foreground">
+            <span className="text-center text-[10px] uppercase leading-tight tracking-widest text-muted-foreground">
               Classe
               <br />
               Armadura
@@ -110,14 +110,14 @@ export function SheetHeader({ summary }: SheetHeaderProps) {
           {/* Iniciativa — variante square */}
           <CombatStatFrame variant="square" accentColor="#f3c969">
             <i aria-hidden="true" className="fa-solid fa-clock text-[10px] text-accent" />
-            <span className="text-[8px] uppercase tracking-widest text-muted-foreground">Iniciativa</span>
+            <span className="text-[10px] uppercase tracking-widest text-muted-foreground">Iniciativa</span>
             <span className="text-2xl font-bold text-foreground">{fmt(summary.initiative)}</span>
           </CombatStatFrame>
 
           {/* Velocidade — variante square */}
           <CombatStatFrame variant="square" accentColor="#7a7e99">
             <i aria-hidden="true" className="fa-solid fa-shoe-prints text-[10px] text-muted-foreground" />
-            <span className="text-[8px] uppercase tracking-widest text-muted-foreground">Velocidade</span>
+            <span className="text-[10px] uppercase tracking-widest text-muted-foreground">Velocidade</span>
             <div className="flex items-baseline gap-0.5">
               <span className="text-2xl font-bold text-foreground">{summary.speedMeters}</span>
               <span className="text-[10px] text-muted-foreground">m</span>

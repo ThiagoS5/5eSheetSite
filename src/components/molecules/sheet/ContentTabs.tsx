@@ -106,7 +106,7 @@ export function ContentTabs({ summary }: ContentTabsProps) {
                 type="button"
                 onClick={() => setActionFilter(f.id)}
                 className={cn(
-                  "whitespace-nowrap rounded border px-2.5 py-1 text-[9px] font-semibold uppercase tracking-widest transition-colors",
+                  "whitespace-nowrap rounded border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-widest transition-colors",
                   actionFilter === f.id
                     ? "border-primary/30 bg-primary/10 text-foreground"
                     : "border-transparent text-muted-foreground hover:border-border hover:text-foreground",
@@ -156,10 +156,10 @@ export function ContentTabs({ summary }: ContentTabsProps) {
                   key={item.id}
                   className="flex items-center gap-3 px-3 py-2.5"
                 >
-                  <i aria-hidden="true" className="fa-solid fa-circle-dot text-[0.5rem] text-muted-foreground" />
+                  <i aria-hidden="true" className="fa-solid fa-circle-dot text-[10px] text-muted-foreground" />
                   <span className="flex-1 text-[0.8rem] text-foreground">{item.name}</span>
                   <span className={cn(
-                    "text-[0.6rem] font-semibold uppercase tracking-widest",
+                    "text-[10px] font-semibold uppercase tracking-widest",
                     item.sourceType === "class" ? "text-primary" : "text-muted-foreground",
                   )}>
                     {item.sourceType === "class" ? "Classe" : "Manual"}
@@ -184,7 +184,7 @@ export function ContentTabs({ summary }: ContentTabsProps) {
                 type="button"
                 onClick={() => setFeatureFilter(f.id)}
                 className={cn(
-                  "whitespace-nowrap rounded border px-2.5 py-1 text-[0.6rem] font-semibold uppercase tracking-widest transition-colors",
+                  "whitespace-nowrap rounded border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-widest transition-colors",
                   featureFilter === f.id
                     ? "border-primary/40 bg-primary/10 text-primary"
                     : "border-border text-muted-foreground hover:text-subdued",

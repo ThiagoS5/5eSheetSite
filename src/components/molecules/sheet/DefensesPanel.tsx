@@ -11,7 +11,7 @@ export function DefensesPanel({ resistances, immunities, vulnerabilities }: Defe
     <section className="rounded-lg border border-white/[0.08] bg-card p-3">
       <div className="mb-2 flex items-center gap-1.5">
         <i aria-hidden="true" className="fa-solid fa-shield-halved text-muted-foreground" />
-        <p className="text-[0.6rem] font-semibold uppercase tracking-widest text-muted-foreground">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
           Defesas
         </p>
       </div>
