@@ -96,11 +96,11 @@ export function BuilderStepPanel({
   if (!canUseCurrentStep) {
     return (
       <div className="grid gap-5">
-        <section className="rounded-lg border border-white/[0.06] bg-[#1c1e2a] p-5">
-          <h2 className="font-serif text-xl font-bold text-white">
+        <section className="rounded-lg border border-white/[0.06] bg-card p-5">
+          <h2 className="font-serif text-xl font-bold text-foreground">
             Etapa bloqueada
           </h2>
-          <p className="mt-2 text-sm leading-6 text-[#b0b5cc]">
+          <p className="mt-2 text-sm leading-6 text-subdued">
             Termine as etapas anteriores pelo botao Avancar para liberar este conteudo.
           </p>
         </section>
@@ -226,7 +226,7 @@ export function BuilderStepPanel({
       {step === "conclusao" ? <CharacterSheetView embedded /> : null}
 
       {nextStep || previousStep ? (
-        <div className="sticky bottom-0 z-10 flex justify-between gap-3 border-t border-white/[0.06] bg-[#12131a]/95 py-4 backdrop-blur">
+        <div className="sticky bottom-0 z-10 flex justify-between gap-3 border-t border-white/[0.06] bg-surface-nested/95 py-4 backdrop-blur">
           {previousStep ? (
             <ActionBtn intent="secondary" onClick={() => router.push(previousStep.href)}>
               Voltar
@@ -299,11 +299,11 @@ function ClassStep({
           ))}
         </div>
       ) : (
-        <div className="rounded-lg border border-dashed border-white/10 bg-[#1c1e2a]/70 p-6 text-center">
-          <h3 className="font-serif text-lg font-bold text-white">
+        <div className="rounded-lg border border-dashed border-border bg-card/70 p-6 text-center">
+          <h3 className="font-serif text-lg font-bold text-foreground">
             Nenhuma classe encontrada
           </h3>
-          <p className="mt-2 text-sm leading-6 text-[#b0b5cc]">
+          <p className="mt-2 text-sm leading-6 text-subdued">
             Tente buscar por nome, fonte ou recurso inicial.
           </p>
         </div>
@@ -344,14 +344,14 @@ function ClassOptionCard({
           {tags.map((tag) => (
             <span
               key={tag}
-              className="rounded border border-white/10 bg-[#0f1018] px-2 py-0.5 text-[0.62rem] font-bold uppercase tracking-[0.14em] text-[#b0b5cc]"
+              className="rounded border border-border bg-muted px-2 py-0.5 text-[0.62rem] font-bold uppercase tracking-[0.14em] text-subdued"
             >
               {tag}
             </span>
           ))}
         </div>
 
-        <p className="line-clamp-3 flex-1 text-sm leading-6 text-[#b0b5cc]">
+        <p className="line-clamp-3 flex-1 text-sm leading-6 text-subdued">
           {classEntry.summary}
         </p>
 
@@ -373,7 +373,7 @@ function ClassOptionCard({
             value={formatList(classEntry.savingThrows)}
           />
           <div>
-            <h4 className="mb-2 text-[0.62rem] font-bold uppercase tracking-[0.14em] text-[#b0b5cc]">
+            <h4 className="mb-2 text-[0.62rem] font-bold uppercase tracking-[0.14em] text-subdued">
               Recursos de Nível 1
             </h4>
             <FeatureTagList
@@ -407,14 +407,14 @@ function ClassMetric({
   iconClassName?: string;
 }) {
   return (
-    <div className="rounded border border-white/[0.06] bg-[#0f1018] px-3 py-2">
-      <p className="flex items-center gap-1.5 text-[0.58rem] font-bold uppercase tracking-[0.14em] text-[#7a7e99]">
+    <div className="rounded border border-white/[0.06] bg-muted px-3 py-2">
+      <p className="flex items-center gap-1.5 text-[0.58rem] font-bold uppercase tracking-[0.14em] text-muted-foreground">
         {iconClassName ? (
-          <FontAwesomeIcon iconClassName={iconClassName} className="text-[#e61c23]" />
+          <FontAwesomeIcon iconClassName={iconClassName} className="text-primary" />
         ) : null}
         {label}
       </p>
-      <p className="mt-1 font-mono text-sm font-bold text-[#e8e9f0]">
+      <p className="mt-1 font-mono text-sm font-bold text-foreground">
         {value || "-"}
       </p>
     </div>
@@ -487,44 +487,44 @@ function matchesNormalizedSearchText(value: string, normalizedQuery: string): bo
 
 const classToneByName = {
   crimson: {
-    topBorder: "via-[#e61c23]",
-    selectedBorder: "border-[#e61c23]",
+    topBorder: "via-primary",
+    selectedBorder: "border-primary",
     selectedShadow: "shadow-[0_0_24px_rgba(230,28,35,0.28)]",
-    activeBadge: "bg-[#e61c23]",
+    activeBadge: "bg-primary",
     activeButton:
-      "border-[#e61c23] bg-[#e61c23] shadow-[0_0_15px_rgba(230,28,35,0.35)]",
-    fallbackGradient: "via-[#5c171b]",
-    statAccent: "border-[#e61c23]/30 bg-[#a91515]/20 text-[#ffb4ab]",
+      "border-primary bg-primary shadow-[0_0_15px_rgba(230,28,35,0.35)]",
+    fallbackGradient: "via-tone-crimson-deep",
+    statAccent: "border-primary/30 bg-destructive/20 text-primary",
   },
   arcane: {
-    topBorder: "via-[#a4c9ff]",
-    selectedBorder: "border-[#a4c9ff]",
+    topBorder: "via-tone-arcane",
+    selectedBorder: "border-tone-arcane",
     selectedShadow: "shadow-[0_0_24px_rgba(164,201,255,0.2)]",
-    activeBadge: "bg-[#0065b7]",
+    activeBadge: "bg-tone-arcane-deep",
     activeButton:
-      "border-[#a4c9ff] bg-[#0065b7] shadow-[0_0_15px_rgba(164,201,255,0.22)]",
-    fallbackGradient: "via-[#19375c]",
-    statAccent: "border-[#a4c9ff]/30 bg-[#0065b7]/20 text-[#a4c9ff]",
+      "border-tone-arcane bg-tone-arcane-deep shadow-[0_0_15px_rgba(164,201,255,0.22)]",
+    fallbackGradient: "via-tone-arcane-deepest",
+    statAccent: "border-tone-arcane/30 bg-tone-arcane-deep/20 text-tone-arcane",
   },
   green: {
-    topBorder: "via-[#50c878]",
-    selectedBorder: "border-[#50c878]",
+    topBorder: "via-brand-green",
+    selectedBorder: "border-brand-green",
     selectedShadow: "shadow-[0_0_24px_rgba(80,200,120,0.18)]",
-    activeBadge: "bg-[#2f8f55]",
+    activeBadge: "bg-tone-druid-deep",
     activeButton:
-      "border-[#50c878] bg-[#2f8f55] shadow-[0_0_15px_rgba(80,200,120,0.22)]",
-    fallbackGradient: "via-[#183f2c]",
-    statAccent: "border-[#50c878]/30 bg-[#2f8f55]/20 text-[#50c878]",
+      "border-brand-green bg-tone-druid-deep shadow-[0_0_15px_rgba(80,200,120,0.22)]",
+    fallbackGradient: "via-tone-druid-deepest",
+    statAccent: "border-brand-green/30 bg-tone-druid-deep/20 text-brand-green",
   },
   gold: {
-    topBorder: "via-[#ebc162]",
-    selectedBorder: "border-[#ebc162]",
+    topBorder: "via-brand-gold-alt",
+    selectedBorder: "border-brand-gold-alt",
     selectedShadow: "shadow-[0_0_24px_rgba(235,193,98,0.18)]",
-    activeBadge: "bg-[#7e5e00]",
+    activeBadge: "bg-tone-gold-deep",
     activeButton:
-      "border-[#ebc162] bg-[#7e5e00] shadow-[0_0_15px_rgba(235,193,98,0.22)]",
-    fallbackGradient: "via-[#4d3a12]",
-    statAccent: "border-[#ebc162]/30 bg-[#7e5e00]/20 text-[#ebc162]",
+      "border-brand-gold-alt bg-tone-gold-deep shadow-[0_0_15px_rgba(235,193,98,0.22)]",
+    fallbackGradient: "via-tone-gold-deepest",
+    statAccent: "border-brand-gold-alt/30 bg-tone-gold-deep/20 text-brand-gold-alt",
   },
 } as const;
 
@@ -547,7 +547,7 @@ function ClassFeaturesStep({
 }) {
   if (!selectedClass) {
     return (
-      <section className="rounded-lg border border-white/[0.06] bg-[#1c1e2a] p-4 text-sm text-[#b0b5cc]">
+      <section className="rounded-lg border border-white/[0.06] bg-card p-4 text-sm text-subdued">
         Escolha uma classe antes de configurar recursos.
       </section>
     );
@@ -578,8 +578,8 @@ function ClassFeaturesStep({
         id="class-features-title"
       />
       <div className="grid gap-6 md:grid-cols-2">
-        <fieldset className="rounded-lg border border-white/[0.06] bg-[#1c1e2a] p-4">
-          <legend className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-[#7a7e99]">
+        <fieldset className="rounded-lg border border-white/[0.06] bg-card p-4">
+          <legend className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">
             Pericias da classe ({selectedSkills.length}/{maxSkills})
           </legend>
           <div className="grid gap-2 sm:grid-cols-2">
@@ -591,8 +591,8 @@ function ClassFeaturesStep({
                   key={skill}
                   className={`grid cursor-pointer grid-cols-[auto_1fr] gap-2 rounded-md border px-3 py-2 text-sm transition ${
                     checked
-                      ? "border-[#c41e1e] bg-[#c41e1e]/10 text-white"
-                      : "border-white/[0.08] bg-white/[0.03] text-[#b0b5cc]"
+                      ? "border-brand-crimson-alt bg-brand-crimson-alt/10 text-foreground"
+                      : "border-white/[0.08] bg-white/[0.03] text-subdued"
                   }`}
                 >
                   <input
@@ -600,7 +600,7 @@ function ClassFeaturesStep({
                     checked={checked}
                     disabled={disabled || (!checked && selectedSkills.length >= maxSkills)}
                     onChange={() => toggleSkill(skill)}
-                    className="mt-1 h-4 w-4 rounded border-white/20 bg-[#12131a] accent-[#c41e1e] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c41e1e]"
+                    className="mt-1 h-4 w-4 rounded border-white/20 bg-surface-nested accent-brand-crimson-alt focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-crimson-alt"
                   />
                   <span>{skill}</span>
                 </label>
@@ -609,11 +609,11 @@ function ClassFeaturesStep({
           </div>
         </fieldset>
 
-        <section className="rounded-lg border border-white/[0.06] bg-[#1c1e2a] p-4">
-          <h3 className="text-xs font-bold uppercase tracking-[0.14em] text-[#7a7e99]">
+        <section className="rounded-lg border border-white/[0.06] bg-card p-4">
+          <h3 className="text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">
             PROFICIÊNCIAS INICIAIS DA CLASSE
           </h3>
-          <div className="mt-3 grid gap-3 text-sm leading-6 text-[#d7d9e6]">
+          <div className="mt-3 grid gap-3 text-sm leading-6 text-subdued">
             <ClassSummaryLine
               label="Armaduras"
               value={formatList(selectedClass.armorProficiencies)}
@@ -638,8 +638,8 @@ function ClassFeaturesStep({
           onChange={(values) => onClassFeatureChoiceChange(group.id, values)}
         />
       ))}
-      <section className="rounded-lg border border-white/[0.06] bg-[#1c1e2a] p-4">
-        <h3 className="text-xs font-bold uppercase tracking-[0.14em] text-[#7a7e99]">
+      <section className="rounded-lg border border-white/[0.06] bg-card p-4">
+        <h3 className="text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">
           Recursos Iniciais de Nível 1:
         </h3>
         <div className="mt-4">
@@ -678,11 +678,11 @@ function ClassFeatureChoiceFieldset({
   }
 
   return (
-    <fieldset className="rounded-lg border border-white/[0.06] bg-[#1c1e2a] p-4">
-      <legend className="mb-2 text-xs font-bold uppercase tracking-[0.14em] text-[#7a7e99]">
+    <fieldset className="rounded-lg border border-white/[0.06] bg-card p-4">
+      <legend className="mb-2 text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">
         {group.label} ({selectedValues.length}/{group.count})
       </legend>
-      <p className="mb-4 text-sm leading-6 text-[#b0b5cc]">
+      <p className="mb-4 text-sm leading-6 text-subdued">
         {group.description}
       </p>
       <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
@@ -694,8 +694,8 @@ function ClassFeatureChoiceFieldset({
               key={option.value}
               className={`grid cursor-pointer grid-cols-[auto_1fr] gap-2 rounded-md border px-3 py-2 text-sm transition ${
                 checked
-                  ? "border-[#c41e1e] bg-[#c41e1e]/10 text-white"
-                  : "border-white/[0.08] bg-white/[0.03] text-[#b0b5cc]"
+                  ? "border-brand-crimson-alt bg-brand-crimson-alt/10 text-foreground"
+                  : "border-white/[0.08] bg-white/[0.03] text-subdued"
               }`}
             >
               <input
@@ -705,12 +705,12 @@ function ClassFeatureChoiceFieldset({
                   disabled || (!checked && selectedValues.length >= group.count)
                 }
                 onChange={() => toggleValue(option.value)}
-                className="mt-1 h-4 w-4 rounded border-white/20 bg-[#12131a] accent-[#c41e1e] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c41e1e]"
+                className="mt-1 h-4 w-4 rounded border-white/20 bg-surface-nested accent-brand-crimson-alt focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-crimson-alt"
               />
               <span>
                 <span className="block font-semibold">{option.label}</span>
                 {option.description ? (
-                  <span className="block text-xs text-[#7a7e99]">
+                  <span className="block text-xs text-muted-foreground">
                     {option.description}
                   </span>
                 ) : null}
@@ -787,11 +787,11 @@ function BackgroundStep({
           ))}
         </div>
       ) : (
-        <div className="rounded-lg border border-dashed border-white/10 bg-[#1c1e2a]/70 p-6 text-center">
-          <h3 className="font-serif text-lg font-bold text-white">
+        <div className="rounded-lg border border-dashed border-border bg-card/70 p-6 text-center">
+          <h3 className="font-serif text-lg font-bold text-foreground">
             Nenhum antecedente encontrado
           </h3>
-          <p className="mt-2 text-sm leading-6 text-[#b0b5cc]">
+          <p className="mt-2 text-sm leading-6 text-subdued">
             Tente buscar por nome, talento de origem ou descricao.
           </p>
         </div>
@@ -895,11 +895,11 @@ function SpeciesStep({
           ))}
         </div>
       ) : (
-        <div className="rounded-lg border border-dashed border-white/10 bg-[#1c1e2a]/70 p-6 text-center">
-          <h3 className="font-serif text-lg font-bold text-white">
+        <div className="rounded-lg border border-dashed border-border bg-card/70 p-6 text-center">
+          <h3 className="font-serif text-lg font-bold text-foreground">
             Nenhuma especie encontrada
           </h3>
-          <p className="mt-2 text-sm leading-6 text-[#b0b5cc]">
+          <p className="mt-2 text-sm leading-6 text-subdued">
             Tente buscar por nome, fonte ou traco racial.
           </p>
         </div>
@@ -936,7 +936,7 @@ function SpeciesOptionCard({
         onClickSelect={onSelect}
       >
         <div className="mb-3 flex flex-wrap gap-2">
-          <span className="rounded border border-white/10 bg-[#0f1018] px-2 py-0.5 text-[0.62rem] font-bold uppercase tracking-[0.14em] text-[#b0b5cc]">
+          <span className="rounded border border-border bg-muted px-2 py-0.5 text-[0.62rem] font-bold uppercase tracking-[0.14em] text-subdued">
             {species.source}
           </span>
         </div>
@@ -947,7 +947,7 @@ function SpeciesOptionCard({
         </div>
 
         <div className="mt-5 grid gap-3 border-t border-white/[0.06] pt-4">
-          <h4 className="text-[0.62rem] font-bold uppercase tracking-[0.14em] text-[#b0b5cc]">
+          <h4 className="text-[0.62rem] font-bold uppercase tracking-[0.14em] text-subdued">
             Tracos Raciais
           </h4>
           <FeatureTagList
@@ -989,7 +989,7 @@ function SpeciesDetailsDialog({
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 flex items-stretch justify-center overflow-y-auto bg-black/70 p-0 backdrop-blur-md md:items-center md:p-6">
-          <Dialog.Content className="relative flex h-[100dvh] w-full min-w-0 flex-col overflow-hidden border border-white/[0.08] bg-[#12131a] text-[#e8e9f0] shadow-2xl shadow-black/60 outline-none focus-visible:ring-2 focus-visible:ring-[#ebc162]/70 md:h-[min(88vh,920px)] md:max-w-6xl md:flex-row md:rounded-xl">
+          <Dialog.Content className="relative flex h-[100dvh] w-full min-w-0 flex-col overflow-hidden border border-white/[0.08] bg-surface-nested text-foreground shadow-2xl shadow-black/60 outline-none focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70 md:h-[min(88vh,920px)] md:max-w-6xl md:flex-row md:rounded-xl">
             <Dialog.Title className="sr-only">{species.name}</Dialog.Title>
             <Dialog.Description className="sr-only">
               {`Detalhes de ${species.name}: ${species.summary}`}
@@ -998,7 +998,7 @@ function SpeciesDetailsDialog({
               <button
                 type="button"
                 aria-label={`Fechar detalhes de ${species.name}`}
-                className="absolute right-3 top-3 z-40 inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-[#0f1018]/85 text-[#b0b5cc] outline-none backdrop-blur transition hover:border-[#ebc162]/60 hover:text-white focus-visible:ring-2 focus-visible:ring-[#ebc162]/70"
+                className="absolute right-3 top-3 z-40 inline-flex h-10 w-10 items-center justify-center rounded-full border border-border bg-muted/85 text-subdued outline-none backdrop-blur transition hover:border-brand-gold-alt/60 hover:text-foreground focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70"
               >
                 <X aria-hidden="true" className="h-5 w-5" />
               </button>
@@ -1030,8 +1030,8 @@ function SpeciesDetailsSidebar({
   onSelect: () => void;
 }) {
   return (
-    <aside className="flex max-h-[48dvh] w-full shrink-0 flex-col overflow-y-auto border-b border-white/[0.06] bg-[#0f1018] md:h-full md:max-h-none md:w-80 md:border-b-0 md:border-r">
-      <div className="relative h-56 shrink-0 overflow-hidden bg-[#1c1e2a] md:h-[300px]">
+    <aside className="flex max-h-[48dvh] w-full shrink-0 flex-col overflow-y-auto border-b border-white/[0.06] bg-muted md:h-full md:max-h-none md:w-80 md:border-b-0 md:border-r">
+      <div className="relative h-56 shrink-0 overflow-hidden bg-card md:h-[300px]">
         {species.image ? (
           <Image
             unoptimized
@@ -1044,26 +1044,26 @@ function SpeciesDetailsSidebar({
         ) : (
           <div
             aria-hidden="true"
-            className="h-full w-full bg-gradient-to-br from-[#0f1018] via-[#3d1820] to-[#1c1e2a]"
+            className="h-full w-full bg-gradient-to-br from-muted via-tone-crimson-deepest to-card"
           />
         )}
         <div
           aria-hidden="true"
-          className="absolute inset-0 bg-gradient-to-t from-[#0f1018] via-[#0f1018]/25 to-transparent"
+          className="absolute inset-0 bg-gradient-to-t from-muted via-muted/25 to-transparent"
         />
         <div className="absolute bottom-0 left-0 right-0 p-4">
           <div className="mb-2 flex flex-wrap gap-2">
-            <span className="rounded border border-white/10 bg-black/45 px-2 py-1 text-[0.62rem] font-bold uppercase tracking-[0.14em] text-[#b0b5cc] backdrop-blur">
+            <span className="rounded border border-border bg-black/45 px-2 py-1 text-[0.62rem] font-bold uppercase tracking-[0.14em] text-subdued backdrop-blur">
               {species.source}
             </span>
-            <span className="rounded border border-white/10 bg-black/45 px-2 py-1 text-[0.62rem] font-bold uppercase tracking-[0.14em] text-[#b0b5cc] backdrop-blur">
+            <span className="rounded border border-border bg-black/45 px-2 py-1 text-[0.62rem] font-bold uppercase tracking-[0.14em] text-subdued backdrop-blur">
               {species.ruleset}
             </span>
           </div>
-          <h2 className="font-serif text-3xl font-bold tracking-wide text-white">
+          <h2 className="font-serif text-3xl font-bold tracking-wide text-foreground">
             {species.name}
           </h2>
-          <p className="mt-1 line-clamp-2 text-sm leading-5 text-[#b0b5cc]">
+          <p className="mt-1 line-clamp-2 text-sm leading-5 text-subdued">
             {species.summary}
           </p>
         </div>
@@ -1073,7 +1073,7 @@ function SpeciesDetailsSidebar({
         <section aria-labelledby={`${species.id}-biology-title`} className="grid gap-3">
           <h3
             id={`${species.id}-biology-title`}
-            className="text-[0.62rem] font-bold uppercase tracking-[0.14em] text-[#7a7e99]"
+            className="text-[0.62rem] font-bold uppercase tracking-[0.14em] text-muted-foreground"
           >
             Biologia da especie
           </h3>
@@ -1096,16 +1096,16 @@ function SpeciesDetailsSidebar({
         </section>
       </div>
 
-      <div className="sticky bottom-0 mt-auto border-t border-white/[0.06] bg-[#12131a]/95 p-4 backdrop-blur">
+      <div className="sticky bottom-0 mt-auto border-t border-white/[0.06] bg-surface-nested/95 p-4 backdrop-blur">
         <button
           type="button"
           onClick={onSelect}
           disabled={disabled}
           aria-pressed={selected}
-          className={`inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg border px-4 py-3 font-serif text-lg font-semibold text-white outline-none transition focus-visible:ring-2 focus-visible:ring-[#ebc162]/70 disabled:cursor-not-allowed disabled:opacity-50 ${
+          className={`inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg border px-4 py-3 font-serif text-lg font-semibold text-foreground outline-none transition focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70 disabled:cursor-not-allowed disabled:opacity-50 ${
             selected
-              ? "border-[#f3c969] bg-[#f3c969] text-[#12131a]"
-              : "border-[#a91515]/70 bg-[#a91515] shadow-[0_0_18px_rgba(230,28,35,0.2)] hover:border-[#e61c23] hover:bg-[#e61c23]"
+              ? "border-accent bg-accent text-surface-nested"
+              : "border-destructive/70 bg-destructive shadow-[0_0_18px_rgba(230,28,35,0.2)] hover:border-primary hover:bg-primary"
           }`}
         >
           {selected ? (
@@ -1122,7 +1122,7 @@ function SpeciesDetailsSidebar({
 
 function SpeciesDetailsMain({ species }: { species: BuilderSpecies }) {
   return (
-    <main className="min-h-0 min-w-0 flex-1 overflow-y-auto bg-[#12131a] scroll-smooth">
+    <main className="min-h-0 min-w-0 flex-1 overflow-y-auto bg-surface-nested scroll-smooth">
       <div className="mx-auto grid max-w-4xl gap-6 p-4 sm:p-6 lg:p-8">
         <section aria-labelledby={`${species.id}-description-title`}>
           <ClassSectionHeading
@@ -1152,9 +1152,9 @@ function SpeciesDetailsMain({ species }: { species: BuilderSpecies }) {
             {species.traits.map((trait) => (
               <article
                 key={trait.name}
-                className="rounded-lg border border-white/[0.08] bg-[#0f1018] p-4"
+                className="rounded-lg border border-white/[0.08] bg-muted p-4"
               >
-                <h4 className="font-serif text-lg font-bold text-white">
+                <h4 className="font-serif text-lg font-bold text-foreground">
                   {trait.name}
                 </h4>
                 <div className="mt-3">
@@ -1190,7 +1190,7 @@ function SpeciesDetailsStep({
 }) {
   if (!selectedSpecies) {
     return (
-      <section className="rounded-lg border border-white/[0.06] bg-[#1c1e2a] p-4 text-sm text-[#b0b5cc]">
+      <section className="rounded-lg border border-white/[0.06] bg-card p-4 text-sm text-subdued">
         Escolha uma especie antes de configurar detalhes.
       </section>
     );
@@ -1222,9 +1222,9 @@ function SpeciesDetailsStep({
         {selectedSpecies.choiceGroups.map((group) => (
           <fieldset
             key={group.id}
-            className="rounded-lg border border-white/[0.06] bg-[#1c1e2a] p-4"
+            className="rounded-lg border border-white/[0.06] bg-card p-4"
           >
-            <legend className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-[#7a7e99]">
+            <legend className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">
               {group.label}
             </legend>
             <div className="grid gap-2">
@@ -1233,8 +1233,8 @@ function SpeciesDetailsStep({
                   key={option.value}
                   className={`grid cursor-pointer grid-cols-[auto_1fr] gap-2 rounded-md border px-3 py-2 text-sm transition ${
                     selectedChoices[group.id] === option.value
-                      ? "border-[#c41e1e] bg-[#c41e1e]/10 text-white"
-                      : "border-white/[0.08] bg-white/[0.03] text-[#b0b5cc]"
+                      ? "border-brand-crimson-alt bg-brand-crimson-alt/10 text-foreground"
+                      : "border-white/[0.08] bg-white/[0.03] text-subdued"
                   }`}
                 >
                   <input
@@ -1243,12 +1243,12 @@ function SpeciesDetailsStep({
                     checked={selectedChoices[group.id] === option.value}
                     disabled={disabled}
                     onChange={() => onSpeciesChoiceChange(group.id, option.value)}
-                    className="mt-1 h-4 w-4 border-white/20 bg-[#12131a] accent-[#c41e1e] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c41e1e]"
+                    className="mt-1 h-4 w-4 border-white/20 bg-surface-nested accent-brand-crimson-alt focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-crimson-alt"
                   />
                   <span>
                     <span className="block font-semibold">{option.label}</span>
                     {option.description ? (
-                      <span className="block text-xs text-[#7a7e99]">
+                      <span className="block text-xs text-muted-foreground">
                         {option.description}
                       </span>
                     ) : null}
@@ -1259,8 +1259,8 @@ function SpeciesDetailsStep({
           </fieldset>
         ))}
 
-        <fieldset className="rounded-lg border border-white/[0.06] bg-[#1c1e2a] p-4">
-          <legend className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-[#7a7e99]">
+        <fieldset className="rounded-lg border border-white/[0.06] bg-card p-4">
+          <legend className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">
             Idiomas ({selectedLanguages.length}/{languageLimit})
           </legend>
           <div className="grid gap-5">
@@ -1310,7 +1310,7 @@ function LanguageGroup({
 
   return (
     <section className="grid gap-2">
-      <h3 className="text-xs font-bold uppercase tracking-[0.14em] text-[#7a7e99]">
+      <h3 className="text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">
         {title}
       </h3>
       <div className="grid gap-2 sm:grid-cols-2">
@@ -1322,8 +1322,8 @@ function LanguageGroup({
               key={language.name}
               className={`grid cursor-pointer grid-cols-[auto_1fr] gap-2 rounded-md border px-3 py-2 text-sm transition ${
                 checked
-                  ? "border-[#c41e1e] bg-[#c41e1e]/10 text-white"
-                  : "border-white/[0.08] bg-white/[0.03] text-[#b0b5cc]"
+                  ? "border-brand-crimson-alt bg-brand-crimson-alt/10 text-foreground"
+                  : "border-white/[0.08] bg-white/[0.03] text-subdued"
               }`}
             >
               <input
@@ -1333,7 +1333,7 @@ function LanguageGroup({
                   disabled || (!checked && selectedLanguages.length >= languageLimit)
                 }
                 onChange={() => onToggleLanguage(language.name)}
-                className="mt-1 h-4 w-4 rounded border-white/20 bg-[#12131a] accent-[#c41e1e] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c41e1e]"
+                className="mt-1 h-4 w-4 rounded border-white/20 bg-surface-nested accent-brand-crimson-alt focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-crimson-alt"
               />
               <span>{language.name}</span>
             </label>
@@ -1365,7 +1365,7 @@ function ClassDetailsDialog({
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 flex items-stretch justify-center overflow-y-auto bg-black/70 p-0 backdrop-blur-md md:items-center md:p-6">
-          <Dialog.Content className="relative flex h-[100dvh] w-full min-w-0 flex-col overflow-hidden border border-white/[0.08] bg-[#12131a] text-[#e8e9f0] shadow-2xl shadow-black/60 outline-none focus-visible:ring-2 focus-visible:ring-[#ebc162]/70 md:h-[min(88vh,920px)] md:max-w-6xl md:flex-row md:rounded-xl">
+          <Dialog.Content className="relative flex h-[100dvh] w-full min-w-0 flex-col overflow-hidden border border-white/[0.08] bg-surface-nested text-foreground shadow-2xl shadow-black/60 outline-none focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70 md:h-[min(88vh,920px)] md:max-w-6xl md:flex-row md:rounded-xl">
             <Dialog.Title className="sr-only">{classEntry.name}</Dialog.Title>
             <Dialog.Description className="sr-only">
               {`Detalhes de ${classEntry.name}: ${classEntry.summary}`}
@@ -1374,7 +1374,7 @@ function ClassDetailsDialog({
               <button
                 type="button"
                 aria-label={`Fechar detalhes de ${classEntry.name}`}
-                className="absolute right-3 top-3 z-40 inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-[#0f1018]/85 text-[#b0b5cc] outline-none backdrop-blur transition hover:border-[#ebc162]/60 hover:text-white focus-visible:ring-2 focus-visible:ring-[#ebc162]/70"
+                className="absolute right-3 top-3 z-40 inline-flex h-10 w-10 items-center justify-center rounded-full border border-border bg-muted/85 text-subdued outline-none backdrop-blur transition hover:border-brand-gold-alt/60 hover:text-foreground focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70"
               >
                 <X aria-hidden="true" className="h-5 w-5" />
               </button>
@@ -1411,8 +1411,8 @@ function ClassDetailsSidebar({
   const tags = getClassTags(classEntry);
 
   return (
-    <aside className="flex max-h-[48dvh] w-full shrink-0 flex-col overflow-y-auto border-b border-white/[0.06] bg-[#0f1018] md:h-full md:max-h-none md:w-80 md:border-b-0 md:border-r">
-      <div className="relative h-56 shrink-0 overflow-hidden bg-[#1c1e2a] md:h-[300px]">
+    <aside className="flex max-h-[48dvh] w-full shrink-0 flex-col overflow-y-auto border-b border-white/[0.06] bg-muted md:h-full md:max-h-none md:w-80 md:border-b-0 md:border-r">
+      <div className="relative h-56 shrink-0 overflow-hidden bg-card md:h-[300px]">
         {classEntry.image ? (
           <Image
             unoptimized
@@ -1425,28 +1425,28 @@ function ClassDetailsSidebar({
         ) : (
           <div
             aria-hidden="true"
-            className={`h-full w-full bg-gradient-to-br from-[#0f1018] ${tone.fallbackGradient} to-[#1c1e2a]`}
+            className={`h-full w-full bg-gradient-to-br from-muted ${tone.fallbackGradient} to-card`}
           />
         )}
         <div
           aria-hidden="true"
-          className="absolute inset-0 bg-gradient-to-t from-[#0f1018] via-[#0f1018]/25 to-transparent"
+          className="absolute inset-0 bg-gradient-to-t from-muted via-muted/25 to-transparent"
         />
         <div className="absolute bottom-0 left-0 right-0 p-4">
           <div className="mb-2 flex flex-wrap gap-2">
             {tags.map((tag) => (
               <span
                 key={tag}
-                className="rounded border border-white/10 bg-black/45 px-2 py-1 text-[0.62rem] font-bold uppercase tracking-[0.14em] text-[#b0b5cc] backdrop-blur"
+                className="rounded border border-border bg-black/45 px-2 py-1 text-[0.62rem] font-bold uppercase tracking-[0.14em] text-subdued backdrop-blur"
               >
                 {tag}
               </span>
             ))}
           </div>
-          <h2 className="font-serif text-3xl font-bold tracking-wide text-white">
+          <h2 className="font-serif text-3xl font-bold tracking-wide text-foreground">
             {classEntry.name}
           </h2>
-          <p className="mt-1 line-clamp-2 text-sm leading-5 text-[#b0b5cc]">
+          <p className="mt-1 line-clamp-2 text-sm leading-5 text-subdued">
             {classEntry.summary}
           </p>
         </div>
@@ -1456,7 +1456,7 @@ function ClassDetailsSidebar({
         <section aria-labelledby={`${classEntry.id}-identity-title`} className="grid gap-3">
           <h3
             id={`${classEntry.id}-identity-title`}
-            className="text-[0.62rem] font-bold uppercase tracking-[0.14em] text-[#7a7e99]"
+            className="text-[0.62rem] font-bold uppercase tracking-[0.14em] text-muted-foreground"
           >
             Identidade da classe
           </h3>
@@ -1491,7 +1491,7 @@ function ClassDetailsSidebar({
         </section>
 
         <section>
-          <h3 className="border-b border-white/[0.06] pb-2 text-[0.62rem] font-bold uppercase tracking-[0.14em] text-[#7a7e99]">
+          <h3 className="border-b border-white/[0.06] pb-2 text-[0.62rem] font-bold uppercase tracking-[0.14em] text-muted-foreground">
             Proficiencias Iniciais
           </h3>
           <dl className="mt-3 grid gap-3 text-sm leading-6">
@@ -1511,16 +1511,16 @@ function ClassDetailsSidebar({
         </section>
       </div>
 
-      <div className="sticky bottom-0 mt-auto border-t border-white/[0.06] bg-[#12131a]/95 p-4 backdrop-blur">
+      <div className="sticky bottom-0 mt-auto border-t border-white/[0.06] bg-surface-nested/95 p-4 backdrop-blur">
         <button
           type="button"
           onClick={onSelect}
           disabled={disabled}
           aria-pressed={selected}
-          className={`inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg border px-4 py-3 font-serif text-lg font-semibold text-white outline-none transition focus-visible:ring-2 focus-visible:ring-[#ebc162]/70 disabled:cursor-not-allowed disabled:opacity-50 ${
+          className={`inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-lg border px-4 py-3 font-serif text-lg font-semibold text-foreground outline-none transition focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70 disabled:cursor-not-allowed disabled:opacity-50 ${
             selected
               ? tone.activeButton
-              : "border-[#a91515]/70 bg-[#a91515] shadow-[0_0_18px_rgba(230,28,35,0.2)] hover:border-[#e61c23] hover:bg-[#e61c23]"
+              : "border-destructive/70 bg-destructive shadow-[0_0_18px_rgba(230,28,35,0.2)] hover:border-primary hover:bg-primary"
           }`}
         >
           {selected ? (
@@ -1537,7 +1537,7 @@ function ClassDetailsSidebar({
 
 function ClassDetailsMain({ classEntry }: { classEntry: BuilderClass }) {
   return (
-    <main className="min-h-0 min-w-0 flex-1 overflow-y-auto bg-[#12131a] scroll-smooth">
+    <main className="min-h-0 min-w-0 flex-1 overflow-y-auto bg-surface-nested scroll-smooth">
       <div className="mx-auto grid max-w-4xl gap-6 p-4 sm:p-6 lg:p-8">
         <section aria-labelledby={`${classEntry.id}-description-title`}>
           <ClassSectionHeading
@@ -1558,14 +1558,14 @@ function ClassDetailsMain({ classEntry }: { classEntry: BuilderClass }) {
         <ClassProgressionTable classEntry={classEntry} />
 
         {classEntry.spellcastingAbility ? (
-          <section className="rounded-lg border border-[#f3c969]/25 bg-[#f3c969]/10 p-4">
+          <section className="rounded-lg border border-accent/25 bg-accent/10 p-4">
             <ClassSectionHeading
               icon={<Sparkles aria-hidden="true" className="h-5 w-5" />}
-              toneClassName="text-[#f3c969]"
+              toneClassName="text-accent"
             >
               Conjuracao
             </ClassSectionHeading>
-            <div className="mt-3 grid gap-2 text-sm leading-6 text-[#f8e5b7]">
+            <div className="mt-3 grid gap-2 text-sm leading-6 text-accent">
               <ClassSummaryLine
                 label="Habilidade de Conjuracao"
                 value={classEntry.spellcastingAbility}
@@ -1590,7 +1590,7 @@ function ClassDetailsMain({ classEntry }: { classEntry: BuilderClass }) {
           >
             Recursos de Classe
           </ClassSectionHeading>
-          <Accordion type="single" collapsible className="rounded-lg border border-white/[0.08] bg-[#0f1018] px-4">
+          <Accordion type="single" collapsible className="rounded-lg border border-white/[0.08] bg-muted px-4">
             {classEntry.allFeatures.map((feature) => (
               <AccordionItem key={`${feature.level}-${feature.name}`} value={`${feature.level}-${feature.name}`}>
                 <AccordionTrigger>
@@ -1613,7 +1613,7 @@ function ClassDetailStat({
   label,
   value,
   description,
-  accentClassName = "border-white/10 bg-[#1c1e2a] text-[#b0b5cc]",
+  accentClassName = "border-border bg-card text-subdued",
   compact = false,
 }: {
   icon: ReactNode;
@@ -1624,20 +1624,20 @@ function ClassDetailStat({
   compact?: boolean;
 }) {
   return (
-    <div className={`rounded-lg border border-white/[0.06] bg-[#12131a] p-3 ${compact ? "" : "grid grid-cols-[auto_1fr] gap-3"}`}>
+    <div className={`rounded-lg border border-white/[0.06] bg-surface-nested p-3 ${compact ? "" : "grid grid-cols-[auto_1fr] gap-3"}`}>
       <div
         className={`mb-2 inline-flex h-9 w-9 items-center justify-center rounded-md border ${accentClassName} ${compact ? "" : "mb-0"}`}
       >
         {icon}
       </div>
       <div>
-        <p className="text-[0.62rem] font-bold uppercase tracking-[0.14em] text-[#7a7e99]">
+        <p className="text-[0.62rem] font-bold uppercase tracking-[0.14em] text-muted-foreground">
           {label}
         </p>
-        <p className="mt-1 font-mono text-base font-bold text-white">
+        <p className="mt-1 font-mono text-base font-bold text-foreground">
           {value}
         </p>
-        <p className="mt-1 text-xs leading-5 text-[#7a7e99]">{description}</p>
+        <p className="mt-1 text-xs leading-5 text-muted-foreground">{description}</p>
       </div>
     </div>
   );
@@ -1646,8 +1646,8 @@ function ClassDetailStat({
 function ClassProficiencyLine({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <dt className="font-semibold text-white">{label}</dt>
-      <dd className="text-[#b0b5cc]">{value}</dd>
+      <dt className="font-semibold text-foreground">{label}</dt>
+      <dd className="text-subdued">{value}</dd>
     </div>
   );
 }
@@ -1656,7 +1656,7 @@ function ClassSectionHeading({
   id,
   icon,
   children,
-  toneClassName = "text-[#e61c23]",
+  toneClassName = "text-primary",
   withRule = false,
 }: {
   id?: string;
@@ -1668,7 +1668,7 @@ function ClassSectionHeading({
   return (
     <h3
       id={id}
-      className={`mb-4 flex items-center gap-2 font-serif text-xl font-bold text-white ${withRule ? "border-b border-white/10 pb-2" : ""}`}
+      className={`mb-4 flex items-center gap-2 font-serif text-xl font-bold text-foreground ${withRule ? "border-b border-border pb-2" : ""}`}
     >
       <span className={toneClassName}>{icon}</span>
       {children}
@@ -1683,12 +1683,12 @@ function ClassProgressionTable({ classEntry }: { classEntry: BuilderClass }) {
 
   return (
     <section>
-      <h3 className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-[#7a7e99]">
+      <h3 className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">
         Progressão de Classe
       </h3>
       <div className="overflow-x-auto rounded-lg border border-white/[0.08]">
         <table className="w-full min-w-[720px] border-collapse text-left text-sm">
-          <thead className="bg-white/[0.04] text-xs uppercase tracking-[0.12em] text-[#7a7e99]">
+          <thead className="bg-white/[0.04] text-xs uppercase tracking-[0.12em] text-muted-foreground">
             <tr>
               <th scope="col" className="px-3 py-3">Nível</th>
               <th scope="col" className="px-3 py-3">Bônus de Proficiência</th>
@@ -1699,13 +1699,13 @@ function ClassProgressionTable({ classEntry }: { classEntry: BuilderClass }) {
           <tbody className="divide-y divide-white/[0.06]">
             {classEntry.progressionRows.map((row) => (
               <tr key={row.level} className="align-top">
-                <td className="px-3 py-3 font-semibold text-white">Level {row.level}</td>
-                <td className="px-3 py-3 text-[#d7d9e6]">{row.proficiencyBonus}</td>
-                <td className="px-3 py-3 text-[#d7d9e6]">
+                <td className="px-3 py-3 font-semibold text-foreground">Level {row.level}</td>
+                <td className="px-3 py-3 text-subdued">{row.proficiencyBonus}</td>
+                <td className="px-3 py-3 text-subdued">
                   {formatList(row.features)}
                 </td>
                 {hasSpellSlots ? (
-                  <td className="px-3 py-3 text-[#d7d9e6]">
+                  <td className="px-3 py-3 text-subdued">
                     {row.spellSlots.length ? row.spellSlots.join(" / ") : "-"}
                   </td>
                 ) : null}
@@ -1736,7 +1736,7 @@ function ContentBlocks({
   keyPrefix?: string;
 }) {
   return (
-    <div className="grid gap-3 text-sm leading-6 text-[#d7d9e6]">
+    <div className="grid gap-3 text-sm leading-6 text-subdued">
       {blocks.map((block, index) => {
         if (block.type === "list") {
           return (
@@ -1766,8 +1766,8 @@ function ClassSummaryLine({
   return (
     <div className="grid gap-1">
       <p>
-        <strong className="font-semibold text-[#e8e9f0]">{label}:</strong>
-        {value ? <span className="text-[#b0b5cc]"> {value}</span> : null}
+        <strong className="font-semibold text-foreground">{label}:</strong>
+        {value ? <span className="text-subdued"> {value}</span> : null}
       </p>
       {children ? <div>{children}</div> : null}
     </div>
@@ -1791,13 +1791,13 @@ function StepHeader({
 }) {
   return (
     <div>
-      <p className="text-[0.58rem] font-bold uppercase tracking-[0.14em] text-[#c41e1e]">
+      <p className="text-[0.58rem] font-bold uppercase tracking-[0.14em] text-brand-crimson-alt">
         {eyebrow}
       </p>
-      <h2 id={id} className="mt-1 font-serif text-xl font-bold tracking-wide text-white">
+      <h2 id={id} className="mt-1 font-serif text-xl font-bold tracking-wide text-foreground">
         {title}
       </h2>
-      <p className="mt-2 max-w-3xl text-sm leading-6 text-[#7a7e99]">
+      <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
         {description}
       </p>
     </div>

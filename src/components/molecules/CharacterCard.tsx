@@ -20,7 +20,7 @@ export function CharacterCard({ character }: CharacterCardProps) {
       className="h-full rounded-xl border border-slate-800 bg-slate-950 p-5 shadow-lg shadow-slate-950/30"
     >
       <div className="flex flex-col gap-1">
-        <h3 id={`${character.id}-title`} className="text-xl font-semibold text-white">
+        <h3 id={`${character.id}-title`} className="text-xl font-semibold text-foreground">
           {character.nome}
         </h3>
         <p className="text-sm text-slate-300">
@@ -45,7 +45,7 @@ export function CharacterCard({ character }: CharacterCardProps) {
               <dt className="text-xs font-medium uppercase tracking-wide text-slate-400">
                 {label}
               </dt>
-              <dd className="mt-1 text-lg font-semibold text-white">
+              <dd className="mt-1 text-lg font-semibold text-foreground">
                 {character.atributos[attributeKey]}
               </dd>
             </div>

@@ -70,11 +70,11 @@ export function AttributeEditor({
       <div>
         <h2
           id="attributes-title"
-          className="font-serif text-xl font-bold tracking-wide text-white"
+          className="font-serif text-xl font-bold tracking-wide text-foreground"
         >
           Defina os Atributos
         </h2>
-        <p className="mt-2 max-w-3xl text-sm leading-6 text-[#7a7e99]">
+        <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
           Valores base ficam separados dos bonus do Antecedente 2024.
         </p>
       </div>
@@ -88,7 +88,7 @@ export function AttributeEditor({
               type="button"
               aria-pressed={method === entry}
               onClick={() => onMethodChange(entry)}
-              className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.08em] text-[#7a7e99] outline-none transition hover:border-[#c41e1e]/70 hover:text-white focus-visible:ring-2 focus-visible:ring-[#c41e1e]/70 aria-pressed:border-[#c41e1e] aria-pressed:bg-[#c41e1e] aria-pressed:text-white"
+              className="rounded-full border border-border bg-white/5 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.08em] text-muted-foreground outline-none transition hover:border-brand-crimson-alt/70 hover:text-foreground focus-visible:ring-2 focus-visible:ring-brand-crimson-alt/70 aria-pressed:border-brand-crimson-alt aria-pressed:bg-brand-crimson-alt aria-pressed:text-foreground"
             >
               {getAttributeMethodLabel(entry)}
             </button>
@@ -99,32 +99,32 @@ export function AttributeEditor({
       {method === "point-buy" ? (
         <p
           aria-live="polite"
-          className="rounded-md border border-white/[0.08] bg-[#1c1e2a] px-3 py-2 text-sm font-semibold text-[#f3c969]"
+          className="rounded-md border border-white/[0.08] bg-card px-3 py-2 text-sm font-semibold text-accent"
         >
           Point Buy: {pointBuySpent} gastos, {pointBuyRemaining} restantes
         </p>
       ) : null}
 
-      <div className="rounded-md border border-white/10 bg-[#10121b]">
+      <div className="rounded-md border border-border bg-muted">
         <Table className="min-w-[480px]">
           <TableHeader className="bg-white/5">
             <TableRow className="border-white/[0.06] hover:bg-transparent">
-              <TableHead className="text-xs font-bold uppercase tracking-wider text-[#7a7e99]">
+              <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                 Atributo
               </TableHead>
-              <TableHead className="text-center text-xs font-bold uppercase tracking-wider text-[#7a7e99]">
+              <TableHead className="text-center text-xs font-bold uppercase tracking-wider text-muted-foreground">
                 Valor Base
               </TableHead>
-              <TableHead className="text-center text-xs font-bold uppercase tracking-wider text-[#7a7e99]">
+              <TableHead className="text-center text-xs font-bold uppercase tracking-wider text-muted-foreground">
                 Bonus
               </TableHead>
-              <TableHead className="hidden text-center text-xs font-bold uppercase tracking-wider text-[#7a7e99] md:table-cell">
+              <TableHead className="hidden text-center text-xs font-bold uppercase tracking-wider text-muted-foreground md:table-cell">
                 Outros Modificadores
               </TableHead>
-              <TableHead className="text-center text-xs font-bold uppercase tracking-wider text-[#7a7e99]">
+              <TableHead className="text-center text-xs font-bold uppercase tracking-wider text-muted-foreground">
                 Total
               </TableHead>
-              <TableHead className="text-center text-xs font-bold uppercase tracking-wider text-[#7a7e99]">
+              <TableHead className="text-center text-xs font-bold uppercase tracking-wider text-muted-foreground">
                 Modificador
               </TableHead>
             </TableRow>
@@ -143,10 +143,10 @@ export function AttributeEditor({
                   className="border-white/[0.06] hover:bg-white/[0.02]"
                 >
                   <TableCell>
-                    <span className="flex items-center gap-2.5 font-semibold text-[#e8e9f0]">
+                    <span className="flex items-center gap-2.5 font-semibold text-foreground">
                       <FontAwesomeIcon
                         iconClassName={ATTRIBUTE_ICON_CLASS[attribute]}
-                        className="w-5 text-center text-[#e61c23]"
+                        className="w-5 text-center text-primary"
                       />
                       {label}
                     </span>
@@ -160,7 +160,7 @@ export function AttributeEditor({
                       onAttributeChange={onAttributeChange}
                     />
                   </TableCell>
-                  <TableCell className="text-center font-semibold text-[#b0b5cc]">
+                  <TableCell className="text-center font-semibold text-subdued">
                     {bonus === 0 ? "—" : formatSigned(bonus)}
                   </TableCell>
                   <TableCell className="hidden text-center md:table-cell">
@@ -174,14 +174,14 @@ export function AttributeEditor({
                           Number(event.target.value) || 0,
                         )
                       }
-                      className="mx-auto w-16 border-white/10 bg-[#12131a] text-center text-white"
+                      className="mx-auto w-16 border-border bg-surface-nested text-center text-foreground"
                     />
                   </TableCell>
-                  <TableCell className="text-center font-serif text-lg font-bold text-white">
+                  <TableCell className="text-center font-serif text-lg font-bold text-foreground">
                     {total}
                   </TableCell>
                   <TableCell className="text-center">
-                    <span className="font-serif text-2xl font-bold text-[#e61c23]">
+                    <span className="font-serif text-2xl font-bold text-primary">
                       {formatSigned(modifier)}
                     </span>
                   </TableCell>
@@ -218,7 +218,7 @@ function BaseValueControl({
         onChange={(event) =>
           onAttributeChange(attribute, Number(event.target.value))
         }
-        className="mx-auto w-20 rounded-md border border-white/10 bg-[#12131a] px-2 py-1.5 text-center text-white outline-none focus:border-[#c41e1e] focus:ring-2 focus:ring-[#c41e1e]/50"
+        className="mx-auto w-20 rounded-md border border-border bg-surface-nested px-2 py-1.5 text-center text-foreground outline-none focus:border-brand-crimson-alt focus:ring-2 focus:ring-brand-crimson-alt/50"
       >
         {standardArrayValues.map((arrayValue) => {
           const valueUsed = attributes.some(
@@ -279,13 +279,13 @@ function BaseValueControl({
         aria-label={`Diminuir ${label}`}
         disabled={!canDecrease}
         onClick={handleDecrease}
-        className="text-white"
+        className="text-foreground"
       >
         <Minus aria-hidden="true" />
       </Button>
       <output
         aria-label={`${label} ${value}`}
-        className="w-8 text-center font-serif text-lg font-bold text-white"
+        className="w-8 text-center font-serif text-lg font-bold text-foreground"
       >
         {value}
       </output>
@@ -296,7 +296,7 @@ function BaseValueControl({
         aria-label={`Aumentar ${label}`}
         disabled={!canIncrease}
         onClick={handleIncrease}
-        className="text-white"
+        className="text-foreground"
       >
         <Plus aria-hidden="true" />
       </Button>

@@ -39,11 +39,11 @@ export function DescriptionFields({
       <div>
         <h2
           id="description-title"
-          className="font-serif text-xl font-bold tracking-wide text-white"
+          className="font-serif text-xl font-bold tracking-wide text-foreground"
         >
           Descricao
         </h2>
-        <p className="mt-2 text-sm leading-6 text-[#7a7e99]">
+        <p className="mt-2 text-sm leading-6 text-muted-foreground">
           Dados narrativos ficam separados das escolhas mecanicas e sao exportados ao Foundry.
         </p>
       </div>
@@ -53,14 +53,14 @@ export function DescriptionFields({
             key={field.name}
             className={field.span === "full" ? "grid gap-2 md:col-span-2" : "grid gap-2"}
           >
-            <span className="text-sm font-semibold text-[#e8e9f0]">
+            <span className="text-sm font-semibold text-foreground">
               {field.label}
             </span>
             <textarea
               value={description[field.name]}
               rows={field.rows}
               onChange={(event) => onFieldChange(field.name, event.target.value)}
-              className="rounded-md border border-white/10 bg-[#1c1e2a] px-3 py-2 text-sm text-white outline-none transition focus:border-[#c41e1e] focus:ring-2 focus:ring-[#c41e1e]/50"
+              className="rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground outline-none transition focus:border-brand-crimson-alt focus:ring-2 focus:ring-brand-crimson-alt/50"
             />
           </label>
         ))}

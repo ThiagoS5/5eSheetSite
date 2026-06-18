@@ -30,13 +30,13 @@ const AccordionTrigger = forwardRef<
     <AccordionPrimitive.Trigger
       ref={ref}
       className={joinClasses(
-        "flex flex-1 items-center justify-between gap-3 py-4 text-left text-sm font-semibold text-white outline-none transition hover:text-[#f3c969] focus-visible:ring-2 focus-visible:ring-[#f3c969]",
+        "flex flex-1 items-center justify-between gap-3 py-4 text-left text-sm font-semibold text-foreground outline-none transition hover:text-accent focus-visible:ring-2 focus-visible:ring-accent",
         className,
       )}
       {...props}
     >
       <span>{children}</span>
-      <span aria-hidden="true" className="text-lg leading-none text-[#f3c969]">
+      <span aria-hidden="true" className="text-lg leading-none text-accent">
         +
       </span>
     </AccordionPrimitive.Trigger>
@@ -51,7 +51,7 @@ const AccordionContent = forwardRef<
   <AccordionPrimitive.Content
     ref={ref}
     className={joinClasses(
-      "overflow-hidden pb-4 text-sm leading-7 text-[#d7d9e6]",
+      "overflow-hidden pb-4 text-sm leading-7 text-subdued",
       className,
     )}
     {...props}

@@ -43,7 +43,7 @@ export function CharacterSheetPreview({
   return (
     <aside
       aria-labelledby="sheet-preview-title"
-      className="hidden border-t border-white/[0.06] bg-[#0f1018] xl:block xl:min-h-[calc(100dvh-4rem)] xl:border-l xl:border-t-0"
+      className="hidden border-t border-white/[0.06] bg-muted xl:block xl:min-h-[calc(100dvh-4rem)] xl:border-l xl:border-t-0"
     >
       <div className="sticky top-16 max-h-[calc(100dvh-4rem)] overflow-y-auto px-4 py-5">
         <button
@@ -51,7 +51,7 @@ export function CharacterSheetPreview({
           aria-expanded={!collapsed}
           aria-label={collapsed ? "Expandir informações do herói" : "Recolher informações do herói"}
           onClick={onToggleCollapsed}
-          className="mb-4 flex min-h-10 w-full items-center justify-center rounded-md border border-white/10 bg-white/5 px-2 text-sm font-bold text-[#b0b5cc] outline-none transition hover:border-[#c41e1e]/60 hover:text-white focus-visible:ring-2 focus-visible:ring-[#c41e1e]/70"
+          className="mb-4 flex min-h-10 w-full items-center justify-center rounded-md border border-border bg-white/5 px-2 text-sm font-bold text-subdued outline-none transition hover:border-brand-crimson-alt/60 hover:text-foreground focus-visible:ring-2 focus-visible:ring-brand-crimson-alt/70"
         >
           {collapsed ? "<" : ">"}
         </button>
@@ -60,7 +60,7 @@ export function CharacterSheetPreview({
           <div className="hidden xl:grid xl:place-items-center">
             <span
               aria-hidden="true"
-              className="flex h-12 w-12 items-center justify-center rounded-xl border-2 border-[#c41e1e]/40 bg-[#1c1e2a] font-serif text-lg font-bold text-[#e8e9f0]"
+              className="flex h-12 w-12 items-center justify-center rounded-xl border-2 border-brand-crimson-alt/40 bg-card font-serif text-lg font-bold text-foreground"
             >
               {description.nome.trim().charAt(0).toUpperCase() || "?"}
             </span>
@@ -74,21 +74,21 @@ export function CharacterSheetPreview({
           <div className="flex items-center gap-3">
             <span
               aria-hidden="true"
-              className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border-2 border-[#c41e1e]/40 bg-gradient-to-br from-[#1c1e2a] to-[#252836] font-serif text-xl font-bold text-[#7a7e99]"
+              className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border-2 border-brand-crimson-alt/40 bg-gradient-to-br from-card to-surface-elevated font-serif text-xl font-bold text-muted-foreground"
             >
               {description.nome.trim().charAt(0).toUpperCase() || "?"}
             </span>
             <div className="min-w-0">
-              <p className="text-[0.62rem] font-semibold uppercase tracking-[0.14em] text-[#7a7e99]">
+              <p className="text-[0.62rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                 Nível {summary.level} · Regras {summary.ruleset}
               </p>
               <h2
                 id="sheet-preview-title"
-                className="truncate font-serif text-lg font-bold tracking-wide text-white"
+                className="truncate font-serif text-lg font-bold tracking-wide text-foreground"
               >
                 {description.nome || "Herói sem nome"}
               </h2>
-              <p className="text-xs text-[#7a7e99]">
+              <p className="text-xs text-muted-foreground">
                 {speciesName || "Espécie"} · {className || "Classe"}
               </p>
             </div>
@@ -98,7 +98,7 @@ export function CharacterSheetPreview({
         <section aria-labelledby="sheet-core-title" className="border-b border-white/[0.06] py-4">
           <h3
             id="sheet-core-title"
-            className="text-[0.62rem] font-bold uppercase tracking-[0.14em] text-[#7a7e99]"
+            className="text-[0.62rem] font-bold uppercase tracking-[0.14em] text-muted-foreground"
           >
             Resumo
           </h3>
@@ -116,14 +116,14 @@ export function CharacterSheetPreview({
               <Metric label="Iniciativa" value={formatSigned(getAbilityModifier(summary.finalAttributes.destreza))} tone="gold" />
             </div>
             <div>
-              <dt className="text-[#7a7e99]">Antecedente</dt>
-              <dd className="font-semibold text-[#e8e9f0]">
+              <dt className="text-muted-foreground">Antecedente</dt>
+              <dd className="font-semibold text-foreground">
                 {backgroundName || "Não definido"}
               </dd>
             </div>
             <div>
-              <dt className="text-[#7a7e99]">Talento de Origem</dt>
-              <dd className="font-semibold text-[#e8e9f0]">
+              <dt className="text-muted-foreground">Talento de Origem</dt>
+              <dd className="font-semibold text-foreground">
                 {summary.originFeat || "Definido pelo antecedente"}
               </dd>
             </div>
@@ -133,7 +133,7 @@ export function CharacterSheetPreview({
         <section aria-labelledby="sheet-attributes-title" className="border-b border-white/[0.06] py-4">
           <h3
             id="sheet-attributes-title"
-            className="text-[0.62rem] font-bold uppercase tracking-[0.14em] text-[#7a7e99]"
+            className="text-[0.62rem] font-bold uppercase tracking-[0.14em] text-muted-foreground"
           >
             Atributos
           </h3>
@@ -144,15 +144,15 @@ export function CharacterSheetPreview({
               return (
                 <div
                   key={attribute}
-                  className="rounded-lg border border-white/[0.06] bg-[#1c1e2a] px-2 py-2 text-center"
+                  className="rounded-lg border border-white/[0.06] bg-card px-2 py-2 text-center"
                 >
-                  <dt className="text-[0.56rem] font-bold uppercase tracking-[0.1em] text-[#7a7e99]">
+                  <dt className="text-[0.56rem] font-bold uppercase tracking-[0.1em] text-muted-foreground">
                     {ATTRIBUTE_LABELS[attribute].slice(0, 3)}
                   </dt>
-                  <dd className="mt-1 font-serif text-xl font-bold text-white">
+                  <dd className="mt-1 font-serif text-xl font-bold text-foreground">
                     {value}
                   </dd>
-                  <dd className="mt-1 rounded border border-[#c41e1e]/25 bg-[#c41e1e]/15 px-1 py-0.5 text-[0.62rem] font-bold text-[#e63946]">
+                  <dd className="mt-1 rounded border border-brand-crimson-alt/25 bg-brand-crimson-alt/15 px-1 py-0.5 text-[0.62rem] font-bold text-primary">
                     {formatSigned(getAbilityModifier(value))}
                   </dd>
                 </div>
@@ -164,7 +164,7 @@ export function CharacterSheetPreview({
         <section aria-labelledby="sheet-features-title" className="border-b border-white/[0.06] py-4">
           <h3
             id="sheet-features-title"
-            className="text-[0.62rem] font-bold uppercase tracking-[0.14em] text-[#7a7e99]"
+            className="text-[0.62rem] font-bold uppercase tracking-[0.14em] text-muted-foreground"
           >
             Traços e Recursos
           </h3>
@@ -183,18 +183,18 @@ export function CharacterSheetPreview({
         <section aria-labelledby="sheet-status-title" className="py-4">
           <h3
             id="sheet-status-title"
-            className="text-[0.62rem] font-bold uppercase tracking-[0.14em] text-[#7a7e99]"
+            className="text-[0.62rem] font-bold uppercase tracking-[0.14em] text-muted-foreground"
           >
             Pendências
           </h3>
           {summary.validationMessages.length > 0 ? (
-            <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-[#f7d6b3]">
+            <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-accent">
               {summary.validationMessages.map((message) => (
                 <li key={message}>{message}</li>
               ))}
             </ul>
           ) : (
-            <p className="mt-3 rounded-md border border-[#50c878]/30 bg-[#50c878]/10 px-3 py-2 text-sm text-[#bff2d3]">
+            <p className="mt-3 rounded-md border border-brand-green/30 bg-brand-green/10 px-3 py-2 text-sm text-brand-green">
               Todas as etapas obrigatórias estão preenchidas.
             </p>
           )}
@@ -298,20 +298,20 @@ function Metric({
   tone: MetricTone;
 }) {
   const toneClasses: Record<MetricTone, string> = {
-    red: "before:bg-[#e63946]",
-    blue: "before:bg-[#4a9eff]",
-    green: "before:bg-[#50c878]",
-    gold: "before:bg-[#f4a261]",
+    red: "before:bg-primary",
+    blue: "before:bg-brand-blue",
+    green: "before:bg-brand-green",
+    gold: "before:bg-chart-5",
   };
 
   return (
     <div
-      className={`relative overflow-hidden rounded-lg border border-white/[0.06] bg-[#1c1e2a] px-3 py-3 text-center before:absolute before:left-0 before:top-0 before:h-0.5 before:w-full ${toneClasses[tone]}`}
+      className={`relative overflow-hidden rounded-lg border border-white/[0.06] bg-card px-3 py-3 text-center before:absolute before:left-0 before:top-0 before:h-0.5 before:w-full ${toneClasses[tone]}`}
     >
-      <dt className="text-[0.58rem] uppercase tracking-[0.12em] text-[#7a7e99]">
+      <dt className="text-[0.58rem] uppercase tracking-[0.12em] text-muted-foreground">
         {label}
       </dt>
-      <dd className="mt-1 font-serif text-xl font-bold text-white">{value}</dd>
+      <dd className="mt-1 font-serif text-xl font-bold text-foreground">{value}</dd>
     </div>
   );
 }

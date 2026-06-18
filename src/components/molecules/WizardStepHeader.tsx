@@ -30,14 +30,14 @@ export function WizardStepHeader({
     <div className="flex flex-col gap-4 border-b border-white/[0.06] pb-5 lg:flex-row lg:items-end lg:justify-between">
       <div>
         {eyebrow ? (
-          <p className="text-[0.68rem] font-bold uppercase tracking-[0.18em] text-[#c41e1e]">
+          <p className="text-[0.68rem] font-bold uppercase tracking-[0.18em] text-brand-crimson-alt">
             {eyebrow}
           </p>
         ) : null}
-        <h2 id={id} className="mt-1 font-serif text-3xl font-bold text-white">
+        <h2 id={id} className="mt-1 font-serif text-3xl font-bold text-foreground">
           {title}
         </h2>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-[#b0b5cc]">
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-subdued">
           {description}
         </p>
       </div>
@@ -46,7 +46,7 @@ export function WizardStepHeader({
         <div className="w-full lg:max-w-xs">
           <label
             htmlFor={searchId}
-            className="mb-2 block text-[0.62rem] font-bold uppercase tracking-[0.14em] text-[#b0b5cc]"
+            className="mb-2 block text-[0.62rem] font-bold uppercase tracking-[0.14em] text-subdued"
           >
             {searchLabel}
           </label>
@@ -59,12 +59,12 @@ export function WizardStepHeader({
             onKeyUp={(event) => onSearch?.(event.currentTarget.value)}
             aria-describedby={resultId}
             placeholder={searchPlaceholder}
-            className="min-h-11 w-full rounded-md border border-white/10 bg-[#0f1018] px-3 py-2 text-sm text-[#e8e9f0] outline-none transition placeholder:text-[#7a7e99] hover:border-white/20 focus:border-[#ebc162] focus:ring-2 focus:ring-[#ebc162]/40"
+            className="min-h-11 w-full rounded-md border border-border bg-muted px-3 py-2 text-sm text-foreground outline-none transition placeholder:text-muted-foreground hover:border-white/20 focus:border-brand-gold-alt focus:ring-2 focus:ring-brand-gold-alt/40"
           />
           {resultCountLabel ? (
             <p
               id={resultId}
-              className="mt-2 text-xs leading-5 text-[#7a7e99]"
+              className="mt-2 text-xs leading-5 text-muted-foreground"
               aria-live="polite"
             >
               {resultCountLabel}

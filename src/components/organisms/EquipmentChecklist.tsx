@@ -90,16 +90,16 @@ export function EquipmentChecklist({
   return (
     <section aria-labelledby="equipment-title" className="grid gap-5">
       <div>
-        <p className="text-[0.58rem] font-bold uppercase tracking-[0.14em] text-[#c41e1e]">
+        <p className="text-[0.58rem] font-bold uppercase tracking-[0.14em] text-brand-crimson-alt">
           Starting Gear
         </p>
         <h2
           id="equipment-title"
-          className="mt-1 font-serif text-xl font-bold tracking-wide text-white"
+          className="mt-1 font-serif text-xl font-bold tracking-wide text-foreground"
         >
           Equipamento Inicial
         </h2>
-        <p className="mt-2 text-sm leading-6 text-[#7a7e99]">
+        <p className="mt-2 text-sm leading-6 text-muted-foreground">
           Escolha entre os itens oferecidos pela classe ou o ouro inicial.
         </p>
       </div>
@@ -109,9 +109,9 @@ export function EquipmentChecklist({
         const mode: EquipmentAcquisitionMode = choice?.mode ?? "items";
 
         return (
-          <Card key={source.key} className="bg-[#10121b] ring-white/10">
+          <Card key={source.key} className="bg-muted ring-white/10">
             <CardHeader>
-              <p className="text-xs uppercase tracking-widest text-[#7a7e99]">
+              <p className="text-xs uppercase tracking-widest text-muted-foreground">
                 {source.heading}
               </p>
             </CardHeader>
@@ -133,20 +133,20 @@ export function EquipmentChecklist({
               </div>
 
               {mode === "items" ? (
-                <div className="rounded-md border border-white/10 p-3">
+                <div className="rounded-md border border-border p-3">
                   {source.kits
                     .filter((kit) => !choice?.selectedOptionId || kit.id === choice.selectedOptionId)
                     .map((kit) => (
                     <div key={kit.id}>
                       {kit.items.length > 0 ? (
-                        <ul className="grid gap-1 text-sm text-[#b0b5cc]">
+                        <ul className="grid gap-1 text-sm text-subdued">
                           {kit.items.map((item) => (
                             <li key={item.id} className="flex gap-2">
                               {item.value !== undefined ? (
-                                <span className="text-white">{item.value / 100} GP</span>
+                                <span className="text-foreground">{item.value / 100} GP</span>
                               ) : (
                                 <>
-                                  <span className="font-semibold text-white">{item.quantity}×</span>
+                                  <span className="font-semibold text-foreground">{item.quantity}×</span>
                                   <span>{item.label}</span>
                                 </>
                               )}
@@ -154,13 +154,13 @@ export function EquipmentChecklist({
                           ))}
                         </ul>
                       ) : (
-                        <p className="text-sm text-[#b0b5cc]">{kit.summary}</p>
+                        <p className="text-sm text-subdued">{kit.summary}</p>
                       )}
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="rounded-md border border-[#f3c969]/20 bg-[#f3c969]/10 px-4 py-3 text-sm font-semibold text-[#f3c969]">
+                <p className="rounded-md border border-accent/20 bg-accent/10 px-4 py-3 text-sm font-semibold text-accent">
                   {source.goldLabel}
                 </p>
               )}
@@ -189,8 +189,8 @@ function ModeButton({
       onClick={onClick}
       className={`rounded-md border px-3 py-2 text-xs font-bold uppercase tracking-[0.08em] transition ${
         active
-          ? "border-[#e61c23] bg-[#e61c23] text-white"
-          : "border-white/10 bg-white/5 text-[#7a7e99] hover:text-white"
+          ? "border-primary bg-primary text-foreground"
+          : "border-border bg-white/5 text-muted-foreground hover:text-foreground"
       }`}
     >
       {label}

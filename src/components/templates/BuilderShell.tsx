@@ -37,14 +37,14 @@ export function BuilderShell({ children }: BuilderShellProps) {
         } as React.CSSProperties
       }
     >
-      <main className="min-h-screen overflow-x-hidden bg-[#12131a] pt-16 text-[#e8e9f0]">
+      <main className="min-h-screen overflow-x-hidden bg-surface-nested pt-16 text-foreground">
         <Header />
         <div className={`grid min-h-[calc(100dvh-4rem)] w-full min-w-0 ${gridClass}`}>
           <BuilderSidebar />
 
           <section
             aria-labelledby="builder-title"
-            className="min-w-0 border-x border-white/[0.06] bg-[#12131a]"
+            className="min-w-0 border-x border-white/[0.06] bg-surface-nested"
           >
             <div className="px-4 py-5 md:px-6">{children}</div>
           </section>

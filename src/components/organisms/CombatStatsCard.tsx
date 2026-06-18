@@ -12,11 +12,11 @@ export function CombatStatsCard({ summary }: CombatStatsCardProps) {
   return (
     <section
       aria-labelledby="combat-stats-title"
-      className="rounded-md border border-white/[0.08] bg-[#10121b] p-4"
+      className="rounded-md border border-white/[0.08] bg-background p-4"
     >
       <h3
         id="combat-stats-title"
-        className="font-serif text-lg font-bold tracking-wide text-white"
+        className="font-serif text-lg font-bold tracking-wide text-foreground"
       >
         Combate
       </h3>

@@ -81,7 +81,7 @@ export function BackgroundCard({
         selectedLabel="SELECIONADO"
         imageSizes="(min-width: 1280px) 24rem, (min-width: 768px) 50vw, 100vw"
       >
-        <p className="line-clamp-3 flex-1 text-sm leading-6 text-[#e8e9f0]">
+        <p className="line-clamp-3 flex-1 text-sm leading-6 text-foreground">
           {background.summary}
         </p>
 
@@ -150,8 +150,8 @@ function BackgroundDetailsModal({
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-50 flex items-end justify-center bg-[#0a0b10]/80 backdrop-blur-md sm:items-center sm:p-6">
-          <Dialog.Content className="relative flex h-[85dvh] w-full max-w-md flex-col overflow-hidden rounded-t-xl border border-white/[0.06] bg-[#1c1e2a] text-[#e8e9f0] shadow-[0_0_30px_rgba(0,0,0,0.8)] outline-none focus-visible:ring-2 focus-visible:ring-[#e61c23] sm:max-h-[85vh] sm:max-w-2xl sm:rounded-xl">
+        <Dialog.Overlay className="fixed inset-0 z-50 flex items-end justify-center bg-background/80 backdrop-blur-md sm:items-center sm:p-6">
+          <Dialog.Content className="relative flex h-[85dvh] w-full max-w-md flex-col overflow-hidden rounded-t-xl border border-white/[0.06] bg-card text-foreground shadow-[0_0_30px_rgba(0,0,0,0.8)] outline-none focus-visible:ring-2 focus-visible:ring-primary sm:max-h-[85vh] sm:max-w-2xl sm:rounded-xl">
             <Dialog.Title className="sr-only">{background.name}</Dialog.Title>
             <Dialog.Description className="sr-only">
               {`Detalhes do antecedente ${background.name}`}
@@ -161,7 +161,7 @@ function BackgroundDetailsModal({
               <button
                 type="button"
                 aria-label="Fechar detalhes"
-                className="absolute right-4 top-4 z-20 flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-[#0a0b10]/70 text-[#b0b5cc] outline-none backdrop-blur transition hover:text-white focus-visible:ring-2 focus-visible:ring-[#e61c23]"
+                className="absolute right-4 top-4 z-20 flex h-8 w-8 items-center justify-center rounded-full border-border bg-background/70 text-subdued outline-none backdrop-blur transition hover:text-foreground focus-visible:ring-2 focus-visible:ring-primary border"
               >
                 <i aria-hidden="true" className="fa-solid fa-xmark text-sm" />
               </button>
@@ -180,18 +180,18 @@ function BackgroundDetailsModal({
               ) : (
                 <div
                   aria-hidden="true"
-                  className="h-full w-full bg-gradient-to-br from-[#0f1018] via-[#3d1820] to-[#1c1e2a]"
+                  className="h-full w-full bg-gradient-to-br from-muted via-tone-crimson-deepest to-card"
                 />
               )}
               <div
                 aria-hidden="true"
-                className="absolute inset-0 bg-gradient-to-t from-[#1c1e2a] via-[#1c1e2a]/40 to-transparent"
+                className="absolute inset-0 bg-gradient-to-t from-card via-card/40 to-transparent"
               />
               <div className="absolute bottom-0 left-0 w-full p-6">
-                <span className="mb-1 block text-[0.62rem] font-bold uppercase tracking-[0.14em] text-[#e61c23]">
+                <span className="mb-1 block text-[0.62rem] font-bold uppercase tracking-[0.14em] text-primary">
                   Antecedente
                 </span>
-                <h2 className="font-serif text-3xl font-bold text-white">
+                <h2 className="font-serif text-3xl font-bold text-foreground">
                   {background.name}
                 </h2>
               </div>
@@ -200,7 +200,7 @@ function BackgroundDetailsModal({
             <div
               tabIndex={0}
               aria-label={`Conteudo dos detalhes de ${background.name}`}
-              className="flex-1 overflow-y-auto p-6 pb-24 outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#e61c23]"
+              className="flex-1 overflow-y-auto p-6 pb-24 outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
             >
               <div className="grid gap-6">
                 <section>
@@ -218,7 +218,7 @@ function BackgroundDetailsModal({
                 <section aria-labelledby={`${background.id}-modal-rewards`}>
                   <h3
                     id={`${background.id}-modal-rewards`}
-                    className="mb-4 font-serif text-lg font-semibold text-white"
+                    className="mb-4 font-serif text-lg font-semibold text-foreground"
                   >
                     Recompensas
                   </h3>
@@ -228,7 +228,7 @@ function BackgroundDetailsModal({
                       title="Talento de Origem"
                       accent
                     >
-                      <p className="font-medium text-[#e61c23]">
+                      <p className="font-medium text-primary">
                         {background.originFeat || "-"}
                       </p>
                     </RewardPanel>
@@ -241,7 +241,7 @@ function BackgroundDetailsModal({
                         {background.abilityOptions.map((option) => (
                           <span
                             key={option.mode}
-                            className="rounded border border-white/10 bg-[#121318] px-2 py-1 font-mono text-xs text-[#b0b5cc]"
+                            className="rounded border border-border bg-surface-nested px-2 py-1 font-mono text-xs text-subdued"
                           >
                             {formatAbilityOption(option.mode, option.attributes)}
                           </span>
@@ -269,7 +269,7 @@ function BackgroundDetailsModal({
                       iconClassName="fa-solid fa-backpack"
                       title="Equipamento Inicial"
                     >
-                      <p className="text-sm leading-6 text-[#b0b5cc]">
+                      <p className="text-sm leading-6 text-subdued">
                         {background.equipmentSummary || "-"}
                       </p>
                     </RewardPanel>
@@ -278,13 +278,13 @@ function BackgroundDetailsModal({
               </div>
             </div>
 
-            <div className="absolute bottom-0 left-0 z-30 w-full border-t border-white/[0.06] bg-[#1c1e2a]/95 p-4 backdrop-blur">
+            <div className="absolute bottom-0 left-0 z-30 w-full border-t border-white/[0.06] bg-card/95 p-4 backdrop-blur">
               <button
                 type="button"
                 onClick={handleModalSelect}
                 disabled={disabled}
                 aria-pressed={selected}
-                className="flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-[#e61c23] px-4 text-xs font-bold uppercase tracking-[0.14em] text-white shadow-[0_0_15px_rgba(196,30,30,0.2)] outline-none transition hover:bg-[#c41e1e] active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-[#e61c23] disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 text-xs font-bold uppercase tracking-[0.14em] text-foreground shadow-[0_0_15px_rgba(196,30,30,0.2)] outline-none transition hover:bg-brand-crimson-alt active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {selected ? "SELECIONADO" : "SELECIONAR"}
                 <i aria-hidden="true" className="fa-solid fa-check text-xs" />
@@ -314,18 +314,18 @@ function BackgroundRewardCallout({
     .join(" | ");
 
   return (
-    <section className="mb-6 rounded-lg border border-[#e61c23]/30 bg-[#0f1018] p-4 shadow-[inset_0_0_15px_rgba(196,30,30,0.05)]">
+    <section className="mb-6 rounded-lg border border-primary/30 bg-muted p-4 shadow-[inset_0_0_15px_rgba(196,30,30,0.05)]">
       <div className="mb-2 flex items-center gap-2">
         <i
           aria-hidden="true"
-          className="fa-solid fa-wand-sparkles text-sm text-[#e61c23]"
+          className="fa-solid fa-wand-sparkles text-sm text-primary"
         />
-        <h4 className="text-[0.62rem] font-bold uppercase tracking-[0.14em] text-[#e61c23]">
+        <h4 className="text-[0.62rem] font-bold uppercase tracking-[0.14em] text-primary">
           Talento de Origem
         </h4>
       </div>
-      <p className="font-semibold text-white">{background.originFeat || "-"}</p>
-      <p className="mt-1 line-clamp-2 text-xs leading-5 text-[#7a7e99]">
+      <p className="font-semibold text-foreground">{background.originFeat || "-"}</p>
+      <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted-foreground">
         {rewardPreview || background.equipmentSummary || "-"}
       </p>
     </section>
@@ -369,7 +369,7 @@ function BackgroundAbilitySelector({
 
   return (
     <fieldset ref={controlsRef} className="mb-0">
-      <legend className="mb-3 block text-[0.62rem] font-bold uppercase tracking-[0.14em] text-[#7a7e99]">
+      <legend className="mb-3 block text-[0.62rem] font-bold uppercase tracking-[0.14em] text-muted-foreground">
         Bonus de Atributo ({formatAbilityAttributes(splitOption?.attributes)})
       </legend>
       <p id={`${background.id}-bonus-help`} className="sr-only">
@@ -377,7 +377,7 @@ function BackgroundAbilitySelector({
       </p>
       <div className="grid gap-3">
         {splitOption ? (
-          <label className="grid cursor-pointer grid-cols-[auto_1fr] gap-3 rounded-lg border border-white/[0.06] bg-[#0f1018] p-3 text-sm text-white transition hover:border-white/15">
+          <label className="grid cursor-pointer grid-cols-[auto_1fr] gap-3 rounded-lg border border-white/[0.06] bg-muted p-3 text-sm text-foreground transition hover:border-white/15">
             <input
               type="radio"
               name={`${background.id}-${id}-ability-mode`}
@@ -394,7 +394,7 @@ function BackgroundAbilitySelector({
                   ),
                 )
               }
-              className="mt-1 h-4 w-4 border-white/20 bg-[#12131a] accent-[#e61c23] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e61c23]"
+              className="mt-1 h-4 w-4 border-white/20 bg-surface-nested accent-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
             />
             <span>
               <span className="block font-semibold">Opcao A (+2 / +1)</span>
@@ -427,18 +427,18 @@ function BackgroundAbilitySelector({
         ) : null}
 
         {tripleOption ? (
-          <label className="grid cursor-pointer grid-cols-[auto_1fr] gap-3 rounded-lg border border-white/[0.06] bg-[#0f1018] p-3 text-sm text-white transition hover:border-white/15">
+          <label className="grid cursor-pointer grid-cols-[auto_1fr] gap-3 rounded-lg border border-white/[0.06] bg-muted p-3 text-sm text-foreground transition hover:border-white/15">
             <input
               type="radio"
               name={`${background.id}-${id}-ability-mode`}
               checked={isTripleSelected}
               disabled={disabled}
               onChange={() => onChange(tripleBonuses)}
-              className="mt-1 h-4 w-4 border-white/20 bg-[#12131a] accent-[#e61c23] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e61c23]"
+              className="mt-1 h-4 w-4 border-white/20 bg-surface-nested accent-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
             />
             <span>
               <span className="block font-semibold">Opcao B (+1 / +1 / +1)</span>
-              <span className="text-xs leading-5 text-[#7a7e99]">
+              <span className="text-xs leading-5 text-muted-foreground">
                 Aumente tres atributos permitidos em 1 cada.
               </span>
             </span>
@@ -468,7 +468,7 @@ function SelectBonusControl({
 }) {
   return (
     <span className="grid gap-1">
-      <span className="text-[0.62rem] font-bold uppercase tracking-[0.14em] text-[#7a7e99]">
+      <span className="text-[0.62rem] font-bold uppercase tracking-[0.14em] text-muted-foreground">
         {label}
       </span>
       <select
@@ -476,7 +476,7 @@ function SelectBonusControl({
         disabled={disabled}
         aria-label={ariaLabel}
         onChange={(event) => onChange(event.target.value)}
-        className="rounded border border-white/10 bg-[#12131a] p-2 text-xs text-white outline-none transition focus-visible:ring-2 focus-visible:ring-[#e61c23] disabled:opacity-50"
+        className="rounded border border-border bg-surface-nested p-2 text-xs text-foreground outline-none transition focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-50"
       >
         <option value="">Selecione</option>
         {options.map((attribute) => (
@@ -508,22 +508,22 @@ function RewardPanel({
     <div
       className={`rounded-lg border p-4 ${
         accent
-          ? "border-[#e61c23]/30 bg-[#0f1018]"
-          : "border-white/[0.06] bg-[#0f1018]"
+          ? "border-primary/30 bg-muted"
+          : "border-white/[0.06] bg-muted"
       }`}
     >
       <div className="flex items-start gap-3">
         <div
           className={`flex h-8 w-8 shrink-0 items-center justify-center rounded border ${
             accent
-              ? "border-[#e61c23]/50 bg-[#a91515]/20 text-[#e61c23]"
-              : "border-white/10 bg-[#121318] text-[#ebc162]"
+              ? "border-primary/50 bg-destructive/20 text-primary"
+              : "border-border bg-surface-nested text-brand-gold-alt"
           }`}
         >
           <i aria-hidden="true" className={`${iconClassName} text-sm`} />
         </div>
         <div className="min-w-0">
-          <h4 className="mb-1 font-mono text-sm font-semibold text-white">
+          <h4 className="mb-1 font-mono text-sm font-semibold text-foreground">
             {title}
           </h4>
           {children}
@@ -535,18 +535,18 @@ function RewardPanel({
 
 function RewardList({ title, items }: { title: string; items: string[] }) {
   return (
-    <div className="rounded-lg border border-white/[0.06] bg-[#0f1018] p-4">
-      <h4 className="mb-2 text-[0.62rem] font-bold uppercase tracking-[0.14em] text-[#7a7e99]">
+    <div className="rounded-lg border border-white/[0.06] bg-muted p-4">
+      <h4 className="mb-2 text-[0.62rem] font-bold uppercase tracking-[0.14em] text-muted-foreground">
         {title}
       </h4>
       {items.length ? (
-        <ul className="grid gap-1 text-sm leading-6 text-white">
+        <ul className="grid gap-1 text-sm leading-6 text-foreground">
           {items.map((item) => (
             <li key={item}>{item}</li>
           ))}
         </ul>
       ) : (
-        <p className="text-sm text-[#7a7e99]">Nenhuma</p>
+        <p className="text-sm text-muted-foreground">Nenhuma</p>
       )}
     </div>
   );
@@ -554,13 +554,13 @@ function RewardList({ title, items }: { title: string; items: string[] }) {
 
 function BackgroundContentBlocks({ blocks }: { blocks: BuilderFeatureBlock[] }) {
   return (
-    <div className="grid gap-3 text-sm leading-6 text-[#e8e9f0]">
+    <div className="grid gap-3 text-sm leading-6 text-foreground">
       {blocks.map((block, index) => {
         if (block.type === "list") {
           return (
             <ul
               key={index}
-              className="list-disc space-y-2 pl-5 marker:text-[#e61c23]"
+              className="list-disc space-y-2 pl-5 marker:text-primary"
             >
               {block.items.map((item) => (
                 <li key={item}>{item}</li>

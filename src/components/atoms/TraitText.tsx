@@ -6,7 +6,7 @@ interface TraitTextProps {
 
 export function TraitText({ children }: TraitTextProps) {
   return (
-    <span className="font-serif text-base font-bold tracking-wide text-[#f3c969]">
+    <span className="font-serif text-base font-bold tracking-wide text-accent">
       {children}
     </span>
   );

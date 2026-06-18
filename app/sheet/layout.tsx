@@ -4,7 +4,7 @@ import { CharacterStoreProvider } from "@/src/store/useCharacterStore";
 export default function SheetLayout({ children }: { children: ReactNode }) {
   return (
     <CharacterStoreProvider>
-      <div className="min-h-screen bg-[#12131a]">{children}</div>
+      <div className="min-h-screen bg-surface-nested">{children}</div>
     </CharacterStoreProvider>
   );
 }

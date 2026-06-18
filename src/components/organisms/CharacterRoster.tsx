@@ -22,7 +22,7 @@ export function CharacterRoster({ characters }: CharacterRosterProps) {
     >
       <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
-          <h2 id="characters-title" className="text-2xl font-semibold text-white">
+          <h2 id="characters-title" className="text-2xl font-semibold text-foreground">
             Personagens cadastrados
           </h2>
           <p id="characters-description" className="mt-2 text-sm text-slate-400">
@@ -43,7 +43,7 @@ export function CharacterRoster({ characters }: CharacterRosterProps) {
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             aria-describedby="characters-description character-results"
-            className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-base text-white outline-none transition placeholder:text-slate-500 focus:border-cyan-300 focus:ring-2 focus:ring-cyan-300/40"
+            className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-base text-foreground outline-none transition placeholder:text-slate-500 focus:border-cyan-300 focus:ring-2 focus:ring-cyan-300/40"
             placeholder="Ex.: paladina"
           />
         </div>
