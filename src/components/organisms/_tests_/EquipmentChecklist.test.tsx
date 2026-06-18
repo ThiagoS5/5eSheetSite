@@ -177,7 +177,7 @@ describe("EquipmentChecklist", () => {
     expect(screen.queryByText(/Choose A or B/)).toBeNull();
   });
 
-  it("falls back to equipmentSummary text for backgrounds without equipmentItemsA", () => {
+  it("shows only option A (items) when a background lacks structured equipmentItemsA", () => {
     const bgNoItems: BuilderBackground = {
       ...selectedBackground,
       equipmentItemsA: undefined,
@@ -192,6 +192,9 @@ describe("EquipmentChecklist", () => {
       />,
     );
 
-    expect(screen.getByText(/Choose A or B/)).toBeInTheDocument();
+    // Option A is parsed from the "Choose A or B" summary; the combined
+    // "Choose A or B …" string and option B (gold) are not shown in items mode.
+    expect(screen.getByText("Dagger, 16 GP")).toBeInTheDocument();
+    expect(screen.queryByText(/Choose A or B/)).not.toBeInTheDocument();
   });
 });

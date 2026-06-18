@@ -34,7 +34,7 @@ interface EquipmentSourceBlock {
  * option A can live under "Itens Oferecidos" and option B under "Ouro Inicial".
  */
 function splitOptions(summary: string): { a: string; b: string } | null {
-  const match = summary.match(/\(A\)\s*(.*?)\s*;?\s*or\s*\(B\)\s*(.*)$/is);
+  const match = summary.match(/\(A\)\s*(.*?)\s*;?\s*or\s*\(B\)\s*(.*)$/i);
   if (!match) return null;
   const clean = (text: string) => text.replace(/[;.\s]+$/, "").trim();
   return { a: clean(match[1] ?? ""), b: clean(match[2] ?? "") };
