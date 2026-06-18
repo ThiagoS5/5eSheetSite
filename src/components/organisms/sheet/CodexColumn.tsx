@@ -74,7 +74,7 @@ function NarrativeField({
   );
 }
 
-export function CodexColumn({ summary: _summary, description, className }: CodexColumnProps) {
+export function CodexColumn({ description, className }: CodexColumnProps) {
   return (
     <aside
       aria-label="Códice do personagem"
