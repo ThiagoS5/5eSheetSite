@@ -52,6 +52,17 @@
   html {
     @apply font-sans;
   }
+  /* Tailwind v4 dropped the default pointer cursor on buttons — restore it
+     for every interactive control unless it's disabled. */
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  label[for],
+  summary {
+    cursor: pointer;
+  }
+  button:disabled {
+    cursor: not-allowed;
+  }
 }
 
 @layer utilities {
