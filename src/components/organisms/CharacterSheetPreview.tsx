@@ -88,7 +88,7 @@ export function CharacterSheetPreview({
               >
                 {description.nome || "Herói sem nome"}
               </h2>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-base text-muted-foreground">
                 {speciesName || "Espécie"} · {className || "Classe"}
               </p>
             </div>

@@ -29,13 +29,13 @@ export function SkillsColumn({ summary }: SkillsColumnProps) {
 
   return (
     <section aria-labelledby="skills-col-title" className="flex flex-col gap-3">
-      <h2
+      <h3
         id="skills-col-title"
-        className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-muted-foreground"
+        className="flex items-center gap-2 font-serif text-lg font-bold tracking-wide text-foreground"
       >
-        <i aria-hidden="true" className="fa-solid fa-list-check" />
+        <i aria-hidden="true" className="fa-solid fa-list-check text-muted-foreground" />
         Salvaguardas & Perícias
-      </h2>
+      </h3>
 
       <div className="rounded-lg border border-white/[0.08] bg-card px-3 py-2">
         {ATTRIBUTE_ORDER.map((key) => {
@@ -58,10 +58,10 @@ export function SkillsColumn({ summary }: SkillsColumnProps) {
                       <div className="h-1.5 w-1.5 rounded-sm bg-primary" />
                     )}
                   </div>
-                  <span className="min-w-[1.5rem] text-right text-xs font-bold text-foreground">
+                  <span className="min-w-[1.75rem] text-right text-base font-bold text-foreground">
                     {save.modifier >= 0 ? "+" : ""}{save.modifier}
                   </span>
-                  <span className="text-xs font-semibold text-foreground">
+                  <span className="text-base font-semibold text-foreground">
                     Salv. {ATTRIBUTE_ABBR[key]}
                   </span>
                 </div>

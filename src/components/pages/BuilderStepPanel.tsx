@@ -351,7 +351,7 @@ function ClassOptionCard({
           ))}
         </div>
 
-        <p className="line-clamp-3 flex-1 text-sm leading-6 text-subdued">
+        <p className="line-clamp-3 flex-1 text-base leading-relaxed text-subdued">
           {classEntry.summary}
         </p>
 

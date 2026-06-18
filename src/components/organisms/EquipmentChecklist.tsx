@@ -26,6 +26,18 @@ interface EquipmentSourceBlock {
   heading: string;
   kits: EquipmentSourceKit[];
   goldLabel: string;
+  summary: string;
+}
+
+/**
+ * Split a "Choose A or B: (A) …; or (B) …" summary into its two options so
+ * option A can live under "Itens Oferecidos" and option B under "Ouro Inicial".
+ */
+function splitOptions(summary: string): { a: string; b: string } | null {
+  const match = summary.match(/\(A\)\s*(.*?)\s*;?\s*or\s*\(B\)\s*(.*)$/is);
+  if (!match) return null;
+  const clean = (text: string) => text.replace(/[;.\s]+$/, "").trim();
+  return { a: clean(match[1] ?? ""), b: clean(match[2] ?? "") };
 }
 
 interface EquipmentChecklistProps {
@@ -56,6 +68,7 @@ function buildEquipmentSources(
         }),
       ),
       goldLabel: selectedClass.startingEquipmentGold || "Ouro inicial",
+      summary: "",
     });
   }
 
@@ -72,6 +85,7 @@ function buildEquipmentSources(
         },
       ],
       goldLabel: selectedBackground.equipmentGold ?? "Ouro do antecedente",
+      summary: selectedBackground.equipmentSummary ?? "",
     });
   }
 
@@ -139,9 +153,9 @@ export function EquipmentChecklist({
                     .map((kit) => (
                     <div key={kit.id}>
                       {kit.items.length > 0 ? (
-                        <ul className="grid gap-1 text-sm text-subdued">
-                          {kit.items.map((item) => (
-                            <li key={item.id} className="flex gap-2">
+                        <ul className="grid gap-1 text-base text-subdued">
+                          {kit.items.map((item, index) => (
+                            <li key={`${kit.id}-${item.id}-${index}`} className="flex gap-2">
                               {item.value !== undefined ? (
                                 <span className="text-foreground">{item.value / 100} GP</span>
                               ) : (
@@ -154,14 +168,16 @@ export function EquipmentChecklist({
                           ))}
                         </ul>
                       ) : (
-                        <p className="text-sm text-subdued">{kit.summary}</p>
+                        <p className="text-base text-subdued">
+                          {splitOptions(source.summary)?.a ?? kit.summary}
+                        </p>
                       )}
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="rounded-md border border-accent/20 bg-accent/10 px-4 py-3 text-sm font-semibold text-accent">
-                  {source.goldLabel}
+                <p className="rounded-md border border-accent/20 bg-accent/10 px-4 py-3 text-base font-semibold text-accent">
+                  {splitOptions(source.summary)?.b ?? source.goldLabel}
                 </p>
               )}
             </CardContent>

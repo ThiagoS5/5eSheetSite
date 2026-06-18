@@ -30,14 +30,15 @@ const AccordionTrigger = forwardRef<
     <AccordionPrimitive.Trigger
       ref={ref}
       className={joinClasses(
-        "flex flex-1 items-center justify-between gap-3 py-4 text-left text-sm font-semibold text-foreground outline-none transition hover:text-accent focus-visible:ring-2 focus-visible:ring-accent",
+        "group flex flex-1 items-center justify-between gap-3 py-4 text-left text-sm font-semibold text-foreground outline-none transition hover:text-accent focus-visible:ring-2 focus-visible:ring-accent",
         className,
       )}
       {...props}
     >
       <span>{children}</span>
-      <span aria-hidden="true" className="text-lg leading-none text-accent">
-        +
+      <span aria-hidden="true" className="leading-none text-accent">
+        <i className="fa-solid fa-plus group-data-[state=open]:hidden" />
+        <i className="fa-solid fa-angle-down hidden group-data-[state=open]:inline" />
       </span>
     </AccordionPrimitive.Trigger>
   </AccordionPrimitive.Header>
