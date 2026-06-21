@@ -99,7 +99,7 @@ export function SheetHeader({ summary }: SheetHeaderProps) {
 
           {/* Classe de Armadura — variante escudo */}
           <CombatStatFrame variant="shield" accentColor="#7a7e99">
-            <span className="text-center text-[10px] uppercase leading-tight tracking-widest text-muted-foreground">
+            <span className="text-center text-base uppercase leading-tight tracking-wide text-muted-foreground">
               Classe
               <br />
               Armadura
@@ -109,18 +109,18 @@ export function SheetHeader({ summary }: SheetHeaderProps) {
 
           {/* Iniciativa — variante square */}
           <CombatStatFrame variant="square" accentColor="#f3c969">
-            <i aria-hidden="true" className="fa-solid fa-clock text-[10px] text-accent" />
-            <span className="text-[10px] uppercase tracking-widest text-muted-foreground">Iniciativa</span>
+            <i aria-hidden="true" className="fa-solid fa-clock text-sm text-accent" />
+            <span className="text-base uppercase tracking-wide text-muted-foreground">Iniciativa</span>
             <span className="text-2xl font-bold text-foreground">{fmt(summary.initiative)}</span>
           </CombatStatFrame>
 
           {/* Velocidade — variante square */}
           <CombatStatFrame variant="square" accentColor="#7a7e99">
-            <i aria-hidden="true" className="fa-solid fa-shoe-prints text-[10px] text-muted-foreground" />
-            <span className="text-[10px] uppercase tracking-widest text-muted-foreground">Velocidade</span>
+            <i aria-hidden="true" className="fa-solid fa-shoe-prints text-sm text-muted-foreground" />
+            <span className="text-base uppercase tracking-wide text-muted-foreground">Velocidade</span>
             <div className="flex items-baseline gap-0.5">
               <span className="text-2xl font-bold text-foreground">{summary.speedMeters}</span>
-              <span className="text-[10px] text-muted-foreground">m</span>
+              <span className="text-base text-muted-foreground">m</span>
             </div>
           </CombatStatFrame>
 

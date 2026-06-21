@@ -59,6 +59,9 @@ export function InventoryManager({
     try {
       onAddItem(item.id);
       toast.success(`${item.name} adicionado ao seu inventário atual`);
+      // Brief hold so the disabled/spinner state is visible and rapid repeat
+      // clicks are throttled (the store update itself is synchronous).
+      await new Promise((resolve) => setTimeout(resolve, 400));
     } finally {
       setAddingId(null);
     }

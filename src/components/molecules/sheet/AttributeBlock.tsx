@@ -12,20 +12,20 @@ export function AttributeBlock({ attribute }: AttributeBlockProps) {
     attribute.modifier >= 0 ? `+${attribute.modifier}` : `${attribute.modifier}`;
 
   return (
-    <StatFrame width={88} height={108} accentColor="#e61c23">
-      <span className="select-none text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+    <StatFrame width={104} height={124} accentColor="#e61c23">
+      <span className="select-none text-base font-semibold uppercase tracking-widest text-muted-foreground">
         {attribute.abbr}
       </span>
       <span
         className={cn(
-          "font-serif text-2xl font-bold leading-none",
+          "font-serif text-3xl font-bold leading-none",
           isNegative ? "text-muted-foreground" : "text-foreground",
         )}
       >
         {modifierStr}
       </span>
-      <div className="flex h-5 w-10 items-center justify-center rounded-full border border-border bg-background">
-        <span className="text-[10px] leading-none text-muted-foreground">{attribute.score}</span>
+      <div className="flex h-7 w-12 items-center justify-center rounded-full border border-border bg-background">
+        <span className="text-base leading-none text-muted-foreground">{attribute.score}</span>
       </div>
     </StatFrame>
   );

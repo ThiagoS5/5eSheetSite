@@ -20,7 +20,7 @@ export function CombatStatFrame({
 }: CombatStatFrameProps) {
   if (variant === "shield") {
     return (
-      <div className="relative flex h-[110px] w-[100px] items-center justify-center">
+      <div className="relative flex h-[124px] w-[116px] items-center justify-center">
         <svg
           viewBox="0 0 100 110"
           className="absolute inset-0 h-full w-full pointer-events-none"
@@ -48,9 +48,9 @@ export function CombatStatFrame({
     );
   }
 
-  const w = 88;
-  const h = 88;
-  const cut = 7;
+  const w = 108;
+  const h = 108;
+  const cut = 8;
   const framePath = `M ${cut} 0 L ${w - cut} 0 L ${w} ${cut} L ${w} ${h - cut} L ${w - cut} ${h} L ${cut} ${h} L 0 ${h - cut} L 0 ${cut} Z`;
   const innerPath = `M ${cut + 3} 3 L ${w - cut - 3} 3 L ${w - 3} ${cut + 3} L ${w - 3} ${h - cut - 3} L ${w - cut - 3} ${h - 3} L ${cut + 3} ${h - 3} L 3 ${h - cut - 3} L 3 ${cut + 3} Z`;
 

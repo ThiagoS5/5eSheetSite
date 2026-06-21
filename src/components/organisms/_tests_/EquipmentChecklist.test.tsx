@@ -192,9 +192,10 @@ describe("EquipmentChecklist", () => {
       />,
     );
 
-    // Option A is parsed from the "Choose A or B" summary; the combined
-    // "Choose A or B …" string and option B (gold) are not shown in items mode.
-    expect(screen.getByText("Dagger, 16 GP")).toBeInTheDocument();
+    // Option A is parsed from the "Choose A or B" summary and rendered as a
+    // structured list; the combined "Choose A or B …" string is not shown.
+    expect(screen.getByText("Dagger")).toBeInTheDocument();
+    expect(screen.getByText("16 GP")).toBeInTheDocument();
     expect(screen.queryByText(/Choose A or B/)).not.toBeInTheDocument();
   });
 });

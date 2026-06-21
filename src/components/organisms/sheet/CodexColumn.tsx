@@ -32,7 +32,7 @@ function CodexField({
       <span className={labelClass}>{label}</span>
       <span
         className={cn(
-          "text-sm",
+          "break-words text-sm",
           filled ? "text-foreground" : "select-none text-muted-foreground",
         )}
       >
@@ -64,7 +64,7 @@ function NarrativeField({
       <span className={labelClass}>{label}</span>
       <p
         className={cn(
-          "text-base leading-relaxed",
+          "whitespace-pre-wrap break-words text-base leading-relaxed",
           filled ? "text-subdued" : "select-none italic text-muted-foreground",
         )}
       >

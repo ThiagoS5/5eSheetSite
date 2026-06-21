@@ -40,6 +40,21 @@ function splitOptions(summary: string): { a: string; b: string } | null {
   return { a: clean(match[1] ?? ""), b: clean(match[2] ?? "") };
 }
 
+/** Split a comma-separated item phrase into qty/label rows (matches the class kit layout). */
+function parseItemList(text: string): { qty?: number; label: string }[] {
+  return text
+    .split(",")
+    .map((piece) => piece.trim())
+    .filter(Boolean)
+    .map((piece) => {
+      const match = piece.match(/^(\d+)\s+(.+)$/);
+      if (match && !/^(gp|po|pp|pc)$/i.test(match[2] ?? "")) {
+        return { qty: Number(match[1]), label: match[2] ?? piece };
+      }
+      return { label: piece };
+    });
+}
+
 interface EquipmentChecklistProps {
   selectedClass?: BuilderClass;
   selectedBackground?: BuilderBackground;
@@ -168,9 +183,20 @@ export function EquipmentChecklist({
                           ))}
                         </ul>
                       ) : (
-                        <p className="text-base text-subdued">
-                          {splitOptions(source.summary)?.a ?? kit.summary}
-                        </p>
+                        <ul className="grid gap-1 text-base text-subdued">
+                          {parseItemList(splitOptions(source.summary)?.a ?? kit.summary).map(
+                            (entry, index) => (
+                              <li key={`${kit.id}-a-${index}`} className="flex gap-2">
+                                {entry.qty ? (
+                                  <span className="font-semibold text-foreground">
+                                    {entry.qty}×
+                                  </span>
+                                ) : null}
+                                <span>{entry.label}</span>
+                              </li>
+                            ),
+                          )}
+                        </ul>
                       )}
                     </div>
                   ))}
