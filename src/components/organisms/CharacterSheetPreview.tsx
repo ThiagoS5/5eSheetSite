@@ -1,6 +1,8 @@
 "use client";
 
 import { useMemo } from "react";
+import { PanelRightClose, PanelRightOpen } from "lucide-react";
+import { cn } from "@/src/lib/utils";
 import {
   getBuilderBackgrounds,
   getBuilderClasses,
@@ -46,15 +48,27 @@ export function CharacterSheetPreview({
       className="hidden border-t border-white/[0.06] bg-muted xl:block xl:min-h-[calc(100dvh-4rem)] xl:border-l xl:border-t-0"
     >
       <div className="sticky top-16 max-h-[calc(100dvh-4rem)] overflow-y-auto px-4 py-5">
-        <button
-          type="button"
-          aria-expanded={!collapsed}
-          aria-label={collapsed ? "Expandir informações do herói" : "Recolher informações do herói"}
-          onClick={onToggleCollapsed}
-          className="mb-4 flex min-h-10 w-full items-center justify-center rounded-md border border-border bg-white/5 px-2 text-sm font-bold text-subdued outline-none transition hover:border-brand-crimson-alt/60 hover:text-foreground focus-visible:ring-2 focus-visible:ring-brand-crimson-alt/70"
+        <div
+          className={cn(
+            "mb-4 flex items-center",
+            collapsed ? "justify-center" : "justify-end",
+          )}
         >
-          {collapsed ? "<" : ">"}
-        </button>
+          <button
+            type="button"
+            aria-expanded={!collapsed}
+            aria-label={collapsed ? "Expandir informações do herói" : "Recolher informações do herói"}
+            title={collapsed ? "Expandir painel" : "Recolher painel"}
+            onClick={onToggleCollapsed}
+            className="flex h-10 w-10 items-center justify-center rounded-lg border border-transparent text-subdued outline-none transition hover:bg-white/5 hover:text-foreground focus-visible:ring-2 focus-visible:ring-primary/70"
+          >
+            {collapsed ? (
+              <PanelRightOpen aria-hidden="true" className="h-5 w-5" />
+            ) : (
+              <PanelRightClose aria-hidden="true" className="h-5 w-5" />
+            )}
+          </button>
+        </div>
 
         {collapsed ? (
           <div className="hidden xl:grid xl:place-items-center">
