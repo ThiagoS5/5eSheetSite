@@ -737,6 +737,13 @@ function entryToBlocks(entry: unknown): NonNullable<BuilderFeature["blocks"]> {
     return items.length ? [{ type: "list", items }] : [];
   }
 
+  // Structural wrappers ("section"/"chapter") carry the title as `name` (e.g. the
+  // class name). They are containers, not inline callouts, so recurse into their
+  // entries instead of prefixing the text with the title.
+  if (isStructuralEntry(entry)) {
+    return entriesToBlocks(entry.entries);
+  }
+
   if (isNamedEntry(entry)) {
     const text = stringifyEntries(entry.entries);
     return text ? [{ type: "paragraph", text: `${entry.name}: ${text}` }] : [];
@@ -757,6 +764,10 @@ function entryToBlocks(entry: unknown): NonNullable<BuilderFeature["blocks"]> {
 function stringifyEntry(entry: unknown): string {
   if (typeof entry === "string") {
     return formatTaggedTextAsPlain(entry);
+  }
+
+  if (isStructuralEntry(entry)) {
+    return stringifyEntries(entry.entries);
   }
 
   if (isNamedEntry(entry)) {
@@ -833,6 +844,17 @@ function isNamedEntry(entry: unknown): entry is { name: string; entries?: unknow
 
 function isListEntry(entry: unknown): entry is { items?: unknown[] } {
   return typeof entry === "object" && entry !== null && "items" in entry;
+}
+
+function isStructuralEntry(
+  entry: unknown,
+): entry is { type: string; entries?: unknown[] } {
+  if (typeof entry !== "object" || entry === null || !("type" in entry)) {
+    return false;
+  }
+
+  const { type } = entry as { type?: unknown };
+  return type === "section" || type === "chapter";
 }
 
 function isTableEntry(entry: unknown): entry is {
