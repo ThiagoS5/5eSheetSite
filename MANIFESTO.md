@@ -126,8 +126,8 @@ Regra de ouro: **mudou o shape persistido → bumpe `CHARACTER_BUILD_SCHEMA_VERS
 |---|---|---|
 | **Vault (múltiplos personagens)** | ✅ Existe | `characterService.ts` + `Dashboard`. Evoluir: sincronização/cloud futura. |
 | **Export VTT (Foundry)** | ✅ Existe | `src/utils/foundryAdapter.ts` consumindo `CharacterSheetSummary`. |
-| **Cálculo level-aware** | ✅ Parcial | `getProficiencyBonus(level)` já usa nível; HP só nível 1 (`calculateInitialHitPoints`). |
-| **Progressão 1–20** | ⛔ Falta | `progression.level` + `progression.levelChoices` já existem no schema. Criar um *Level-Up Engine* em `src/adapters/` que consome `levelChoices` por nível; estender HP e recursos por nível. |
+| **Cálculo level-aware** | ✅ | `getProficiencyBonus(level)`, HP via `calculateMaxHitPoints(hitDie, con, level)` (regra fixa do 5e 2024) e features de classe filtradas por `level` no `selectCharacterSheetSummary`. |
+| **Progressão 1–20** | 🟡 Parcial | Derivação já é level-aware (HP + features). Faltam: **UI para definir/subir de nível** (o `setLevel` existe mas nada o aciona), consumo de `progression.levelChoices` (ASI/talentos por nível) e recursos por nível (slots de magia). |
 | **Multiclasse** | ⛔ Falta | `choices.selectedClassId` é **singular**. Refatorar para `classes: { classId, level, subclassId }[]` (refatoração deliberada do store + bump de schema + migração). Proficiência total = soma dos níveis. |
 | **Subclasse** | ⛔ Falta | Dados em `public/data/class/*`. Modelar `subclassId` por classe em `choices`/`classes[]`. |
 | **Magias (spellcasting)** | ⛔ Falta | Dados em `public/data/spells/`. Adicionar modelo de magias preparadas/conhecidas em `CharacterBuild.choices` + slots derivados por nível no adapter. |

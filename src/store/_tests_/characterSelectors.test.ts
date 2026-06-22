@@ -5,6 +5,7 @@ import {
 } from "@/src/store/createCharacterStore";
 import { selectCharacterSheetSummary } from "@/src/store/characterSelectors";
 import { getBuilderClasses } from "@/src/services/ruleService";
+import { calculateMaxHitPoints } from "@/src/adapters/characterDerivedAdapter";
 
 describe("character selectors", () => {
   it("derives final attributes from 2024 background bonuses, not species", () => {
@@ -39,6 +40,52 @@ describe("character selectors", () => {
 
     const summary = selectCharacterSheetSummary(store.getState());
     expect(summary.selectedEquipment.length).toBeGreaterThan(0);
+  });
+
+  it("scales max HP with character level", () => {
+    const store = createCharacterStore();
+    const fighter = getBuilderClasses().find((c) => c.id === "fighter-xphb");
+    if (!fighter || fighter.hitDie !== 10) {
+      throw new Error("expected fighter to use a d10 hit die");
+    }
+    store.getState().selectClass("fighter-xphb");
+
+    const atLevelOne = selectCharacterSheetSummary(store.getState()).maxHp;
+
+    store.getState().setLevel(5);
+    const summary = selectCharacterSheetSummary(store.getState());
+    const con = summary.finalAttributes.constituicao;
+
+    expect(summary.maxHp).toBe(calculateMaxHitPoints(10, con, 5));
+    expect(summary.maxHp).toBeGreaterThan(atLevelOne);
+    expect(summary.hitPoints).toBe(summary.maxHp);
+    expect(summary.currentHp).toBe(summary.maxHp);
+  });
+
+  it("exposes class features unlocked up to the current level", () => {
+    const store = createCharacterStore();
+    store.getState().selectClass("fighter-xphb");
+
+    const atLevelOne = selectCharacterSheetSummary(store.getState());
+    expect(atLevelOne.classFeatures.some((f) => f.name === "Extra Attack")).toBe(
+      false,
+    );
+
+    store.getState().setLevel(5);
+    const atLevelFive = selectCharacterSheetSummary(store.getState());
+
+    // Extra Attack is gained at level 5.
+    expect(atLevelFive.classFeatures.some((f) => f.name === "Extra Attack")).toBe(
+      true,
+    );
+    // Level-1 features remain present.
+    expect(
+      atLevelFive.classFeatures.some((f) => f.name === "Second Wind"),
+    ).toBe(true);
+    // Nothing above the current level leaks in.
+    expect(
+      atLevelFive.classFeatures.every((f) => (f.level ?? 1) <= 5),
+    ).toBe(true);
   });
 
   it("includes inventory items in selectedEquipment", () => {

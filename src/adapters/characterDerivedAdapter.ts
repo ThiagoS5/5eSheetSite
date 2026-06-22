@@ -33,6 +33,25 @@ export function calculateInitialHitPoints(
   return hitDie + getAbilityModifier(constitutionScore);
 }
 
+/**
+ * Pontos de vida máximos usando a regra fixa (média) do 5e 2024:
+ * nível 1 recebe o valor cheio do dado; cada nível seguinte soma a média
+ * arredondada para cima (`floor(hitDie / 2) + 1`). O modificador de
+ * Constituição é somado em todos os níveis.
+ */
+export function calculateMaxHitPoints(
+  hitDie: number,
+  constitutionScore: number,
+  level: number,
+): number {
+  const effectiveLevel = Math.max(1, Math.floor(level));
+  const conModifier = getAbilityModifier(constitutionScore);
+  const firstLevel = hitDie + conModifier;
+  const perAdditionalLevel = Math.floor(hitDie / 2) + 1 + conModifier;
+
+  return firstLevel + (effectiveLevel - 1) * perAdditionalLevel;
+}
+
 export function calculateArmorClass(
   dexterityScore: number,
   selectedEquipment: Array<Pick<BuilderEquipmentOption, "id" | "armorClass">>,
