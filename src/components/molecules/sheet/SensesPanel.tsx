@@ -18,7 +18,7 @@ export function SensesPanel({ senses, languages }: SensesPanelProps) {
           </div>
           <ul className="mb-3 space-y-0.5">
             {senses.map((s) => (
-              <li key={s.name} className="flex items-center gap-2 text-[0.72rem] text-subdued">
+              <li key={s.name} className="flex items-center gap-2 text-xs text-subdued">
                 <i aria-hidden="true" className="fa-solid fa-eye text-muted-foreground" />
                 {s.name}
                 {s.rangeFeet != null && (
@@ -39,7 +39,7 @@ export function SensesPanel({ senses, languages }: SensesPanelProps) {
               Idiomas
             </p>
           </div>
-          <p className="text-[0.72rem] text-subdued">{languages.join(", ")}</p>
+          <p className="text-xs text-subdued">{languages.join(", ")}</p>
         </>
       )}
     </section>

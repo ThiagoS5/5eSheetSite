@@ -20,7 +20,7 @@ export function CombatStatFrame({
 }: CombatStatFrameProps) {
   if (variant === "shield") {
     return (
-      <div className="relative flex h-[110px] w-[100px] items-center justify-center">
+      <div className="relative flex h-[132px] w-[124px] items-center justify-center">
         <svg
           viewBox="0 0 100 110"
           className="absolute inset-0 h-full w-full pointer-events-none"
@@ -41,16 +41,16 @@ export function CombatStatFrame({
             opacity="0.35"
           />
         </svg>
-        <div className="relative z-10 flex h-full flex-col items-center justify-center pb-2">
+        <div className="relative z-10 flex h-full flex-col items-center justify-center px-[3px] pb-2 text-center leading-tight">
           {children}
         </div>
       </div>
     );
   }
 
-  const w = 88;
-  const h = 88;
-  const cut = 7;
+  const w = 132;
+  const h = 120;
+  const cut = 9;
   const framePath = `M ${cut} 0 L ${w - cut} 0 L ${w} ${cut} L ${w} ${h - cut} L ${w - cut} ${h} L ${cut} ${h} L 0 ${h - cut} L 0 ${cut} Z`;
   const innerPath = `M ${cut + 3} 3 L ${w - cut - 3} 3 L ${w - 3} ${cut + 3} L ${w - 3} ${h - cut - 3} L ${w - cut - 3} ${h - 3} L ${cut + 3} ${h - 3} L 3 ${h - cut - 3} L 3 ${cut + 3} Z`;
 
@@ -71,7 +71,7 @@ export function CombatStatFrame({
         <path d={`M 2 ${h - cut - 2} L ${cut + 2} ${h - 2}`} stroke={accentColor} strokeWidth="1.5" opacity="0.8" />
         <path d={`M ${w - 2} ${h - cut - 2} L ${w - cut - 2} ${h - 2}`} stroke={accentColor} strokeWidth="1.5" opacity="0.8" />
       </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center gap-1">
+      <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 px-[3px] py-[3px] text-center leading-tight">
         {children}
       </div>
     </div>

@@ -151,13 +151,13 @@ export function ContentTabs({ summary }: ContentTabsProps) {
         <div>
           {summary.selectedEquipment.length > 0 ? (
             <ul className="divide-y divide-white/5 rounded-lg border border-white/[0.08] bg-card overflow-hidden">
-              {summary.selectedEquipment.map((item) => (
+              {summary.selectedEquipment.map((item, index) => (
                 <li
-                  key={item.id}
+                  key={`${item.id}-${index}`}
                   className="flex items-center gap-3 px-3 py-2.5"
                 >
                   <i aria-hidden="true" className="fa-solid fa-circle-dot text-[10px] text-muted-foreground" />
-                  <span className="flex-1 text-[0.8rem] text-foreground">{item.name}</span>
+                  <span className="flex-1 text-sm text-foreground">{item.name}</span>
                   <span className={cn(
                     "text-[10px] font-semibold uppercase tracking-widest",
                     item.sourceType === "class" ? "text-foreground" : "text-muted-foreground",
@@ -208,8 +208,8 @@ export function ContentTabs({ summary }: ContentTabsProps) {
                   <div key={sec.id}>
                     {/* Section header */}
                     <div className={cn("mb-3 flex items-center gap-2 border-b pb-1.5", sec.border)}>
-                      <i aria-hidden="true" className={cn(`fa-solid ${sec.icon} text-[0.7rem]`, sec.accent)} />
-                      <h3 className={cn("text-[0.65rem] font-bold uppercase tracking-widest", sec.accent)}>
+                      <i aria-hidden="true" className={cn(`fa-solid ${sec.icon} text-xs`, sec.accent)} />
+                      <h3 className={cn("text-xs font-bold uppercase tracking-widest", sec.accent)}>
                         {sec.label}
                       </h3>
                     </div>
@@ -217,11 +217,11 @@ export function ContentTabs({ summary }: ContentTabsProps) {
                     <div className="flex flex-col divide-y divide-white/5">
                       {items.map((feat) => (
                         <div key={feat.name} className="py-3 first:pt-0">
-                          <p className="mb-1 text-[0.85rem] font-semibold text-foreground">
+                          <p className="mb-1 text-sm font-semibold text-foreground">
                             {feat.name}
                           </p>
                           {feat.description && (
-                            <p className="text-[0.75rem] leading-relaxed text-subdued">
+                            <p className="text-xs leading-relaxed text-subdued">
                               {feat.description}
                             </p>
                           )}

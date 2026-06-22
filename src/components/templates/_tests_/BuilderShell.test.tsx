@@ -45,7 +45,7 @@ describe("BuilderShell", () => {
     const builderSection = screen.getByRole("region", { name: "Forge & Fate" });
 
     expect(builderSection).toContainElement(builderTitle);
-    expect(builderSection.querySelector(".sticky.top-16")).not.toBeInTheDocument();
+    expect(builderSection.querySelector(".sticky.top-0")).not.toBeInTheDocument();
 
     const sidebar = screen
       .getByRole("navigation", { name: "Etapas do Character Builder" })

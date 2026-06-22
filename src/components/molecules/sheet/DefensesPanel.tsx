@@ -18,26 +18,26 @@ export function DefensesPanel({ resistances, immunities, vulnerabilities }: Defe
       {hasContent ? (
         <ul className="space-y-0.5">
           {resistances.map((r) => (
-            <li key={r} className="flex items-center gap-1.5 text-[0.72rem] text-subdued">
+            <li key={r} className="flex items-center gap-1.5 text-xs text-subdued">
               <i aria-hidden="true" className="fa-solid fa-shield-halved text-brand-blue" />
               Resist. {r}
             </li>
           ))}
           {immunities.map((im) => (
-            <li key={im} className="flex items-center gap-1.5 text-[0.72rem] text-subdued">
+            <li key={im} className="flex items-center gap-1.5 text-xs text-subdued">
               <i aria-hidden="true" className="fa-solid fa-shield text-brand-green" />
               Imun. {im}
             </li>
           ))}
           {vulnerabilities.map((v) => (
-            <li key={v} className="flex items-center gap-1.5 text-[0.72rem] text-subdued">
+            <li key={v} className="flex items-center gap-1.5 text-xs text-subdued">
               <i aria-hidden="true" className="fa-solid fa-triangle-exclamation text-primary" />
               Vuln. {v}
             </li>
           ))}
         </ul>
       ) : (
-        <p className="text-[0.72rem] text-muted-foreground">Nenhuma resistência especial.</p>
+        <p className="text-xs text-muted-foreground">Nenhuma resistência especial.</p>
       )}
     </section>
   );

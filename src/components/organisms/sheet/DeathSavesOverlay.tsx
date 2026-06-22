@@ -21,7 +21,7 @@ export function DeathSavesOverlay({ onReset }: DeathSavesOverlayProps) {
 
   return (
     <div className="rounded-lg border border-primary/50 bg-primary/5 p-3">
-      <p className="mb-2 text-[0.65rem] uppercase tracking-widest text-muted-foreground">
+      <p className="mb-2 text-xs uppercase tracking-widest text-muted-foreground">
         Testes de Morte
       </p>
       <div className="flex gap-4">

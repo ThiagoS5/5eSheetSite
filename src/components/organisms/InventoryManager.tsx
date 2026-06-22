@@ -17,6 +17,8 @@ import {
 import type { CatalogItem, ItemCategory } from "@/types/builder";
 import type { InventoryEntry } from "@/src/types/characterBuild";
 import { Minus, Plus, Trash2 } from "lucide-react";
+import { toast } from "sonner";
+import { cn } from "@/src/lib/utils";
 
 const ALL_CATEGORIES: ItemCategory[] = [
   "Armor",
@@ -47,8 +49,23 @@ export function InventoryManager({
   onRemoveItem,
 }: InventoryManagerProps) {
   const [filters, setFilters] = useState<CatalogFilterCriteria>(DEFAULT_CATALOG_FILTERS);
+  const [addingId, setAddingId] = useState<string | null>(null);
 
   const results = useMemo(() => filterCatalog(catalog, filters), [catalog, filters]);
+
+  async function handleAddItem(item: CatalogItem) {
+    if (addingId) return; // ignore clicks while an add is in flight
+    setAddingId(item.id);
+    try {
+      onAddItem(item.id);
+      toast.success(`${item.name} adicionado ao seu inventário atual`);
+      // Brief hold so the disabled/spinner state is visible and rapid repeat
+      // clicks are throttled (the store update itself is synchronous).
+      await new Promise((resolve) => setTimeout(resolve, 400));
+    } finally {
+      setAddingId(null);
+    }
+  }
 
   const itemMap = useMemo(
     () => new Map(catalog.map((i) => [i.id, i])),
@@ -158,12 +175,12 @@ export function InventoryManager({
                     type="button"
                     aria-pressed={active}
                     onClick={() => toggleCategory(cat)}
-                    className={[
-                      "rounded-md border px-2.5 py-1 text-xs font-bold uppercase tracking-[0.08em]",
+                    className={cn(
+                      "cursor-pointer rounded-md border px-2.5 py-1 text-xs font-bold uppercase tracking-[0.08em] transition-colors",
                       active
                         ? "border-primary bg-primary text-foreground"
-                        : "border-border bg-white/5 text-muted-foreground",
-                    ].join(" ")}
+                        : "border-border bg-white/5 text-muted-foreground hover:border-border/80 hover:bg-surface-raised hover:text-foreground",
+                    )}
                   >
                     {cat}
                   </button>
@@ -247,10 +264,20 @@ export function InventoryManager({
                   </div>
                   <button
                     type="button"
-                    onClick={() => onAddItem(item.id)}
-                    className="rounded bg-primary px-2 py-1 text-xs font-bold text-foreground shrink-0"
+                    onClick={() => handleAddItem(item)}
+                    disabled={addingId === item.id}
+                    className={cn(
+                      "shrink-0 rounded px-2 py-1 text-xs font-bold transition-colors",
+                      addingId === item.id
+                        ? "cursor-progress bg-muted text-muted-foreground opacity-60"
+                        : "cursor-pointer bg-primary text-foreground hover:bg-primary/90",
+                    )}
                   >
-                    ADD
+                    {addingId === item.id ? (
+                      <i aria-hidden="true" className="fa-solid fa-spinner fa-spin" />
+                    ) : (
+                      "ADD"
+                    )}
                   </button>
                 </li>
               ))}

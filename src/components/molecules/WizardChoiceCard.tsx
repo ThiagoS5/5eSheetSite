@@ -61,7 +61,7 @@ export function WizardChoiceCard({
   const resolvedTone = { ...defaultTone, ...tone };
   const subtitleClassName =
     subtitleVariant === "summary"
-      ? "mt-2 line-clamp-2 text-sm leading-5 text-subdued"
+      ? "mt-2 line-clamp-2 text-base leading-relaxed text-subdued"
       : "mt-1 text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground";
 
   return (

@@ -23,7 +23,7 @@ export function PassivesPanel({ perception, investigation, insight }: PassivesPa
         {items.map(({ label, value }) => (
           <div key={label} className="flex items-baseline gap-2">
             <dd className="w-6 text-right text-sm font-bold text-foreground">{value}</dd>
-            <dt className="text-[0.72rem] text-subdued">{label}</dt>
+            <dt className="text-xs text-subdued">{label}</dt>
           </div>
         ))}
       </dl>

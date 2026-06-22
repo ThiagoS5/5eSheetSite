@@ -81,7 +81,7 @@ export function BackgroundCard({
         selectedLabel="SELECIONADO"
         imageSizes="(min-width: 1280px) 24rem, (min-width: 768px) 50vw, 100vw"
       >
-        <p className="line-clamp-3 flex-1 text-sm leading-6 text-foreground">
+        <p className="line-clamp-3 flex-1 text-base leading-relaxed text-foreground">
           {background.summary}
         </p>
 
@@ -325,7 +325,7 @@ function BackgroundRewardCallout({
         </h4>
       </div>
       <p className="font-semibold text-foreground">{background.originFeat || "-"}</p>
-      <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted-foreground">
+      <p className="mt-1 line-clamp-2 text-base leading-relaxed text-muted-foreground">
         {rewardPreview || background.equipmentSummary || "-"}
       </p>
     </section>

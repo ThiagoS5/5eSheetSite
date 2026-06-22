@@ -13,7 +13,7 @@ export function AttributesColumn({ summary }: AttributesColumnProps) {
     >
       <h2
         id="attrs-col-title"
-        className="flex items-center justify-center gap-1.5 border-b border-border pb-1 text-[0.65rem] font-semibold uppercase tracking-widest text-muted-foreground"
+        className="flex items-center justify-center gap-1.5 border-b border-border pb-1 text-base font-semibold uppercase tracking-widest text-muted-foreground"
       >
         <i aria-hidden="true" className="fa-solid fa-dumbbell" />
         Atributos

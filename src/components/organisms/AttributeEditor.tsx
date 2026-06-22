@@ -11,6 +11,8 @@ import {
   increasePointBuyAttribute,
 } from "@/rules/pointBuyRules";
 import { getAbilityModifier } from "@/src/adapters/characterDerivedAdapter";
+import { modifierColorClass } from "@/src/utils/modifierColor";
+import { cn } from "@/src/lib/utils";
 import { ATTRIBUTE_ICON_CLASS } from "@/src/components/atoms/attributeIcons";
 import { FontAwesomeIcon } from "@/src/components/atoms/FontAwesomeIcon";
 import { Button } from "@/src/components/ui/button";
@@ -181,7 +183,7 @@ export function AttributeEditor({
                     {total}
                   </TableCell>
                   <TableCell className="text-center">
-                    <span className="font-serif text-2xl font-bold text-primary">
+                    <span className={cn("font-serif text-2xl font-bold", modifierColorClass(modifier))}>
                       {formatSigned(modifier)}
                     </span>
                   </TableCell>

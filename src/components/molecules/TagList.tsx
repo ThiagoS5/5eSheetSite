@@ -13,7 +13,7 @@ export function TagList({ items, emptyLabel }: TagListProps) {
       {items.map((item) => (
         <li
           key={item}
-          className="rounded border border-white/[0.08] bg-white/5 px-2 py-0.5 text-[0.65rem] font-medium text-subdued"
+          className="rounded border border-white/[0.08] bg-white/5 px-2 py-0.5 text-xs font-medium text-subdued"
         >
           {item}
         </li>

@@ -27,7 +27,7 @@ export function ActionCard({ feature }: ActionCardProps) {
         <h4 className="flex-1 text-sm font-semibold text-foreground">{feature.name}</h4>
       </div>
       {feature.description && (
-        <p className="text-[0.72rem] leading-relaxed text-subdued line-clamp-3">
+        <p className="text-xs leading-relaxed text-subdued line-clamp-3">
           {feature.description}
         </p>
       )}

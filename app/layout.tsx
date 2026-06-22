@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
+import { Toaster } from "sonner";
 import "./globals.css";
 import "../public/fontawesome/css/fontawesome.css";
 import "../public/fontawesome/css/solid.css";
@@ -38,9 +39,10 @@ export default function RootLayout({
     >
       <body
         suppressHydrationWarning
-        className="min-h-screen bg-slate-950 font-sans text-slate-100"
+        className="min-h-screen bg-background font-sans text-foreground"
       >
         {children}
+        <Toaster theme="dark" position="top-right" richColors />
         <Analytics />
       </body>
     </html>

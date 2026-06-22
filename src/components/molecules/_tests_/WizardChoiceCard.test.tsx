@@ -55,7 +55,7 @@ describe("WizardChoiceCard", () => {
       "Humans are adaptable, ambitious, and found across every realm.",
     );
 
-    expect(subtitle).toHaveClass("line-clamp-2", "text-sm");
+    expect(subtitle).toHaveClass("line-clamp-2", "text-base");
     expect(subtitle).not.toHaveClass("uppercase");
   });
 });

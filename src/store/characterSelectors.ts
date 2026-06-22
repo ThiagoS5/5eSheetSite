@@ -8,7 +8,7 @@ import { validateBuilderStep } from "@/rules/builderValidation";
 import {
   calculateArmorClass,
   calculateFinalAttributes,
-  calculateInitialHitPoints,
+  calculateMaxHitPoints,
   getAbilityModifier,
   getProficiencyBonus,
 } from "@/src/adapters/characterDerivedAdapter";
@@ -195,8 +195,12 @@ export function selectCharacterSheetSummary(
       })),
   ];
 
+  const classFeaturesUpToLevel = (characterClass?.allFeatures ?? []).filter(
+    (feature) => (feature.level ?? 1) <= state.level,
+  );
+
   const features: SheetFeature[] = [
-    ...(characterClass?.levelOneFeatures ?? []).map((f) => ({
+    ...classFeaturesUpToLevel.map((f) => ({
       name: f.name,
       description: f.description ?? "",
       source: "class" as const,
@@ -211,6 +215,12 @@ export function selectCharacterSheetSummary(
       : []),
   ].filter((f) => f.name);
 
+  const maxHitPoints = calculateMaxHitPoints(
+    characterClass?.hitDie ?? 6,
+    finalAttributes.constituicao,
+    state.level,
+  );
+
   return {
     ruleset: state.ruleset,
     level: state.level,
@@ -222,14 +232,11 @@ export function selectCharacterSheetSummary(
     backgroundAbilityBonuses: state.backgroundAbilityBonuses,
     finalAttributes,
     proficiencyBonus: profBonus,
-    hitPoints: calculateInitialHitPoints(
-      characterClass?.hitDie ?? 6,
-      finalAttributes.constituicao,
-    ),
+    hitPoints: maxHitPoints,
     armorClass: calculateArmorClass(finalAttributes.destreza, selectedEquipment),
     selectedEquipment,
     selectedTraits: species?.traits ?? [],
-    classFeatures: characterClass?.levelOneFeatures ?? [],
+    classFeatures: classFeaturesUpToLevel,
     classSkillProficiencies: state.classSkillProficiencies,
     skillTraining: state.skillTraining,
     classFeatureChoices: state.classFeatureChoices,
@@ -241,8 +248,8 @@ export function selectCharacterSheetSummary(
     className: characterClass?.name ?? "",
     speciesName: species?.name ?? "",
     backgroundName: background?.name ?? "",
-    currentHp: calculateInitialHitPoints(characterClass?.hitDie ?? 6, finalAttributes.constituicao),
-    maxHp: calculateInitialHitPoints(characterClass?.hitDie ?? 6, finalAttributes.constituicao),
+    currentHp: maxHitPoints,
+    maxHp: maxHitPoints,
     tempHp: 0,
     hitDice: `${state.level}d${characterClass?.hitDie ?? 6}`,
     initiative: getAbilityModifier(finalAttributes.destreza),

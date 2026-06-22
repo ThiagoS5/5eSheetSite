@@ -1,5 +1,8 @@
-import { HoverTooltip } from "@/src/components/molecules/HoverTooltip";
+"use client";
+
+import { useState } from "react";
 import { parseTaggedText } from "@/src/utils/textParser";
+import { cn } from "@/src/lib/utils";
 import type { BuilderFeature } from "@/types/builder";
 
 interface FeatureListCardProps {
@@ -26,22 +29,45 @@ export function FeatureListCard({
       {features.length > 0 ? (
         <ul className="mt-4 grid gap-3">
           {features.map((feature) => (
-            <li
-              key={`${title}-${feature.name}`}
-              className="rounded-md border border-white/[0.06] bg-white/[0.03] px-3 py-3"
-            >
-              <HoverTooltip content={<p>{parseTaggedText(feature.description)}</p>}>
-                <span className="font-serif text-base font-bold tracking-wide text-accent">
-                  {feature.name}
-                </span>
-              </HoverTooltip>
-            </li>
+            <FeatureRow key={`${title}-${feature.name}`} feature={feature} />
           ))}
         </ul>
       ) : (
-        <p className="mt-4 text-sm leading-6 text-muted-foreground">{emptyLabel}</p>
+        <p className="mt-4 text-base leading-6 text-muted-foreground">{emptyLabel}</p>
       )}
     </section>
+  );
+}
+
+function FeatureRow({ feature }: { feature: BuilderFeature }) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <li className="rounded-md border border-white/[0.06] bg-white/[0.03] px-3 py-3">
+      <button
+        type="button"
+        onClick={() => setIsOpen((prev) => !prev)}
+        aria-expanded={isOpen}
+        aria-label={isOpen ? `Recolher ${feature.name}` : `Ver detalhes de ${feature.name}`}
+        className="flex w-full cursor-pointer items-center justify-between gap-2 text-left outline-none transition-colors focus-visible:ring-2 focus-visible:ring-accent"
+      >
+        <span className="font-serif text-base font-bold tracking-wide text-accent">
+          {feature.name}
+        </span>
+        <i
+          aria-hidden="true"
+          className={cn(
+            "shrink-0 text-muted-foreground transition-colors",
+            isOpen ? "fa-solid fa-angle-down" : "fa-solid fa-plus",
+          )}
+        />
+      </button>
+      {isOpen && (
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+          {parseTaggedText(feature.description)}
+        </p>
+      )}
+    </li>
   );
 }
 

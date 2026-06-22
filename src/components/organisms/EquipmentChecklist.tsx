@@ -26,6 +26,33 @@ interface EquipmentSourceBlock {
   heading: string;
   kits: EquipmentSourceKit[];
   goldLabel: string;
+  summary: string;
+}
+
+/**
+ * Split a "Choose A or B: (A) …; or (B) …" summary into its two options so
+ * option A can live under "Itens Oferecidos" and option B under "Ouro Inicial".
+ */
+function splitOptions(summary: string): { a: string; b: string } | null {
+  const match = summary.match(/\(A\)\s*(.*?)\s*;?\s*or\s*\(B\)\s*(.*)$/i);
+  if (!match) return null;
+  const clean = (text: string) => text.replace(/[;.\s]+$/, "").trim();
+  return { a: clean(match[1] ?? ""), b: clean(match[2] ?? "") };
+}
+
+/** Split a comma-separated item phrase into qty/label rows (matches the class kit layout). */
+function parseItemList(text: string): { qty?: number; label: string }[] {
+  return text
+    .split(",")
+    .map((piece) => piece.trim())
+    .filter(Boolean)
+    .map((piece) => {
+      const match = piece.match(/^(\d+)\s+(.+)$/);
+      if (match && !/^(gp|po|pp|pc)$/i.test(match[2] ?? "")) {
+        return { qty: Number(match[1]), label: match[2] ?? piece };
+      }
+      return { label: piece };
+    });
 }
 
 interface EquipmentChecklistProps {
@@ -56,6 +83,7 @@ function buildEquipmentSources(
         }),
       ),
       goldLabel: selectedClass.startingEquipmentGold || "Ouro inicial",
+      summary: "",
     });
   }
 
@@ -72,6 +100,7 @@ function buildEquipmentSources(
         },
       ],
       goldLabel: selectedBackground.equipmentGold ?? "Ouro do antecedente",
+      summary: selectedBackground.equipmentSummary ?? "",
     });
   }
 
@@ -139,9 +168,9 @@ export function EquipmentChecklist({
                     .map((kit) => (
                     <div key={kit.id}>
                       {kit.items.length > 0 ? (
-                        <ul className="grid gap-1 text-sm text-subdued">
-                          {kit.items.map((item) => (
-                            <li key={item.id} className="flex gap-2">
+                        <ul className="grid gap-1 text-base text-subdued">
+                          {kit.items.map((item, index) => (
+                            <li key={`${kit.id}-${item.id}-${index}`} className="flex gap-2">
                               {item.value !== undefined ? (
                                 <span className="text-foreground">{item.value / 100} GP</span>
                               ) : (
@@ -154,14 +183,27 @@ export function EquipmentChecklist({
                           ))}
                         </ul>
                       ) : (
-                        <p className="text-sm text-subdued">{kit.summary}</p>
+                        <ul className="grid gap-1 text-base text-subdued">
+                          {parseItemList(splitOptions(source.summary)?.a ?? kit.summary).map(
+                            (entry, index) => (
+                              <li key={`${kit.id}-a-${index}`} className="flex gap-2">
+                                {entry.qty ? (
+                                  <span className="font-semibold text-foreground">
+                                    {entry.qty}×
+                                  </span>
+                                ) : null}
+                                <span>{entry.label}</span>
+                              </li>
+                            ),
+                          )}
+                        </ul>
                       )}
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="rounded-md border border-accent/20 bg-accent/10 px-4 py-3 text-sm font-semibold text-accent">
-                  {source.goldLabel}
+                <p className="rounded-md border border-accent/20 bg-accent/10 px-4 py-3 text-base font-semibold text-accent">
+                  {splitOptions(source.summary)?.b ?? source.goldLabel}
                 </p>
               )}
             </CardContent>
@@ -187,10 +229,10 @@ function ModeButton({
       type="button"
       aria-pressed={active}
       onClick={onClick}
-      className={`rounded-md border px-3 py-2 text-xs font-bold uppercase tracking-[0.08em] transition ${
+      className={`cursor-pointer rounded-md border px-3 py-2 text-xs font-bold uppercase tracking-[0.08em] transition ${
         active
           ? "border-primary bg-primary text-foreground"
-          : "border-border bg-white/5 text-muted-foreground hover:text-foreground"
+          : "border-border bg-white/5 text-muted-foreground hover:border-border/80 hover:bg-surface-raised hover:text-foreground"
       }`}
     >
       {label}
