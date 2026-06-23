@@ -57,6 +57,8 @@ export function createCharacterStore(
             state.selectedClassId === selectedClassId
               ? state.classFeatureChoices
               : {},
+          selectedSubclassId:
+            state.selectedClassId === selectedClassId ? state.selectedSubclassId : "",
         }),
       ),
     selectSubclass: (selectedSubclassId) =>

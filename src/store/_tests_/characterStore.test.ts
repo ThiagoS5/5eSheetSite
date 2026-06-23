@@ -195,4 +195,14 @@ describe("createCharacterStore", () => {
       },
     });
   });
+
+  it("clears a stale subclass when the class changes", () => {
+    const store = createCharacterStore();
+    store.getState().selectClass("fighter-xphb");
+    store.getState().selectSubclass("battle-master-xphb");
+    expect(store.getState().selectedSubclassId).toBe("battle-master-xphb");
+
+    store.getState().selectClass("wizard-xphb");
+    expect(store.getState().selectedSubclassId).toBe("");
+  });
 });
