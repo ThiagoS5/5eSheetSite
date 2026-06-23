@@ -21,6 +21,7 @@ export interface BuilderFeature {
   description: string;
   level?: number;
   blocks?: BuilderFeatureBlock[];
+  grantsSubclass?: boolean;
 }
 
 export type BuilderFeatureBlock =

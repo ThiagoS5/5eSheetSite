@@ -537,6 +537,8 @@ function normalizeClassFeature(
     description:
       stringifyEntries(matchedFeature?.entries) || "Class feature details.",
     blocks: entriesToBlocks(matchedFeature?.entries),
+    grantsSubclass:
+      typeof feature === "object" && feature.gainSubclassFeature === true,
   };
 }
 
