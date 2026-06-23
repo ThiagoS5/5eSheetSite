@@ -46,7 +46,10 @@ function mapPrerequisites(raw: unknown[] | undefined): FeatPrerequisite[] {
     if (typeof level === "number") prereq.level = level;
     if (Object.keys(abilities).length > 0) prereq.abilities = abilities;
     if (record.feat?.length) {
-      prereq.feat = record.feat.map((f) => f.split("|")[0].toLowerCase());
+      prereq.feat = record.feat.map((f) => {
+        const [featName, featSource] = f.split("|");
+        return toSlug(featName, featSource ?? "xphb");
+      });
     }
     return prereq;
   });
@@ -84,4 +87,50 @@ export function normalizeFeats(rawFeats: RawFeat[]): BuilderFeat[] {
     repeatable: feat.repeatable === true,
     description: stringifyEntries(feat.entries),
   }));
+}
+
+export interface FeatPrerequisiteContext {
+  level: number;
+  finalAttributes: Record<AttributeKey, number>;
+  chosenFeatIds: string[];
+}
+
+export function meetsPrerequisite(
+  feat: BuilderFeat,
+  ctx: FeatPrerequisiteContext,
+): boolean {
+  if (feat.prerequisites.length === 0) return true;
+
+  // prerequisites is an OR across entries; each entry is an AND of conditions.
+  return feat.prerequisites.some((entry) => {
+    if (entry.level !== undefined && ctx.level < entry.level) return false;
+    if (entry.abilities) {
+      for (const [key, threshold] of Object.entries(entry.abilities)) {
+        if (ctx.finalAttributes[key as AttributeKey] < (threshold ?? 0)) {
+          return false;
+        }
+      }
+    }
+    if (entry.feat) {
+      const owned = new Set(ctx.chosenFeatIds);
+      if (!entry.feat.every((featId) => owned.has(featId))) {
+        return false;
+      }
+    }
+    return true;
+  });
+}
+
+export function getSelectableFeats(
+  category: FeatCategory,
+  feats: BuilderFeat[],
+  ctx: FeatPrerequisiteContext,
+): BuilderFeat[] {
+  const chosen = new Set(ctx.chosenFeatIds);
+  return feats.filter(
+    (feat) =>
+      feat.category === category &&
+      meetsPrerequisite(feat, ctx) &&
+      (feat.repeatable || !chosen.has(feat.id)),
+  );
 }
