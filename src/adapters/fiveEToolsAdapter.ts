@@ -12,6 +12,7 @@ import type {
   BuilderFeatureBlock,
   BuilderLanguage,
   BuilderSpecies,
+  BuilderSubclass,
 } from "@/types/builder";
 import {
   ATTRIBUTE_ABBREVIATION_MAP,
@@ -28,6 +29,7 @@ import type {
   RawPlayerLoreEntry,
   Raw5eRace,
   Raw5eStartingEquipmentItem,
+  Raw5eSubclass,
   Raw5eWeightedAbilityChoice,
 } from "@/types/fiveETools";
 
@@ -130,6 +132,8 @@ export function normalizeClass(
   classFluff: Raw5eClassFluff[] = [],
   lore?: RawPlayerLoreEntry,
   weaponMasteryOptions: BuilderChoiceOption[] = [],
+  rawSubclasses: Raw5eSubclass[] = [],
+  subclassFeatures: Raw5eFeature[] = [],
 ): BuilderClass {
   const skillChoices = normalizeClassSkillChoices(rawClass);
   const allFeatures = (rawClass.classFeatures ?? [])
@@ -187,6 +191,14 @@ export function normalizeClass(
       rawClass.startingEquipment?.defaultData?.[0],
     ),
     detail,
+    subclasses: dedupeSubclassesByName(
+      rawSubclasses.filter(
+        (sub) =>
+          sub.className === rawClass.name &&
+          sub.classSource === rawClass.source,
+      ),
+      rawClass.source,
+    ).map((sub) => normalizeSubclass(sub, subclassFeatures)),
   };
 }
 
@@ -539,6 +551,57 @@ function normalizeClassFeature(
     blocks: entriesToBlocks(matchedFeature?.entries),
     grantsSubclass:
       typeof feature === "object" && feature.gainSubclassFeature === true,
+  };
+}
+
+function normalizeSubclassFeature(
+  featureRef: string,
+  subclassFeatures: Raw5eFeature[],
+): BuilderFeature {
+  const [name, , , subclassShortName, source, level] = featureRef.split("|");
+  const featureLevel = Number(level);
+  const matched = subclassFeatures.find(
+    (entry) =>
+      entry.name === name &&
+      entry.source === source &&
+      entry.level === featureLevel &&
+      entry.subclassShortName === subclassShortName,
+  );
+
+  return {
+    name,
+    level: Number.isFinite(featureLevel) ? featureLevel : undefined,
+    description: stringifyEntries(matched?.entries) || "Subclass feature details.",
+    blocks: entriesToBlocks(matched?.entries),
+  };
+}
+
+function dedupeSubclassesByName(
+  subclasses: Raw5eSubclass[],
+  preferredSource: string,
+): Raw5eSubclass[] {
+  const byName = new Map<string, Raw5eSubclass>();
+  for (const sub of subclasses) {
+    const existing = byName.get(sub.name);
+    if (!existing || sub.source === preferredSource) {
+      byName.set(sub.name, sub);
+    }
+  }
+  return [...byName.values()];
+}
+
+function normalizeSubclass(
+  rawSubclass: Raw5eSubclass,
+  subclassFeatures: Raw5eFeature[],
+): BuilderSubclass {
+  return {
+    id: toSlug(rawSubclass.name, rawSubclass.source),
+    name: rawSubclass.name,
+    shortName: rawSubclass.shortName ?? rawSubclass.name,
+    source: rawSubclass.source,
+    features: (rawSubclass.subclassFeatures ?? []).map((ref) =>
+      normalizeSubclassFeature(ref, subclassFeatures),
+    ),
   };
 }
 

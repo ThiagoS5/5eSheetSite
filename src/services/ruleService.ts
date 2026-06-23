@@ -123,9 +123,17 @@ export function getBuilderClasses() {
             [],
             playerLore.class?.[toSlug(rawClass.name, rawClass.source)],
             weaponMasteryOptions,
+            file.subclass ?? [],
+            file.subclassFeature ?? [],
           ),
         ),
     );
+}
+
+export function getSubclassesForClass(classId: string) {
+  return (
+    getBuilderClasses().find((entry) => entry.id === classId)?.subclasses ?? []
+  );
 }
 
 export function getBuilderEquipmentOptions() {

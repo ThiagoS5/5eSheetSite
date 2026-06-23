@@ -24,6 +24,14 @@ export interface BuilderFeature {
   grantsSubclass?: boolean;
 }
 
+export interface BuilderSubclass {
+  id: string;
+  name: string;
+  shortName: string;
+  source: string;
+  features: BuilderFeature[];
+}
+
 export type BuilderFeatureBlock =
   | {
       type: "paragraph";
@@ -157,6 +165,7 @@ export interface BuilderClass {
   startingEquipmentGold: string;
   startingEquipmentPackages: BuilderEquipmentPackage[];
   detail: string;
+  subclasses: BuilderSubclass[];
 }
 
 export type ItemCategory =
