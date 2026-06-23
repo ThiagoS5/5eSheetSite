@@ -754,7 +754,7 @@ function encodePathSegment(value: string): string {
   return encodeURIComponent(value);
 }
 
-function stringifyEntries(entries: unknown[] | undefined): string {
+export function stringifyEntries(entries: unknown[] | undefined): string {
   return (entries ?? [])
     .map(stringifyEntry)
     .filter(Boolean)

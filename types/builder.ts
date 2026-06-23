@@ -205,6 +205,30 @@ export interface DataSourceAuditEntry {
   purpose: string;
 }
 
+export type FeatCategory = "origin" | "general" | "fighting-style" | "epic-boon";
+
+export interface FeatAbilityBonus {
+  fixed?: Partial<Record<AttributeKey, number>>;
+  choose?: { from: AttributeKey[]; amount: number };
+}
+
+export interface FeatPrerequisite {
+  level?: number;
+  abilities?: Partial<Record<AttributeKey, number>>;
+  feat?: string[];
+}
+
+export interface BuilderFeat {
+  id: string;
+  name: string;
+  source: string;
+  category: FeatCategory;
+  prerequisites: FeatPrerequisite[];
+  abilityBonus?: FeatAbilityBonus;
+  repeatable: boolean;
+  description: string;
+}
+
 export interface CharacterDescription {
   nome: string;
   alinhamento: string;

@@ -12,6 +12,7 @@ import rogueData from "@/public/data/class/class-rogue.json";
 import sorcererData from "@/public/data/class/class-sorcerer.json";
 import warlockData from "@/public/data/class/class-warlock.json";
 import wizardData from "@/public/data/class/class-wizard.json";
+import featsData from "@/public/data/feats.json";
 import baseItemsData from "@/public/data/items-base.json";
 import itemsData from "@/public/data/items.json";
 import languagesData from "@/public/data/languages.json";
@@ -27,6 +28,7 @@ import {
   formatTaggedTextAsPlain,
   toSlug,
 } from "@/src/adapters/fiveEToolsAdapter";
+import { normalizeFeats } from "@/src/adapters/featCatalog";
 import type { DataSourceAuditEntry } from "@/types/builder";
 import type {
   Raw5eBackgroundFile,
@@ -146,6 +148,14 @@ export function getBuilderLanguages() {
   return languageFile.language
     .filter((language) => is2024Source(language.source))
     .map(normalizeLanguage);
+}
+
+export function getFeats() {
+  return normalizeFeats(
+    featsData.feat.filter((feat) => is2024Source(feat.source)) as unknown as Parameters<
+      typeof normalizeFeats
+    >[0],
+  );
 }
 
 function getWeaponMasteryOptions() {
