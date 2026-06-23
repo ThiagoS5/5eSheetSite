@@ -221,6 +221,9 @@ function useCharacterPreviewState(): CharacterBuilderState {
   const level = useCharacterStore((state) => state.level);
   const selectedSpeciesId = useCharacterStore((state) => state.selectedSpeciesId);
   const selectedClassId = useCharacterStore((state) => state.selectedClassId);
+  const selectedSubclassId = useCharacterStore(
+    (state) => state.selectedSubclassId,
+  );
   const selectedBackgroundId = useCharacterStore(
     (state) => state.selectedBackgroundId,
   );
@@ -241,6 +244,9 @@ function useCharacterPreviewState(): CharacterBuilderState {
   const classFeatureChoices = useCharacterStore(
     (state) => state.classFeatureChoices,
   );
+  const asiOrFeatByLevel = useCharacterStore(
+    (state) => state.asiOrFeatByLevel,
+  );
   const speciesChoices = useCharacterStore((state) => state.speciesChoices);
   const speciesLanguages = useCharacterStore((state) => state.speciesLanguages);
   const attributeGenerationMethod = useCharacterStore(
@@ -258,6 +264,7 @@ function useCharacterPreviewState(): CharacterBuilderState {
       level,
       selectedSpeciesId,
       selectedClassId,
+      selectedSubclassId,
       selectedBackgroundId,
       inventory,
       equipmentChoicesBySource,
@@ -266,6 +273,7 @@ function useCharacterPreviewState(): CharacterBuilderState {
       classSkillProficiencies,
       skillTraining,
       classFeatureChoices,
+      asiOrFeatByLevel,
       speciesChoices,
       speciesLanguages,
       attributeGenerationMethod,
@@ -278,6 +286,7 @@ function useCharacterPreviewState(): CharacterBuilderState {
       level,
       selectedSpeciesId,
       selectedClassId,
+      selectedSubclassId,
       selectedBackgroundId,
       inventory,
       equipmentChoicesBySource,
@@ -286,6 +295,7 @@ function useCharacterPreviewState(): CharacterBuilderState {
       classSkillProficiencies,
       skillTraining,
       classFeatureChoices,
+      asiOrFeatByLevel,
       speciesChoices,
       speciesLanguages,
       attributeGenerationMethod,

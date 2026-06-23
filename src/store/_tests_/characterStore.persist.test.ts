@@ -118,7 +118,7 @@ describe("createCharacterStore persistence", () => {
           },
         },
         exportMetadata: {
-          schemaVersion: 3,
+          schemaVersion: 4,
           saveId: expect.any(String),
         },
       },
