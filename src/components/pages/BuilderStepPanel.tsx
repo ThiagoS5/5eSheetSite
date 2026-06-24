@@ -39,6 +39,7 @@ import {
 } from "@/src/components/atoms/FontAwesomeIcon";
 import { BackgroundCard } from "@/src/components/molecules/BackgroundCard";
 import { FeatureTagList } from "@/src/components/molecules/FeatureTagList";
+import { StartingLevelStepper } from "@/src/components/molecules/StartingLevelStepper";
 import { WizardChoiceCard } from "@/src/components/molecules/WizardChoiceCard";
 import { WizardStepHeader } from "@/src/components/molecules/WizardStepHeader";
 import {
@@ -285,6 +286,10 @@ function ClassStep({
         resultCountLabel={resultCountLabel}
         onSearch={setSearchQuery}
       />
+
+      <div className="mb-4">
+        <StartingLevelStepper />
+      </div>
 
       {filteredClasses.length ? (
         <div className="grid min-w-0 grid-cols-1 gap-3 md:gap-4 md:grid-cols-2 xl:grid-cols-3">
