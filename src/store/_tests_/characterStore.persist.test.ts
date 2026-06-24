@@ -118,11 +118,65 @@ describe("createCharacterStore persistence", () => {
           },
         },
         exportMetadata: {
-          schemaVersion: 3,
+          schemaVersion: 4,
           saveId: expect.any(String),
         },
       },
     });
+  });
+
+  it("migrates a v3 save to v4 with subclass defaults and preserved levelChoices", () => {
+    const v3Build = {
+      draft: {
+        currentStepSlug: "classe",
+        maxUnlockedStepIndex: 1,
+        pendingChoiceIds: [],
+        inventory: [],
+        equipmentChoicesBySource: {},
+        description: {},
+      },
+      progression: {
+        level: 1,
+        levelChoices: { "1": { classFeatureChoices: { "weapon-mastery": ["Longsword"] } } },
+      },
+      choices: {
+        ruleset: "2024",
+        selectedSpeciesId: "",
+        selectedClassId: "fighter-xphb",
+        selectedBackgroundId: "",
+        classSkillProficiencies: [],
+        skillTraining: {},
+        classFeatureChoices: { "weapon-mastery": ["Longsword"] },
+        speciesChoices: {},
+        speciesLanguages: [],
+        attributeGenerationMethod: "standard-array",
+        baseAttributes: {
+          forca: 8,
+          destreza: 8,
+          constituicao: 8,
+          inteligencia: 8,
+          sabedoria: 8,
+          carisma: 8,
+        },
+        backgroundAbilityBonuses: {},
+      },
+      derivedSheet: {},
+      exportMetadata: { schemaVersion: 3, saveId: "legacy-1", createdAt: "x", updatedAt: "x" },
+    };
+    sessionStorage.setItem(
+      "ficha-5e-builder",
+      JSON.stringify({ state: { characterBuild: v3Build }, version: 3 }),
+    );
+
+    const store = createCharacterStore();
+    const build = store.getState().characterBuild;
+
+    expect(build.exportMetadata.schemaVersion).toBe(4);
+    expect(build.choices.selectedSubclassId).toBe("");
+    expect(build.progression.levelChoices["1"].classFeatureChoices).toEqual({
+      "weapon-mastery": ["Longsword"],
+    });
+    expect(store.getState().selectedSubclassId).toBe("");
   });
 
   it("commits the active build into the local repository when advancing", async () => {

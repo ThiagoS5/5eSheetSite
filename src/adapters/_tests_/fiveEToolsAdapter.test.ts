@@ -3,6 +3,7 @@
  */
 import { describe, expect, it } from "vitest";
 import { extractBackgroundGold, extractBackgroundItemsA, extractClassGoldAlternative } from "@/src/adapters/fiveEToolsAdapter";
+import { getBuilderClasses } from "@/src/services/ruleService";
 
 describe("extractBackgroundGold", () => {
   it("returns formatted GP string when option b has a copper value", () => {
@@ -94,4 +95,14 @@ describe("extractBackgroundItemsA", () => {
     expect(result).toHaveLength(5);
     expect(result[4]).toMatchObject({ value: 1600 });
   });
+});
+
+it("marks the subclass-granting feature with grantsSubclass", () => {
+  const fighter = getBuilderClasses().find((c) => c.id === "fighter-xphb");
+  const subclassPoint = fighter?.allFeatures.find(
+    (f) => f.level === 3 && f.grantsSubclass,
+  );
+  expect(subclassPoint).toBeDefined();
+  const secondWind = fighter?.allFeatures.find((f) => f.name === "Second Wind");
+  expect(secondWind?.grantsSubclass).toBeFalsy();
 });

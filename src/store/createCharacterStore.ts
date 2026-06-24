@@ -57,8 +57,22 @@ export function createCharacterStore(
             state.selectedClassId === selectedClassId
               ? state.classFeatureChoices
               : {},
+          selectedSubclassId:
+            state.selectedClassId === selectedClassId ? state.selectedSubclassId : "",
         }),
       ),
+    selectSubclass: (selectedSubclassId) =>
+      set((state) => patchCharacterState(state, { selectedSubclassId })),
+    setLevelAsiOrFeat: (level, choice) =>
+      set((state) => {
+        const next = { ...state.asiOrFeatByLevel };
+        if (choice) {
+          next[String(level)] = choice;
+        } else {
+          delete next[String(level)];
+        }
+        return patchCharacterState(state, { asiOrFeatByLevel: next });
+      }),
     selectBackground: (selectedBackgroundId) =>
       set((state) =>
         patchCharacterState(state, {
@@ -373,6 +387,7 @@ function extractFlatState(state: FlatCharacterBuilderState): FlatCharacterBuilde
     level: state.level,
     selectedSpeciesId: state.selectedSpeciesId,
     selectedClassId: state.selectedClassId,
+    selectedSubclassId: state.selectedSubclassId,
     selectedBackgroundId: state.selectedBackgroundId,
     inventory: state.inventory.map((entry) => ({ ...entry })),
     equipmentChoicesBySource: { ...state.equipmentChoicesBySource },
@@ -381,6 +396,7 @@ function extractFlatState(state: FlatCharacterBuilderState): FlatCharacterBuilde
     classSkillProficiencies: [...state.classSkillProficiencies],
     skillTraining: { ...state.skillTraining },
     classFeatureChoices: { ...state.classFeatureChoices },
+    asiOrFeatByLevel: { ...state.asiOrFeatByLevel },
     speciesChoices: { ...state.speciesChoices },
     speciesLanguages: [...state.speciesLanguages],
     attributeGenerationMethod: state.attributeGenerationMethod,

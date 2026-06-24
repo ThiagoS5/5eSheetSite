@@ -9,7 +9,11 @@ import type {
   Ruleset,
 } from "@/types/dnd";
 
-export const CHARACTER_BUILD_SCHEMA_VERSION = 3;
+export const CHARACTER_BUILD_SCHEMA_VERSION = 4;
+
+export type AsiOrFeatChoice =
+  | { mode: "asi"; increases: AttributeBonuses }
+  | { mode: "feat"; featId: string; asi?: AttributeBonuses };
 
 export type AttributeGenerationMethod = "standard-array" | "point-buy" | "manual";
 export type EquipmentAcquisitionMode = "items" | "gold";
@@ -38,6 +42,7 @@ export interface CharacterBuildDraft {
 }
 
 export interface CharacterBuildLevelChoiceState {
+  asiOrFeat?: AsiOrFeatChoice;
   classFeatureChoices: Record<string, string[]>;
 }
 
@@ -50,6 +55,7 @@ export interface CharacterBuildChoices {
   ruleset: Ruleset;
   selectedSpeciesId: string;
   selectedClassId: string;
+  selectedSubclassId: string;
   selectedBackgroundId: string;
   classSkillProficiencies: string[];
   skillTraining: Record<string, SkillTrainingLevel>;

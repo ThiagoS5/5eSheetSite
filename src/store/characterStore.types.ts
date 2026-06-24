@@ -1,6 +1,7 @@
 import type { CharacterDescription } from "@/types/builder";
 import type { CharacterBuild } from "@/src/types/characterBuild";
 import type {
+  AsiOrFeatChoice,
   AttributeGenerationMethod,
   EquipmentAcquisitionMode,
   EquipmentChoicesBySource,
@@ -15,6 +16,7 @@ import type {
 } from "@/types/dnd";
 
 export type {
+  AsiOrFeatChoice,
   AttributeGenerationMethod,
   EquipmentAcquisitionMode,
   EquipmentChoicesBySource,
@@ -28,6 +30,7 @@ export interface FlatCharacterBuilderState {
   level: number;
   selectedSpeciesId: string;
   selectedClassId: string;
+  selectedSubclassId: string;
   selectedBackgroundId: string;
   inventory: InventoryEntry[];
   equipmentChoicesBySource: EquipmentChoicesBySource;
@@ -36,6 +39,7 @@ export interface FlatCharacterBuilderState {
   classSkillProficiencies: string[];
   skillTraining: Record<string, SkillTrainingLevel>;
   classFeatureChoices: Record<string, string[]>;
+  asiOrFeatByLevel: Record<string, AsiOrFeatChoice>;
   speciesChoices: Record<string, string>;
   speciesLanguages: string[];
   attributeGenerationMethod: AttributeGenerationMethod;
@@ -52,6 +56,7 @@ export interface CharacterBuilderActions {
   setLevel: (level: number) => void;
   selectSpecies: (speciesId: string) => void;
   selectClass: (classId: string) => void;
+  selectSubclass: (subclassId: string) => void;
   selectBackground: (backgroundId: string) => void;
   addInventoryItem: (itemId: string) => void;
   setInventoryQuantity: (itemId: string, quantity: number) => void;
@@ -69,6 +74,7 @@ export interface CharacterBuilderActions {
   setClassSkillProficiencies: (skills: string[]) => void;
   setSkillTraining: (skill: string, level: SkillTrainingLevel) => void;
   setClassFeatureChoice: (choiceId: string, values: string[]) => void;
+  setLevelAsiOrFeat: (level: number, choice: AsiOrFeatChoice | undefined) => void;
   setSpeciesChoice: (choiceId: string, value: string) => void;
   setSpeciesLanguages: (languages: string[]) => void;
   setAttributeGenerationMethod: (method: AttributeGenerationMethod) => void;

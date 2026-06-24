@@ -74,6 +74,17 @@ export interface Raw5eClass {
 export interface Raw5eClassFile {
   class: Raw5eClass[];
   classFeature?: Raw5eFeature[];
+  subclass?: Raw5eSubclass[];
+  subclassFeature?: Raw5eFeature[];
+}
+
+export interface Raw5eSubclass {
+  name: string;
+  shortName?: string;
+  source: string;
+  className: string;
+  classSource: string;
+  subclassFeatures?: string[];
 }
 
 export interface Raw5eClassTableGroup {
@@ -109,6 +120,7 @@ export interface Raw5eFeature {
   source: string;
   className?: string;
   classSource?: string;
+  subclassShortName?: string;
   level?: number;
   entries?: unknown[];
 }

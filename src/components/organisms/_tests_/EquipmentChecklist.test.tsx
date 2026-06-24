@@ -46,6 +46,7 @@ const selectedClass: BuilderClass = {
     },
   ],
   detail: "",
+  subclasses: [],
 };
 
 describe("EquipmentChecklist", () => {
