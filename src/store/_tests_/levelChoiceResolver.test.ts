@@ -4,6 +4,7 @@ import { getBuilderClasses, getSubclassesForClass } from "@/src/services/ruleSer
 import {
   collectAsiBonuses,
   getActiveSubclassFeatures,
+  getPendingRequirements,
   getUnresolvedLevelChoices,
 } from "@/src/store/levelChoiceResolver";
 
@@ -119,5 +120,29 @@ describe("getActiveSubclassFeatures", () => {
     store.getState().selectClass("fighter-xphb");
     store.getState().setLevel(7);
     expect(getActiveSubclassFeatures(store.getState(), fighterClass())).toEqual([]);
+  });
+});
+
+describe("getPendingRequirements", () => {
+  it("returns the full unresolved requirement objects (with options/level/kind)", () => {
+    const store = createCharacterStore();
+    store.getState().selectClass("fighter-xphb");
+    store.getState().setLevel(4);
+
+    const pending = getPendingRequirements(store.getState(), fighterClass());
+    expect(pending.some((r) => r.kind === "subclass" && r.level === 3)).toBe(true);
+    expect(pending.some((r) => r.kind === "asi-or-feat" && r.level === 4)).toBe(true);
+    const wm = pending.find((r) => r.kind === "feature-option");
+    expect(wm && "options" in wm && Array.isArray(wm.options)).toBe(true);
+  });
+
+  it("drops a requirement once it is resolved", () => {
+    const store = createCharacterStore();
+    store.getState().selectClass("fighter-xphb");
+    store.getState().setLevel(4);
+    store.getState().selectSubclass("battle-master-xphb");
+
+    const pending = getPendingRequirements(store.getState(), fighterClass());
+    expect(pending.some((r) => r.kind === "subclass")).toBe(false);
   });
 });
