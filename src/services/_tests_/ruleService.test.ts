@@ -6,6 +6,7 @@ import {
   getBuilderLanguages,
   getBuilderSpecies,
   getDataSourceAudit,
+  getSubclassesForClass,
 } from "@/src/services/ruleService";
 import { formatTaggedTextAsPlain } from "@/src/adapters/fiveEToolsAdapter";
 
@@ -249,5 +250,37 @@ describe("builder data services", () => {
         expect.objectContaining({ name: "Abyssal", type: "rare" }),
       ]),
     );
+  });
+
+  it("exposes a class's 2024 subclasses with leveled features", () => {
+    const subclasses = getSubclassesForClass("fighter-xphb");
+    const battleMaster = subclasses.find((s) => s.name === "Battle Master");
+    expect(battleMaster).toBeDefined();
+    expect(battleMaster?.id).toBe("battle-master-xphb");
+    expect(
+      battleMaster?.features.some((f) => f.level === 3 && f.name.length > 0),
+    ).toBe(true);
+  });
+
+  it("includes legacy-compatible subclasses and dedupes reprints by name", () => {
+    const subclasses = getSubclassesForClass("fighter-xphb");
+    const names = subclasses.map((s) => s.name);
+
+    // Legacy subclass available to the 2024 Fighter (source XGE, classSource XPHB).
+    const cavalier = subclasses.find((s) => s.name === "Cavalier");
+    expect(cavalier?.id).toBe("cavalier-xge");
+
+    // Reprinted subclass deduped to the 2024 version, present once.
+    expect(names.filter((n) => n === "Battle Master")).toHaveLength(1);
+    expect(subclasses.find((s) => s.name === "Battle Master")?.id).toBe(
+      "battle-master-xphb",
+    );
+
+    // No duplicate names.
+    expect(new Set(names).size).toBe(names.length);
+  });
+
+  it("returns an empty list for an unknown class id", () => {
+    expect(getSubclassesForClass("does-not-exist")).toEqual([]);
   });
 });

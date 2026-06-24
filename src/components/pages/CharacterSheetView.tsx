@@ -138,6 +138,7 @@ function useSheetState(): CharacterBuilderState {
   const level = useCharacterStore((s) => s.level);
   const selectedSpeciesId = useCharacterStore((s) => s.selectedSpeciesId);
   const selectedClassId = useCharacterStore((s) => s.selectedClassId);
+  const selectedSubclassId = useCharacterStore((s) => s.selectedSubclassId);
   const selectedBackgroundId = useCharacterStore((s) => s.selectedBackgroundId);
   const inventory = useCharacterStore((s) => s.inventory);
   const equipmentChoicesBySource = useCharacterStore((s) => s.equipmentChoicesBySource);
@@ -146,6 +147,7 @@ function useSheetState(): CharacterBuilderState {
   const classSkillProficiencies = useCharacterStore((s) => s.classSkillProficiencies);
   const skillTraining = useCharacterStore((s) => s.skillTraining);
   const classFeatureChoices = useCharacterStore((s) => s.classFeatureChoices);
+  const asiOrFeatByLevel = useCharacterStore((s) => s.asiOrFeatByLevel);
   const speciesChoices = useCharacterStore((s) => s.speciesChoices);
   const speciesLanguages = useCharacterStore((s) => s.speciesLanguages);
   const attributeGenerationMethod = useCharacterStore((s) => s.attributeGenerationMethod);
@@ -155,16 +157,16 @@ function useSheetState(): CharacterBuilderState {
 
   return useMemo(
     () => ({
-      ruleset, level, selectedSpeciesId, selectedClassId, selectedBackgroundId,
+      ruleset, level, selectedSpeciesId, selectedClassId, selectedSubclassId, selectedBackgroundId,
       inventory, equipmentChoicesBySource, maxUnlockedStepIndex, pendingChoiceIds,
-      classSkillProficiencies, skillTraining, classFeatureChoices, speciesChoices,
+      classSkillProficiencies, skillTraining, classFeatureChoices, asiOrFeatByLevel, speciesChoices,
       speciesLanguages, attributeGenerationMethod, baseAttributes, backgroundAbilityBonuses,
       description,
     }),
     [
-      ruleset, level, selectedSpeciesId, selectedClassId, selectedBackgroundId,
+      ruleset, level, selectedSpeciesId, selectedClassId, selectedSubclassId, selectedBackgroundId,
       inventory, equipmentChoicesBySource, maxUnlockedStepIndex, pendingChoiceIds,
-      classSkillProficiencies, skillTraining, classFeatureChoices, speciesChoices,
+      classSkillProficiencies, skillTraining, classFeatureChoices, asiOrFeatByLevel, speciesChoices,
       speciesLanguages, attributeGenerationMethod, baseAttributes, backgroundAbilityBonuses,
       description,
     ],

@@ -6,6 +6,7 @@ import type {
 } from "@/src/store/characterStore.types";
 import {
   CHARACTER_BUILD_SCHEMA_VERSION,
+  type AsiOrFeatChoice,
   type CharacterBuild,
   type EquipmentAcquisitionMode,
   type EquipmentChoicesBySource,
@@ -169,6 +170,7 @@ export function flattenCharacterBuild(
     level: build.progression?.level,
     selectedSpeciesId: build.choices?.selectedSpeciesId,
     selectedClassId: build.choices?.selectedClassId,
+    selectedSubclassId: build.choices?.selectedSubclassId,
     selectedBackgroundId: build.choices?.selectedBackgroundId,
     inventory: build.draft?.inventory ?? legacyInventory(build.draft),
     equipmentChoicesBySource:
@@ -178,6 +180,7 @@ export function flattenCharacterBuild(
     classSkillProficiencies: build.choices?.classSkillProficiencies,
     skillTraining: build.choices?.skillTraining,
     classFeatureChoices: build.choices?.classFeatureChoices,
+    asiOrFeatByLevel: extractAsiOrFeatByLevel(build.progression?.levelChoices),
     speciesChoices: build.choices?.speciesChoices,
     speciesLanguages: build.choices?.speciesLanguages,
     attributeGenerationMethod: build.choices?.attributeGenerationMethod,
@@ -185,6 +188,16 @@ export function flattenCharacterBuild(
     backgroundAbilityBonuses: build.choices?.backgroundAbilityBonuses,
     description: build.draft?.description,
   };
+}
+
+function extractAsiOrFeatByLevel(
+  levelChoices: CharacterBuild["progression"]["levelChoices"] | undefined,
+): Record<string, AsiOrFeatChoice> {
+  const result: Record<string, AsiOrFeatChoice> = {};
+  for (const [level, state] of Object.entries(levelChoices ?? {})) {
+    if (state.asiOrFeat) result[level] = state.asiOrFeat;
+  }
+  return result;
 }
 
 export function createCharacterBuildFromFlatState(
@@ -211,6 +224,7 @@ export function getDefaultFlatState(): FlatCharacterBuilderState {
     level: 1,
     selectedSpeciesId: "",
     selectedClassId: "",
+    selectedSubclassId: "",
     selectedBackgroundId: "",
     inventory: [],
     equipmentChoicesBySource: {},
@@ -219,6 +233,7 @@ export function getDefaultFlatState(): FlatCharacterBuilderState {
     classSkillProficiencies: [],
     skillTraining: {},
     classFeatureChoices: {},
+    asiOrFeatByLevel: {},
     speciesChoices: {},
     speciesLanguages: [],
     attributeGenerationMethod: "standard-array",
@@ -262,18 +277,22 @@ function createBuildFromFlatState(
   previousBuild?: Partial<CharacterBuild>,
 ): CharacterBuild {
   const normalizedState = normalizeFlatState(state);
-  const currentLevelChoices =
-    Object.keys(normalizedState.classFeatureChoices).length > 0
-      ? {
-          [String(normalizedState.level)]: {
-            classFeatureChoices: normalizedState.classFeatureChoices,
-          },
-        }
-      : {};
-  const levelChoices = {
+  const levelChoices: CharacterBuild["progression"]["levelChoices"] = {
     ...(previousBuild?.progression?.levelChoices ?? {}),
-    ...currentLevelChoices,
   };
+  if (Object.keys(normalizedState.classFeatureChoices).length > 0) {
+    const key = String(normalizedState.level);
+    levelChoices[key] = {
+      ...levelChoices[key],
+      classFeatureChoices: normalizedState.classFeatureChoices,
+    };
+  }
+  for (const [level, choice] of Object.entries(normalizedState.asiOrFeatByLevel)) {
+    levelChoices[level] = {
+      classFeatureChoices: levelChoices[level]?.classFeatureChoices ?? {},
+      asiOrFeat: choice,
+    };
+  }
   const buildWithoutDerived = {
     draft: {
       currentStepSlug: metadata.currentStepSlug,
@@ -291,6 +310,7 @@ function createBuildFromFlatState(
       ruleset: normalizedState.ruleset,
       selectedSpeciesId: normalizedState.selectedSpeciesId,
       selectedClassId: normalizedState.selectedClassId,
+      selectedSubclassId: normalizedState.selectedSubclassId,
       selectedBackgroundId: normalizedState.selectedBackgroundId,
       classSkillProficiencies: normalizedState.classSkillProficiencies,
       skillTraining: normalizedState.skillTraining,
@@ -326,6 +346,7 @@ function normalizeFlatState(
     level: state.level ?? defaults.level,
     selectedSpeciesId: state.selectedSpeciesId ?? defaults.selectedSpeciesId,
     selectedClassId: state.selectedClassId ?? defaults.selectedClassId,
+    selectedSubclassId: state.selectedSubclassId ?? defaults.selectedSubclassId,
     selectedBackgroundId:
       state.selectedBackgroundId ?? defaults.selectedBackgroundId,
     inventory: state.inventory ?? defaults.inventory,
@@ -339,6 +360,7 @@ function normalizeFlatState(
     skillTraining: state.skillTraining ?? defaults.skillTraining,
     classFeatureChoices:
       state.classFeatureChoices ?? defaults.classFeatureChoices,
+    asiOrFeatByLevel: state.asiOrFeatByLevel ?? defaults.asiOrFeatByLevel,
     speciesChoices: state.speciesChoices ?? defaults.speciesChoices,
     speciesLanguages: state.speciesLanguages ?? defaults.speciesLanguages,
     attributeGenerationMethod:

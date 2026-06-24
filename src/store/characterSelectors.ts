@@ -12,6 +12,11 @@ import {
   getAbilityModifier,
   getProficiencyBonus,
 } from "@/src/adapters/characterDerivedAdapter";
+import {
+  collectAsiBonuses,
+  getActiveSubclassFeatures,
+  getUnresolvedLevelChoices,
+} from "@/src/store/levelChoiceResolver";
 import type { CharacterBuilderState } from "@/src/store/characterStore.types";
 import type {
   BuilderStepSlug,
@@ -139,10 +144,13 @@ export function selectCharacterSheetSummary(
       armorClass: item.armorClass,
       value: item.value,
     }));
-  const finalAttributes = calculateFinalAttributes(
-    state.baseAttributes,
-    state.backgroundAbilityBonuses,
-  );
+  const asiBonuses = collectAsiBonuses(state);
+  const mergedBonuses = { ...state.backgroundAbilityBonuses };
+  for (const [key, value] of Object.entries(asiBonuses)) {
+    mergedBonuses[key as AttributeKey] =
+      (mergedBonuses[key as AttributeKey] ?? 0) + (value ?? 0);
+  }
+  const finalAttributes = calculateFinalAttributes(state.baseAttributes, mergedBonuses);
 
   const profBonus = getProficiencyBonus(state.level);
 
@@ -205,6 +213,13 @@ export function selectCharacterSheetSummary(
       description: f.description ?? "",
       source: "class" as const,
     })),
+    ...(characterClass
+      ? getActiveSubclassFeatures(state, characterClass).map((f) => ({
+          name: f.name,
+          description: f.description ?? "",
+          source: "class" as const,
+        }))
+      : []),
     ...(species?.traits ?? []).map((f) => ({
       name: f.name,
       description: f.description ?? "",
@@ -242,7 +257,12 @@ export function selectCharacterSheetSummary(
     classFeatureChoices: state.classFeatureChoices,
     speciesChoices: state.speciesChoices,
     speciesLanguages: state.speciesLanguages,
-    validationMessages: getAllValidationMessages(state),
+    validationMessages: [
+      ...getAllValidationMessages(state),
+      ...(characterClass
+        ? getUnresolvedLevelChoices(state, characterClass).map((u) => u.label)
+        : []),
+    ],
     // new fields
     name: state.description.nome,
     className: characterClass?.name ?? "",

@@ -8,6 +8,8 @@ const state: CharacterBuilderState = {
   level: 1,
   selectedSpeciesId: "aasimar-xphb",
   selectedClassId: "fighter-xphb",
+  selectedSubclassId: "",
+  asiOrFeatByLevel: {},
   selectedBackgroundId: "guard-xphb",
   inventory: [{ itemId: "chain-mail-xphb", quantity: 3 }],
   equipmentChoicesBySource: {},

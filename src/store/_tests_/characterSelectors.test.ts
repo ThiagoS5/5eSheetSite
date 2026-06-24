@@ -94,4 +94,32 @@ describe("character selectors", () => {
     const summary = selectCharacterSheetSummary(store.getState());
     expect(summary.selectedEquipment.some((e) => e.id === "chain-mail-xphb")).toBe(true);
   });
+
+  it("applies ASI bonuses to final attributes and recomputes HP", () => {
+    const store = createCharacterStore();
+    store.getState().selectClass("fighter-xphb"); // d10
+    store.getState().setLevel(4);
+    const before = selectCharacterSheetSummary(store.getState());
+
+    store.getState().setLevelAsiOrFeat(4, { mode: "asi", increases: { constituicao: 2 } });
+    const after = selectCharacterSheetSummary(store.getState());
+
+    expect(after.finalAttributes.constituicao).toBe(before.finalAttributes.constituicao + 2);
+    // +2 CON at level 4 = +1 modifier across 4 levels = +4 HP.
+    expect(after.maxHp).toBe(before.maxHp + 4);
+  });
+
+  it("includes selected subclass features and reports level pendings", () => {
+    const store = createCharacterStore();
+    store.getState().selectClass("fighter-xphb");
+    store.getState().setLevel(3);
+
+    const pending = selectCharacterSheetSummary(store.getState());
+    expect(pending.validationMessages.some((m) => /subclasse/i.test(m))).toBe(true);
+
+    store.getState().selectSubclass("battle-master-xphb");
+    const resolved = selectCharacterSheetSummary(store.getState());
+    expect(resolved.features.some((f) => f.source === "class")).toBe(true);
+    expect(resolved.validationMessages.some((m) => /subclasse/i.test(m))).toBe(false);
+  });
 });

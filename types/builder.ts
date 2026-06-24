@@ -21,6 +21,15 @@ export interface BuilderFeature {
   description: string;
   level?: number;
   blocks?: BuilderFeatureBlock[];
+  grantsSubclass?: boolean;
+}
+
+export interface BuilderSubclass {
+  id: string;
+  name: string;
+  shortName: string;
+  source: string;
+  features: BuilderFeature[];
 }
 
 export type BuilderFeatureBlock =
@@ -156,6 +165,7 @@ export interface BuilderClass {
   startingEquipmentGold: string;
   startingEquipmentPackages: BuilderEquipmentPackage[];
   detail: string;
+  subclasses: BuilderSubclass[];
 }
 
 export type ItemCategory =
@@ -193,6 +203,30 @@ export interface DataSourceAuditEntry {
   step: string;
   files: string[];
   purpose: string;
+}
+
+export type FeatCategory = "origin" | "general" | "fighting-style" | "epic-boon";
+
+export interface FeatAbilityBonus {
+  fixed?: Partial<Record<AttributeKey, number>>;
+  choose?: { from: AttributeKey[]; amount: number };
+}
+
+export interface FeatPrerequisite {
+  level?: number;
+  abilities?: Partial<Record<AttributeKey, number>>;
+  feat?: string[];
+}
+
+export interface BuilderFeat {
+  id: string;
+  name: string;
+  source: string;
+  category: FeatCategory;
+  prerequisites: FeatPrerequisite[];
+  abilityBonus?: FeatAbilityBonus;
+  repeatable: boolean;
+  description: string;
 }
 
 export interface CharacterDescription {

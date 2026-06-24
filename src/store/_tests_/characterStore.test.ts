@@ -34,7 +34,7 @@ describe("createCharacterStore", () => {
           selectedBackgroundId: "",
         },
         exportMetadata: {
-          schemaVersion: 3,
+          schemaVersion: 4,
           saveId: expect.any(String),
           createdAt: expect.any(String),
           updatedAt: expect.any(String),
@@ -153,6 +153,26 @@ describe("createCharacterStore", () => {
     });
   });
 
+  it("persists subclass and per-level ASI/feat choices through the build round-trip", () => {
+    const store = createCharacterStore();
+    store.getState().selectClass("fighter-xphb");
+    store.getState().setLevel(4);
+    store.getState().selectSubclass("battle-master-xphb");
+    store.getState().setLevelAsiOrFeat(4, { mode: "asi", increases: { constituicao: 2 } });
+
+    const build = store.getState().characterBuild;
+    expect(build.choices.selectedSubclassId).toBe("battle-master-xphb");
+    expect(build.progression.levelChoices["4"].asiOrFeat).toEqual({
+      mode: "asi",
+      increases: { constituicao: 2 },
+    });
+    expect(store.getState().selectedSubclassId).toBe("battle-master-xphb");
+    expect(store.getState().asiOrFeatByLevel["4"]).toEqual({
+      mode: "asi",
+      increases: { constituicao: 2 },
+    });
+  });
+
   it("resets the active build with a new save id", () => {
     const store = createCharacterStore();
     const initialSaveId = store.getState().characterBuild.exportMetadata.saveId;
@@ -174,5 +194,15 @@ describe("createCharacterStore", () => {
         },
       },
     });
+  });
+
+  it("clears a stale subclass when the class changes", () => {
+    const store = createCharacterStore();
+    store.getState().selectClass("fighter-xphb");
+    store.getState().selectSubclass("battle-master-xphb");
+    expect(store.getState().selectedSubclassId).toBe("battle-master-xphb");
+
+    store.getState().selectClass("wizard-xphb");
+    expect(store.getState().selectedSubclassId).toBe("");
   });
 });
