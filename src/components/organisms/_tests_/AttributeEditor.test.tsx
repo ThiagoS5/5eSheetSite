@@ -35,6 +35,15 @@ describe("AttributeEditor", () => {
     );
 
     expect(screen.getByText("Point Buy: 26 gastos, 1 restantes")).toBeInTheDocument();
+    expect(screen.getByRole("table")).toHaveClass(
+      "block",
+      "min-w-0",
+      "md:table",
+    );
+    expect(screen.getByRole("row", { name: /Forca/i })).toHaveClass(
+      "grid",
+      "md:table-row",
+    );
     expect(
       screen.getByRole("button", { name: "Aumentar Forca" }),
     ).toBeDisabled();

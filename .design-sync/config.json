@@ -1,0 +1,21 @@
+{
+  "projectId": "4305e5d2-b232-4887-838f-83fa27f215ef",
+  "pkg": "ficha-5e-app",
+  "shape": "package",
+  "tsconfig": "./tsconfig.json",
+  "cssEntry": ".design-sync/compiled-styles.css",
+  "runtimeFontPrefixes": ["Cambria"],
+  "libOverrides": {
+    "common.mjs": "add process polyfill to IIFE_IMPORT_META_DEFINE — React 19/Zustand access process directly in browser",
+    "bundle.mjs": "fork to: (1) inherit forked common.mjs via relative import (process polyfill in IIFE_IMPORT_META_DEFINE); (2) add dataSizeStubPlugin that stubs public/data/*.json and _references/*.json with a deep-Proxy so components render without bundling 9MB of D&D catalog data"
+  },
+  "readmeHeader": ".design-sync/conventions.md",
+  "componentSrcMap": {
+    "BuilderStepPanel": null,
+    "CharacterSheetPage": null,
+    "CharacterSheetView": null,
+    "Dashboard": null,
+    "BuilderShell": null,
+    "SheetHeader": null
+  }
+}

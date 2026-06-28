@@ -1,4 +1,4 @@
-import { getLevelRequirements } from "@/rules/levelProgression";
+import { getLevelRequirements, type LevelChoiceRequirement } from "@/rules/levelProgression";
 import { getSubclassesForClass } from "@/src/services/ruleService";
 import type { CharacterBuilderState } from "@/src/store/characterStore.types";
 import type { AsiOrFeatChoice } from "@/src/types/characterBuild";
@@ -56,52 +56,51 @@ export function getActiveSubclassFeatures(
   return subclass.features.filter((f) => (f.level ?? 1) <= state.level);
 }
 
+function isRequirementResolved(
+  req: LevelChoiceRequirement,
+  state: CharacterBuilderState,
+  validSubclassIds: Set<string>,
+): boolean {
+  if (req.kind === "subclass") {
+    return state.selectedSubclassId !== "" && validSubclassIds.has(state.selectedSubclassId);
+  }
+  if (req.kind === "asi-or-feat") {
+    const choice = state.asiOrFeatByLevel[String(req.level)];
+    return (
+      choice !== undefined &&
+      (choice.mode === "feat" ? choice.featId !== "" : isValidAsi(choice))
+    );
+  }
+  return (state.classFeatureChoices[req.id] ?? []).length === req.count;
+}
+
+/** Full unresolved requirement objects for levels 1..currentLevel, in order. */
+export function getPendingRequirements(
+  state: CharacterBuilderState,
+  characterClass: BuilderClass,
+): LevelChoiceRequirement[] {
+  const validSubclassIds = new Set(
+    getSubclassesForClass(characterClass.id).map((s) => s.id),
+  );
+  return getLevelRequirements(characterClass, 0, state.level).filter(
+    (req) => !isRequirementResolved(req, state, validSubclassIds),
+  );
+}
+
+function requirementLabel(req: LevelChoiceRequirement): string {
+  if (req.kind === "subclass") return `Nível ${req.level}: escolha uma subclasse`;
+  if (req.kind === "asi-or-feat") return `Nível ${req.level}: escolha ASI ou talento`;
+  return `Nível ${req.level}: ${req.featureName}`;
+}
+
 /** Which level choices (1..currentLevel) are still missing or invalid. */
 export function getUnresolvedLevelChoices(
   state: CharacterBuilderState,
   characterClass: BuilderClass,
 ): UnresolvedChoice[] {
-  const requirements = getLevelRequirements(characterClass, 0, state.level);
-  const validSubclassIds = new Set(
-    getSubclassesForClass(characterClass.id).map((s) => s.id),
-  );
-  const unresolved: UnresolvedChoice[] = [];
-
-  for (const req of requirements) {
-    if (req.kind === "subclass") {
-      const ok =
-        state.selectedSubclassId !== "" &&
-        validSubclassIds.has(state.selectedSubclassId);
-      if (!ok) {
-        unresolved.push({
-          level: req.level,
-          kind: "subclass",
-          label: `Nível ${req.level}: escolha uma subclasse`,
-        });
-      }
-    } else if (req.kind === "asi-or-feat") {
-      const choice = state.asiOrFeatByLevel[String(req.level)];
-      const ok =
-        choice !== undefined &&
-        (choice.mode === "feat" ? choice.featId !== "" : isValidAsi(choice));
-      if (!ok) {
-        unresolved.push({
-          level: req.level,
-          kind: "asi-or-feat",
-          label: `Nível ${req.level}: escolha ASI ou talento`,
-        });
-      }
-    } else {
-      const chosen = state.classFeatureChoices[req.id] ?? [];
-      if (chosen.length !== req.count) {
-        unresolved.push({
-          level: req.level,
-          kind: "feature-option",
-          label: `Nível ${req.level}: ${req.featureName}`,
-        });
-      }
-    }
-  }
-
-  return unresolved;
+  return getPendingRequirements(state, characterClass).map((req) => ({
+    level: req.level,
+    kind: req.kind,
+    label: requirementLabel(req),
+  }));
 }

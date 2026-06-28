@@ -64,3 +64,12 @@ src/_references/*
 design.md
 project-delivery-ruler.md
 5etools-data-audit.md
+# Brainstorming visual companion artifacts
+.superpowers/
+
+# Design Sync (claude.ai/design) — generated output, machine state
+.ds-sync/
+ds-bundle/
+.design-sync/.cache/
+.design-sync/learnings/
+.design-sync/node_modules

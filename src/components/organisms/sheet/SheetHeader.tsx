@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { CharacterSheetSummary } from "@/types/builder";
 import { DeathSavesOverlay } from "@/src/components/organisms/sheet/DeathSavesOverlay";
 import { CombatStatFrame } from "@/src/components/atoms/sheet/frames/CombatStatFrame";
+import { LevelUpButton } from "@/src/components/molecules/LevelUpButton";
 import { cn } from "@/src/lib/utils";
 
 interface SheetHeaderProps {
@@ -46,7 +47,8 @@ export function SheetHeader({ summary }: SheetHeaderProps) {
                   {summary.className ? ` ${summary.className}` : ""}
                 </p>
               </div>
-              <div className="ml-2 shrink-0 text-right">
+              <div className="ml-2 flex shrink-0 flex-col items-end gap-1.5">
+                <LevelUpButton />
                 <span className="block text-sm font-bold text-foreground">
                   {summary.xp} / {summary.xpThreshold}
                 </span>

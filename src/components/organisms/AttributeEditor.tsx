@@ -107,10 +107,10 @@ export function AttributeEditor({
         </p>
       ) : null}
 
-      <div className="rounded-md border border-border bg-muted">
-        <Table className="min-w-[480px]">
-          <TableHeader className="bg-white/5">
-            <TableRow className="border-white/[0.06] hover:bg-transparent">
+      <div className="rounded-md border border-border bg-muted p-3 md:p-0">
+        <Table className="block min-w-0 border-separate border-spacing-y-3 md:table md:border-collapse md:border-spacing-0">
+          <TableHeader className="sr-only bg-white/5 md:table-header-group">
+            <TableRow className="border-white/[0.06] hover:bg-transparent md:table-row">
               <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                 Atributo
               </TableHead>
@@ -142,9 +142,9 @@ export function AttributeEditor({
               return (
                 <TableRow
                   key={attribute}
-                  className="border-white/[0.06] hover:bg-white/[0.02]"
+                  className="grid grid-cols-2 gap-3 rounded-md border border-white/[0.06] bg-surface-nested p-3 hover:bg-white/[0.02] md:table-row md:rounded-none md:border-x-0 md:border-t-0 md:bg-transparent md:p-0"
                 >
-                  <TableCell>
+                  <TableCell className="col-span-2 p-0 whitespace-normal md:table-cell md:p-3 md:whitespace-nowrap">
                     <span className="flex items-center gap-2.5 font-semibold text-foreground">
                       <FontAwesomeIcon
                         iconClassName={ATTRIBUTE_ICON_CLASS[attribute]}
@@ -153,7 +153,10 @@ export function AttributeEditor({
                       {label}
                     </span>
                   </TableCell>
-                  <TableCell className="text-center">
+                  <TableCell className="p-0 text-left whitespace-normal md:table-cell md:p-3 md:text-center md:whitespace-nowrap">
+                    <span className="mb-1 block text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground md:hidden">
+                      Valor Base
+                    </span>
                     <BaseValueControl
                       method={method}
                       attribute={attribute}
@@ -162,7 +165,10 @@ export function AttributeEditor({
                       onAttributeChange={onAttributeChange}
                     />
                   </TableCell>
-                  <TableCell className="text-center font-semibold text-subdued">
+                  <TableCell className="p-0 text-left font-semibold whitespace-normal text-subdued md:table-cell md:p-3 md:text-center md:whitespace-nowrap">
+                    <span className="mb-1 block text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground md:hidden">
+                      Bonus
+                    </span>
                     {bonus === 0 ? "—" : formatSigned(bonus)}
                   </TableCell>
                   <TableCell className="hidden text-center md:table-cell">
@@ -179,10 +185,16 @@ export function AttributeEditor({
                       className="mx-auto w-16 border-border bg-surface-nested text-center text-foreground"
                     />
                   </TableCell>
-                  <TableCell className="text-center font-serif text-lg font-bold text-foreground">
+                  <TableCell className="p-0 text-left font-serif text-lg font-bold whitespace-normal text-foreground md:table-cell md:p-3 md:text-center md:whitespace-nowrap">
+                    <span className="mb-1 block font-sans text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground md:hidden">
+                      Total
+                    </span>
                     {total}
                   </TableCell>
-                  <TableCell className="text-center">
+                  <TableCell className="p-0 text-left whitespace-normal md:table-cell md:p-3 md:text-center md:whitespace-nowrap">
+                    <span className="mb-1 block text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground md:hidden">
+                      Modificador
+                    </span>
                     <span className={cn("font-serif text-2xl font-bold", modifierColorClass(modifier))}>
                       {formatSigned(modifier)}
                     </span>
@@ -273,7 +285,7 @@ function BaseValueControl({
   }
 
   return (
-    <div className="flex items-center justify-center gap-1">
+    <div className="flex items-center justify-start gap-1 md:justify-center">
       <Button
         type="button"
         variant="ghost"
