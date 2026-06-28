@@ -994,7 +994,7 @@ function SpeciesDetailsDialog({
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 flex items-stretch justify-center overflow-y-auto bg-black/70 p-0 backdrop-blur-md md:items-center md:p-6">
-          <Dialog.Content className="relative flex h-[100dvh] w-full min-w-0 flex-col overflow-hidden border border-white/[0.08] bg-surface-nested text-foreground shadow-2xl shadow-black/60 outline-none focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70 md:h-[min(88vh,920px)] md:max-w-6xl md:flex-row md:rounded-xl">
+          <Dialog.Content className="relative flex h-[100svh] w-full min-w-0 flex-col overflow-y-auto border border-white/[0.08] bg-surface-nested text-foreground shadow-2xl shadow-black/60 outline-none focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70 md:h-[min(88vh,920px)] md:max-w-6xl md:flex-row md:overflow-hidden md:rounded-xl">
             <Dialog.Title className="sr-only">{species.name}</Dialog.Title>
             <Dialog.Description className="sr-only">
               {`Detalhes de ${species.name}: ${species.summary}`}
@@ -1035,8 +1035,8 @@ function SpeciesDetailsSidebar({
   onSelect: () => void;
 }) {
   return (
-    <aside className="flex max-h-[48dvh] w-full shrink-0 flex-col overflow-y-auto border-b border-white/[0.06] bg-muted md:h-full md:max-h-none md:w-80 md:border-b-0 md:border-r">
-      <div className="relative h-56 shrink-0 overflow-hidden bg-card md:h-[300px]">
+    <aside className="flex w-full shrink-0 flex-col overflow-visible border-b border-white/[0.06] bg-muted md:h-full md:w-80 md:overflow-y-auto md:border-b-0 md:border-r">
+      <div className="relative h-48 shrink-0 overflow-hidden bg-card sm:h-56 md:h-[300px]">
         {species.image ? (
           <Image
             unoptimized
@@ -1127,7 +1127,7 @@ function SpeciesDetailsSidebar({
 
 function SpeciesDetailsMain({ species }: { species: BuilderSpecies }) {
   return (
-    <main className="min-h-0 min-w-0 flex-1 overflow-y-auto bg-surface-nested scroll-smooth">
+    <main className="min-h-0 min-w-0 flex-1 bg-surface-nested scroll-smooth md:overflow-y-auto">
       <div className="mx-auto grid max-w-4xl gap-6 p-4 sm:p-6 lg:p-8">
         <section aria-labelledby={`${species.id}-description-title`}>
           <ClassSectionHeading
@@ -1370,7 +1370,7 @@ function ClassDetailsDialog({
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 flex items-stretch justify-center overflow-y-auto bg-black/70 p-0 backdrop-blur-md md:items-center md:p-6">
-          <Dialog.Content className="relative flex h-[100dvh] w-full min-w-0 flex-col overflow-hidden border border-white/[0.08] bg-surface-nested text-foreground shadow-2xl shadow-black/60 outline-none focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70 md:h-[min(88vh,920px)] md:max-w-6xl md:flex-row md:rounded-xl">
+          <Dialog.Content className="relative flex h-[100svh] w-full min-w-0 flex-col overflow-y-auto border border-white/[0.08] bg-surface-nested text-foreground shadow-2xl shadow-black/60 outline-none focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70 md:h-[min(88vh,920px)] md:max-w-6xl md:flex-row md:overflow-hidden md:rounded-xl">
             <Dialog.Title className="sr-only">{classEntry.name}</Dialog.Title>
             <Dialog.Description className="sr-only">
               {`Detalhes de ${classEntry.name}: ${classEntry.summary}`}
@@ -1416,8 +1416,8 @@ function ClassDetailsSidebar({
   const tags = getClassTags(classEntry);
 
   return (
-    <aside className="flex max-h-[48dvh] w-full shrink-0 flex-col overflow-y-auto border-b border-white/[0.06] bg-muted md:h-full md:max-h-none md:w-80 md:border-b-0 md:border-r">
-      <div className="relative h-56 shrink-0 overflow-hidden bg-card md:h-[300px]">
+    <aside className="flex w-full shrink-0 flex-col overflow-visible border-b border-white/[0.06] bg-muted md:h-full md:w-80 md:overflow-y-auto md:border-b-0 md:border-r">
+      <div className="relative h-48 shrink-0 overflow-hidden bg-card sm:h-56 md:h-[300px]">
         {classEntry.image ? (
           <Image
             unoptimized
@@ -1542,7 +1542,7 @@ function ClassDetailsSidebar({
 
 function ClassDetailsMain({ classEntry }: { classEntry: BuilderClass }) {
   return (
-    <main className="min-h-0 min-w-0 flex-1 overflow-y-auto bg-surface-nested scroll-smooth">
+    <main className="min-h-0 min-w-0 flex-1 bg-surface-nested scroll-smooth md:overflow-y-auto">
       <div className="mx-auto grid max-w-4xl gap-6 p-4 sm:p-6 lg:p-8">
         <section aria-labelledby={`${classEntry.id}-description-title`}>
           <ClassSectionHeading
@@ -1687,11 +1687,11 @@ function ClassProgressionTable({ classEntry }: { classEntry: BuilderClass }) {
   );
 
   return (
-    <section>
+    <section className="min-w-0">
       <h3 className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">
         Progressão de Classe
       </h3>
-      <div className="overflow-x-auto rounded-lg border border-white/[0.08]">
+      <div className="max-w-full overflow-x-auto rounded-lg border border-white/[0.08]">
         <table className="w-full min-w-[720px] border-collapse text-left text-sm">
           <thead className="bg-white/[0.04] text-xs uppercase tracking-[0.12em] text-muted-foreground">
             <tr>

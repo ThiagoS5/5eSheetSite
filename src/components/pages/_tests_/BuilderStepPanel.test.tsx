@@ -116,6 +116,11 @@ describe("BuilderStepPanel", () => {
     });
 
     expect(detailsDialog).toBeInTheDocument();
+    expect(detailsDialog).toHaveClass(
+      "h-[100svh]",
+      "overflow-y-auto",
+      "md:overflow-hidden",
+    );
     expect(detailsImage).toHaveClass("object-cover", "object-top");
     expect(screen.getByText("Identidade da classe")).toBeInTheDocument();
     expect(screen.getByText("Atributo Primario")).toBeInTheDocument();
@@ -125,6 +130,9 @@ describe("BuilderStepPanel", () => {
     expect(
       screen.getByRole("heading", { name: /Progress.*Classe/i }),
     ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: /Progress.*Classe/i }).closest("section"),
+    ).toHaveClass("min-w-0");
     expect(
       screen.getByRole("button", { name: `Fechar detalhes de ${firstClass.name}` }),
     ).toBeInTheDocument();
@@ -284,6 +292,11 @@ describe("BuilderStepPanel", () => {
     const dialog = screen.getByRole("dialog", { name: "Acolyte" });
 
     expect(dialog).toBeInTheDocument();
+    expect(dialog).toHaveClass(
+      "h-[100svh]",
+      "overflow-y-auto",
+      "md:overflow-hidden",
+    );
     expect(within(dialog).getByText("Recompensas")).toBeInTheDocument();
     expect(within(dialog).getByText("Talento de Origem")).toBeInTheDocument();
     expect(within(dialog).getByText("Bonus de Atributo")).toBeInTheDocument();

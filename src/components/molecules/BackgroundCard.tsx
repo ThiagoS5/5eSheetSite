@@ -150,8 +150,8 @@ function BackgroundDetailsModal({
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-50 flex items-end justify-center bg-background/80 backdrop-blur-md sm:items-center sm:p-6">
-          <Dialog.Content className="relative flex h-[85dvh] w-full max-w-md flex-col overflow-hidden rounded-t-xl border border-white/[0.06] bg-card text-foreground shadow-[0_0_30px_rgba(0,0,0,0.8)] outline-none focus-visible:ring-2 focus-visible:ring-primary sm:max-h-[85vh] sm:max-w-2xl sm:rounded-xl">
+        <Dialog.Overlay className="fixed inset-0 z-50 flex items-stretch justify-center overflow-y-auto bg-background/80 p-0 backdrop-blur-md md:items-center md:p-6">
+          <Dialog.Content className="relative flex h-[100svh] w-full max-w-2xl flex-col overflow-y-auto border border-white/[0.08] bg-surface-nested text-foreground shadow-2xl shadow-black/60 outline-none focus-visible:ring-2 focus-visible:ring-primary md:h-[min(88vh,760px)] md:overflow-hidden md:rounded-xl">
             <Dialog.Title className="sr-only">{background.name}</Dialog.Title>
             <Dialog.Description className="sr-only">
               {`Detalhes do antecedente ${background.name}`}
@@ -167,7 +167,7 @@ function BackgroundDetailsModal({
               </button>
             </Dialog.Close>
 
-            <div className="relative h-48 w-full shrink-0 sm:h-64">
+            <div className="relative h-48 w-full shrink-0 sm:h-56 md:h-64">
               {background.image ? (
                 <Image
                   unoptimized
@@ -185,7 +185,7 @@ function BackgroundDetailsModal({
               )}
               <div
                 aria-hidden="true"
-                className="absolute inset-0 bg-gradient-to-t from-card via-card/40 to-transparent"
+                className="absolute inset-0 bg-gradient-to-t from-surface-nested via-surface-nested/40 to-transparent"
               />
               <div className="absolute bottom-0 left-0 w-full p-6">
                 <span className="mb-1 block text-[10px] font-bold uppercase tracking-[0.14em] text-foreground">
@@ -200,7 +200,7 @@ function BackgroundDetailsModal({
             <div
               tabIndex={0}
               aria-label={`Conteudo dos detalhes de ${background.name}`}
-              className="flex-1 overflow-y-auto p-6 pb-24 outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
+              className="flex-1 p-4 outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary sm:p-6 md:overflow-y-auto"
             >
               <div className="grid gap-6">
                 <section>
@@ -278,7 +278,7 @@ function BackgroundDetailsModal({
               </div>
             </div>
 
-            <div className="absolute bottom-0 left-0 z-30 w-full border-t border-white/[0.06] bg-card/95 p-4 backdrop-blur">
+            <div className="sticky bottom-0 left-0 z-30 w-full border-t border-white/[0.06] bg-surface-nested/95 p-4 backdrop-blur">
               <button
                 type="button"
                 onClick={handleModalSelect}
