@@ -284,7 +284,7 @@ function BackgroundDetailsModal({
                 onClick={handleModalSelect}
                 disabled={disabled}
                 aria-pressed={selected}
-                className="flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 text-xs font-bold uppercase tracking-[0.14em] text-foreground shadow-[0_0_15px_rgba(196,30,30,0.2)] outline-none transition hover:bg-brand-crimson-alt active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 text-xs font-bold uppercase tracking-[0.14em] text-foreground shadow-elevation-1 outline-none transition hover:bg-brand-crimson-alt active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {selected ? "SELECIONADO" : "SELECIONAR"}
                 <i aria-hidden="true" className="fa-solid fa-check text-xs" />

@@ -27,7 +27,7 @@ export function ChoiceCard({
     <article
       className={`relative overflow-hidden rounded-lg border bg-card transition ${
         selected
-          ? "border-brand-crimson-alt shadow-[0_0_24px_rgba(196,30,30,0.25)]"
+          ? "border-brand-crimson-alt shadow-elevation-2"
           : "border-white/[0.06] hover:border-white/15"
       }`}
     >
