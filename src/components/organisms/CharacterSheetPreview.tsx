@@ -9,8 +9,8 @@ import {
 } from "@/src/services/ruleService";
 import { getAbilityModifier } from "@/src/adapters/characterDerivedAdapter";
 import { selectCharacterSheetSummary } from "@/src/store/characterSelectors";
-import type { CharacterBuilderState } from "@/src/store/characterStore.types";
 import { useCharacterStore } from "@/src/store/useCharacterStore";
+import { useCharacterBuilderState } from "@/src/store/useCharacterBuilderState";
 import { ATTRIBUTE_LABELS, type AttributeKey } from "@/types/dnd";
 import { TagList } from "@/src/components/molecules/TagList";
 
@@ -25,7 +25,7 @@ export function CharacterSheetPreview({
   collapsed = false,
   onToggleCollapsed,
 }: CharacterSheetPreviewProps) {
-  const characterState = useCharacterPreviewState();
+  const characterState = useCharacterBuilderState();
   const summary = useMemo(
     () => selectCharacterSheetSummary(characterState),
     [characterState],
@@ -213,96 +213,6 @@ export function CharacterSheetPreview({
         )}
       </div>
     </aside>
-  );
-}
-
-function useCharacterPreviewState(): CharacterBuilderState {
-  const ruleset = useCharacterStore((state) => state.ruleset);
-  const level = useCharacterStore((state) => state.level);
-  const selectedSpeciesId = useCharacterStore((state) => state.selectedSpeciesId);
-  const selectedClassId = useCharacterStore((state) => state.selectedClassId);
-  const selectedSubclassId = useCharacterStore(
-    (state) => state.selectedSubclassId,
-  );
-  const selectedBackgroundId = useCharacterStore(
-    (state) => state.selectedBackgroundId,
-  );
-  const inventory = useCharacterStore(
-    (state) => state.inventory,
-  );
-  const equipmentChoicesBySource = useCharacterStore(
-    (state) => state.equipmentChoicesBySource,
-  );
-  const maxUnlockedStepIndex = useCharacterStore(
-    (state) => state.maxUnlockedStepIndex,
-  );
-  const pendingChoiceIds = useCharacterStore((state) => state.pendingChoiceIds);
-  const classSkillProficiencies = useCharacterStore(
-    (state) => state.classSkillProficiencies,
-  );
-  const skillTraining = useCharacterStore((state) => state.skillTraining);
-  const classFeatureChoices = useCharacterStore(
-    (state) => state.classFeatureChoices,
-  );
-  const asiOrFeatByLevel = useCharacterStore(
-    (state) => state.asiOrFeatByLevel,
-  );
-  const speciesChoices = useCharacterStore((state) => state.speciesChoices);
-  const speciesLanguages = useCharacterStore((state) => state.speciesLanguages);
-  const attributeGenerationMethod = useCharacterStore(
-    (state) => state.attributeGenerationMethod,
-  );
-  const baseAttributes = useCharacterStore((state) => state.baseAttributes);
-  const backgroundAbilityBonuses = useCharacterStore(
-    (state) => state.backgroundAbilityBonuses,
-  );
-  const description = useCharacterStore((state) => state.description);
-
-  return useMemo(
-    () => ({
-      ruleset,
-      level,
-      selectedSpeciesId,
-      selectedClassId,
-      selectedSubclassId,
-      selectedBackgroundId,
-      inventory,
-      equipmentChoicesBySource,
-      maxUnlockedStepIndex,
-      pendingChoiceIds,
-      classSkillProficiencies,
-      skillTraining,
-      classFeatureChoices,
-      asiOrFeatByLevel,
-      speciesChoices,
-      speciesLanguages,
-      attributeGenerationMethod,
-      baseAttributes,
-      backgroundAbilityBonuses,
-      description,
-    }),
-    [
-      ruleset,
-      level,
-      selectedSpeciesId,
-      selectedClassId,
-      selectedSubclassId,
-      selectedBackgroundId,
-      inventory,
-      equipmentChoicesBySource,
-      maxUnlockedStepIndex,
-      pendingChoiceIds,
-      classSkillProficiencies,
-      skillTraining,
-      classFeatureChoices,
-      asiOrFeatByLevel,
-      speciesChoices,
-      speciesLanguages,
-      attributeGenerationMethod,
-      baseAttributes,
-      backgroundAbilityBonuses,
-      description,
-    ],
   );
 }
 

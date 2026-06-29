@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { selectCharacterSheetSummary } from "@/src/store/characterSelectors";
 import { useCharacterStore } from "@/src/store/useCharacterStore";
-import type { CharacterBuilderState } from "@/src/store/characterStore.types";
+import { useCharacterBuilderState } from "@/src/store/useCharacterBuilderState";
 import { cn } from "@/src/lib/utils";
 import { createFoundryCharacterExport } from "@/src/utils/foundryAdapter";
 import { SheetHeader } from "@/src/components/organisms/sheet/SheetHeader";
@@ -33,7 +33,7 @@ interface CharacterSheetViewProps {
 
 export function CharacterSheetView({ embedded = false }: CharacterSheetViewProps) {
   const [mobileTab, setMobileTab] = useState<MobileTab>("attrs");
-  const state = useSheetState();
+  const state = useCharacterBuilderState();
   const description = useCharacterStore((s) => s.description);
   const summary = useMemo(() => selectCharacterSheetSummary(state), [state]);
 
@@ -130,46 +130,6 @@ export function CharacterSheetView({ embedded = false }: CharacterSheetViewProps
         ))}
       </nav>
     </div>
-  );
-}
-
-function useSheetState(): CharacterBuilderState {
-  const ruleset = useCharacterStore((s) => s.ruleset);
-  const level = useCharacterStore((s) => s.level);
-  const selectedSpeciesId = useCharacterStore((s) => s.selectedSpeciesId);
-  const selectedClassId = useCharacterStore((s) => s.selectedClassId);
-  const selectedSubclassId = useCharacterStore((s) => s.selectedSubclassId);
-  const selectedBackgroundId = useCharacterStore((s) => s.selectedBackgroundId);
-  const inventory = useCharacterStore((s) => s.inventory);
-  const equipmentChoicesBySource = useCharacterStore((s) => s.equipmentChoicesBySource);
-  const maxUnlockedStepIndex = useCharacterStore((s) => s.maxUnlockedStepIndex);
-  const pendingChoiceIds = useCharacterStore((s) => s.pendingChoiceIds);
-  const classSkillProficiencies = useCharacterStore((s) => s.classSkillProficiencies);
-  const skillTraining = useCharacterStore((s) => s.skillTraining);
-  const classFeatureChoices = useCharacterStore((s) => s.classFeatureChoices);
-  const asiOrFeatByLevel = useCharacterStore((s) => s.asiOrFeatByLevel);
-  const speciesChoices = useCharacterStore((s) => s.speciesChoices);
-  const speciesLanguages = useCharacterStore((s) => s.speciesLanguages);
-  const attributeGenerationMethod = useCharacterStore((s) => s.attributeGenerationMethod);
-  const baseAttributes = useCharacterStore((s) => s.baseAttributes);
-  const backgroundAbilityBonuses = useCharacterStore((s) => s.backgroundAbilityBonuses);
-  const description = useCharacterStore((s) => s.description);
-
-  return useMemo(
-    () => ({
-      ruleset, level, selectedSpeciesId, selectedClassId, selectedSubclassId, selectedBackgroundId,
-      inventory, equipmentChoicesBySource, maxUnlockedStepIndex, pendingChoiceIds,
-      classSkillProficiencies, skillTraining, classFeatureChoices, asiOrFeatByLevel, speciesChoices,
-      speciesLanguages, attributeGenerationMethod, baseAttributes, backgroundAbilityBonuses,
-      description,
-    }),
-    [
-      ruleset, level, selectedSpeciesId, selectedClassId, selectedSubclassId, selectedBackgroundId,
-      inventory, equipmentChoicesBySource, maxUnlockedStepIndex, pendingChoiceIds,
-      classSkillProficiencies, skillTraining, classFeatureChoices, asiOrFeatByLevel, speciesChoices,
-      speciesLanguages, attributeGenerationMethod, baseAttributes, backgroundAbilityBonuses,
-      description,
-    ],
   );
 }
 

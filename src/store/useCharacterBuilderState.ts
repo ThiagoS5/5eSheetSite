@@ -1,0 +1,78 @@
+"use client";
+
+import { useMemo } from "react";
+import { useCharacterStore } from "@/src/store/useCharacterStore";
+import type { CharacterBuilderState } from "@/src/store/characterStore.types";
+
+/**
+ * Assembles the full {@link CharacterBuilderState} slice from the store in one
+ * canonical place. Both the live sheet (`CharacterSheetView`) and the builder
+ * preview (`CharacterSheetPreview`) feed this into `selectCharacterSheetSummary`,
+ * so the derived sheet truth stays single-sourced (per the project Manifesto).
+ *
+ * Previously each consumer reassembled these ~18 selectors itself; this hook
+ * removes that duplication without changing the data flow.
+ */
+export function useCharacterBuilderState(): CharacterBuilderState {
+  const ruleset = useCharacterStore((s) => s.ruleset);
+  const level = useCharacterStore((s) => s.level);
+  const selectedSpeciesId = useCharacterStore((s) => s.selectedSpeciesId);
+  const selectedClassId = useCharacterStore((s) => s.selectedClassId);
+  const selectedBackgroundId = useCharacterStore((s) => s.selectedBackgroundId);
+  const inventory = useCharacterStore((s) => s.inventory);
+  const equipmentChoicesBySource = useCharacterStore((s) => s.equipmentChoicesBySource);
+  const maxUnlockedStepIndex = useCharacterStore((s) => s.maxUnlockedStepIndex);
+  const pendingChoiceIds = useCharacterStore((s) => s.pendingChoiceIds);
+  const classSkillProficiencies = useCharacterStore((s) => s.classSkillProficiencies);
+  const skillTraining = useCharacterStore((s) => s.skillTraining);
+  const classFeatureChoices = useCharacterStore((s) => s.classFeatureChoices);
+  const speciesChoices = useCharacterStore((s) => s.speciesChoices);
+  const speciesLanguages = useCharacterStore((s) => s.speciesLanguages);
+  const attributeGenerationMethod = useCharacterStore((s) => s.attributeGenerationMethod);
+  const baseAttributes = useCharacterStore((s) => s.baseAttributes);
+  const backgroundAbilityBonuses = useCharacterStore((s) => s.backgroundAbilityBonuses);
+  const description = useCharacterStore((s) => s.description);
+
+  return useMemo(
+    () => ({
+      ruleset,
+      level,
+      selectedSpeciesId,
+      selectedClassId,
+      selectedBackgroundId,
+      inventory,
+      equipmentChoicesBySource,
+      maxUnlockedStepIndex,
+      pendingChoiceIds,
+      classSkillProficiencies,
+      skillTraining,
+      classFeatureChoices,
+      speciesChoices,
+      speciesLanguages,
+      attributeGenerationMethod,
+      baseAttributes,
+      backgroundAbilityBonuses,
+      description,
+    }),
+    [
+      ruleset,
+      level,
+      selectedSpeciesId,
+      selectedClassId,
+      selectedBackgroundId,
+      inventory,
+      equipmentChoicesBySource,
+      maxUnlockedStepIndex,
+      pendingChoiceIds,
+      classSkillProficiencies,
+      skillTraining,
+      classFeatureChoices,
+      speciesChoices,
+      speciesLanguages,
+      attributeGenerationMethod,
+      baseAttributes,
+      backgroundAbilityBonuses,
+      description,
+    ],
+  );
+}
