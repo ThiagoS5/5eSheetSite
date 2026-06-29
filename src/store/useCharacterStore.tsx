@@ -10,12 +10,24 @@ import { useStore } from "zustand";
 import { createCharacterStore } from "@/src/store/createCharacterStore";
 import type { CharacterBuilderStore } from "@/src/store/characterStore.types";
 
-type CharacterStoreApi = ReturnType<typeof createCharacterStore>;
+export type CharacterStoreApi = ReturnType<typeof createCharacterStore>;
 
 const CharacterStoreContext = createContext<CharacterStoreApi | null>(null);
 
-export function CharacterStoreProvider({ children }: PropsWithChildren) {
-  const [store] = useState(() => createCharacterStore());
+interface CharacterStoreProviderProps {
+  /**
+   * Inject a pre-built store (Dependency Inversion). Tests and Storybook can
+   * pass a store seeded with fixture state; production omits it and gets a
+   * fresh store. Captured once on mount — a later identity change is ignored.
+   */
+  store?: CharacterStoreApi;
+}
+
+export function CharacterStoreProvider({
+  children,
+  store: injectedStore,
+}: PropsWithChildren<CharacterStoreProviderProps>) {
+  const [store] = useState(() => injectedStore ?? createCharacterStore());
 
   return (
     <CharacterStoreContext.Provider value={store}>

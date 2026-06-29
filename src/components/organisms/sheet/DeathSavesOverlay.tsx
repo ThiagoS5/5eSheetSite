@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { cn } from "@/src/lib/utils";
+import { focusRing } from "@/src/lib/styles";
 
 interface DeathSavesOverlayProps {
   onReset?: () => void;
@@ -33,14 +34,20 @@ export function DeathSavesOverlay({ onReset }: DeathSavesOverlayProps) {
                 key={i}
                 type="button"
                 aria-label={`Sucesso ${i + 1}`}
+                aria-pressed={successes > i}
                 onClick={() => toggle("success", i)}
                 className={cn(
-                  "h-5 w-5 rounded-full border transition-colors",
+                  "flex h-5 w-5 items-center justify-center rounded-full border text-[0.6rem] text-brand-green transition-colors",
+                  focusRing,
                   successes > i
                     ? "border-brand-green bg-brand-green/20"
                     : "border-white/30",
                 )}
-              />
+              >
+                {successes > i ? (
+                  <i aria-hidden="true" className="fa-solid fa-check" />
+                ) : null}
+              </button>
             ))}
           </div>
         </div>
@@ -52,14 +59,20 @@ export function DeathSavesOverlay({ onReset }: DeathSavesOverlayProps) {
                 key={i}
                 type="button"
                 aria-label={`Falha ${i + 1}`}
+                aria-pressed={failures > i}
                 onClick={() => toggle("failure", i)}
                 className={cn(
-                  "h-5 w-5 rounded-full border transition-colors",
+                  "flex h-5 w-5 items-center justify-center rounded-full border text-[0.6rem] text-primary transition-colors",
+                  focusRing,
                   failures > i
                     ? "border-primary bg-primary/20"
                     : "border-white/30",
                 )}
-              />
+              >
+                {failures > i ? (
+                  <i aria-hidden="true" className="fa-solid fa-xmark" />
+                ) : null}
+              </button>
             ))}
           </div>
         </div>
@@ -67,7 +80,10 @@ export function DeathSavesOverlay({ onReset }: DeathSavesOverlayProps) {
           <button
             type="button"
             onClick={onReset}
-            className="ml-auto self-end text-[10px] text-muted-foreground underline"
+            className={cn(
+              "ml-auto self-end rounded text-[10px] text-muted-foreground underline",
+              focusRing,
+            )}
           >
             Resetar
           </button>

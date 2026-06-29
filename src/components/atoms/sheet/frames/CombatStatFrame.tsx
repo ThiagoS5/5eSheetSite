@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { StatFrameOrnament } from "@/src/components/atoms/sheet/frames/StatFrameOrnament";
 
 type CombatFrameVariant = "shield" | "square";
 
@@ -48,30 +49,13 @@ export function CombatStatFrame({
     );
   }
 
-  const w = 132;
-  const h = 120;
-  const cut = 9;
-  const framePath = `M ${cut} 0 L ${w - cut} 0 L ${w} ${cut} L ${w} ${h - cut} L ${w - cut} ${h} L ${cut} ${h} L 0 ${h - cut} L 0 ${cut} Z`;
-  const innerPath = `M ${cut + 3} 3 L ${w - cut - 3} 3 L ${w - 3} ${cut + 3} L ${w - 3} ${h - cut - 3} L ${w - cut - 3} ${h - 3} L ${cut + 3} ${h - 3} L 3 ${h - cut - 3} L 3 ${cut + 3} Z`;
+  const w = 88;
+  const h = 88;
 
   return (
     <div className="relative" style={{ width: w, height: h }}>
-      <svg
-        viewBox={`0 0 ${w} ${h}`}
-        width={w}
-        height={h}
-        className="absolute inset-0 pointer-events-none"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <path d={framePath} fill="#12131a" />
-        <path d={framePath} fill="none" stroke={accentColor} strokeWidth="1" opacity="0.6" />
-        <path d={innerPath} fill="none" stroke={accentColor} strokeWidth="0.5" opacity="0.3" />
-        <path d={`M 2 ${cut + 2} L ${cut + 2} 2`} stroke={accentColor} strokeWidth="1.5" opacity="0.8" />
-        <path d={`M ${w - cut - 2} 2 L ${w - 2} ${cut + 2}`} stroke={accentColor} strokeWidth="1.5" opacity="0.8" />
-        <path d={`M 2 ${h - cut - 2} L ${cut + 2} ${h - 2}`} stroke={accentColor} strokeWidth="1.5" opacity="0.8" />
-        <path d={`M ${w - 2} ${h - cut - 2} L ${w - cut - 2} ${h - 2}`} stroke={accentColor} strokeWidth="1.5" opacity="0.8" />
-      </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 px-[3px] py-[3px] text-center leading-tight">
+      <StatFrameOrnament width={w} height={h} accentColor={accentColor} cut={7} />
+      <div className="absolute inset-0 flex flex-col items-center justify-center gap-1">
         {children}
       </div>
     </div>

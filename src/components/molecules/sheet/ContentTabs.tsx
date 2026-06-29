@@ -5,6 +5,7 @@ import type { CharacterSheetSummary, SheetFeature } from "@/types/builder";
 import { ActionCard } from "@/src/components/molecules/sheet/ActionCard";
 import { useCharacterStore } from "@/src/store/useCharacterStore";
 import { cn } from "@/src/lib/utils";
+import { focusRing } from "@/src/lib/styles";
 
 type MainTab = "actions" | "spells" | "inventory" | "features" | "notes";
 type ActionFilter = "all" | "class" | "species" | "background";
@@ -60,6 +61,25 @@ export function ContentTabs({ summary }: ContentTabsProps) {
       ? summary.features
       : summary.features.filter((f) => f.source === actionFilter);
 
+  // Roving-tabindex arrow-key navigation across the tablist (WAI-ARIA tabs
+  // pattern, automatic activation). Left/Right wrap; Home/End jump to ends.
+  function handleTablistKeyDown(event: React.KeyboardEvent<HTMLButtonElement>) {
+    const keys = ["ArrowRight", "ArrowLeft", "Home", "End"];
+    if (!keys.includes(event.key)) return;
+    event.preventDefault();
+    const current = MAIN_TABS.findIndex((t) => t.id === activeTab);
+    let next = current;
+    if (event.key === "ArrowRight") next = (current + 1) % MAIN_TABS.length;
+    else if (event.key === "ArrowLeft") next = (current - 1 + MAIN_TABS.length) % MAIN_TABS.length;
+    else if (event.key === "Home") next = 0;
+    else if (event.key === "End") next = MAIN_TABS.length - 1;
+    const nextTab = MAIN_TABS[next];
+    setActiveTab(nextTab.id);
+    event.currentTarget.parentElement
+      ?.querySelector<HTMLButtonElement>(`#tab-${nextTab.id}`)
+      ?.focus();
+  }
+
   return (
     <div className="relative flex flex-1 flex-col overflow-hidden rounded-xl border border-border bg-card">
       {/* Linha decorativa no topo */}
@@ -78,12 +98,17 @@ export function ContentTabs({ summary }: ContentTabsProps) {
           {MAIN_TABS.map((tab) => (
             <button
               key={tab.id}
+              id={`tab-${tab.id}`}
               role="tab"
               type="button"
               aria-selected={activeTab === tab.id}
+              aria-controls={`tabpanel-${tab.id}`}
+              tabIndex={activeTab === tab.id ? 0 : -1}
               onClick={() => setActiveTab(tab.id)}
+              onKeyDown={handleTablistKeyDown}
               className={cn(
                 "flex shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 px-3 py-2 text-[10px] font-semibold uppercase tracking-widest transition-colors",
+                focusRing,
                 activeTab === tab.id
                   ? "border-primary text-foreground"
                   : "border-transparent text-muted-foreground hover:text-foreground",
@@ -104,9 +129,11 @@ export function ContentTabs({ summary }: ContentTabsProps) {
               <button
                 key={f.id}
                 type="button"
+                aria-pressed={actionFilter === f.id}
                 onClick={() => setActionFilter(f.id)}
                 className={cn(
                   "whitespace-nowrap rounded border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-widest transition-colors",
+                  focusRing,
                   actionFilter === f.id
                     ? "border-primary/30 bg-primary/10 text-foreground"
                     : "border-transparent text-muted-foreground hover:border-border hover:text-foreground",
@@ -120,7 +147,13 @@ export function ContentTabs({ summary }: ContentTabsProps) {
       )}
 
       {/* Área de conteúdo rolável */}
-      <div className="max-h-[34rem] flex-1 overflow-y-auto p-4">
+      <div
+        role="tabpanel"
+        id={`tabpanel-${activeTab}`}
+        aria-labelledby={`tab-${activeTab}`}
+        tabIndex={0}
+        className={cn("max-h-[34rem] flex-1 overflow-y-auto p-4", focusRing)}
+      >
       {/* AÇÕES */}
       {activeTab === "actions" && (
         <div>
@@ -182,9 +215,11 @@ export function ContentTabs({ summary }: ContentTabsProps) {
               <button
                 key={f.id}
                 type="button"
+                aria-pressed={featureFilter === f.id}
                 onClick={() => setFeatureFilter(f.id)}
                 className={cn(
                   "whitespace-nowrap rounded border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-widest transition-colors",
+                  focusRing,
                   featureFilter === f.id
                     ? "border-primary/40 bg-primary/10 text-foreground"
                     : "border-border text-muted-foreground hover:text-subdued",

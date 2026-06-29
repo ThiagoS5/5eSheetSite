@@ -78,12 +78,12 @@
 
   .glass-card:hover {
     border-color: var(--primary);
-    box-shadow: 0 0 20px rgb(230 28 35 / 0.15);
+    box-shadow: var(--shadow-elevation-2);
     transform: translateY(-4px);
   }
 
   .crimson-glow {
-    box-shadow: 0 0 15px rgb(230 28 35 / 0.35);
+    box-shadow: var(--shadow-elevation-2);
   }
 
   .parchment-grain {
@@ -122,6 +122,7 @@
   --color-input: var(--input);
   --color-border: var(--border);
   --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);
@@ -129,6 +130,7 @@
   --color-secondary-foreground: var(--secondary-foreground);
   --color-secondary: var(--secondary);
   --color-primary-foreground: var(--primary-foreground);
+  --color-primary-hover: var(--primary-hover);
   --color-primary: var(--primary);
   --color-popover-foreground: var(--popover-foreground);
   --color-popover: var(--popover);
@@ -136,6 +138,12 @@
   --color-card: var(--card);
   --color-foreground: var(--foreground);
   --color-background: var(--background);
+  /* Elevation ramp — a single 3-step glow set derived from --primary via
+     color-mix, so elevation tracks the active theme/variation instead of the
+     ad-hoc rgba(196,30,30)/rgba(230,28,35) literals scattered per component. */
+  --shadow-elevation-1: 0 0 15px color-mix(in oklch, var(--primary) 18%, transparent);
+  --shadow-elevation-2: 0 0 18px color-mix(in oklch, var(--primary) 28%, transparent);
+  --shadow-elevation-3: 0 0 28px color-mix(in oklch, var(--primary) 22%, transparent);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -170,7 +178,79 @@
   --color-tone-crimson-deepest: var(--tone-crimson-deepest);
 }
 
-:root,
+/* ── Light (parchment) theme ──
+   Available but NOT the app default: <html> ships the `.dark` class (see
+   app/layout.tsx), so the dark block below always wins in-app. This block is
+   the documented light path for consumers who drop `.dark`. Core surface/text
+   tokens are tuned to clear WCAG AA on parchment; brand/tone accents are
+   darkened from their dark-theme values so they read on a light ground. */
+:root {
+  /* ── Core shadcn tokens ── */
+  --background: oklch(0.95 0.012 85);
+  --foreground: oklch(0.26 0.03 50);
+  --card: oklch(0.98 0.008 85);
+  --card-foreground: oklch(0.26 0.03 50);
+  --popover: oklch(0.98 0.008 85);
+  --popover-foreground: oklch(0.26 0.03 50);
+  --primary: oklch(0.55 0.22 27);
+  --primary-foreground: oklch(1 0 0);
+  --primary-hover: oklch(0.48 0.21 27);
+  --secondary: oklch(0.9 0.014 85);
+  --secondary-foreground: oklch(0.3 0.03 55);
+  --muted: oklch(0.92 0.012 85);
+  --muted-foreground: oklch(0.44 0.03 60);
+  --accent: oklch(0.78 0.13 84);
+  --accent-foreground: oklch(0.24 0.04 70);
+  --destructive: oklch(0.52 0.2 28);
+  --destructive-foreground: oklch(0.45 0.19 28);
+  --border: oklch(0.35 0.02 60 / 16%);
+  --input: oklch(0.93 0.012 85);
+  --ring: oklch(0.55 0.22 27);
+  --chart-1: oklch(0.55 0.22 27);
+  --chart-2: oklch(0.7 0.13 84);
+  --chart-3: oklch(0.58 0.14 152);
+  --chart-4: oklch(0.55 0.16 255);
+  --chart-5: oklch(0.62 0.12 58);
+  --radius: 0.5rem;
+  --sidebar: oklch(0.93 0.012 85);
+  --sidebar-foreground: oklch(0.26 0.03 50);
+  --sidebar-primary: oklch(0.55 0.22 27);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.9 0.014 85);
+  --sidebar-accent-foreground: oklch(0.26 0.03 50);
+  --sidebar-border: oklch(0.35 0.02 60 / 16%);
+  --sidebar-ring: oklch(0.55 0.22 27);
+
+  /* ── Custom surface tokens ── */
+  --surface-raised: oklch(0.98 0.008 85);
+  --surface-nested: oklch(0.93 0.012 85);
+  --surface-base: oklch(0.95 0.01 85);
+  --surface-elevated: oklch(0.97 0.009 85);
+
+  /* ── Custom text tokens ── */
+  --text-subdued: oklch(0.4 0.03 60);
+  --text-faint: oklch(0.55 0.025 60);
+
+  /* ── Brand tokens ── */
+  --brand-crimson: oklch(0.55 0.22 27);
+  --brand-crimson-alt: oklch(0.49 0.2 28);
+  --brand-gold: oklch(0.7 0.13 84);
+  --brand-gold-alt: oklch(0.64 0.12 84);
+  --brand-green: oklch(0.58 0.14 152);
+  --brand-blue: oklch(0.55 0.16 255);
+
+  /* ── Named tone tokens (decorative gradients) ── */
+  --tone-arcane: oklch(0.55 0.12 258);
+  --tone-arcane-deep: oklch(0.49 0.15 255);
+  --tone-arcane-deepest: oklch(0.4 0.1 255);
+  --tone-druid-deep: oklch(0.52 0.13 152);
+  --tone-druid-deepest: oklch(0.4 0.08 152);
+  --tone-gold-deep: oklch(0.55 0.11 86);
+  --tone-gold-deepest: oklch(0.45 0.07 80);
+  --tone-crimson-deep: oklch(0.45 0.15 22);
+  --tone-crimson-deepest: oklch(0.4 0.12 8);
+}
+
 .dark {
   /* ── Core shadcn tokens ── */
   --background: oklch(0.15 0.01 276);
@@ -181,13 +261,21 @@
   --popover-foreground: oklch(0.93 0.006 270);
   --primary: oklch(0.59 0.23 27);
   --primary-foreground: oklch(1 0 0);
+  /* Darkened hover for the default Button — keeps white label ≥4.5:1 (5.86:1)
+     regardless of backdrop, unlike fading the fill (bg-primary/80). */
+  --primary-hover: oklch(0.52 0.23 27);
   --secondary: oklch(0.24 0.02 277);
   --secondary-foreground: oklch(0.777 0.033 276);
   --muted: oklch(0.19 0.01 279);
-  --muted-foreground: oklch(0.6 0.04 278);
-  --accent: oklch(80.183% 0.14824 95.904);
+  /* Lifted 0.60 → 0.68 so 10px uppercase micro-labels (StatBadge, CardDescription,
+     frame captions) clear 4.5:1 on card/surface tokens, not just on --background. */
+  --muted-foreground: oklch(0.68 0.04 278);
+  --accent: oklch(0.854 0.124 86);
   --accent-foreground: oklch(0.15 0.01 276);
   --destructive: oklch(0.47 0.18 28);
+  /* Distinct from the fill (--destructive): a lighter red for TEXT use on the
+     destructive/10 wash — clears 4.5:1 (5.13:1) where text-destructive (1.96:1) failed. */
+  --destructive-foreground: oklch(0.70 0.16 25);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(0.19 0.01 279);
   --ring: oklch(0.59 0.23 27);

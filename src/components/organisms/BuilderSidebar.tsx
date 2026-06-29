@@ -145,7 +145,7 @@ export function BuilderSidebar() {
                 <div className="flex min-w-0 items-center gap-2">
                   <span
                     aria-hidden="true"
-                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-primary text-foreground shadow-[0_0_18px_rgba(230,28,35,0.32)]"
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-primary text-foreground shadow-elevation-2"
                   >
                     <Swords className="h-5 w-5" />
                   </span>

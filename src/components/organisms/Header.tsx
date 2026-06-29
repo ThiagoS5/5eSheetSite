@@ -2,7 +2,7 @@ import { Menu, Swords, UserCircle } from "lucide-react";
 
 export function Header() {
   return (
-    <header className="fixed left-0 top-0 z-50 flex h-16 w-full items-center justify-between border-b border-border bg-background/90 px-4 text-foreground shadow-[0_0_15px_rgba(196,30,30,0.1)] backdrop-blur-xl transition-all md:px-8">
+    <header className="fixed left-0 top-0 z-50 flex h-16 w-full items-center justify-between border-b border-border bg-background/90 px-4 text-foreground shadow-elevation-1 backdrop-blur-xl transition-all md:px-8">
       <div className="flex h-full min-w-0 items-center gap-6">
         <div className="flex min-w-0 items-center gap-3">
           <span

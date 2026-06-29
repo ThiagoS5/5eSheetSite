@@ -1,0 +1,25 @@
+{
+  "description": "Token-kind classification for the claude.ai/design adherence check. The DS check flags every CSS custom property the compiled _ds_bundle.css emits but can't classify. Most of those are Tailwind/runtime internals (--tw-*, transition/animation plumbing) that are NOT theme tokens — they're injected by Tailwind at build time and are absent from app/globals.css, so they cannot be annotated at source. This map (consumed by the /design-sync pipeline) classifies them as 'other' so the check stays clean. Rule of thumb: every --tw-*, plus --ease-*, --animate-*, --default-transition-* => 'other'. Do NOT rename these — Tailwind utilities depend on the names; only classify them.",
+  "tokenKinds": {
+    "--ease-in-out": "other",
+    "--animate-pulse": "other",
+    "--default-transition-duration": "other",
+    "--default-transition-timing-function": "other",
+    "--tw-translate-y": "other",
+    "--tw-translate-x": "other",
+    "--tw-border-style": "other",
+    "--tw-gradient-position": "other",
+    "--tw-outline-style": "other",
+    "--tw-blur": "other",
+    "--tw-saturate": "other",
+    "--tw-content": "other",
+    "--tw-ease": "other",
+    "--card-spacing": "spacing"
+  },
+  "tokenKindRules": [
+    { "pattern": "^--tw-", "kind": "other" },
+    { "pattern": "^--ease-", "kind": "other" },
+    { "pattern": "^--animate-", "kind": "other" },
+    { "pattern": "^--default-transition-", "kind": "other" }
+  ]
+}
