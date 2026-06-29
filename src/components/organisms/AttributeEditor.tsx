@@ -299,6 +299,7 @@ function BaseValueControl({
       </Button>
       <output
         aria-label={`${label} ${value}`}
+        aria-live="polite"
         className="w-8 text-center font-serif text-lg font-bold text-foreground"
       >
         {value}

@@ -8,6 +8,11 @@ interface SkillRowProps {
 
 export function SkillRow({ skill, compact = false }: SkillRowProps) {
   const sign = skill.modifier >= 0 ? "+" : "";
+  const proficiencyLabel = skill.isExpert
+    ? "Especialista"
+    : skill.isProficient
+      ? "Proficiente"
+      : "Não proficiente";
 
   return (
     <div
@@ -16,18 +21,20 @@ export function SkillRow({ skill, compact = false }: SkillRowProps) {
         compact ? "py-0.5" : "py-1",
       )}
     >
-      {/* Proficiency circle */}
+      {/* Proficiency indicator — distinguished by shape (circle/square/empty),
+          not colour alone; status spelled out for screen readers below. */}
       {skill.isExpert ? (
-        <div className="flex h-3 w-3 shrink-0 items-center justify-center rounded-full border border-accent bg-accent/20">
+        <div aria-hidden="true" className="flex h-3 w-3 shrink-0 items-center justify-center rounded-full border border-accent bg-accent/20">
           <div className="h-1.5 w-1.5 rounded-full bg-accent" />
         </div>
       ) : skill.isProficient ? (
-        <div className="flex h-3 w-3 shrink-0 items-center justify-center rounded border border-primary bg-primary/20">
+        <div aria-hidden="true" className="flex h-3 w-3 shrink-0 items-center justify-center rounded border border-primary bg-primary/20">
           <div className="h-1.5 w-1.5 rounded-sm bg-primary" />
         </div>
       ) : (
-        <div className="h-3 w-3 shrink-0 rounded border border-white/30" />
+        <div aria-hidden="true" className="h-3 w-3 shrink-0 rounded border border-white/30" />
       )}
+      <span className="sr-only">{proficiencyLabel}:</span>
 
       <span
         className={cn(
