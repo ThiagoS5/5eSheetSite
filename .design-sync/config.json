@@ -29,5 +29,20 @@
     "PersonalDetailsEditor": null,
     "SheetHeader": null,
     "WizardChoiceCard": null
+  },
+  "overrides": {
+    "StatBadge": { "cardMode": "column" },
+    "StatFrame": { "cardMode": "column" },
+    "SidebarFooter": { "cardMode": "single", "primaryStory": "WithActions" },
+    "SidebarGroup": { "cardMode": "single", "primaryStory": "CharacterGroup" },
+    "SidebarGroupLabel": { "cardMode": "single", "primaryStory": "Labels" },
+    "SidebarHeader": { "cardMode": "single", "primaryStory": "AppHeader" },
+    "SidebarInput": { "cardMode": "single", "primaryStory": "SearchInHeader" },
+    "SidebarMenuItem": { "cardMode": "single", "primaryStory": "MenuItems" },
+    "SidebarMenuSkeleton": { "cardMode": "single", "primaryStory": "LoadingState" },
+    "SidebarMenuSub": { "cardMode": "single", "primaryStory": "SpellList" },
+    "SidebarMenuSubButton": { "cardMode": "single", "primaryStory": "SubButtons" },
+    "SidebarMenuSubItem": { "cardMode": "single", "primaryStory": "SubItems" },
+    "SidebarProvider": { "cardMode": "single", "primaryStory": "CharacterNav" }
   }
 }

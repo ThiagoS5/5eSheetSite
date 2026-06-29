@@ -29,6 +29,52 @@ Use the `deep` (not `deepest`) variants for backgrounds:
 
 To verify, grep `ds-bundle/_ds_bundle.css` for the class name before authoring a convention.
 
+## Bundle size (ruleService exclusion)
+
+`src/services/ruleService.ts` is 205K lines of D&D rules data. It gets transitively
+imported by any component that touches `useCharacterStore`. Without exclusions the bundle
+hit 8 MB (`[FILE_OVER_5MB]`).
+
+Fix (already in config):
+- `"srcDir": "src/components"` — keeps the barrel walk inside components/, excludes the
+  store entirely.
+- The null entries in `componentSrcMap` exclude the specific page/organism components
+  that import `useCharacterStore` even from inside `src/components`.
+
+## SheetHeader star-re-export collision
+
+Both `src/components/ui/sheet.tsx` and `src/components/organisms/sheet/SheetHeader.tsx`
+export a symbol named `SheetHeader`. Two `export * from` lines in the barrel collide and
+esbuild produces an ambiguous export (`[BUNDLE_EXPORT] SheetHeader`).
+
+Fix (already in `.design-sync/overrides/source-kit.mjs`):
+- After all `export *` lines, the forked source-kit appends `export { BaseName } from '...'`
+  for every PascalCase-named file. The explicit export from the organisms file wins over
+  the star from the UI primitives file.
+
+## Sidebar components — cardMode: single
+
+All sidebar sub-components use `position: fixed` internally (via `SidebarProvider`).
+Their full-width portal escapes the card cell boundaries (`[GRID_OVERFLOW]`).
+
+Fix (in config `overrides`): `"cardMode": "single"` with a `"primaryStory"` for all 13
+sidebar components. The uploaded card shows only the primary story; review grading still
+captures all stories.
+
+## SidebarFooter preview
+
+The SidebarFooter's footer area is at the bottom of the fixed-position sidebar, which is
+always viewport-height. In the card capture (220px height) the footer buttons are
+off-screen. The preview was rewritten to render `SidebarFooter` standalone in a narrow div
+(without `SidebarProvider`), showing the action buttons directly.
+
+## HoverTooltip preview
+
+`HoverTooltip` uses `Tooltip.Portal` so the tooltip panel is always portaled to
+`document.body`. Static screenshots only capture the trigger. The preview was rewritten to
+show both: the `HoverTooltip` trigger (for correctness) and a statically-rendered copy of
+the tooltip panel using matching styles.
+
 ## HoverTooltip RENDER_BLANK — pre-existing, non-blocking
 
 The validate stage always reports:
@@ -55,3 +101,22 @@ New-Item -ItemType SymbolicLink -Path ".design-sync\node_modules" -Target "C:\Us
 ```
 
 (Absolute target path required on Windows — relative paths fail here.)
+
+## Build command
+
+```
+node .ds-sync/package-build.mjs \
+  --config .design-sync/config.json \
+  --node-modules ./node_modules \
+  --out ./ds-bundle
+```
+
+Screenshot capture (after build):
+```
+node .ds-sync/package-capture.mjs --out ds-bundle
+```
+
+Scoped capture (e.g. after fixing one preview):
+```
+node .ds-sync/package-capture.mjs --out ds-bundle --components HoverTooltip,SidebarFooter
+```
