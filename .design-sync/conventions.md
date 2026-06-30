@@ -11,7 +11,7 @@ metadata:
 
 Most leaf and UI components (Button, Card, Input, Accordion, Badge variants, Sidebar, Tooltip, etc.) render standalone with no wrapper.
 
-Components that read character state from the Zustand store — anything in the `sheet/` group (`AbilityScoresGrid`, `AttributesColumn`, `CombatStatsCard`, `AttributeEditor`, `SkillsColumn`, `ConditionsPanel`, `DefensesPanel`, `PassivesPanel`, `SensesPanel`, `DeathSavesOverlay`, `CodexColumn`, `MainContentColumn`, `ContentTabs`) plus `CharacterSheetPreview` and `CharacterRoster` — **must be wrapped in `<CharacterStoreProvider>`**. Without it the component throws a Zustand context error and renders nothing.
+Components that read character state from the Zustand store — anything in the `sheet/` group (`AbilityScoresGrid`, `AttributesColumn`, `CombatStatsCard`, `SkillsColumn`, `ConditionsPanel`, `DefensesPanel`, `PassivesPanel`, `SensesPanel`, `DeathSavesOverlay`, `CodexColumn`) plus `CharacterRoster` — **must be wrapped in `<CharacterStoreProvider>`** (a bundle export with no card of its own). Without it the component throws a Zustand context error and renders nothing.
 
 ```jsx
 import { CharacterStoreProvider, AbilityScoresGrid } from 'ficha-5e-app';
