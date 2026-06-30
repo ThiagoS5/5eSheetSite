@@ -18,6 +18,7 @@ export function useCharacterBuilderState(): CharacterBuilderState {
   const level = useCharacterStore((s) => s.level);
   const selectedSpeciesId = useCharacterStore((s) => s.selectedSpeciesId);
   const selectedClassId = useCharacterStore((s) => s.selectedClassId);
+  const selectedSubclassId = useCharacterStore((s) => s.selectedSubclassId);
   const selectedBackgroundId = useCharacterStore((s) => s.selectedBackgroundId);
   const inventory = useCharacterStore((s) => s.inventory);
   const equipmentChoicesBySource = useCharacterStore((s) => s.equipmentChoicesBySource);
@@ -26,6 +27,7 @@ export function useCharacterBuilderState(): CharacterBuilderState {
   const classSkillProficiencies = useCharacterStore((s) => s.classSkillProficiencies);
   const skillTraining = useCharacterStore((s) => s.skillTraining);
   const classFeatureChoices = useCharacterStore((s) => s.classFeatureChoices);
+  const asiOrFeatByLevel = useCharacterStore((s) => s.asiOrFeatByLevel);
   const speciesChoices = useCharacterStore((s) => s.speciesChoices);
   const speciesLanguages = useCharacterStore((s) => s.speciesLanguages);
   const attributeGenerationMethod = useCharacterStore((s) => s.attributeGenerationMethod);
@@ -39,6 +41,7 @@ export function useCharacterBuilderState(): CharacterBuilderState {
       level,
       selectedSpeciesId,
       selectedClassId,
+      selectedSubclassId,
       selectedBackgroundId,
       inventory,
       equipmentChoicesBySource,
@@ -47,6 +50,7 @@ export function useCharacterBuilderState(): CharacterBuilderState {
       classSkillProficiencies,
       skillTraining,
       classFeatureChoices,
+      asiOrFeatByLevel,
       speciesChoices,
       speciesLanguages,
       attributeGenerationMethod,
@@ -59,6 +63,7 @@ export function useCharacterBuilderState(): CharacterBuilderState {
       level,
       selectedSpeciesId,
       selectedClassId,
+      selectedSubclassId,
       selectedBackgroundId,
       inventory,
       equipmentChoicesBySource,
@@ -67,6 +72,7 @@ export function useCharacterBuilderState(): CharacterBuilderState {
       classSkillProficiencies,
       skillTraining,
       classFeatureChoices,
+      asiOrFeatByLevel,
       speciesChoices,
       speciesLanguages,
       attributeGenerationMethod,

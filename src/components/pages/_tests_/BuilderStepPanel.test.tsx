@@ -490,9 +490,9 @@ describe("BuilderStepPanel", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Descricao" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Identidade" })).toBeInTheDocument();
     });
-    expect(screen.getByLabelText("Nome")).toBeInTheDocument();
+    expect(screen.getByLabelText("Nome do Personagem")).toBeInTheDocument();
     expect(screen.queryByText("Etapa válida.")).not.toBeInTheDocument();
   });
 });
