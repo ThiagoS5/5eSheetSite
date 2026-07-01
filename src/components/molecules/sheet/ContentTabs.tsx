@@ -1,49 +1,40 @@
 "use client";
 
 import { useState } from "react";
-import type { CharacterSheetSummary, SheetFeature } from "@/types/builder";
-import { ActionCard } from "@/src/components/molecules/sheet/ActionCard";
+import type { CharacterSheetSummary } from "@/types/builder";
 import { useCharacterStore } from "@/src/store/useCharacterStore";
 import { cn } from "@/src/lib/utils";
 import { focusRing } from "@/src/lib/styles";
+import { originColorVars } from "@/src/components/organisms/sheet/sheetTheme";
+import { ItemDetailModal, type DetailItem } from "@/src/components/organisms/sheet/ItemDetailModal";
 
 type MainTab = "actions" | "spells" | "inventory" | "features" | "notes";
-type ActionFilter = "all" | "class" | "species" | "background";
-type FeatureFilter = "all" | "class" | "species" | "background";
+type OriginFilter = "all" | "class" | "species" | "background";
+type InvFilter = "all" | "class" | "manual";
 
 const MAIN_TABS: { id: MainTab; label: string; icon: string }[] = [
-  { id: "actions",    label: "Ações",           icon: "fa-bolt" },
-  { id: "spells",     label: "Magias",           icon: "fa-wand-sparkles" },
-  { id: "inventory",  label: "Inventário",       icon: "fa-backpack" },
-  { id: "features",   label: "Características",  icon: "fa-star" },
-  { id: "notes",      label: "Anotações",        icon: "fa-pen" },
+  { id: "actions",   label: "Ações",          icon: "fa-khanda" },
+  { id: "spells",    label: "Magias",         icon: "fa-wand-sparkles" },
+  { id: "inventory", label: "Inventário",     icon: "fa-box-open" },
+  { id: "features",  label: "Características", icon: "fa-scroll" },
+  { id: "notes",     label: "Anotações",      icon: "fa-feather" },
 ];
 
-const ACTION_FILTERS: { id: ActionFilter; label: string }[] = [
+const ORIGIN_FILTERS: { id: OriginFilter; label: string }[] = [
   { id: "all",        label: "Todos" },
   { id: "class",      label: "Classe" },
   { id: "species",    label: "Espécie" },
   { id: "background", label: "Antecedente" },
 ];
 
-const FEATURE_FILTERS: { id: FeatureFilter; label: string }[] = [
-  { id: "all",        label: "Todos" },
-  { id: "class",      label: "Features de Classe" },
-  { id: "species",    label: "Traços de Espécie" },
-  { id: "background", label: "Antecedente" },
+const INV_FILTERS: { id: InvFilter; label: string }[] = [
+  { id: "all",    label: "Todos" },
+  { id: "class",  label: "Classe" },
+  { id: "manual", label: "Manual" },
 ];
 
-const FEATURE_SECTIONS: {
-  id: FeatureFilter;
-  label: string;
-  icon: string;
-  accent: string;
-  border: string;
-}[] = [
-  { id: "class",      label: "Features de Classe",  icon: "fa-hat-wizard",   accent: "text-primary",    border: "border-primary/30" },
-  { id: "species",    label: "Traços de Espécie",   icon: "fa-dna",          accent: "text-brand-blue", border: "border-brand-blue/30" },
-  { id: "background", label: "Antecedente",          icon: "fa-book-open",    accent: "text-accent",     border: "border-accent/30" },
-];
+const chip =
+  "whitespace-nowrap rounded-full border px-[14px] py-[6px] text-[11px] font-semibold transition-colors";
 
 interface ContentTabsProps {
   summary: CharacterSheetSummary;
@@ -51,240 +42,248 @@ interface ContentTabsProps {
 
 export function ContentTabs({ summary }: ContentTabsProps) {
   const [activeTab, setActiveTab] = useState<MainTab>("actions");
-  const [actionFilter, setActionFilter] = useState<ActionFilter>("all");
-  const [featureFilter, setFeatureFilter] = useState<FeatureFilter>("all");
+  const [originFilter, setOriginFilter] = useState<OriginFilter>("all");
+  const [invFilter, setInvFilter] = useState<InvFilter>("all");
+  const [detail, setDetail] = useState<DetailItem | null>(null);
   const notes = useCharacterStore((s) => s.description.notas);
   const setDescriptionField = useCharacterStore((s) => s.setDescriptionField);
 
-  const filteredActions: SheetFeature[] =
-    actionFilter === "all"
-      ? summary.features
-      : summary.features.filter((f) => f.source === actionFilter);
-
-  // Roving-tabindex arrow-key navigation across the tablist (WAI-ARIA tabs
-  // pattern, automatic activation). Left/Right wrap; Home/End jump to ends.
-  function handleTablistKeyDown(event: React.KeyboardEvent<HTMLButtonElement>) {
-    const keys = ["ArrowRight", "ArrowLeft", "Home", "End"];
-    if (!keys.includes(event.key)) return;
-    event.preventDefault();
-    const current = MAIN_TABS.findIndex((t) => t.id === activeTab);
-    let next = current;
-    if (event.key === "ArrowRight") next = (current + 1) % MAIN_TABS.length;
-    else if (event.key === "ArrowLeft") next = (current - 1 + MAIN_TABS.length) % MAIN_TABS.length;
-    else if (event.key === "Home") next = 0;
-    else if (event.key === "End") next = MAIN_TABS.length - 1;
-    const nextTab = MAIN_TABS[next];
-    setActiveTab(nextTab.id);
-    event.currentTarget.parentElement
-      ?.querySelector<HTMLButtonElement>(`#tab-${nextTab.id}`)
-      ?.focus();
-  }
+  const realWeapons = summary.weapons.filter((w) => w.name.trim() !== "");
+  const features =
+    originFilter === "all" ? summary.features : summary.features.filter((f) => f.source === originFilter);
+  const equipment =
+    invFilter === "all"
+      ? summary.selectedEquipment
+      : summary.selectedEquipment.filter((it) => it.sourceType === invFilter);
 
   return (
     <div className="relative flex flex-1 flex-col overflow-hidden rounded-xl border border-border bg-card">
-      {/* Linha decorativa no topo */}
-      <div
-        aria-hidden="true"
-        className="absolute left-0 right-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-primary/40 to-transparent"
-      />
+      {/* Tab bar */}
+      <div className="flex gap-0.5 overflow-x-auto border-b border-border px-2">
+        {MAIN_TABS.map((tab) => (
+          <button
+            key={tab.id}
+            role="tab"
+            type="button"
+            aria-selected={activeTab === tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={cn(
+              "inline-flex shrink-0 items-center gap-[7px] whitespace-nowrap border-b-2 px-[15px] py-3 text-xs font-semibold transition-colors",
+              focusRing,
+              activeTab === tab.id
+                ? "border-primary text-foreground"
+                : "border-transparent text-muted-foreground hover:text-foreground",
+            )}
+          >
+            <i aria-hidden="true" className={`fa-solid ${tab.icon}`} />
+            {tab.label}
+          </button>
+        ))}
+      </div>
 
-      {/* Barra de abas — parte do card */}
-      <div className="border-b border-border bg-surface-nested px-2 pt-3">
-        <div
-          role="tablist"
-          aria-label="Conteúdo da ficha"
-          className="flex gap-1 overflow-x-auto"
-        >
-          {MAIN_TABS.map((tab) => (
+      {/* Filter bar — only where it filters real data */}
+      {activeTab === "features" && (
+        <div className="flex flex-wrap items-center gap-[7px] border-b border-border bg-surface-nested px-4 py-[11px]">
+          {ORIGIN_FILTERS.map((f) => (
             <button
-              key={tab.id}
-              id={`tab-${tab.id}`}
-              role="tab"
+              key={f.id}
               type="button"
-              aria-selected={activeTab === tab.id}
-              aria-controls={`tabpanel-${tab.id}`}
-              tabIndex={activeTab === tab.id ? 0 : -1}
-              onClick={() => setActiveTab(tab.id)}
-              onKeyDown={handleTablistKeyDown}
+              aria-pressed={originFilter === f.id}
+              onClick={() => setOriginFilter(f.id)}
               className={cn(
-                "flex shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 px-3 py-2 text-[10px] font-semibold uppercase tracking-widest transition-colors",
+                chip,
                 focusRing,
-                activeTab === tab.id
-                  ? "border-primary text-foreground"
-                  : "border-transparent text-muted-foreground hover:text-foreground",
+                originFilter === f.id
+                  ? "border-primary bg-primary/20 text-foreground"
+                  : "border-border bg-surface-nested text-muted-foreground",
               )}
             >
-              <i aria-hidden="true" className={`fa-solid ${tab.icon}`} />
-              {tab.label}
+              {f.label}
             </button>
           ))}
         </div>
-      </div>
-
-      {/* Sub-filtros — visível apenas na aba AÇÕES */}
-      {activeTab === "actions" && (
-        <div className="border-b border-border/50 bg-surface-nested px-3 py-2">
-          <div className="flex gap-1.5 overflow-x-auto">
-            {ACTION_FILTERS.map((f) => (
-              <button
-                key={f.id}
-                type="button"
-                aria-pressed={actionFilter === f.id}
-                onClick={() => setActionFilter(f.id)}
-                className={cn(
-                  "whitespace-nowrap rounded border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-widest transition-colors",
-                  focusRing,
-                  actionFilter === f.id
-                    ? "border-primary/30 bg-primary/10 text-foreground"
-                    : "border-transparent text-muted-foreground hover:border-border hover:text-foreground",
-                )}
-              >
-                {f.label}
-              </button>
-            ))}
-          </div>
-        </div>
       )}
-
-      {/* Área de conteúdo rolável */}
-      <div
-        role="tabpanel"
-        id={`tabpanel-${activeTab}`}
-        aria-labelledby={`tab-${activeTab}`}
-        tabIndex={0}
-        className={cn("max-h-[34rem] flex-1 overflow-y-auto p-4", focusRing)}
-      >
-      {/* AÇÕES */}
-      {activeTab === "actions" && (
-        <div>
-          {filteredActions.length > 0 ? (
-            <div className="grid gap-2">
-              {filteredActions.map((feat) => (
-                <ActionCard key={`${feat.source}-${feat.name}`} feature={feat} />
-              ))}
-            </div>
-          ) : (
-            <p className="text-sm text-muted-foreground">Nenhuma ação encontrada.</p>
-          )}
-        </div>
-      )}
-
-      {/* MAGIAS */}
-      {activeTab === "spells" && (
-        <div className="rounded-lg border border-white/[0.08] bg-card p-4 text-center">
-          <i aria-hidden="true" className="fa-solid fa-wand-sparkles mb-2 text-2xl text-muted-foreground" />
-          <p className="text-sm font-semibold text-subdued">
-            {summary.isSpellcaster ? "Magias serão listadas em breve." : "Este personagem não possui magias."}
-          </p>
-        </div>
-      )}
-
-      {/* INVENTÁRIO */}
       {activeTab === "inventory" && (
-        <div>
-          {summary.selectedEquipment.length > 0 ? (
-            <ul className="divide-y divide-white/5 rounded-lg border border-white/[0.08] bg-card overflow-hidden">
-              {summary.selectedEquipment.map((item, index) => (
-                <li
-                  key={`${item.id}-${index}`}
-                  className="flex items-center gap-3 px-3 py-2.5"
-                >
-                  <i aria-hidden="true" className="fa-solid fa-circle-dot text-[10px] text-muted-foreground" />
-                  <span className="flex-1 text-sm text-foreground">{item.name}</span>
-                  <span className={cn(
-                    "text-[10px] font-semibold uppercase tracking-widest",
-                    item.sourceType === "class" ? "text-foreground" : "text-muted-foreground",
-                  )}>
-                    {item.sourceType === "class" ? "Classe" : "Manual"}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-sm text-muted-foreground">Nenhum equipamento selecionado.</p>
-          )}
+        <div className="flex flex-wrap items-center gap-[7px] border-b border-border bg-surface-nested px-4 py-[11px]">
+          {INV_FILTERS.map((f) => (
+            <button
+              key={f.id}
+              type="button"
+              aria-pressed={invFilter === f.id}
+              onClick={() => setInvFilter(f.id)}
+              className={cn(
+                chip,
+                focusRing,
+                invFilter === f.id
+                  ? "border-primary bg-primary/20 text-foreground"
+                  : "border-border bg-surface-nested text-muted-foreground",
+              )}
+            >
+              {f.label}
+            </button>
+          ))}
         </div>
       )}
 
-      {/* CARACTERÍSTICAS — estilo documento com seções agrupadas */}
-      {activeTab === "features" && (
-        <div>
-          {/* Sub-filtros */}
-          <div className="mb-4 flex gap-1 overflow-x-auto">
-            {FEATURE_FILTERS.map((f) => (
-              <button
-                key={f.id}
-                type="button"
-                aria-pressed={featureFilter === f.id}
-                onClick={() => setFeatureFilter(f.id)}
-                className={cn(
-                  "whitespace-nowrap rounded border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-widest transition-colors",
-                  focusRing,
-                  featureFilter === f.id
-                    ? "border-primary/40 bg-primary/10 text-foreground"
-                    : "border-border text-muted-foreground hover:text-subdued",
-                )}
-              >
-                {f.label}
-              </button>
-            ))}
+      <div className="p-4">
+        {/* AÇÕES */}
+        {activeTab === "actions" && (
+          <div className="flex flex-col gap-4">
+            {realWeapons.length > 0 ? (
+              <div>
+                <p className="mb-[9px] text-[9.5px] font-bold uppercase leading-none tracking-[0.14em] text-brand-crimson-alt">
+                  Armas
+                </p>
+                <div className="flex flex-col gap-2">
+                  {realWeapons.map((w, i) => (
+                    <button
+                      key={`${w.name}-${i}`}
+                      type="button"
+                      onClick={() => setDetail({ kind: "weapon", name: w.name, attackBonus: w.attackBonus, damage: w.damage, notes: w.notes })}
+                      className={cn(
+                        "flex items-center gap-3 rounded-[9px] border border-border border-l-[3px] border-l-brand-crimson-alt bg-surface-nested px-[13px] py-[11px] text-left transition-colors hover:bg-card",
+                        focusRing,
+                      )}
+                    >
+                      <div className="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-lg border border-border bg-card">
+                        <i aria-hidden="true" className="fa-solid fa-khanda text-sm text-brand-crimson-alt" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[13.5px] font-bold text-foreground">{w.name}</p>
+                        <p className="text-[11px] text-muted-foreground">{w.notes || "—"}</p>
+                      </div>
+                      <div className="flex shrink-0 flex-col items-center">
+                        <span className="font-serif text-[17px] font-extrabold leading-none text-primary">{w.attackBonus}</span>
+                        <span className="text-[8px] uppercase tracking-[0.08em] text-muted-foreground">Acerto</span>
+                      </div>
+                      <div className="flex min-w-[96px] shrink-0 items-center justify-center rounded-[7px] border border-border bg-card px-[10px] py-[7px] text-center text-xs font-semibold text-subdued">
+                        {w.damage || "—"}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <EmptyState label="Nenhuma ação registrada." />
+            )}
           </div>
+        )}
 
-          {summary.features.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Nenhuma característica listada.</p>
-          ) : (
-            <div className="flex flex-col gap-6">
-              {FEATURE_SECTIONS.filter((sec) =>
-                featureFilter === "all" || featureFilter === sec.id,
-              ).map((sec) => {
-                const items = summary.features.filter((f) => f.source === sec.id);
-                if (items.length === 0) return null;
+        {/* MAGIAS — selector computes no spells today; intentional empty state */}
+        {activeTab === "spells" && (
+          <EmptyState
+            label={summary.isSpellcaster ? "Nenhuma magia desta origem." : "Este personagem não possui magias."}
+          />
+        )}
+
+        {/* INVENTÁRIO */}
+        {activeTab === "inventory" && (
+          <div className="flex flex-col gap-[14px]">
+            <div className="flex flex-wrap gap-[9px]">
+              <MoneyCard label="Peças de Ouro" value="—" />
+              <MoneyCard label="Peças de Cobre" value="—" />
+              <MoneyCard label="Carga" value="—" />
+            </div>
+            {equipment.length > 0 ? (
+              <ul className="grid list-none grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-1.5 p-0">
+                {equipment.map((item, index) => {
+                  const color = item.sourceType === "class" ? "text-brand-gold-alt" : "text-muted-foreground";
+                  return (
+                    <li key={`${item.id}-${index}`}>
+                      <button
+                        type="button"
+                        onClick={() => setDetail({
+                          kind: "equipment",
+                          name: item.name,
+                          qty: 1,
+                          source: item.sourceType === "class" ? "Classe" : "Manual",
+                          cost: item.value != null ? `${item.value} PO` : undefined,
+                          armorClass: item.armorClass ?? undefined,
+                        })}
+                        className={cn(
+                          "flex w-full items-baseline gap-[9px] rounded-lg border border-border bg-surface-nested px-[11px] py-2 text-left text-[12.5px] text-subdued transition-colors hover:bg-card",
+                          focusRing,
+                        )}
+                      >
+                        <span className={cn("font-bold", color)}>1×</span>
+                        <span>{item.name}</span>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            ) : (
+              <EmptyState label="Nenhum item desta origem." />
+            )}
+          </div>
+        )}
+
+        {/* CARACTERÍSTICAS */}
+        {activeTab === "features" && (
+          <div className="flex flex-col gap-[10px]">
+            {features.length > 0 ? (
+              features.map((f) => {
+                const v = originColorVars(f.source);
                 return (
-                  <div key={sec.id}>
-                    {/* Section header */}
-                    <div className={cn("mb-3 flex items-center gap-2 border-b pb-1.5", sec.border)}>
-                      <i aria-hidden="true" className={cn(`fa-solid ${sec.icon} text-xs`, sec.accent)} />
-                      <h3 className={cn("text-xs font-bold uppercase tracking-widest", sec.accent)}>
-                        {sec.label}
-                      </h3>
+                  <div
+                    key={`${f.source}-${f.name}`}
+                    className="rounded-[9px] border border-border border-l-[3px] bg-surface-nested px-[14px] py-3"
+                    style={{ borderLeftColor: v.color }}
+                  >
+                    <div className="mb-[5px] flex items-center justify-between gap-2">
+                      <span className="font-serif text-[15px] font-bold leading-tight text-foreground">{f.name}</span>
+                      <span
+                        className="whitespace-nowrap rounded border px-[7px] py-0.5 text-[8.5px] font-bold uppercase tracking-[0.1em]"
+                        style={{ color: v.color, background: v.colorBg, borderColor: v.colorSoft }}
+                      >
+                        {f.source === "class" ? "Classe" : f.source === "species" ? "Espécie" : "Antecedente"}
+                      </span>
                     </div>
-                    {/* Features as document items */}
-                    <div className="flex flex-col divide-y divide-white/5">
-                      {items.map((feat) => (
-                        <div key={feat.name} className="py-3 first:pt-0">
-                          <p className="mb-1 text-sm font-semibold text-foreground">
-                            {feat.name}
-                          </p>
-                          {feat.description && (
-                            <p className="text-xs leading-relaxed text-subdued">
-                              {feat.description}
-                            </p>
-                          )}
-                        </div>
-                      ))}
-                    </div>
+                    {f.description && <p className="m-0 text-xs leading-relaxed text-subdued">{f.description}</p>}
                   </div>
                 );
-              })}
-            </div>
-          )}
-        </div>
-      )}
+              })
+            ) : (
+              <EmptyState label="Nenhuma característica desta origem." />
+            )}
+          </div>
+        )}
 
-      {/* ANOTAÇÕES */}
-      {activeTab === "notes" && (
-        <div>
+        {/* ANOTAÇÕES */}
+        {activeTab === "notes" && (
           <textarea
             value={notes}
             onBlur={(e) => setDescriptionField("notas", e.target.value)}
             onChange={(e) => setDescriptionField("notas", e.target.value)}
             rows={8}
-            placeholder="Anotações livres, segredos, objetivos…"
-            className="w-full resize-none rounded-lg border border-border bg-surface-nested px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-primary focus:ring-2 focus:ring-primary/30"
+            placeholder="Escreva as anotações do personagem…"
+            className={cn(
+              "h-[440px] w-full resize-y rounded-[9px] border border-border bg-background px-4 py-[14px] text-[13px] text-subdued outline-none placeholder:text-muted-foreground focus:border-primary",
+              focusRing,
+            )}
           />
-        </div>
-      )}
+        )}
       </div>
+
+      <ItemDetailModal item={detail} onClose={() => setDetail(null)} />
+    </div>
+  );
+}
+
+function EmptyState({ label }: { label: string }) {
+  return (
+    <div className="flex items-center gap-[9px] rounded-[9px] border border-dashed border-border p-4 text-[12.5px] text-muted-foreground">
+      <i aria-hidden="true" className="fa-solid fa-circle-info" />
+      {label}
+    </div>
+  );
+}
+
+function MoneyCard({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex flex-1 basis-[90px] flex-col items-center gap-[3px] rounded-[10px] border border-border bg-surface-nested p-[11px]">
+      <span className="font-serif text-xl font-extrabold text-foreground">{value}</span>
+      <span className="text-[9.5px] uppercase tracking-[0.1em] text-muted-foreground">{label}</span>
     </div>
   );
 }
