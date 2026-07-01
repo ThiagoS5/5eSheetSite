@@ -56,17 +56,52 @@ export function ContentTabs({ summary }: ContentTabsProps) {
       ? summary.selectedEquipment
       : summary.selectedEquipment.filter((it) => it.sourceType === invFilter);
 
+  const handleTablistKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>) => {
+    const currentIndex = MAIN_TABS.findIndex((tab) => tab.id === activeTab);
+    let nextIndex: number | null = null;
+
+    switch (event.key) {
+      case "ArrowRight":
+        nextIndex = (currentIndex + 1) % MAIN_TABS.length;
+        break;
+      case "ArrowLeft":
+        nextIndex = (currentIndex - 1 + MAIN_TABS.length) % MAIN_TABS.length;
+        break;
+      case "Home":
+        nextIndex = 0;
+        break;
+      case "End":
+        nextIndex = MAIN_TABS.length - 1;
+        break;
+      default:
+        return;
+    }
+
+    event.preventDefault();
+    const nextTab = MAIN_TABS[nextIndex];
+    setActiveTab(nextTab.id);
+    document.getElementById(`tab-${nextTab.id}`)?.focus();
+  };
+
   return (
     <div className="relative flex flex-1 flex-col overflow-hidden rounded-xl border border-border bg-card">
       {/* Tab bar */}
-      <div className="flex gap-0.5 overflow-x-auto border-b border-border px-2">
+      <div
+        role="tablist"
+        aria-label="Conteúdo da ficha"
+        className="flex gap-0.5 overflow-x-auto border-b border-border px-2"
+      >
         {MAIN_TABS.map((tab) => (
           <button
             key={tab.id}
+            id={`tab-${tab.id}`}
             role="tab"
             type="button"
             aria-selected={activeTab === tab.id}
+            aria-controls={`tabpanel-${tab.id}`}
+            tabIndex={activeTab === tab.id ? 0 : -1}
             onClick={() => setActiveTab(tab.id)}
+            onKeyDown={handleTablistKeyDown}
             className={cn(
               "inline-flex shrink-0 items-center gap-[7px] whitespace-nowrap border-b-2 px-[15px] py-3 text-xs font-semibold transition-colors",
               focusRing,
@@ -125,7 +160,13 @@ export function ContentTabs({ summary }: ContentTabsProps) {
         </div>
       )}
 
-      <div className="p-4">
+      <div
+        role="tabpanel"
+        id={`tabpanel-${activeTab}`}
+        aria-labelledby={`tab-${activeTab}`}
+        tabIndex={0}
+        className={cn("p-4", focusRing)}
+      >
         {/* AÇÕES */}
         {activeTab === "actions" && (
           <div className="flex flex-col gap-4">
