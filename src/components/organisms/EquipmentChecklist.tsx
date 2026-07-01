@@ -167,20 +167,16 @@ export function EquipmentChecklist({
                     .filter((kit) => !choice?.selectedOptionId || kit.id === choice.selectedOptionId)
                     .map((kit) => (
                     <div key={kit.id}>
-                      {kit.items.length > 0 ? (
+                      {kit.items.filter((item) => item.value === undefined).length > 0 ? (
                         <ul className="grid gap-1 text-base text-subdued">
-                          {kit.items.map((item, index) => (
-                            <li key={`${kit.id}-${item.id}-${index}`} className="flex gap-2">
-                              {item.value !== undefined ? (
-                                <span className="text-foreground">{item.value / 100} GP</span>
-                              ) : (
-                                <>
-                                  <span className="font-semibold text-foreground">{item.quantity}×</span>
-                                  <span>{item.label}</span>
-                                </>
-                              )}
-                            </li>
-                          ))}
+                          {kit.items
+                            .filter((item) => item.value === undefined)
+                            .map((item, index) => (
+                              <li key={`${kit.id}-${item.id}-${index}`} className="flex gap-2">
+                                <span className="font-semibold text-foreground">{item.quantity}×</span>
+                                <span>{item.label}</span>
+                              </li>
+                            ))}
                         </ul>
                       ) : (
                         <ul className="grid gap-1 text-base text-subdued">
@@ -231,7 +227,7 @@ function ModeButton({
       onClick={onClick}
       className={`cursor-pointer rounded-md border px-3 py-2 text-xs font-bold uppercase tracking-[0.08em] transition ${
         active
-          ? "border-primary bg-primary text-foreground"
+          ? "border-brand-crimson-alt bg-brand-crimson-alt text-white"
           : "border-border bg-white/5 text-muted-foreground hover:border-border/80 hover:bg-surface-raised hover:text-foreground"
       }`}
     >

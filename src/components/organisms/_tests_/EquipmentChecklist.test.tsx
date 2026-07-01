@@ -125,7 +125,7 @@ describe("EquipmentChecklist", () => {
     expect(onSourceOptionChange).toHaveBeenCalledWith("class", "A");
   });
 
-  it("renders a gold-value item as 'X GP' instead of quantity and label", () => {
+  it("does not render gold-value items in items mode (they are filtered out)", () => {
     render(
       <EquipmentChecklist
         selectedClass={selectedClass}
@@ -135,8 +135,12 @@ describe("EquipmentChecklist", () => {
       />,
     );
 
-    expect(screen.getByText("15 GP")).toBeInTheDocument();
+    // Gold items with value are filtered out in items mode
+    expect(screen.queryByText("15 GP")).toBeNull();
     expect(screen.queryByText("Gold")).toBeNull();
+    // Physical items still render
+    expect(screen.getByText("Studded Leather Armor")).toBeInTheDocument();
+    expect(screen.getByText("Dagger")).toBeInTheDocument();
   });
 
   const selectedBackground: BuilderBackground = {
@@ -162,7 +166,7 @@ describe("EquipmentChecklist", () => {
     detail: "",
   };
 
-  it("renders background items from equipmentItemsA as a structured list", () => {
+  it("renders background items from equipmentItemsA as a structured list, filtering out gold entries", () => {
     render(
       <EquipmentChecklist
         selectedBackground={selectedBackground}
@@ -174,7 +178,8 @@ describe("EquipmentChecklist", () => {
 
     expect(screen.getByText("EQUIPAMENTO DO ANTECEDENTE")).toBeInTheDocument();
     expect(screen.getByText("Dagger")).toBeInTheDocument();
-    expect(screen.getByText("16 GP")).toBeInTheDocument();
+    // Gold entries are filtered out in items mode
+    expect(screen.queryByText("16 GP")).toBeNull();
     expect(screen.queryByText(/Choose A or B/)).toBeNull();
   });
 
@@ -198,5 +203,91 @@ describe("EquipmentChecklist", () => {
     expect(screen.getByText("Dagger")).toBeInTheDocument();
     expect(screen.getByText("16 GP")).toBeInTheDocument();
     expect(screen.queryByText(/Choose A or B/)).not.toBeInTheDocument();
+  });
+
+  it("filters out gold entries from the items list (Change B)", () => {
+    // Kit with both physical items and a gold entry
+    const classWithGoldEntry: BuilderClass = {
+      ...selectedClass,
+      startingEquipmentPackages: [
+        {
+          id: "A",
+          label: "Option A",
+          summary: "Studded Leather Armor, Dagger, 50 GP",
+          goldValue: 0,
+          items: [
+            { id: "studded-leather-armor-xphb", label: "Studded Leather Armor", quantity: 1 },
+            { id: "dagger-xphb", label: "Dagger", quantity: 1 },
+            { id: "gold-50", label: "Gold", quantity: 1, value: 5000 },
+          ],
+        },
+      ],
+    };
+
+    render(
+      <EquipmentChecklist
+        selectedClass={classWithGoldEntry}
+        choicesBySource={{ class: { mode: "items", selectedOptionId: "A" } }}
+        onSourceModeChange={vi.fn()}
+        onSourceOptionChange={vi.fn()}
+      />,
+    );
+
+    // Physical items should render
+    expect(screen.getByText("Studded Leather Armor")).toBeInTheDocument();
+    expect(screen.getByText("Dagger")).toBeInTheDocument();
+    // Gold entry should NOT appear in items list
+    expect(screen.queryByText("50 GP")).toBeNull();
+  });
+
+  it("shows gold in gold mode even when it contains value (Change B with gold mode)", () => {
+    const classWithGoldEntry: BuilderClass = {
+      ...selectedClass,
+      startingEquipmentPackages: [
+        {
+          id: "A",
+          label: "Option A",
+          summary: "Choose A or B: (A) Studded Leather Armor, Dagger; or (B) 150 GP",
+          goldValue: 0,
+          items: [
+            { id: "studded-leather-armor-xphb", label: "Studded Leather Armor", quantity: 1 },
+            { id: "dagger-xphb", label: "Dagger", quantity: 1 },
+            { id: "gold-50", label: "Gold", quantity: 1, value: 5000 },
+          ],
+        },
+      ],
+    };
+
+    render(
+      <EquipmentChecklist
+        selectedClass={classWithGoldEntry}
+        choicesBySource={{ class: { mode: "gold", selectedOptionId: "A" } }}
+        onSourceModeChange={vi.fn()}
+        onSourceOptionChange={vi.fn()}
+      />,
+    );
+
+    // Gold mode should show the gold option (from the "Choose A or B" summary)
+    expect(screen.getByText("150 GP")).toBeInTheDocument();
+  });
+
+  it("active mode button has bg-brand-crimson-alt (Change A)", () => {
+    const onSourceModeChange = vi.fn();
+    render(
+      <EquipmentChecklist
+        selectedClass={selectedClass}
+        choicesBySource={{ class: { mode: "items", selectedOptionId: "A" } }}
+        onSourceModeChange={onSourceModeChange}
+        onSourceOptionChange={vi.fn()}
+      />,
+    );
+
+    const activeButton = screen.getByRole("button", { name: /Itens Oferecidos/i });
+    const inactiveButton = screen.getByRole("button", { name: /Ouro Inicial/i });
+
+    // Active button should have the crimson class
+    expect(activeButton).toHaveClass("bg-brand-crimson-alt");
+    // Inactive button should NOT have the crimson class
+    expect(inactiveButton).not.toHaveClass("bg-brand-crimson-alt");
   });
 });

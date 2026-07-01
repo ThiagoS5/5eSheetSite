@@ -54,6 +54,7 @@ yarn-error.log*
 .mcp.json
 .playwright-mcp/
 ai-prompts/
+skills-lock.json
 scratchpad.md
 AGENTS.md
 CLAUDE.md
@@ -70,6 +71,10 @@ project-delivery-ruler.md
 # Design Sync (claude.ai/design) — generated output, machine state
 .ds-sync/
 ds-bundle/
-.design-sync/.cache/
-.design-sync/learnings/
-.design-sync/node_modules
+.design-sync/
+
+# Agent-generated planning output
+docs/superpowers/
+
+# Next.js generated type declarations
+next-env.d.ts
