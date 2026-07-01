@@ -34,7 +34,7 @@ describe("createCharacterStore", () => {
           selectedBackgroundId: "",
         },
         exportMetadata: {
-          schemaVersion: 4,
+          schemaVersion: 5,
           saveId: expect.any(String),
           createdAt: expect.any(String),
           updatedAt: expect.any(String),

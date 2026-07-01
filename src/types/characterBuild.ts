@@ -9,7 +9,17 @@ import type {
   Ruleset,
 } from "@/types/dnd";
 
-export const CHARACTER_BUILD_SCHEMA_VERSION = 4;
+export const CHARACTER_BUILD_SCHEMA_VERSION = 5;
+
+export interface CoinPouch {
+  pc: number;
+  pp: number;
+  pe: number;
+  po: number;
+  pl: number;
+}
+
+export const EMPTY_COIN_POUCH: CoinPouch = { pc: 0, pp: 0, pe: 0, po: 0, pl: 0 };
 
 export type AsiOrFeatChoice =
   | { mode: "asi"; increases: AttributeBonuses }
@@ -65,6 +75,10 @@ export interface CharacterBuildChoices {
   attributeGenerationMethod: AttributeGenerationMethod;
   baseAttributes: CharacterAttributes;
   backgroundAbilityBonuses: AttributeBonuses;
+  money: CoinPouch;
+  moneyTouched: boolean;
+  carriedLoadKg: number;
+  skillModifierOverrides: Record<string, number>;
 }
 
 export type CharacterBuildDerivedSheet = CharacterSheetSummary;

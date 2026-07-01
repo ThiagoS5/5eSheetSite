@@ -1,5 +1,5 @@
 import type { CharacterDescription } from "@/types/builder";
-import type { CharacterBuild } from "@/src/types/characterBuild";
+import type { CharacterBuild, CoinPouch } from "@/src/types/characterBuild";
 import type {
   AsiOrFeatChoice,
   AttributeGenerationMethod,
@@ -46,6 +46,10 @@ export interface FlatCharacterBuilderState {
   baseAttributes: CharacterAttributes;
   backgroundAbilityBonuses: AttributeBonuses;
   description: CharacterDescription;
+  money: CoinPouch;
+  moneyTouched: boolean;
+  carriedLoadKg: number;
+  skillModifierOverrides: Record<string, number>;
 }
 
 export interface CharacterBuilderState extends FlatCharacterBuilderState {

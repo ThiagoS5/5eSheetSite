@@ -6,6 +6,7 @@ import type {
 } from "@/src/store/characterStore.types";
 import {
   CHARACTER_BUILD_SCHEMA_VERSION,
+  EMPTY_COIN_POUCH,
   type AsiOrFeatChoice,
   type CharacterBuild,
   type EquipmentAcquisitionMode,
@@ -187,6 +188,10 @@ export function flattenCharacterBuild(
     baseAttributes: build.choices?.baseAttributes,
     backgroundAbilityBonuses: build.choices?.backgroundAbilityBonuses,
     description: build.draft?.description,
+    money: build.choices?.money,
+    moneyTouched: build.choices?.moneyTouched,
+    carriedLoadKg: build.choices?.carriedLoadKg,
+    skillModifierOverrides: build.choices?.skillModifierOverrides,
   };
 }
 
@@ -240,6 +245,10 @@ export function getDefaultFlatState(): FlatCharacterBuilderState {
     baseAttributes: { ...defaultCharacterAttributes },
     backgroundAbilityBonuses: {},
     description: { ...emptyCharacterDescription },
+    money: { ...EMPTY_COIN_POUCH },
+    moneyTouched: false,
+    carriedLoadKg: 0,
+    skillModifierOverrides: {},
   };
 }
 
@@ -320,6 +329,10 @@ function createBuildFromFlatState(
       attributeGenerationMethod: normalizedState.attributeGenerationMethod,
       baseAttributes: normalizedState.baseAttributes,
       backgroundAbilityBonuses: normalizedState.backgroundAbilityBonuses,
+      money: normalizedState.money,
+      moneyTouched: normalizedState.moneyTouched,
+      carriedLoadKg: normalizedState.carriedLoadKg,
+      skillModifierOverrides: normalizedState.skillModifierOverrides,
     },
     derivedSheet: createEmptyDerivedSheet(normalizedState),
     exportMetadata: {
@@ -375,6 +388,11 @@ function normalizeFlatState(
       ...defaults.description,
       ...state.description,
     },
+    money: state.money ?? defaults.money,
+    moneyTouched: state.moneyTouched ?? defaults.moneyTouched,
+    carriedLoadKg: state.carriedLoadKg ?? defaults.carriedLoadKg,
+    skillModifierOverrides:
+      state.skillModifierOverrides ?? defaults.skillModifierOverrides,
   };
 }
 
