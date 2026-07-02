@@ -14,11 +14,13 @@ import {
 } from "@/rules/savingThrowRules";
 import {
   calculateFinalAttributes,
-  calculateMaxHitPoints,
   getAbilityModifier,
-  getMaxHitPointsBreakdown,
   getProficiencyBonus,
 } from "@/src/adapters/characterDerivedAdapter";
+import {
+  calculateMaxHitPointsWithRolls,
+  getHitPointsBreakdown,
+} from "@/rules/hitPointRules";
 import {
   collectAsiBonuses,
   getActiveSubclassFeatures,
@@ -96,11 +98,12 @@ export function selectCharacterSheetSummary(
   const classFeaturesUpToLevel = (characterClass?.allFeatures ?? []).filter(
     (feature) => (feature.level ?? 1) <= state.level,
   );
-  const maxHitPoints = calculateMaxHitPoints(
-    characterClass?.hitDie ?? 6,
-    finalAttributes.constituicao,
-    state.level,
-  );
+  const maxHitPoints = calculateMaxHitPointsWithRolls({
+    hitDie: characterClass?.hitDie ?? 6,
+    constitutionScore: finalAttributes.constituicao,
+    level: state.level,
+    hpRollByLevel: state.hpRollByLevel ?? {},
+  });
   const armorClassResult = deriveArmorClass({
     dexterityScore: finalAttributes.destreza,
     selectedEquipment,
@@ -137,11 +140,12 @@ export function selectCharacterSheetSummary(
     backgroundName: background?.name ?? "",
     currentHp: maxHitPoints,
     maxHp: maxHitPoints,
-    maxHpBreakdown: getMaxHitPointsBreakdown(
-      characterClass?.hitDie ?? 6,
-      finalAttributes.constituicao,
-      state.level,
-    ),
+    maxHpBreakdown: getHitPointsBreakdown({
+      hitDie: characterClass?.hitDie ?? 6,
+      constitutionScore: finalAttributes.constituicao,
+      level: state.level,
+      hpRollByLevel: state.hpRollByLevel ?? {},
+    }),
     tempHp: 0,
     hitDice: `${state.level}d${characterClass?.hitDie ?? 6}`,
     initiative: getAbilityModifier(finalAttributes.destreza),
