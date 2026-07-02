@@ -104,7 +104,7 @@ function computeSkills(
     let modifier = baseMod + profMod + halfMod;
     let isOverridden = false;
     const override = skillModifierOverrides?.[name];
-    if (typeof override === "number") {
+    if (typeof override === "number" && Number.isFinite(override)) {
       modifier = override;
       isOverridden = true;
     }

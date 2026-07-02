@@ -71,6 +71,24 @@ describe("character selectors — money, carry, category, skill overrides", () =
     expect(insight?.isOverridden).toBe(false);
   });
 
+  it("ignores a NaN skillModifierOverrides entry, keeping the computed modifier", () => {
+    const store = createCharacterStore();
+    store.setState((state) => ({
+      ...state,
+      skillModifierOverrides: { Perception: NaN },
+    }));
+
+    const before = selectCharacterSheetSummary(createCharacterStore().getState());
+    const expectedModifier = before.skills.find((s) => s.name === "Perception")?.modifier;
+
+    const summary = selectCharacterSheetSummary(store.getState());
+    const perception = summary.skills.find((s) => s.name === "Perception");
+
+    expect(perception?.isOverridden).toBe(false);
+    expect(perception?.modifier).toBe(expectedModifier);
+    expect(Number.isNaN(perception?.modifier)).toBe(false);
+  });
+
   it("populates category on selectedEquipment entries", () => {
     const store = createCharacterStore();
     store.getState().addInventoryItem("chain-mail-xphb");

@@ -18,6 +18,17 @@ vi.mock("@/src/store/useCharacterStore", () => ({
     }),
 }));
 
+// jsdom sanitizes <input type="number"> values at the property-setter level,
+// silently coercing invalid intermediate values (e.g. "-", "abc") to "".
+// Real browsers allow these as intermediate typing states (input.value === "-"),
+// which is exactly what triggers the NaN bug this suite guards against.
+// This helper forces the DOM node's `value` to bypass jsdom's sanitizer so the
+// change event delivers the same "invalid" value a real browser would.
+function fireChangeWithRawValue(input: HTMLInputElement, rawValue: string) {
+  Object.defineProperty(input, "value", { value: rawValue, configurable: true });
+  fireEvent.change(input);
+}
+
 const skills: SheetSkill[] = [
   { name: "Arcana", label: "Arcanismo", attributeKey: "inteligencia", modifier: 7, isProficient: true, isExpert: false, isOverridden: false },
   { name: "Athletics", label: "Atletismo", attributeKey: "forca", modifier: -1, isProficient: false, isExpert: false, isOverridden: false },
@@ -95,5 +106,33 @@ describe("SkillsPanel", () => {
     fireEvent.change(input, { target: { value: "5" } });
     fireEvent.change(input, { target: { value: "" } });
     expect(setSkillOverride).toHaveBeenCalledWith("Arcana", null);
+  });
+
+  it("calls setSkillOverride with null instead of NaN when input is a lone minus sign", () => {
+    render(<SkillsPanel skills={skills} />);
+    fireEvent.click(screen.getByRole("button", { name: "Configurar perícias" }));
+    const input = screen.getByRole("spinbutton", { name: "Ajustar Arcanismo" }) as HTMLInputElement;
+    fireChangeWithRawValue(input, "-");
+    expect(setSkillOverride).toHaveBeenCalledWith("Arcana", null);
+    expect(setSkillOverride).not.toHaveBeenCalledWith("Arcana", NaN);
+  });
+
+  it("calls setSkillOverride with null instead of NaN when input is non-numeric", () => {
+    render(<SkillsPanel skills={skills} />);
+    fireEvent.click(screen.getByRole("button", { name: "Configurar perícias" }));
+    const input = screen.getByRole("spinbutton", { name: "Ajustar Arcanismo" }) as HTMLInputElement;
+    fireChangeWithRawValue(input, "abc");
+    expect(setSkillOverride).toHaveBeenCalledWith("Arcana", null);
+    expect(setSkillOverride).not.toHaveBeenCalledWith("Arcana", NaN);
+  });
+
+  it("shows the persisted override value in the input when entering edit mode", () => {
+    const overriddenSkills: SheetSkill[] = [
+      { name: "Arcana", label: "Arcanismo", attributeKey: "inteligencia", modifier: 9, isProficient: true, isExpert: false, isOverridden: true },
+    ];
+    render(<SkillsPanel skills={overriddenSkills} />);
+    fireEvent.click(screen.getByRole("button", { name: "Configurar perícias" }));
+    const input = screen.getByRole("spinbutton", { name: "Ajustar Arcanismo" });
+    expect((input as HTMLInputElement).value).toBe("9");
   });
 });

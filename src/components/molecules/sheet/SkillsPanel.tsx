@@ -119,13 +119,15 @@ export function SkillsPanel({ skills }: SkillsPanelProps) {
                       <input
                         type="number"
                         aria-label={`Ajustar ${sk.label}`}
+                        defaultValue={sk.isOverridden ? sk.modifier : undefined}
                         className={cn(
                           "ml-auto h-[20px] w-[44px] rounded border border-border bg-background px-1 text-right text-[11px] text-foreground",
                           focusRing,
                         )}
                         onChange={(e) => {
-                          const value = e.target.value;
-                          setSkillOverride(sk.name, value === "" ? null : Number(value));
+                          const raw = e.target.value;
+                          const n = Number(raw);
+                          setSkillOverride(sk.name, raw === "" || !Number.isFinite(n) ? null : n);
                         }}
                       />
                     )}
