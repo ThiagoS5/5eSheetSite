@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { CharacterSheetSummary } from "@/types/builder";
+import type { CharacterSheetSummary, ItemCategory } from "@/types/builder";
 import { useCharacterStore } from "@/src/store/useCharacterStore";
 import { cn } from "@/src/lib/utils";
 import { focusRing } from "@/src/lib/styles";
@@ -10,7 +10,7 @@ import { ItemDetailModal, type DetailItem } from "@/src/components/organisms/she
 
 type MainTab = "actions" | "spells" | "inventory" | "features" | "notes";
 type OriginFilter = "all" | "class" | "species" | "background";
-type InvFilter = "all" | "class" | "manual";
+type InvFilter = "all" | "weapons" | "armor" | "utility" | "magic";
 
 const MAIN_TABS: { id: MainTab; label: string; icon: string }[] = [
   { id: "actions",   label: "Ações",          icon: "fa-khanda" },
@@ -28,10 +28,22 @@ const ORIGIN_FILTERS: { id: OriginFilter; label: string }[] = [
 ];
 
 const INV_FILTERS: { id: InvFilter; label: string }[] = [
-  { id: "all",    label: "Todos" },
-  { id: "class",  label: "Classe" },
-  { id: "manual", label: "Manual" },
+  { id: "all",     label: "Todos" },
+  { id: "weapons", label: "Armas" },
+  { id: "armor",   label: "Armaduras" },
+  { id: "utility", label: "Utilitários" },
+  { id: "magic",   label: "Mágicos" },
 ];
+
+const MAGIC_CATS = new Set(["Ring", "Rod", "Scroll", "Staff", "Wand", "Wondrous", "Potion"]);
+
+function matchInv(cat: ItemCategory, f: InvFilter): boolean {
+  if (f === "all") return true;
+  if (f === "weapons") return cat === "Weapon";
+  if (f === "armor") return cat === "Armor";
+  if (f === "utility") return cat === "Other Gear";
+  return MAGIC_CATS.has(cat);
+}
 
 const chip =
   "whitespace-nowrap rounded-full border px-[14px] py-[6px] text-[11px] font-semibold transition-colors";
@@ -47,14 +59,13 @@ export function ContentTabs({ summary }: ContentTabsProps) {
   const [detail, setDetail] = useState<DetailItem | null>(null);
   const notes = useCharacterStore((s) => s.description.notas);
   const setDescriptionField = useCharacterStore((s) => s.setDescriptionField);
+  const adjustCoin = useCharacterStore((s) => s.adjustCoin);
+  const setCarriedLoadKg = useCharacterStore((s) => s.setCarriedLoadKg);
 
   const realWeapons = summary.weapons.filter((w) => w.name.trim() !== "");
   const features =
     originFilter === "all" ? summary.features : summary.features.filter((f) => f.source === originFilter);
-  const equipment =
-    invFilter === "all"
-      ? summary.selectedEquipment
-      : summary.selectedEquipment.filter((it) => it.sourceType === invFilter);
+  const equipment = summary.selectedEquipment.filter((it) => matchInv(it.category, invFilter));
 
   const handleTablistKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>) => {
     const currentIndex = MAIN_TABS.findIndex((tab) => tab.id === activeTab);
@@ -165,7 +176,7 @@ export function ContentTabs({ summary }: ContentTabsProps) {
         id={`tabpanel-${activeTab}`}
         aria-labelledby={`tab-${activeTab}`}
         tabIndex={0}
-        className={cn("p-4", focusRing)}
+        className={cn("max-h-[640px] overflow-y-auto p-4", focusRing)}
       >
         {/* AÇÕES */}
         {activeTab === "actions" && (
@@ -221,9 +232,35 @@ export function ContentTabs({ summary }: ContentTabsProps) {
         {activeTab === "inventory" && (
           <div className="flex flex-col gap-[14px]">
             <div className="flex flex-wrap gap-[9px]">
-              <MoneyCard label="Peças de Ouro" value="—" />
-              <MoneyCard label="Peças de Cobre" value="—" />
-              <MoneyCard label="Carga" value="—" />
+              <CoinCard label="PL" value={summary.money.pl} onDec={() => adjustCoin("pl", -1)} onInc={() => adjustCoin("pl", 1)} />
+              <CoinCard label="PO" value={summary.money.po} onDec={() => adjustCoin("po", -1)} onInc={() => adjustCoin("po", 1)} />
+              <CoinCard label="PE" value={summary.money.pe} onDec={() => adjustCoin("pe", -1)} onInc={() => adjustCoin("pe", 1)} />
+              <CoinCard label="PP" value={summary.money.pp} onDec={() => adjustCoin("pp", -1)} onInc={() => adjustCoin("pp", 1)} />
+              <CoinCard label="PC" value={summary.money.pc} onDec={() => adjustCoin("pc", -1)} onInc={() => adjustCoin("pc", 1)} />
+              <div className="flex flex-1 basis-[90px] flex-col items-center gap-[3px] rounded-[10px] border border-border bg-surface-nested p-[11px]">
+                <span className="font-serif text-xl font-extrabold text-foreground">
+                  {summary.carry.currentKg} / {summary.carry.maxKg} kg
+                </span>
+                <span className="text-[9.5px] uppercase tracking-[0.1em] text-muted-foreground">Carga</span>
+                <div className="mt-1 flex items-center gap-1">
+                  <button
+                    type="button"
+                    aria-label="Reduzir carga"
+                    onClick={() => setCarriedLoadKg(summary.carry.currentKg - 1)}
+                    className={cn("h-6 w-6 rounded-md border border-border text-muted-foreground hover:text-foreground", focusRing)}
+                  >
+                    −
+                  </button>
+                  <button
+                    type="button"
+                    aria-label="Aumentar carga"
+                    onClick={() => setCarriedLoadKg(summary.carry.currentKg + 1)}
+                    className={cn("h-6 w-6 rounded-md border border-border text-muted-foreground hover:text-foreground", focusRing)}
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
             </div>
             {equipment.length > 0 ? (
               <ul className="grid list-none grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-1.5 p-0">
@@ -320,11 +357,39 @@ function EmptyState({ label }: { label: string }) {
   );
 }
 
-function MoneyCard({ label, value }: { label: string; value: string }) {
+function CoinCard({
+  label,
+  value,
+  onDec,
+  onInc,
+}: {
+  label: string;
+  value: number;
+  onDec: () => void;
+  onInc: () => void;
+}) {
   return (
     <div className="flex flex-1 basis-[90px] flex-col items-center gap-[3px] rounded-[10px] border border-border bg-surface-nested p-[11px]">
       <span className="font-serif text-xl font-extrabold text-foreground">{value}</span>
       <span className="text-[9.5px] uppercase tracking-[0.1em] text-muted-foreground">{label}</span>
+      <div className="mt-1 flex items-center gap-1">
+        <button
+          type="button"
+          aria-label={`Reduzir ${label}`}
+          onClick={onDec}
+          className={cn("h-6 w-6 rounded-md border border-border text-muted-foreground hover:text-foreground", focusRing)}
+        >
+          −
+        </button>
+        <button
+          type="button"
+          aria-label={`Aumentar ${label}`}
+          onClick={onInc}
+          className={cn("h-6 w-6 rounded-md border border-border text-muted-foreground hover:text-foreground", focusRing)}
+        >
+          +
+        </button>
+      </div>
     </div>
   );
 }
