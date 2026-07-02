@@ -23,7 +23,9 @@ import {
 import type {
   CharacterBuild,
   CoinPouch,
+  CreationPreferences,
   EquipmentChoicesBySource,
+  HpRollChoice,
 } from "@/src/types/characterBuild";
 import type { BuilderStepSlug } from "@/types/builder";
 
@@ -85,6 +87,18 @@ export function createCharacterStore(
         }
         return patchCharacterState(state, { asiOrFeatByLevel: next });
       }),
+    setLevelHpRoll: (level: number, roll: HpRollChoice | undefined) =>
+      set((state) => {
+        const next = { ...state.hpRollByLevel };
+        if (roll === undefined) {
+          delete next[String(level)];
+        } else {
+          next[String(level)] = roll;
+        }
+        return patchCharacterState(state, { hpRollByLevel: next });
+      }),
+    setCreationPreferences: (prefs: CreationPreferences) =>
+      set((state) => patchCharacterState(state, { creationPreferences: prefs })),
     selectBackground: (selectedBackgroundId) =>
       set((state) =>
         patchCharacterState(state, {
@@ -464,6 +478,10 @@ function extractFlatState(state: FlatCharacterBuilderState): FlatCharacterBuilde
     moneyTouched: state.moneyTouched,
     carriedLoadKg: state.carriedLoadKg,
     skillModifierOverrides: { ...state.skillModifierOverrides },
+    hpRollByLevel: { ...state.hpRollByLevel },
+    creationPreferences: state.creationPreferences
+      ? { ...state.creationPreferences }
+      : undefined,
   };
 }
 

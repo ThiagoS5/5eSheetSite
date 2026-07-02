@@ -62,6 +62,7 @@ vi.mock("@/src/store/useCharacterStore", () => ({
       moneyTouched: false,
       carriedLoadKg: 0,
       skillModifierOverrides: {},
+      hpRollByLevel: {},
     }),
 }));
 

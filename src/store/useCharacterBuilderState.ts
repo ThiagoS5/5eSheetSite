@@ -38,6 +38,8 @@ export function useCharacterBuilderState(): CharacterBuilderState {
   const moneyTouched = useCharacterStore((s) => s.moneyTouched);
   const carriedLoadKg = useCharacterStore((s) => s.carriedLoadKg);
   const skillModifierOverrides = useCharacterStore((s) => s.skillModifierOverrides);
+  const hpRollByLevel = useCharacterStore((s) => s.hpRollByLevel);
+  const creationPreferences = useCharacterStore((s) => s.creationPreferences);
 
   return useMemo(
     () => ({
@@ -65,6 +67,8 @@ export function useCharacterBuilderState(): CharacterBuilderState {
       moneyTouched,
       carriedLoadKg,
       skillModifierOverrides,
+      hpRollByLevel,
+      creationPreferences,
     }),
     [
       ruleset,
@@ -91,6 +95,8 @@ export function useCharacterBuilderState(): CharacterBuilderState {
       moneyTouched,
       carriedLoadKg,
       skillModifierOverrides,
+      hpRollByLevel,
+      creationPreferences,
     ],
   );
 }

@@ -2146,6 +2146,10 @@ function useCharacterBuilderState(): CharacterBuilderState {
   const skillModifierOverrides = useCharacterStore(
     (state) => state.skillModifierOverrides,
   );
+  const hpRollByLevel = useCharacterStore((state) => state.hpRollByLevel);
+  const creationPreferences = useCharacterStore(
+    (state) => state.creationPreferences,
+  );
 
   return useMemo(
     () => ({
@@ -2173,6 +2177,8 @@ function useCharacterBuilderState(): CharacterBuilderState {
       moneyTouched,
       carriedLoadKg,
       skillModifierOverrides,
+      hpRollByLevel,
+      creationPreferences,
     }),
     [
       ruleset,
@@ -2199,6 +2205,8 @@ function useCharacterBuilderState(): CharacterBuilderState {
       moneyTouched,
       carriedLoadKg,
       skillModifierOverrides,
+      hpRollByLevel,
+      creationPreferences,
     ],
   );
 }

@@ -56,6 +56,7 @@ const state: CharacterBuilderState = {
   moneyTouched: false,
   carriedLoadKg: 0,
   skillModifierOverrides: {},
+  hpRollByLevel: {},
 };
 
 const summary: CharacterSheetSummary = {
