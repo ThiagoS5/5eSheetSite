@@ -92,6 +92,7 @@ export interface BuilderSpecies {
   traits: BuilderFeature[];
   abilityBonuses: AttributeBonuses[];
   choiceGroups: BuilderChoiceGroup[];
+  senses: SheetSense[];
   detail: string;
 }
 

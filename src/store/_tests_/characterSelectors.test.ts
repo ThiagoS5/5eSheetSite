@@ -27,6 +27,7 @@ describe("character selectors", () => {
       initialCharacterState.baseAttributes.inteligencia + 2,
     );
     expect(summary.originFeat).toBe("Magic Initiate (Cleric)");
+    expect(summary.senses[0]?.rangeFeet).toBeGreaterThanOrEqual(60);
   });
 
   it("includes the chosen class package items in selectedEquipment", () => {

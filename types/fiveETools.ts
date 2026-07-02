@@ -15,6 +15,7 @@ export interface Raw5eRace {
   speed?: number | Record<string, number>;
   ability?: unknown;
   entries?: unknown[];
+  darkvision?: number;
 }
 
 export interface Raw5eRaceFile {

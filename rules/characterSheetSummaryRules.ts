@@ -162,7 +162,7 @@ export function selectCharacterSheetSummary(
       proficiencyBonus,
     }),
     passives: computePassives(skills),
-    senses: [],
+    senses: species?.senses ?? [],
     languages: state.speciesLanguages,
     resistances: [],
     immunities: [],
