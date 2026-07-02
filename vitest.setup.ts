@@ -1,3 +1,10 @@
+import { expect } from "vitest";
+import * as axeMatchers from "vitest-axe/matchers";
+
+// Matchers de acessibilidade (toHaveNoViolations) disponíveis em toda a suíte.
+// Uso nos testes de UI (jsdom): `expect(await axe(container)).toHaveNoViolations()`.
+expect.extend(axeMatchers);
+
 function createMemoryStorage(): Storage {
   const store = new Map<string, string>();
 
