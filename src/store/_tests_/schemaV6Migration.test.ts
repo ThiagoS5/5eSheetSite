@@ -49,6 +49,29 @@ describe("schema v6 migration", () => {
     expect(rebuilt.choices.creationPreferences?.progressionMode).toBe("milestone");
   });
 
+  it("drops invalid hpRoll values inherited from levelChoices during normalization", () => {
+    const buildWithInvalidHpRoll: CharacterBuild = {
+      ...v5Fixture,
+      progression: {
+        ...v5Fixture.progression,
+        levelChoices: {
+          ...v5Fixture.progression.levelChoices,
+          "3": { classFeatureChoices: {}, hpRoll: 0 },
+          "4": { classFeatureChoices: {}, hpRoll: Number.NaN },
+          "5": { classFeatureChoices: {}, hpRoll: 7 },
+        },
+      },
+    };
+
+    const build = normalizeCharacterBuild(buildWithInvalidHpRoll);
+
+    expect(build.progression.levelChoices["3"]?.hpRoll).toBeUndefined();
+    expect(build.progression.levelChoices["3"]?.classFeatureChoices).toEqual({});
+    expect(build.progression.levelChoices["4"]?.hpRoll).toBeUndefined();
+    expect(build.progression.levelChoices["4"]?.classFeatureChoices).toEqual({});
+    expect(build.progression.levelChoices["5"]?.hpRoll).toBe(7);
+  });
+
   it("accepts 'roll-4d6' as a generation method after normalization", () => {
     const build = normalizeCharacterBuild({
       ...v5Fixture,

@@ -301,9 +301,18 @@ function createBuildFromFlatState(
   previousBuild?: Partial<CharacterBuild>,
 ): CharacterBuild {
   const normalizedState = normalizeFlatState(state);
-  const levelChoices: CharacterBuild["progression"]["levelChoices"] = {
-    ...(previousBuild?.progression?.levelChoices ?? {}),
-  };
+  const previousLevelChoices = previousBuild?.progression?.levelChoices ?? {};
+  const rawHpRollByLevel: Record<string, HpRollChoice> = {};
+  for (const [level, choice] of Object.entries(previousLevelChoices)) {
+    if (choice.hpRoll !== undefined) {
+      rawHpRollByLevel[level] = choice.hpRoll;
+    }
+  }
+  const sanitizedHpRollByLevel = sanitizeHpRollByLevel(rawHpRollByLevel);
+  const levelChoices: CharacterBuild["progression"]["levelChoices"] = {};
+  for (const [level, choice] of Object.entries(previousLevelChoices)) {
+    levelChoices[level] = { ...choice, hpRoll: sanitizedHpRollByLevel[level] };
+  }
   if (Object.keys(normalizedState.classFeatureChoices).length > 0) {
     const key = String(normalizedState.level);
     levelChoices[key] = {
