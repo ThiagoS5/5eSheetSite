@@ -64,6 +64,7 @@ export interface CharacterBuilderState extends FlatCharacterBuilderState {
 
 export interface CharacterBuilderActions {
   setLevel: (level: number) => void;
+  levelUp: () => void;
   selectSpecies: (speciesId: string) => void;
   selectClass: (classId: string) => void;
   selectSubclass: (subclassId: string) => void;

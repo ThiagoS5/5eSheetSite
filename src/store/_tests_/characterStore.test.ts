@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { createCharacterStore } from "@/src/store/createCharacterStore";
-import { deriveStartingGoldPo } from "@/src/store/characterSelectors";
+import { deriveStartingGoldPo, selectCharacterSheetSummary } from "@/src/store/characterSelectors";
 import { getBuilderClasses } from "@/src/services/ruleService";
+import { getProficiencyBonus } from "@/src/adapters/characterDerivedAdapter";
 
 describe("createCharacterStore", () => {
   it("starts with a canonical character build and mirrored level 1 fields", () => {
@@ -260,4 +261,51 @@ describe("createCharacterStore", () => {
     store.getState().setSkillTraining("Stealth", "expertise");
     expect(store.getState().skillTraining.Stealth).toBe("expertise");
   });
+});
+
+describe("levelUp integration 1->20", () => {
+  it("levelUp caps at 20", () => {
+    const store = createCharacterStore();
+    store.getState().setLevel(20);
+    store.getState().levelUp();
+    expect(store.getState().level).toBe(20);
+  });
+
+  it("Fighter 1->20: PB, PV e features consistentes em todos os niveis", () => {
+    const store = createCharacterStore();
+    // Loop cobre 19 niveis x recalculo de summary; sob carga da suite completa
+    // o timeout padrao de 5s pode ser justo, entao alarga-se explicitamente.
+    store.getState().selectClass("fighter-xphb");
+    for (let level = 2; level <= 20; level += 1) {
+      store.getState().levelUp();
+      store.getState().setLevelHpRoll(level, "average");
+      const summary = selectCharacterSheetSummary(store.getState());
+      expect(summary.level).toBe(level);
+      expect(summary.proficiencyBonus).toBe(getProficiencyBonus(level));
+      expect(summary.maxHp).toBeGreaterThan(0);
+      expect(summary.hitDice).toBe(`${level}d10`);
+      expect(summary.classFeatures.every((f) => (f.level ?? 1) <= level)).toBe(true);
+    }
+    const final = selectCharacterSheetSummary(store.getState());
+    expect(final.proficiencyBonus).toBe(6);
+    // initialCharacterState.baseAttributes.constituicao = 8 (nao 10), mod CON = -1.
+    // Nivel 1: 10 (d10) + (-1) = 9. Niveis 2-20 (19x): media floor(10/2)+1=6, +(-1) = 5 cada.
+    // 9 + 19*5 = 104.
+    expect(final.maxHp).toBe(104);
+  }, 15000);
+
+  it("Cleric 1->20 com rolagens numericas de PV", () => {
+    const store = createCharacterStore();
+    store.getState().selectClass("cleric-xphb");
+    for (let level = 2; level <= 20; level += 1) {
+      store.getState().levelUp();
+      store.getState().setLevelHpRoll(level, 5); // d8: 5 e valido
+    }
+    const summary = selectCharacterSheetSummary(store.getState());
+    // initialCharacterState.baseAttributes.constituicao = 8 (nao 10), mod CON = -1.
+    // Nivel 1: 8 (d8) + (-1) = 7. Niveis 2-20 (19x): rolagem 5 + (-1) = 4 cada.
+    // 7 + 19*4 = 83.
+    expect(summary.maxHp).toBe(83);
+    expect(summary.proficiencyBonus).toBe(6);
+  }, 15000);
 });

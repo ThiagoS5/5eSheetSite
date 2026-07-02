@@ -41,6 +41,10 @@ export function createCharacterStore(
     ...normalizedInitialState,
     setLevel: (level) =>
       set((state) => patchCharacterState(state, { level })),
+    levelUp: () =>
+      set((state) =>
+        patchCharacterState(state, { level: Math.min(20, state.level + 1) }),
+      ),
     selectSpecies: (selectedSpeciesId) =>
       set((state) =>
         patchCharacterState(state, {
