@@ -16,6 +16,7 @@ import {
   calculateFinalAttributes,
   calculateMaxHitPoints,
   getAbilityModifier,
+  getMaxHitPointsBreakdown,
   getProficiencyBonus,
 } from "@/src/adapters/characterDerivedAdapter";
 import {
@@ -136,6 +137,11 @@ export function selectCharacterSheetSummary(
     backgroundName: background?.name ?? "",
     currentHp: maxHitPoints,
     maxHp: maxHitPoints,
+    maxHpBreakdown: getMaxHitPointsBreakdown(
+      characterClass?.hitDie ?? 6,
+      finalAttributes.constituicao,
+      state.level,
+    ),
     tempHp: 0,
     hitDice: `${state.level}d${characterClass?.hitDie ?? 6}`,
     initiative: getAbilityModifier(finalAttributes.destreza),

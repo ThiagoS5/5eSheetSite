@@ -320,10 +320,12 @@ export interface Pendency {
   severity: "blocking" | "warning";
 }
 
-export interface ArmorClassBreakdownPart {
+export interface BreakdownPart {
   label: string;
   value: number;
 }
+
+export type ArmorClassBreakdownPart = BreakdownPart;
 
 export interface CharacterSheetSummary {
   // — existing fields (unchanged) —
@@ -358,6 +360,7 @@ export interface CharacterSheetSummary {
   backgroundName: string;
   currentHp: number;
   maxHp: number;
+  maxHpBreakdown?: BreakdownPart[];
   tempHp: number;
   hitDice: string;
   initiative: number;

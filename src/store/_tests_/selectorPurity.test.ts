@@ -11,6 +11,16 @@ describe("selector purity guardrail", () => {
     expect(lineCount).toBeLessThanOrEqual(150);
   });
 
+  it("keeps characterSheetSummaryRules an orchestrator, not a rule dump", () => {
+    // A montagem do summary vive aqui desde a Fase 1; regra nova entra como
+    // módulo próprio em rules/ ou src/adapters/, nunca inline neste arquivo
+    // (master plan §26.1-A). Se este teste falhar, extraia o cálculo.
+    const source = readFileSync("rules/characterSheetSummaryRules.ts", "utf8");
+    const lineCount = source.trimEnd().split(/\r?\n/).length;
+
+    expect(lineCount).toBeLessThanOrEqual(330);
+  });
+
   it("snapshots the derived sheet contract for an equipped fighter", () => {
     const store = createCharacterStore();
     store.getState().selectClass("fighter-xphb");
