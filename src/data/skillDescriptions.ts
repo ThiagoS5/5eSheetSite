@@ -49,7 +49,7 @@ export const SKILL_DESCRIPTIONS: Record<string, { ability: string; text: string 
   },
   "Performance": {
     ability: "Carisma",
-    text: "Atuar, dançar, cantar ou apresentar-se publicamente para entertain e impressionar uma plateia.",
+    text: "Atuar, dançar, cantar ou apresentar-se publicamente para entreter e impressionar uma plateia.",
   },
   "Persuasion": {
     ability: "Carisma",
