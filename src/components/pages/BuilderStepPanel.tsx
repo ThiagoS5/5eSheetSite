@@ -64,6 +64,13 @@ interface BuilderStepPanelProps {
   itemCatalog: CatalogItem[];
 }
 
+interface PendingReplacement {
+  title: string;
+  description: string;
+  changes: string[];
+  onConfirm: () => void;
+}
+
 export function BuilderStepPanel({
   step,
   species,
@@ -75,6 +82,8 @@ export function BuilderStepPanel({
   const router = useRouter();
   const characterState = useCharacterBuilderState();
   const actions = useCharacterBuilderActions();
+  const [pendingReplacement, setPendingReplacement] =
+    useState<PendingReplacement | null>(null);
   const messages = validateBuilderStep(step, characterState);
   const currentStepIndex = getStepIndex(step);
   const nextStep = builderStepNavigation[currentStepIndex + 1];
@@ -83,6 +92,10 @@ export function BuilderStepPanel({
   const previousStepsValid = arePreviousStepsValid(step, characterState);
   const canUseCurrentStep = (isStepUnlocked || previousStepsValid) && previousStepsValid;
   const canAdvance = canUseCurrentStep && messages.length === 0 && Boolean(nextStep);
+  const nextBlockerMessage =
+    nextStep && !canAdvance
+      ? messages[0] ?? "Conclua as pendencias desta etapa para avancar."
+      : "";
   const selectedClass = classes.find(
     (entry) => entry.id === characterState.selectedClassId,
   );
@@ -93,6 +106,7 @@ export function BuilderStepPanel({
     (entry) => entry.id === characterState.selectedSpeciesId,
   );
   const languageLimit = getRequiredLanguageCount(characterState);
+  const stepPositionLabel = `Etapa ${Math.max(currentStepIndex + 1, 1)}/${builderStepNavigation.length}`;
 
   if (!canUseCurrentStep) {
     return (
@@ -120,17 +134,94 @@ export function BuilderStepPanel({
     router.push(target.href);
   }
 
+  function requestClassSelection(classId: string) {
+    const changes = getClassReplacementChanges(characterState);
+
+    if (
+      characterState.selectedClassId &&
+      characterState.selectedClassId !== classId &&
+      changes.length > 0
+    ) {
+      setPendingReplacement({
+        title: "Alterar classe",
+        description:
+          "Trocar a classe reinicia escolhas que dependem dela para manter a ficha consistente.",
+        changes,
+        onConfirm: () => {
+          actions.selectClass(classId);
+          void unlockAndGo(1);
+        },
+      });
+      return;
+    }
+
+    actions.selectClass(classId);
+    void unlockAndGo(1);
+  }
+
+  function requestSpeciesSelection(speciesId: string) {
+    const changes = getSpeciesReplacementChanges(characterState);
+
+    if (
+      characterState.selectedSpeciesId &&
+      characterState.selectedSpeciesId !== speciesId &&
+      changes.length > 0
+    ) {
+      setPendingReplacement({
+        title: "Alterar especie",
+        description:
+          "Trocar a especie reinicia escolhas internas e idiomas ligados a ela.",
+        changes,
+        onConfirm: () => {
+          actions.selectSpecies(speciesId);
+          void unlockAndGo(4);
+        },
+      });
+      return;
+    }
+
+    actions.selectSpecies(speciesId);
+    void unlockAndGo(4);
+  }
+
+  function requestBackgroundSelection(
+    backgroundId: string,
+    afterSelect?: () => void,
+  ) {
+    const changes = getBackgroundReplacementChanges(characterState);
+
+    if (
+      characterState.selectedBackgroundId &&
+      characterState.selectedBackgroundId !== backgroundId &&
+      changes.length > 0
+    ) {
+      setPendingReplacement({
+        title: "Alterar antecedente",
+        description:
+          "Trocar o antecedente reinicia escolhas de origem que dependem dele.",
+        changes,
+        onConfirm: () => {
+          actions.selectBackground(backgroundId);
+          afterSelect?.();
+        },
+      });
+      return;
+    }
+
+    actions.selectBackground(backgroundId);
+    afterSelect?.();
+  }
+
   return (
     <div className="grid gap-5">
+      <BuilderStepToolbar />
+
       {step === "classe" ? (
         <ClassStep
           classes={classes}
           selectedClassId={characterState.selectedClassId}
           disabled={!canUseCurrentStep}
-          onSelectClass={(classId) => {
-            actions.selectClass(classId);
-            void unlockAndGo(1);
-          }}
+          onSelectClass={requestClassSelection}
         />
       ) : null}
 
@@ -152,7 +243,7 @@ export function BuilderStepPanel({
           selectedBackgroundId={characterState.selectedBackgroundId}
           selectedBonuses={characterState.backgroundAbilityBonuses}
           disabled={!canUseCurrentStep}
-          onSelectBackground={actions.selectBackground}
+          onSelectBackground={requestBackgroundSelection}
           onSetBonuses={actions.setBackgroundAbilityBonuses}
           onCommitBackground={() => {
             void unlockAndGo(3);
@@ -165,10 +256,7 @@ export function BuilderStepPanel({
           species={species}
           selectedSpeciesId={characterState.selectedSpeciesId}
           disabled={!canUseCurrentStep}
-          onSelectSpecies={(speciesId) => {
-            actions.selectSpecies(speciesId);
-            void unlockAndGo(4);
-          }}
+          onSelectSpecies={requestSpeciesSelection}
         />
       ) : null}
 
@@ -227,26 +315,134 @@ export function BuilderStepPanel({
       {step === "conclusao" ? <CharacterSheetView embedded /> : null}
 
       {nextStep || previousStep ? (
-        <div className="sticky bottom-0 z-10 flex justify-between gap-3 border-t border-white/[0.06] bg-surface-nested/95 py-4 backdrop-blur">
-          {previousStep ? (
-            <ActionBtn intent="secondary" onClick={() => router.push(previousStep.href)}>
-              Voltar
-            </ActionBtn>
-          ) : (
-            <span aria-hidden="true" />
-          )}
-          {nextStep ? (
-            <ActionBtn
-              disabled={!canAdvance}
-              onClick={() => {
-                void unlockAndGo(currentStepIndex + 1);
-              }}
+        <div className="sticky bottom-0 z-10 border-t border-white/[0.06] bg-surface-nested/95 py-4 backdrop-blur">
+          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+            {previousStep ? (
+              <ActionBtn intent="secondary" onClick={() => router.push(previousStep.href)}>
+                Voltar
+              </ActionBtn>
+            ) : (
+              <span aria-hidden="true" />
+            )}
+            <span className="text-center font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
+              {stepPositionLabel}
+            </span>
+            {nextStep ? (
+              <ActionBtn
+                aria-describedby={
+                  nextBlockerMessage ? "builder-next-blocker" : undefined
+                }
+                disabled={!canAdvance}
+                onClick={() => {
+                  void unlockAndGo(currentStepIndex + 1);
+                }}
+              >
+                Avancar
+              </ActionBtn>
+            ) : (
+              <span aria-hidden="true" />
+            )}
+          </div>
+          {nextBlockerMessage ? (
+            <p
+              id="builder-next-blocker"
+              className="mt-3 text-right text-xs leading-5 text-accent"
             >
-              Avancar
-            </ActionBtn>
+              {nextBlockerMessage}
+            </p>
           ) : null}
         </div>
       ) : null}
+      <DependentReplacementDialog
+        replacement={pendingReplacement}
+        onOpenChange={(open) => {
+          if (!open) {
+            setPendingReplacement(null);
+          }
+        }}
+      />
+    </div>
+  );
+}
+
+function DependentReplacementDialog({
+  replacement,
+  onOpenChange,
+}: {
+  replacement: PendingReplacement | null;
+  onOpenChange: (open: boolean) => void;
+}) {
+  return (
+    <Dialog.Root open={Boolean(replacement)} onOpenChange={onOpenChange}>
+      <Dialog.Portal>
+        <Dialog.Overlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-md">
+          <Dialog.Content className="w-full max-w-md rounded-xl border border-white/[0.08] bg-surface-nested p-5 text-foreground shadow-2xl shadow-black/60 outline-none focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70">
+            <Dialog.Title className="font-serif text-xl font-bold text-foreground">
+              {replacement?.title}
+            </Dialog.Title>
+            <Dialog.Description className="mt-2 text-sm leading-6 text-subdued">
+              {replacement?.description}
+            </Dialog.Description>
+            {replacement?.changes.length ? (
+              <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-accent">
+                {replacement.changes.map((change) => (
+                  <li key={change}>{change}</li>
+                ))}
+              </ul>
+            ) : null}
+            <div className="mt-5 flex justify-end gap-3">
+              <Dialog.Close asChild>
+                <ActionBtn intent="secondary">Cancelar</ActionBtn>
+              </Dialog.Close>
+              <ActionBtn
+                onClick={() => {
+                  replacement?.onConfirm();
+                  onOpenChange(false);
+                }}
+              >
+                Confirmar troca
+              </ActionBtn>
+            </div>
+          </Dialog.Content>
+        </Dialog.Overlay>
+      </Dialog.Portal>
+    </Dialog.Root>
+  );
+}
+
+function BuilderStepToolbar() {
+  return (
+    <div className="flex justify-end">
+      <Dialog.Root>
+        <Dialog.Trigger asChild>
+          <ActionBtn intent="secondary">Ver ficha</ActionBtn>
+        </Dialog.Trigger>
+        <Dialog.Portal>
+          <Dialog.Overlay className="fixed inset-0 z-50 flex items-stretch justify-center overflow-y-auto bg-black/70 p-0 backdrop-blur-md md:items-center md:p-6">
+            <Dialog.Content className="relative flex h-[100svh] w-full min-w-0 flex-col overflow-y-auto border border-white/[0.08] bg-surface-nested text-foreground shadow-2xl shadow-black/60 outline-none focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70 md:h-[min(88vh,920px)] md:max-w-6xl md:rounded-xl">
+              <div className="sticky top-0 z-20 flex items-center justify-between gap-4 border-b border-white/[0.08] bg-surface-nested/95 px-4 py-3 backdrop-blur md:px-6">
+                <Dialog.Title asChild>
+                  <h2 className="font-serif text-xl font-bold text-foreground">
+                    Preview da ficha
+                  </h2>
+                </Dialog.Title>
+                <Dialog.Close asChild>
+                  <button
+                    type="button"
+                    aria-label="Fechar preview da ficha"
+                    className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-border bg-muted/85 text-subdued outline-none transition hover:border-brand-gold-alt/60 hover:text-foreground focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70"
+                  >
+                    <X aria-hidden="true" className="h-5 w-5" />
+                  </button>
+                </Dialog.Close>
+              </div>
+              <div className="p-4 md:p-6">
+                <CharacterSheetView embedded />
+              </div>
+            </Dialog.Content>
+          </Dialog.Overlay>
+        </Dialog.Portal>
+      </Dialog.Root>
     </div>
   );
 }
@@ -741,7 +937,7 @@ function BackgroundStep({
   selectedBackgroundId: string;
   selectedBonuses: AttributeBonuses;
   disabled: boolean;
-  onSelectBackground: (backgroundId: string) => void;
+  onSelectBackground: (backgroundId: string, afterSelect?: () => void) => void;
   onSetBonuses: (bonuses: AttributeBonuses) => void;
   onCommitBackground: () => void;
 }) {
@@ -784,8 +980,7 @@ function BackgroundStep({
               disabled={disabled}
               onSelect={() => onSelectBackground(entry.id)}
               onBonusesChange={(bonuses) => {
-                onSelectBackground(entry.id);
-                onSetBonuses(bonuses);
+                onSelectBackground(entry.id, () => onSetBonuses(bonuses));
               }}
               onCommit={onCommitBackground}
             />
@@ -1815,6 +2010,77 @@ function getAttributeChangeHandler(
   return (attribute, value) => {
     actions[attribute](value);
   };
+}
+
+function getClassReplacementChanges(state: CharacterBuilderState): string[] {
+  const changes: string[] = [];
+
+  if (state.classSkillProficiencies.length > 0) {
+    changes.push(
+      formatCount(
+        state.classSkillProficiencies.length,
+        "pericia de classe",
+        "pericias de classe",
+      ),
+    );
+  }
+
+  const featureGroupCount = Object.keys(state.classFeatureChoices).length;
+  if (featureGroupCount > 0) {
+    changes.push(
+      formatCount(featureGroupCount, "grupo de recurso", "grupos de recurso"),
+    );
+  }
+
+  if (state.selectedSubclassId) {
+    changes.push("subclasse selecionada");
+  }
+
+  const classEquipment = state.equipmentChoicesBySource.class;
+  if (classEquipment?.mode || classEquipment?.selectedOptionId) {
+    changes.push("equipamento inicial da classe");
+  }
+
+  return changes;
+}
+
+function getSpeciesReplacementChanges(state: CharacterBuilderState): string[] {
+  const changes: string[] = [];
+  const speciesChoiceCount = Object.keys(state.speciesChoices).length;
+
+  if (speciesChoiceCount > 0) {
+    changes.push(
+      formatCount(
+        speciesChoiceCount,
+        "escolha de especie",
+        "escolhas de especie",
+      ),
+    );
+  }
+
+  if (state.speciesLanguages.length > 0) {
+    changes.push(
+      formatCount(
+        state.speciesLanguages.length,
+        "idioma de especie",
+        "idiomas de especie",
+      ),
+    );
+  }
+
+  return changes;
+}
+
+function getBackgroundReplacementChanges(state: CharacterBuilderState): string[] {
+  const bonusCount = Object.keys(state.backgroundAbilityBonuses).length;
+
+  return bonusCount > 0
+    ? [formatCount(bonusCount, "bonus de atributo", "bonus de atributo")]
+    : [];
+}
+
+function formatCount(count: number, singular: string, plural: string): string {
+  return `${count} ${count === 1 ? singular : plural}`;
 }
 
 function getStepIndex(step: BuilderStepSlug): number {

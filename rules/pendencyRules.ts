@@ -1,0 +1,51 @@
+import { validateBuilderStep } from "@/rules/builderValidation";
+import { getUnresolvedLevelChoices } from "@/src/store/levelChoiceResolver";
+import type { CharacterBuilderState } from "@/src/store/characterStore.types";
+import type { BuilderClass, BuilderStepSlug, Pendency } from "@/types/builder";
+
+const VALIDATED_STEPS: BuilderStepSlug[] = [
+  "classe",
+  "recursos-classe",
+  "antecedente",
+  "especie",
+  "detalhes-especie",
+  "atributos",
+  "equipamento",
+  "descricao",
+];
+
+const LEVEL_CHOICE_STEP: BuilderStepSlug = "recursos-classe";
+
+export function deriveBuilderPendencies(input: {
+  state: CharacterBuilderState;
+  characterClass?: BuilderClass;
+}): Pendency[] {
+  const { state, characterClass } = input;
+  const stepPendencies = VALIDATED_STEPS.flatMap((stepSlug) =>
+    validateBuilderStep(stepSlug, state).map((label, index) => ({
+      id: `${stepSlug}-${index}`,
+      stepSlug,
+      label,
+      severity: "blocking" as const,
+    })),
+  );
+
+  const levelPendencies =
+    characterClass === undefined
+      ? []
+      : getUnresolvedLevelChoices(state, characterClass).map((choice) => ({
+          id: `level-${choice.level}-${choice.kind}`,
+          stepSlug: LEVEL_CHOICE_STEP,
+          label: normalizeLevelChoiceLabel(choice.label),
+          severity: "blocking" as const,
+        }));
+
+  return [...stepPendencies, ...levelPendencies];
+}
+
+function normalizeLevelChoiceLabel(label: string): string {
+  return label
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .replace(/^N\S*vel/, "Nivel");
+}

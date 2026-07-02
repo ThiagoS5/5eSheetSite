@@ -2,12 +2,16 @@ interface StatBadgeProps {
   label: string;
   value: string | number;
   detail?: string;
+  title?: string;
 }
 
-export function StatBadge({ label, value, detail }: StatBadgeProps) {
+export function StatBadge({ label, value, detail, title }: StatBadgeProps) {
   return (
     <div className="rounded-md border border-white/[0.08] bg-surface-elevated px-3 py-3">
-      <dt className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+      <dt
+        className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground"
+        title={title}
+      >
         {label}
       </dt>
       <dd className="mt-1 flex items-baseline gap-2">

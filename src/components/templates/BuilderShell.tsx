@@ -2,10 +2,12 @@
 
 import { useState, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
+import { Save } from "lucide-react";
 import { BuilderSidebar } from "@/src/components/organisms/BuilderSidebar";
 import { CharacterSheetPreview } from "@/src/components/organisms/CharacterSheetPreview";
 import { Header } from "@/src/components/organisms/Header";
 import { SidebarProvider } from "@/src/components/ui/sidebar";
+import { useCharacterStore } from "@/src/store/useCharacterStore";
 
 interface BuilderShellProps {
   children: ReactNode;
@@ -13,6 +15,9 @@ interface BuilderShellProps {
 
 export function BuilderShell({ children }: BuilderShellProps) {
   const pathname = usePathname();
+  const updatedAt = useCharacterStore(
+    (state) => state.characterBuild.exportMetadata.updatedAt,
+  );
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [sheetCollapsed, setSheetCollapsed] = useState(false);
   // The conclusão step is the full character sheet itself, so the live preview
@@ -46,7 +51,10 @@ export function BuilderShell({ children }: BuilderShellProps) {
             aria-labelledby="builder-title"
             className="min-w-0 border-x border-white/[0.06] bg-surface-nested"
           >
-            <div className="px-4 py-5 md:px-6">{children}</div>
+            <div className="px-4 py-5 md:px-6">
+              <AutosaveStatus updatedAt={updatedAt} />
+              {children}
+            </div>
           </section>
 
           {showSheetPreview ? (
@@ -59,6 +67,36 @@ export function BuilderShell({ children }: BuilderShellProps) {
       </main>
     </SidebarProvider>
   );
+}
+
+function AutosaveStatus({ updatedAt }: { updatedAt: string }) {
+  const savedAt = formatSavedAt(updatedAt);
+
+  return (
+    <div className="mb-4 flex justify-end">
+      <div
+        role="status"
+        aria-label="Rascunho salvo"
+        className="inline-flex items-center gap-2 rounded-md border border-white/[0.08] bg-card px-3 py-2 text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground"
+      >
+        <Save aria-hidden="true" className="h-3.5 w-3.5 text-brand-green" />
+        Salvo <span suppressHydrationWarning>{savedAt}</span>
+      </div>
+    </div>
+  );
+}
+
+function formatSavedAt(value: string): string {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "--:--";
+  }
+
+  return new Intl.DateTimeFormat("pt-BR", {
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
 }
 
 function getGridClass(

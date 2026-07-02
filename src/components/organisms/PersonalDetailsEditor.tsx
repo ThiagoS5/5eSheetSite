@@ -1,6 +1,6 @@
 "use client";
 
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useCharacterStore } from "@/src/store/useCharacterStore";
 import { Input } from "@/src/components/ui/input";
@@ -55,7 +55,7 @@ export function PersonalDetailsEditor() {
 
   const { weightValue, weightUnit } = parseWeight(description.weight);
 
-  const { register, handleSubmit, watch, setValue, formState: { errors } } =
+  const { register, handleSubmit, control, setValue, formState: { errors } } =
     useForm<PersonalDetailsForm>({
       resolver: zodResolver(personalDetailsSchema),
       mode: "onBlur",
@@ -79,7 +79,7 @@ export function PersonalDetailsEditor() {
       },
     });
 
-  const currentUnit = watch("weightUnit");
+  const currentUnit = useWatch({ control, name: "weightUnit" });
 
   // Persist to the store only when a field loses focus — never per keystroke.
   const persist = handleSubmit((data) => {

@@ -64,6 +64,59 @@ describe("BuilderStepPanel", () => {
     expect(screen.getAllByRole("button", { name: "SELECT" })[0]).toBeInTheDocument();
   });
 
+  it("opens a full sheet preview dialog from the step toolbar", () => {
+    render(
+      <CharacterStoreProvider>
+        <BuilderStepPanel step="classe" {...builderData} />
+      </CharacterStoreProvider>,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Ver ficha" }));
+
+    expect(screen.getByRole("dialog", { name: "Preview da ficha" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Preview da ficha" })).toBeInTheDocument();
+  });
+
+  it("explains why Avancar is disabled", () => {
+    render(
+      <CharacterStoreProvider>
+        <ClassOnlyInitializer />
+        <BuilderStepPanel step="recursos-classe" {...builderData} />
+      </CharacterStoreProvider>,
+    );
+
+    const nextButton = screen.getByRole("button", { name: "Avancar" });
+
+    expect(nextButton).toBeDisabled();
+    expect(nextButton).toHaveAttribute("aria-describedby", "builder-next-blocker");
+    expect(screen.getByText("Etapa 2/9")).toBeInTheDocument();
+    expect(screen.getByText(/Escolha 2 pericias de classe para continuar/i)).toHaveAttribute(
+      "id",
+      "builder-next-blocker",
+    );
+  });
+
+  it("shows a dependent choice diff before replacing the selected class", () => {
+    render(
+      <CharacterStoreProvider>
+        <SelectedClassInitializer />
+        <BuilderStepPanel step="classe" {...builderData} />
+      </CharacterStoreProvider>,
+    );
+
+    const barbarianCard = screen.getByRole("heading", { name: "Barbarian" }).closest("article");
+
+    expect(barbarianCard).not.toBeNull();
+    fireEvent.click(
+      within(barbarianCard as HTMLElement).getByRole("button", { name: "SELECT" }),
+    );
+
+    expect(screen.getByRole("dialog", { name: "Alterar classe" })).toBeInTheDocument();
+    expect(screen.getByText("2 pericias de classe")).toBeInTheDocument();
+    expect(screen.getByText("1 grupo de recurso")).toBeInTheDocument();
+    expect(pushMock).not.toHaveBeenCalled();
+  });
+
   it("filters class cards by name, summary, source, and level one features", () => {
     render(
       <CharacterStoreProvider>
@@ -513,6 +566,18 @@ function SelectedClassInitializer() {
     setClassFeatureChoice("weapon-mastery", getFighterWeaponMasteries());
     unlockStep(1);
   }, [selectClass, setClassSkillProficiencies, setClassFeatureChoice, unlockStep]);
+
+  return null;
+}
+
+function ClassOnlyInitializer() {
+  const selectClass = useCharacterStore((state) => state.selectClass);
+  const unlockStep = useCharacterStore((state) => state.unlockStep);
+
+  useEffect(() => {
+    selectClass("fighter-xphb");
+    unlockStep(1);
+  }, [selectClass, unlockStep]);
 
   return null;
 }

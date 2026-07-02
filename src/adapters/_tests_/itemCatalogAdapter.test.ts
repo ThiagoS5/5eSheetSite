@@ -6,13 +6,27 @@ const raw = (over: Partial<Raw5eItem>): Raw5eItem => ({ name: "X", source: "PHB"
 
 describe("normalizeCatalogItem", () => {
   it("maps weapon type codes (with source suffix) to Weapon", () => {
-    expect(normalizeCatalogItem(raw({ type: "M|XPHB", weaponCategory: "martial" })).category).toBe("Weapon");
-    expect(normalizeCatalogItem(raw({ type: "R" })).category).toBe("Weapon");
+    const longsword = normalizeCatalogItem(raw({
+      type: "M|XPHB",
+      weaponCategory: "martial",
+      property: ["V"],
+      dmg1: "1d8",
+      dmgType: "S",
+    }));
+    expect(longsword.category).toBe("Weapon");
+    expect(longsword.weaponCategory).toBe("martial");
+    expect(longsword.weaponRangeType).toBe("melee");
+    expect(longsword.weaponProperties).toEqual(["V"]);
+    expect(longsword.damageDice).toBe("1d8");
+    expect(longsword.damageType).toBe("S");
+    expect(normalizeCatalogItem(raw({ type: "R" })).weaponRangeType).toBe("ranged");
   });
   it("maps armor codes to Armor and keeps armorClass", () => {
     const item = normalizeCatalogItem(raw({ type: "HA", ac: 18 }));
     expect(item.category).toBe("Armor");
     expect(item.armorClass).toBe(18);
+    expect(item.armorType).toBe("heavy");
+    expect(normalizeCatalogItem(raw({ type: "S|XPHB", ac: 2 })).armorType).toBe("shield");
   });
   it("maps RG/RD/SC/WD/P codes to Ring/Rod/Scroll/Wand/Potion", () => {
     expect(normalizeCatalogItem(raw({ type: "RG" })).category).toBe("Ring");

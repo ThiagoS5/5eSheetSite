@@ -56,6 +56,7 @@ describe("BuilderShell", () => {
 
     expect(sidebar).toHaveClass("hidden", "xl:flex");
     expect(preview).toHaveClass("hidden", "xl:block");
+    expect(screen.getByRole("status", { name: /Rascunho salvo/i })).toBeInTheDocument();
   });
 
   it("toggles the sidebar icon state with Ctrl+B", () => {

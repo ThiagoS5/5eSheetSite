@@ -173,6 +173,9 @@ export type ItemCategory =
   | "Armor" | "Potion" | "Ring" | "Rod" | "Scroll"
   | "Staff" | "Wand" | "Weapon" | "Wondrous" | "Other Gear";
 
+export type ArmorType = "light" | "medium" | "heavy" | "shield";
+export type WeaponRangeType = "melee" | "ranged";
+
 export interface CatalogItem {
   id: string;
   name: string;
@@ -182,6 +185,13 @@ export interface CatalogItem {
   isCommon: boolean;
   isContainer: boolean;
   armorClass?: number;
+  armorType?: ArmorType;
+  weaponCategory?: string;
+  weaponRangeType?: WeaponRangeType;
+  weaponProperties?: string[];
+  damageDice?: string;
+  damageType?: string;
+  range?: string;
   value?: number;
 }
 
@@ -192,6 +202,13 @@ export interface BuilderEquipmentOption {
   sourceType: "class" | "background" | "manual";
   category: ItemCategory;
   armorClass?: number;
+  armorType?: ArmorType;
+  weaponCategory?: string;
+  weaponRangeType?: WeaponRangeType;
+  weaponProperties?: string[];
+  damageDice?: string;
+  damageType?: string;
+  range?: string;
   value?: number;
 }
 
@@ -291,6 +308,21 @@ export interface SheetWeapon {
   attackBonus: string;  // "+5" or "—"
   damage: string;       // "1d6+3 Cortante"
   notes: string;        // "Versátil (1d8)"
+  abilityKey?: AttributeKey;
+  isProficient?: boolean;
+  damageBreakdown?: Array<{ label: string; value: string }>;
+}
+
+export interface Pendency {
+  id: string;
+  stepSlug: BuilderStepSlug;
+  label: string;
+  severity: "blocking" | "warning";
+}
+
+export interface ArmorClassBreakdownPart {
+  label: string;
+  value: number;
 }
 
 export interface CharacterSheetSummary {
@@ -307,6 +339,7 @@ export interface CharacterSheetSummary {
   proficiencyBonus: number;
   hitPoints: number;
   armorClass: number;
+  armorClassBreakdown?: ArmorClassBreakdownPart[];
   selectedEquipment: BuilderEquipmentOption[];
   selectedTraits: BuilderFeature[];
   classFeatures: BuilderFeature[];
@@ -316,6 +349,7 @@ export interface CharacterSheetSummary {
   speciesChoices: Record<string, string>;
   speciesLanguages: string[];
   validationMessages: string[];
+  pendencies?: Pendency[];
 
   // — new fields —
   name: string;

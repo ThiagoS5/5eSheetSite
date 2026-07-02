@@ -138,6 +138,15 @@ describe("BuilderSidebar", () => {
     expect(document.querySelector(".fa-check")).toBeInTheDocument();
   });
 
+  it("marks available steps with typed pendencies as warnings", () => {
+    renderSidebar();
+
+    const backgroundLink = screen.getByRole("link", { name: /Antecedente/ });
+    expect(backgroundLink).toHaveClass("text-accent");
+    expect(backgroundLink).toHaveTextContent("1 pendencias");
+    expect(document.querySelector(".fa-triangle-exclamation")).toBeInTheDocument();
+  });
+
   it("renders mapped FontAwesome icons for builder steps", () => {
     renderSidebar();
 

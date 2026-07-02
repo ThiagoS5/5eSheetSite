@@ -36,11 +36,12 @@ import { cn } from "@/src/lib/utils";
 import { FontAwesomeIcon } from "@/src/components/atoms/FontAwesomeIcon";
 import { builderStepNavigation } from "@/src/components/templates/builderStepNavigation";
 import { useCharacterStore } from "@/src/store/useCharacterStore";
+import { getBuilderClasses } from "@/src/services/ruleService";
 import type { CharacterBuilderState } from "@/src/store/characterStore.types";
-import { validateBuilderStep } from "@/rules/builderValidation";
-import type { BuilderStepSlug } from "@/types/builder";
+import { deriveBuilderPendencies } from "@/rules/pendencyRules";
+import type { BuilderStepSlug, Pendency } from "@/types/builder";
 
-type StepStatus = "active" | "complete" | "available" | "locked";
+type StepStatus = "active" | "complete" | "warning" | "available" | "locked";
 
 interface SidebarStepGroup {
   id: "class" | "species";
@@ -109,6 +110,12 @@ export function BuilderSidebar() {
   const [isSpeciesOpen, setIsSpeciesOpen] = useState(false);
   const classGroupOpen = isClassRoute || isClassOpen;
   const speciesGroupOpen = isSpeciesRoute || isSpeciesOpen;
+  const pendencies = useMemo(() => {
+    const characterClass = getBuilderClasses().find(
+      (entry) => entry.id === characterState.selectedClassId,
+    );
+    return deriveBuilderPendencies({ state: characterState, characterClass });
+  }, [characterState]);
 
   const flatSteps = useMemo(
     () => builderStepNavigation.filter((step) => !groupedSlugs.has(step.slug)),
@@ -198,12 +205,14 @@ export function BuilderSidebar() {
                   collapsed={collapsed}
                   currentSlug={currentSlug}
                   characterState={characterState}
+                  pendencies={pendencies}
                 />
                 <FlatStepItems
                   steps={flatSteps.filter((step) => step.slug === "antecedente")}
                   collapsed={collapsed}
                   currentSlug={currentSlug}
                   characterState={characterState}
+                  pendencies={pendencies}
                 />
                 <GroupedStepItem
                   group={sidebarGroups[1]}
@@ -212,12 +221,14 @@ export function BuilderSidebar() {
                   collapsed={collapsed}
                   currentSlug={currentSlug}
                   characterState={characterState}
+                  pendencies={pendencies}
                 />
                 <FlatStepItems
                   steps={flatSteps.filter((step) => step.slug !== "antecedente")}
                   collapsed={collapsed}
                   currentSlug={currentSlug}
                   characterState={characterState}
+                  pendencies={pendencies}
                 />
               </SidebarMenu>
             </nav>
@@ -264,6 +275,7 @@ function GroupedStepItem({
   collapsed,
   currentSlug,
   characterState,
+  pendencies,
 }: {
   group: SidebarStepGroup;
   open: boolean;
@@ -271,10 +283,14 @@ function GroupedStepItem({
   collapsed: boolean;
   currentSlug: BuilderStepSlug;
   characterState: CharacterBuilderState;
+  pendencies: Pendency[];
 }) {
   const isGroupActive = group.childSlugs.includes(currentSlug);
   const groupHasCompletedChildren = group.childSlugs.some((slug) =>
-    isStepComplete(slug, characterState),
+    isStepComplete(slug, characterState, pendencies),
+  );
+  const groupHasPendingChildren = group.childSlugs.some((slug) =>
+    getStepPendencies(slug, pendencies).length > 0,
   );
 
   return (
@@ -291,7 +307,9 @@ function GroupedStepItem({
                 ? activeStepClass
                 : groupHasCompletedChildren
                   ? completeStepClass
-                  : availableStepClass,
+                  : groupHasPendingChildren
+                    ? warningStepClass
+                    : availableStepClass,
               collapsed && "xl:justify-center xl:px-0",
             )}
           >
@@ -299,6 +317,7 @@ function GroupedStepItem({
               icon={getStepIcon(group.iconSlug)}
               active={isGroupActive}
               done={groupHasCompletedChildren && !isGroupActive}
+              warning={groupHasPendingChildren && !isGroupActive}
             />
             <StepLabel
               collapsed={collapsed}
@@ -322,6 +341,7 @@ function GroupedStepItem({
                 slug={slug}
                 currentSlug={currentSlug}
                 characterState={characterState}
+                pendencies={pendencies}
               />
             ))}
           </SidebarMenuSub>
@@ -336,16 +356,19 @@ function FlatStepItems({
   collapsed,
   currentSlug,
   characterState,
+  pendencies,
 }: {
   steps: typeof builderStepNavigation;
   collapsed: boolean;
   currentSlug: BuilderStepSlug;
   characterState: CharacterBuilderState;
+  pendencies: Pendency[];
 }) {
   return (
     <>
       {steps.map((step) => {
-        const status = getStepStatus(step.slug, currentSlug, characterState);
+        const stepPendencies = getStepPendencies(step.slug, pendencies);
+        const status = getStepStatus(step.slug, currentSlug, characterState, pendencies);
         const isLocked = status === "locked";
 
         return (
@@ -363,7 +386,12 @@ function FlatStepItems({
                   collapsed && "xl:justify-center xl:px-0",
                 )}
               >
-                <StepIcon icon={getStepIcon(step.slug)} active={false} done={false} />
+                <StepIcon
+                  icon={getStepIcon(step.slug)}
+                  active={false}
+                  done={false}
+                  warning={false}
+                />
                 <StepLabel
                   collapsed={collapsed}
                   label={step.label}
@@ -389,12 +417,14 @@ function FlatStepItems({
                     icon={getStepIcon(step.slug)}
                     active={status === "active"}
                     done={status === "complete"}
+                    warning={status === "warning"}
                   />
                   <StepLabel
                     collapsed={collapsed}
                     label={step.label}
                     shortLabel={step.shortLabel}
                   />
+                  <PendencyBadge count={stepPendencies.length} />
                 </Link>
               </SidebarMenuButton>
             )}
@@ -409,13 +439,16 @@ function SubStepItem({
   slug,
   currentSlug,
   characterState,
+  pendencies,
 }: {
   slug: BuilderStepSlug;
   currentSlug: BuilderStepSlug;
   characterState: CharacterBuilderState;
+  pendencies: Pendency[];
 }) {
   const step = getStepBySlug(slug);
-  const status = getStepStatus(slug, currentSlug, characterState);
+  const status = getStepStatus(slug, currentSlug, characterState, pendencies);
+  const stepPendencies = getStepPendencies(slug, pendencies);
   const isLocked = status === "locked";
 
   if (!step) {
@@ -429,9 +462,10 @@ function SubStepItem({
           aria-disabled="true"
           className={cn(subStepClass, getSubStepClass(status))}
         >
-          <SubStepStatusIcon status={status} />
-          <span>{step.label}</span>
-        </SidebarMenuSubButton>
+            <SubStepStatusIcon status={status} />
+            <span>{step.label}</span>
+            <PendencyBadge count={stepPendencies.length} />
+          </SidebarMenuSubButton>
       ) : (
         <SidebarMenuSubButton
           asChild
@@ -445,6 +479,7 @@ function SubStepItem({
           >
             <SubStepStatusIcon status={status} />
             <span>{step.label}</span>
+            <PendencyBadge count={stepPendencies.length} />
           </Link>
         </SidebarMenuSubButton>
       )}
@@ -457,6 +492,7 @@ const baseStepClass =
 
 const activeStepClass = "border-primary bg-primary/15 text-foreground";
 const completeStepClass = "border-transparent text-brand-green hover:text-brand-green";
+const warningStepClass = "border-accent text-accent hover:text-accent";
 const availableStepClass = "border-transparent text-muted-foreground hover:text-subdued";
 const lockedStepClass =
   "cursor-not-allowed border-transparent text-faint opacity-70 hover:bg-transparent hover:text-faint";
@@ -470,6 +506,10 @@ function getStepClass(status: StepStatus): string {
 
   if (status === "complete") {
     return completeStepClass;
+  }
+
+  if (status === "warning") {
+    return warningStepClass;
   }
 
   if (status === "locked") {
@@ -488,6 +528,10 @@ function getSubStepClass(status: StepStatus): string {
     return "text-brand-green hover:text-brand-green";
   }
 
+  if (status === "warning") {
+    return "text-accent hover:text-accent";
+  }
+
   if (status === "locked") {
     return "cursor-not-allowed text-faint hover:bg-transparent hover:text-faint";
   }
@@ -499,6 +543,7 @@ function getStepStatus(
   slug: BuilderStepSlug,
   currentSlug: BuilderStepSlug,
   state: CharacterBuilderState,
+  pendencies: Pendency[],
 ): StepStatus {
   const stepIndex = getStepIndex(slug);
 
@@ -510,7 +555,11 @@ function getStepStatus(
     return "active";
   }
 
-  if (isStepComplete(slug, state) && stepIndex < state.maxUnlockedStepIndex) {
+  if (getStepPendencies(slug, pendencies).length > 0) {
+    return "warning";
+  }
+
+  if (isStepComplete(slug, state, pendencies) && stepIndex < state.maxUnlockedStepIndex) {
     return "complete";
   }
 
@@ -520,24 +569,21 @@ function getStepStatus(
 function isStepComplete(
   slug: BuilderStepSlug,
   state: CharacterBuilderState,
+  pendencies: Pendency[],
 ): boolean {
   if (slug === "classe") {
-    return Boolean(state.selectedClassId);
-  }
-
-  if (slug === "recursos-classe") {
-    return Boolean(state.selectedClassId) && validateBuilderStep(slug, state).length === 0;
+    return Boolean(state.selectedClassId) && getStepPendencies(slug, pendencies).length === 0;
   }
 
   if (slug === "especie") {
-    return Boolean(state.selectedSpeciesId);
+    return Boolean(state.selectedSpeciesId) && getStepPendencies(slug, pendencies).length === 0;
   }
 
-  if (slug === "detalhes-especie") {
-    return Boolean(state.selectedSpeciesId) && validateBuilderStep(slug, state).length === 0;
-  }
+  return getStepPendencies(slug, pendencies).length === 0;
+}
 
-  return validateBuilderStep(slug, state).length === 0;
+function getStepPendencies(slug: BuilderStepSlug, pendencies: Pendency[]): Pendency[] {
+  return pendencies.filter((pendency) => pendency.stepSlug === slug);
 }
 
 function getStepBySlug(slug: BuilderStepSlug) {
@@ -556,16 +602,18 @@ function StepIcon({
   icon,
   active,
   done,
+  warning,
 }: {
   icon: string;
   active: boolean;
   done: boolean;
+  warning: boolean;
 }) {
   return (
     <FontAwesomeIcon
       iconClassName={icon}
       className={`h-5 w-5 shrink-0 ${
-        active ? "text-primary" : done ? "text-brand-green" : "text-current"
+        active ? "text-primary" : warning ? "text-accent" : done ? "text-brand-green" : "text-current"
       }`}
     />
   );
@@ -581,6 +629,15 @@ function SubStepStatusIcon({ status }: { status: StepStatus }) {
     );
   }
 
+  if (status === "warning") {
+    return (
+      <FontAwesomeIcon
+        iconClassName="fa-solid fa-triangle-exclamation"
+        className="h-3 w-3 shrink-0 text-accent"
+      />
+    );
+  }
+
   return (
     <span
       aria-hidden="true"
@@ -589,6 +646,22 @@ function SubStepStatusIcon({ status }: { status: StepStatus }) {
         status === "active" ? "bg-primary" : "bg-faint",
       )}
     />
+  );
+}
+
+function PendencyBadge({ count }: { count: number }) {
+  if (count === 0) {
+    return null;
+  }
+
+  return (
+    <span className="ml-auto rounded border border-accent/40 px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-normal text-accent">
+      <FontAwesomeIcon
+        iconClassName="fa-solid fa-triangle-exclamation"
+        className="mr-1 inline h-3 w-3"
+      />
+      {count} pendencias
+    </span>
   );
 }
 
