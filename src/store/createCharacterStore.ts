@@ -403,6 +403,10 @@ function extractFlatState(state: FlatCharacterBuilderState): FlatCharacterBuilde
     baseAttributes: { ...state.baseAttributes },
     backgroundAbilityBonuses: { ...state.backgroundAbilityBonuses },
     description: { ...state.description },
+    money: { ...state.money },
+    moneyTouched: state.moneyTouched,
+    carriedLoadKg: state.carriedLoadKg,
+    skillModifierOverrides: { ...state.skillModifierOverrides },
   };
 }
 

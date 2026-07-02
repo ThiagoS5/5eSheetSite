@@ -18,6 +18,7 @@ import {
   getUnresolvedLevelChoices,
 } from "@/src/store/levelChoiceResolver";
 import type { CharacterBuilderState } from "@/src/store/characterStore.types";
+import { EMPTY_COIN_POUCH } from "@/src/types/characterBuild";
 import type {
   BuilderStepSlug,
   CharacterSheetSummary,
@@ -88,6 +89,7 @@ function computeSkills(
   classSkillProficiencies: string[],
   skillTraining: Record<string, string>,
   profBonus: number,
+  skillModifierOverrides: Record<string, number> = {},
 ): SheetSkill[] {
   const profSet = new Set(classSkillProficiencies);
   return ALL_SKILLS.map((name) => {
@@ -99,15 +101,52 @@ function computeSkills(
     const isExpert = training === "expertise";
     const profMod = isExpert ? profBonus * 2 : isProficient ? profBonus : 0;
     const halfMod = training === "half" ? Math.floor(profBonus / 2) : 0;
+    let modifier = baseMod + profMod + halfMod;
+    let isOverridden = false;
+    const override = skillModifierOverrides?.[name];
+    if (typeof override === "number") {
+      modifier = override;
+      isOverridden = true;
+    }
     return {
       name,
       label: SKILL_DISPLAY[name] ?? name,
       attributeKey: attrKey,
-      modifier: baseMod + profMod + halfMod,
+      modifier,
       isProficient,
       isExpert,
+      isOverridden,
     };
   });
+}
+
+function parseLeadingGoldInteger(label: string | undefined): number {
+  if (!label) return 0;
+  const match = label.match(/-?\d+/);
+  if (!match) return 0;
+  const parsed = parseInt(match[0], 10);
+  return Number.isNaN(parsed) ? 0 : parsed;
+}
+
+export function deriveStartingGoldPo(state: CharacterBuilderState): number {
+  const characterClass = getBuilderClasses().find(
+    (entry) => entry.id === state.selectedClassId,
+  );
+  const background = getBuilderBackgrounds().find(
+    (entry) => entry.id === state.selectedBackgroundId,
+  );
+
+  const goldLabelBySource: Partial<Record<string, string | undefined>> = {
+    class: characterClass?.startingEquipmentGold,
+    background: background?.equipmentGold,
+  };
+
+  let total = 0;
+  for (const [key, choice] of Object.entries(state.equipmentChoicesBySource)) {
+    if (choice?.mode !== "gold") continue;
+    total += parseLeadingGoldInteger(goldLabelBySource[key]);
+  }
+  return total;
 }
 
 export function selectCharacterSheetSummary(
@@ -141,6 +180,7 @@ export function selectCharacterSheetSummary(
       sourceType: classKitItemIdSet.has(item.id)
         ? ("class" as const)
         : ("manual" as const),
+      category: item.category,
       armorClass: item.armorClass,
       value: item.value,
     }));
@@ -159,6 +199,7 @@ export function selectCharacterSheetSummary(
     state.classSkillProficiencies,
     state.skillTraining,
     profBonus,
+    state.skillModifierOverrides,
   );
 
   const sheetAttributes: SheetAttribute[] = ATTRIBUTE_KEYS.map((key) => ({
@@ -293,6 +334,13 @@ export function selectCharacterSheetSummary(
     vulnerabilities: [],
     features,
     weapons,
+    money: state.moneyTouched
+      ? state.money
+      : { ...EMPTY_COIN_POUCH, po: deriveStartingGoldPo(state) },
+    carry: {
+      currentKg: state.carriedLoadKg,
+      maxKg: Math.round(finalAttributes.forca * 7.5),
+    },
   };
 }
 

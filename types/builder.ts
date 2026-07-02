@@ -4,6 +4,7 @@ import type {
   CharacterAttributes,
   Ruleset,
 } from "@/types/dnd";
+import type { CoinPouch } from "@/src/types/characterBuild";
 
 export type BuilderStepSlug =
   | "classe"
@@ -189,6 +190,7 @@ export interface BuilderEquipmentOption {
   name: string;
   source: string;
   sourceType: "class" | "background" | "manual";
+  category: ItemCategory;
   armorClass?: number;
   value?: number;
 }
@@ -262,6 +264,7 @@ export interface SheetSkill {
   modifier: number;
   isProficient: boolean;
   isExpert: boolean;
+  isOverridden: boolean;
 }
 
 export interface SheetSavingThrow {
@@ -340,4 +343,6 @@ export interface CharacterSheetSummary {
   vulnerabilities: string[];
   features: SheetFeature[];
   weapons: SheetWeapon[];
+  money: CoinPouch;
+  carry: { currentKg: number; maxKg: number };
 }

@@ -208,6 +208,7 @@ export function normalizeEquipmentOption(rawItem: Raw5eItem): BuilderEquipmentOp
     name: rawItem.name,
     source: rawItem.source,
     sourceType: rawItem.builderSourceType ?? (rawItem.ac ? "class" : "manual"),
+    category: "Other Gear",
     armorClass: rawItem.ac,
     value: rawItem.value,
   };

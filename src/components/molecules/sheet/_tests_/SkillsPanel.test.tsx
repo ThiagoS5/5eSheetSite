@@ -8,8 +8,8 @@ import { SkillsPanel } from "@/src/components/molecules/sheet/SkillsPanel";
 import type { SheetSkill } from "@/types/builder";
 
 const skills: SheetSkill[] = [
-  { name: "Arcana", label: "Arcanismo", attributeKey: "inteligencia", modifier: 7, isProficient: true, isExpert: false },
-  { name: "Athletics", label: "Atletismo", attributeKey: "forca", modifier: -1, isProficient: false, isExpert: false },
+  { name: "Arcana", label: "Arcanismo", attributeKey: "inteligencia", modifier: 7, isProficient: true, isExpert: false, isOverridden: false },
+  { name: "Athletics", label: "Atletismo", attributeKey: "forca", modifier: -1, isProficient: false, isExpert: false, isOverridden: false },
 ];
 
 describe("SkillsPanel", () => {

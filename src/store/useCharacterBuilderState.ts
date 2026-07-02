@@ -34,6 +34,10 @@ export function useCharacterBuilderState(): CharacterBuilderState {
   const baseAttributes = useCharacterStore((s) => s.baseAttributes);
   const backgroundAbilityBonuses = useCharacterStore((s) => s.backgroundAbilityBonuses);
   const description = useCharacterStore((s) => s.description);
+  const money = useCharacterStore((s) => s.money);
+  const moneyTouched = useCharacterStore((s) => s.moneyTouched);
+  const carriedLoadKg = useCharacterStore((s) => s.carriedLoadKg);
+  const skillModifierOverrides = useCharacterStore((s) => s.skillModifierOverrides);
 
   return useMemo(
     () => ({
@@ -57,6 +61,10 @@ export function useCharacterBuilderState(): CharacterBuilderState {
       baseAttributes,
       backgroundAbilityBonuses,
       description,
+      money,
+      moneyTouched,
+      carriedLoadKg,
+      skillModifierOverrides,
     }),
     [
       ruleset,
@@ -79,6 +87,10 @@ export function useCharacterBuilderState(): CharacterBuilderState {
       baseAttributes,
       backgroundAbilityBonuses,
       description,
+      money,
+      moneyTouched,
+      carriedLoadKg,
+      skillModifierOverrides,
     ],
   );
 }

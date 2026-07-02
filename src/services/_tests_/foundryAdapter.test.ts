@@ -52,6 +52,10 @@ const state: CharacterBuilderState = {
     tracos: "Never backs down.",
     notas: "Export test.",
   },
+  money: { pc: 0, pp: 0, pe: 0, po: 0, pl: 0 },
+  moneyTouched: false,
+  carriedLoadKg: 0,
+  skillModifierOverrides: {},
 };
 
 const summary: CharacterSheetSummary = {
@@ -80,6 +84,7 @@ const summary: CharacterSheetSummary = {
       name: "Chain Mail",
       source: "XPHB",
       sourceType: "manual",
+      category: "Armor",
       armorClass: 16,
     },
   ],
@@ -116,6 +121,8 @@ const summary: CharacterSheetSummary = {
   vulnerabilities: [],
   features: [],
   weapons: [],
+  money: { pc: 0, pp: 0, pe: 0, po: 0, pl: 0 },
+  carry: { currentKg: 0, maxKg: 0 },
 };
 
 describe("foundryAdapter", () => {

@@ -453,5 +453,7 @@ function createEmptyDerivedSheet(
     vulnerabilities: [],
     features: [],
     weapons: [],
+    money: { ...EMPTY_COIN_POUCH },
+    carry: { currentKg: 0, maxKg: 0 },
   };
 }
