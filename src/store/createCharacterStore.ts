@@ -9,14 +9,18 @@ import {
   getDefaultFlatState,
   normalizeCharacterBuild,
 } from "@/src/store/characterBuildModel";
+import { deriveStartingGoldPo } from "@/src/store/characterSelectors";
 import type {
   AttributeGenerationMethod,
   CharacterBuilderState,
   CharacterBuilderStore,
   FlatCharacterBuilderState,
 } from "@/src/store/characterStore.types";
-import { CHARACTER_BUILD_SCHEMA_VERSION } from "@/src/types/characterBuild";
-import type { CharacterBuild } from "@/src/types/characterBuild";
+import {
+  CHARACTER_BUILD_SCHEMA_VERSION,
+  EMPTY_COIN_POUCH,
+} from "@/src/types/characterBuild";
+import type { CharacterBuild, CoinPouch } from "@/src/types/characterBuild";
 import type { BuilderStepSlug } from "@/types/builder";
 
 export const initialCharacterState: CharacterBuilderState =
@@ -166,6 +170,16 @@ export function createCharacterStore(
           },
         }),
       ),
+    setSkillOverride: (skill, value) =>
+      set((state) => {
+        const next = { ...state.skillModifierOverrides };
+        if (value === null) {
+          delete next[skill];
+        } else {
+          next[skill] = value;
+        }
+        return patchCharacterState(state, { skillModifierOverrides: next });
+      }),
     setClassFeatureChoice: (choiceId, values) =>
       set((state) =>
         patchCharacterState(state, {
@@ -244,6 +258,32 @@ export function createCharacterStore(
         patchCharacterState(state, {
           baseAttributes: { ...state.baseAttributes, carisma },
         }),
+      ),
+    adjustCoin: (kind, delta) =>
+      set((state) => {
+        const basePouch: CoinPouch = state.moneyTouched
+          ? state.money
+          : { ...EMPTY_COIN_POUCH, po: deriveStartingGoldPo(state) };
+        const nextValue = Math.max(0, basePouch[kind] + delta);
+        return patchCharacterState(state, {
+          money: { ...basePouch, [kind]: nextValue },
+          moneyTouched: true,
+        });
+      }),
+    setCoin: (kind, value) =>
+      set((state) => {
+        const basePouch: CoinPouch = state.moneyTouched
+          ? state.money
+          : { ...EMPTY_COIN_POUCH, po: deriveStartingGoldPo(state) };
+        const nextValue = Math.max(0, value);
+        return patchCharacterState(state, {
+          money: { ...basePouch, [kind]: nextValue },
+          moneyTouched: true,
+        });
+      }),
+    setCarriedLoadKg: (value) =>
+      set((state) =>
+        patchCharacterState(state, { carriedLoadKg: Math.max(0, value) }),
       ),
     resetStore: () => {
       const build = createEmptyCharacterBuild();

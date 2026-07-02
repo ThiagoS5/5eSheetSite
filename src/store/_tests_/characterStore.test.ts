@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { createCharacterStore } from "@/src/store/createCharacterStore";
+import { deriveStartingGoldPo } from "@/src/store/characterSelectors";
+import { getBuilderClasses } from "@/src/services/ruleService";
 
 describe("createCharacterStore", () => {
   it("starts with a canonical character build and mirrored level 1 fields", () => {
@@ -204,5 +206,58 @@ describe("createCharacterStore", () => {
 
     store.getState().selectClass("wizard-xphb");
     expect(store.getState().selectedSubclassId).toBe("");
+  });
+
+  it("adjustCoin materializes the derived starting gold before applying the delta", () => {
+    const store = createCharacterStore();
+    const fighter = getBuilderClasses().find((c) => c.id === "fighter-xphb");
+    if (!fighter) {
+      throw new Error("expected fighter-xphb to exist");
+    }
+    store.getState().selectClass("fighter-xphb");
+    store.getState().setEquipmentSourceMode("class", "gold");
+
+    const expectedStartingPo = deriveStartingGoldPo(store.getState());
+    expect(store.getState().moneyTouched).toBe(false);
+
+    store.getState().adjustCoin("po", 5);
+
+    expect(store.getState().moneyTouched).toBe(true);
+    expect(store.getState().money.po).toBe(expectedStartingPo + 5);
+  });
+
+  it("adjustCoin clamps the resulting value to zero", () => {
+    const store = createCharacterStore();
+    store.getState().adjustCoin("po", -100000);
+    expect(store.getState().money.po).toBe(0);
+    expect(store.getState().moneyTouched).toBe(true);
+  });
+
+  it("setCoin clamps the resulting value to zero", () => {
+    const store = createCharacterStore();
+    store.getState().setCoin("pp", -50);
+    expect(store.getState().money.pp).toBe(0);
+    expect(store.getState().moneyTouched).toBe(true);
+  });
+
+  it("setCarriedLoadKg clamps to zero", () => {
+    const store = createCharacterStore();
+    store.getState().setCarriedLoadKg(-3);
+    expect(store.getState().carriedLoadKg).toBe(0);
+  });
+
+  it("setSkillOverride sets and then removes a skill override key", () => {
+    const store = createCharacterStore();
+    store.getState().setSkillOverride("Arcana", 9);
+    expect(store.getState().skillModifierOverrides.Arcana).toBe(9);
+
+    store.getState().setSkillOverride("Arcana", null);
+    expect(store.getState().skillModifierOverrides).not.toHaveProperty("Arcana");
+  });
+
+  it("setSkillTraining persists the training level", () => {
+    const store = createCharacterStore();
+    store.getState().setSkillTraining("Stealth", "expertise");
+    expect(store.getState().skillTraining.Stealth).toBe("expertise");
   });
 });

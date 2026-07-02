@@ -77,6 +77,7 @@ export interface CharacterBuilderActions {
   setPendingChoiceIds: (choiceIds: string[]) => void;
   setClassSkillProficiencies: (skills: string[]) => void;
   setSkillTraining: (skill: string, level: SkillTrainingLevel) => void;
+  setSkillOverride: (skill: string, value: number | null) => void;
   setClassFeatureChoice: (choiceId: string, values: string[]) => void;
   setLevelAsiOrFeat: (level: number, choice: AsiOrFeatChoice | undefined) => void;
   setSpeciesChoice: (choiceId: string, value: string) => void;
@@ -90,6 +91,9 @@ export interface CharacterBuilderActions {
   setInteligencia: (inteligencia: number) => void;
   setSabedoria: (sabedoria: number) => void;
   setCarisma: (carisma: number) => void;
+  adjustCoin: (kind: keyof CoinPouch, delta: number) => void;
+  setCoin: (kind: keyof CoinPouch, value: number) => void;
+  setCarriedLoadKg: (value: number) => void;
   resetStore: () => CharacterBuild;
   loadCharacterBuild: (build: CharacterBuild) => void;
   commitCurrentBuild: (
