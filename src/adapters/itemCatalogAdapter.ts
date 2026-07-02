@@ -1,5 +1,5 @@
 import { toSlug } from "@/src/adapters/fiveEToolsAdapter";
-import type { CatalogItem, ItemCategory } from "@/types/builder";
+import type { ArmorType, CatalogItem, ItemCategory } from "@/types/builder";
 import type { Raw5eItem } from "@/types/fiveETools";
 
 const TYPE_TO_CATEGORY: Record<string, ItemCategory> = {
@@ -22,8 +22,24 @@ function resolveCategory(rawItem: Raw5eItem): ItemCategory {
   return "Other Gear";
 }
 
+function resolveArmorType(rawItem: Raw5eItem): ArmorType | undefined {
+  const code = (rawItem.type ?? "").split("|")[0];
+  if (code === "LA") return "light";
+  if (code === "MA") return "medium";
+  if (code === "HA") return "heavy";
+  if (code === "S") return "shield";
+  return undefined;
+}
+
+function normalizeWeaponProperties(properties: Raw5eItem["property"]): string[] {
+  return (properties ?? [])
+    .filter((property): property is string => typeof property === "string")
+    .map((property) => property.split("|")[0]);
+}
+
 export function normalizeCatalogItem(rawItem: Raw5eItem): CatalogItem {
   const rarity = rawItem.rarity;
+  const code = (rawItem.type ?? "").split("|")[0];
 
   return {
     id: toSlug(rawItem.name, rawItem.source),
@@ -34,6 +50,13 @@ export function normalizeCatalogItem(rawItem: Raw5eItem): CatalogItem {
     isCommon: rarity === "common",
     isContainer: rawItem.containerCapacity != null,
     armorClass: rawItem.ac,
+    armorType: resolveArmorType(rawItem),
+    weaponCategory: rawItem.weaponCategory,
+    weaponRangeType: code === "R" ? "ranged" : code === "M" ? "melee" : undefined,
+    weaponProperties: normalizeWeaponProperties(rawItem.property),
+    damageDice: rawItem.dmg1,
+    damageType: rawItem.dmgType,
+    range: rawItem.range,
     value: rawItem.value,
   };
 }

@@ -20,7 +20,11 @@ import {
   CHARACTER_BUILD_SCHEMA_VERSION,
   EMPTY_COIN_POUCH,
 } from "@/src/types/characterBuild";
-import type { CharacterBuild, CoinPouch } from "@/src/types/characterBuild";
+import type {
+  CharacterBuild,
+  CoinPouch,
+  EquipmentChoicesBySource,
+} from "@/src/types/characterBuild";
 import type { BuilderStepSlug } from "@/types/builder";
 
 export const initialCharacterState: CharacterBuilderState =
@@ -63,6 +67,10 @@ export function createCharacterStore(
               : {},
           selectedSubclassId:
             state.selectedClassId === selectedClassId ? state.selectedSubclassId : "",
+          equipmentChoicesBySource:
+            state.selectedClassId === selectedClassId
+              ? state.equipmentChoicesBySource
+              : omitEquipmentSource(state.equipmentChoicesBySource, "class"),
         }),
       ),
     selectSubclass: (selectedSubclassId) =>
@@ -356,11 +364,20 @@ function patchCharacterState(
       createdAt: state.characterBuild.exportMetadata.createdAt,
       currentStepSlug: state.characterBuild.draft.currentStepSlug,
       saveId: state.characterBuild.exportMetadata.saveId,
-      updatedAt: state.characterBuild.exportMetadata.updatedAt,
+      updatedAt: new Date().toISOString(),
     },
   );
 
   return createStoreStateFromBuild(build);
+}
+
+function omitEquipmentSource(
+  choices: EquipmentChoicesBySource,
+  source: keyof EquipmentChoicesBySource,
+): EquipmentChoicesBySource {
+  const next = { ...choices };
+  delete next[source];
+  return next;
 }
 
 function createCommittedBuild(

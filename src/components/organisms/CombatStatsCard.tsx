@@ -8,6 +8,12 @@ interface CombatStatsCardProps {
 
 export function CombatStatsCard({ summary }: CombatStatsCardProps) {
   const initiative = getAbilityModifier(summary.finalAttributes.destreza);
+  const armorClassFormula = summary.armorClassBreakdown
+    ?.map((part) => `${part.value} ${part.label}`)
+    .join(" + ");
+  const armorClassTitle = armorClassFormula
+    ? `CA ${summary.armorClass} = ${armorClassFormula}`
+    : undefined;
 
   return (
     <section
@@ -21,7 +27,12 @@ export function CombatStatsCard({ summary }: CombatStatsCardProps) {
         Combate
       </h3>
       <dl className="mt-4 grid grid-cols-2 gap-3 2xl:grid-cols-4">
-        <StatBadge label="CA" value={summary.armorClass} />
+        <StatBadge
+          label="CA"
+          value={summary.armorClass}
+          detail={armorClassFormula}
+          title={armorClassTitle}
+        />
         <StatBadge label="PV" value={summary.hitPoints} />
         <StatBadge label="Iniciativa" value={formatModifier(initiative)} />
         <StatBadge label="Proficiência" value={formatModifier(summary.proficiencyBonus)} />

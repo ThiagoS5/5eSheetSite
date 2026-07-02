@@ -139,8 +139,12 @@ export interface Raw5eItem {
   edition?: string;
   type?: string;
   weaponCategory?: string;
+  property?: string[];
   mastery?: string | string[];
   ac?: number;
+  dmg1?: string;
+  dmgType?: string;
+  range?: string;
   value?: number;
   entries?: unknown[];
   builderSourceType?: "class" | "background" | "manual";

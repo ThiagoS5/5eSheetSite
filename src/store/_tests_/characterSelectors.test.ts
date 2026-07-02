@@ -95,6 +95,21 @@ describe("character selectors", () => {
     expect(summary.selectedEquipment.some((e) => e.id === "chain-mail-xphb")).toBe(true);
   });
 
+  it("derives real weapon attack bonuses and damage from inventory", () => {
+    const store = createCharacterStore();
+    store.getState().selectClass("fighter-xphb");
+    store.getState().setForca(14);
+    store.getState().addInventoryItem("longsword-xphb");
+
+    const summary = selectCharacterSheetSummary(store.getState());
+
+    expect(summary.weapons.find((weapon) => weapon.name === "Longsword")).toMatchObject({
+      attackBonus: "+4",
+      damage: "1d8+2 Cortante",
+      notes: expect.stringContaining("proficiente"),
+    });
+  });
+
   it("applies ASI bonuses to final attributes and recomputes HP", () => {
     const store = createCharacterStore();
     store.getState().selectClass("fighter-xphb"); // d10
@@ -115,10 +130,12 @@ describe("character selectors", () => {
     store.getState().setLevel(3);
 
     const pending = selectCharacterSheetSummary(store.getState());
+    expect((pending.pendencies ?? []).some((p) => p.id === "level-3-subclass")).toBe(true);
     expect(pending.validationMessages.some((m) => /subclasse/i.test(m))).toBe(true);
 
     store.getState().selectSubclass("battle-master-xphb");
     const resolved = selectCharacterSheetSummary(store.getState());
+    expect((resolved.pendencies ?? []).some((p) => p.id === "level-3-subclass")).toBe(false);
     expect(resolved.features.some((f) => f.source === "class")).toBe(true);
     expect(resolved.validationMessages.some((m) => /subclasse/i.test(m))).toBe(false);
   });
