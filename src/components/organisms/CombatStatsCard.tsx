@@ -15,6 +15,13 @@ export function CombatStatsCard({ summary }: CombatStatsCardProps) {
     ? `CA ${summary.armorClass} = ${armorClassFormula}`
     : undefined;
 
+  const hitPointsFormula = summary.maxHpBreakdown
+    ?.map((part) => `${part.value} ${part.label}`)
+    .join(" + ");
+  const hitPointsTitle = hitPointsFormula
+    ? `PV ${summary.hitPoints} = ${hitPointsFormula}`
+    : undefined;
+
   return (
     <section
       aria-labelledby="combat-stats-title"
@@ -33,7 +40,12 @@ export function CombatStatsCard({ summary }: CombatStatsCardProps) {
           detail={armorClassFormula}
           title={armorClassTitle}
         />
-        <StatBadge label="PV" value={summary.hitPoints} />
+        <StatBadge
+          label="PV"
+          value={summary.hitPoints}
+          detail={hitPointsFormula}
+          title={hitPointsTitle}
+        />
         <StatBadge label="Iniciativa" value={formatModifier(initiative)} />
         <StatBadge label="Proficiência" value={formatModifier(summary.proficiencyBonus)} />
       </dl>
