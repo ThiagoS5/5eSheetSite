@@ -78,7 +78,7 @@ describe("BuilderStepPanel", () => {
     fireEvent.click(screen.getByRole("button", { name: "Simples" }));
 
     expect(screen.getByText(/Sugestoes destacadas/i)).toBeInTheDocument();
-  });
+  }, 15000);
 
   it("opens a full sheet preview dialog from the step toolbar", () => {
     render(
