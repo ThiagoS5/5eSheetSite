@@ -14,6 +14,14 @@ interface AbilityRollPanelProps {
 
 type Assignments = Partial<Record<AttributeKey, number>>;
 
+function countDuplicateTotals(rolls: AbilityRoll[]): Map<number, number> {
+  const counts = new Map<number, number>();
+  for (const roll of rolls) {
+    counts.set(roll.total, (counts.get(roll.total) ?? 0) + 1);
+  }
+  return counts;
+}
+
 export function AbilityRollPanel({
   onApply,
   rollFn = () => rollAbilityScoreSet(),
@@ -40,7 +48,7 @@ export function AbilityRollPanel({
     });
   }
 
-  const assignedIndexes = new Set(
+  const assignedRollIndexes = new Set(
     attributes
       .map((attribute) => assignments[attribute])
       .filter((value): value is number => value !== undefined),
@@ -51,12 +59,13 @@ export function AbilityRollPanel({
     attributes.every((attribute) => assignments[attribute] !== undefined);
 
   function handleApply() {
-    if (!allAssigned) {
+    if (!allAssigned || !rolls) {
       return;
     }
 
     const scores = attributes.reduce((acc, attribute) => {
-      acc[attribute] = assignments[attribute] as number;
+      const rollIndex = assignments[attribute] as number;
+      acc[attribute] = rolls[rollIndex].total;
       return acc;
     }, {} as CharacterAttributes);
 
@@ -117,40 +126,46 @@ export function AbilityRollPanel({
 
       {rolls ? (
         <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3">
-          {attributes.map((attribute) => {
-            const label = ATTRIBUTE_LABELS[attribute];
-            const currentValue = assignments[attribute];
+          {(() => {
+            const duplicateTotals = countDuplicateTotals(rolls);
 
-            return (
-              <label key={attribute} className="grid gap-1 text-sm text-foreground">
-                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                  {label}
-                </span>
-                <select
-                  aria-label={`Valor para ${label}`}
-                  value={currentValue ?? ""}
-                  onChange={(event) => handleAssign(attribute, event.target.value)}
-                  className="rounded-md border border-border bg-surface-nested px-2 py-1.5 text-foreground outline-none focus:border-brand-crimson-alt focus:ring-2 focus:ring-brand-crimson-alt/50"
-                >
-                  <option value="">—</option>
-                  {rolls.map((roll, index) => {
-                    const isUsedByAnother =
-                      assignedIndexes.has(roll.total) && currentValue !== roll.total;
+            return attributes.map((attribute) => {
+              const label = ATTRIBUTE_LABELS[attribute];
+              const currentValue = assignments[attribute];
 
-                    if (isUsedByAnother) {
-                      return null;
-                    }
+              return (
+                <label key={attribute} className="grid gap-1 text-sm text-foreground">
+                  <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                    {label}
+                  </span>
+                  <select
+                    aria-label={`Valor para ${label}`}
+                    value={currentValue ?? ""}
+                    onChange={(event) => handleAssign(attribute, event.target.value)}
+                    className="rounded-md border border-border bg-surface-nested px-2 py-1.5 text-foreground outline-none focus:border-brand-crimson-alt focus:ring-2 focus:ring-brand-crimson-alt/50"
+                  >
+                    <option value="">—</option>
+                    {rolls.map((roll, index) => {
+                      const isUsedByAnother =
+                        assignedRollIndexes.has(index) && currentValue !== index;
 
-                    return (
-                      <option key={index} value={roll.total}>
-                        {roll.total}
-                      </option>
-                    );
-                  })}
-                </select>
-              </label>
-            );
-          })}
+                      if (isUsedByAnother) {
+                        return null;
+                      }
+
+                      const isTied = (duplicateTotals.get(roll.total) ?? 0) > 1;
+
+                      return (
+                        <option key={index} value={index}>
+                          {isTied ? `${roll.total} (rolagem ${index + 1})` : roll.total}
+                        </option>
+                      );
+                    })}
+                  </select>
+                </label>
+              );
+            });
+          })()}
         </div>
       ) : null}
 

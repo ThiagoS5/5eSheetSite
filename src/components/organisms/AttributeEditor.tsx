@@ -236,6 +236,18 @@ function BaseValueControl({
 }) {
   const value = baseAttributes[attribute];
 
+  if (method === "roll-4d6") {
+    return (
+      <output
+        aria-label={`${label} ${value}`}
+        aria-live="polite"
+        className="block w-16 text-left font-serif text-lg font-bold text-foreground md:mx-auto md:text-center"
+      >
+        {value}
+      </output>
+    );
+  }
+
   if (method === "standard-array") {
     return (
       <select

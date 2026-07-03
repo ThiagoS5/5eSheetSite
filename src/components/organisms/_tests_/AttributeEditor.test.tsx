@@ -55,4 +55,35 @@ describe("AttributeEditor", () => {
 
     expect(onAttributeChange).toHaveBeenCalledWith("inteligencia", 8);
   });
+
+  it("renders roll-4d6 base values as read-only, without stepper controls", () => {
+    const rolledAttributes: CharacterAttributes = {
+      forca: 15,
+      destreza: 14,
+      constituicao: 13,
+      inteligencia: 12,
+      sabedoria: 10,
+      carisma: 8,
+    };
+
+    render(
+      <AttributeEditor
+        method="roll-4d6"
+        baseAttributes={rolledAttributes}
+        backgroundBonuses={{}}
+        onMethodChange={vi.fn()}
+        onAttributeChange={vi.fn()}
+      />,
+    );
+
+    expect(
+      screen.queryByRole("button", { name: /Aumentar/i }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /Diminuir/i }),
+    ).not.toBeInTheDocument();
+
+    expect(screen.getByLabelText("Forca 15")).toBeInTheDocument();
+    expect(screen.getByLabelText("Carisma 8")).toBeInTheDocument();
+  });
 });
