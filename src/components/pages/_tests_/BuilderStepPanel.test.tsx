@@ -77,6 +77,17 @@ describe("BuilderStepPanel", () => {
     expect(screen.getByRole("heading", { name: "Preview da ficha" })).toBeInTheDocument();
   });
 
+  it("shows an inline choice counter for class skills", () => {
+    render(
+      <CharacterStoreProvider>
+        <OneSkillSelectedInitializer />
+        <BuilderStepPanel step="recursos-classe" {...builderData} />
+      </CharacterStoreProvider>,
+    );
+
+    expect(screen.getByText("1 de 2 pericias escolhidas")).toBeInTheDocument();
+  });
+
   it("explains why Avancar is disabled", () => {
     render(
       <CharacterStoreProvider>
@@ -566,6 +577,22 @@ function SelectedClassInitializer() {
     setClassFeatureChoice("weapon-mastery", getFighterWeaponMasteries());
     unlockStep(1);
   }, [selectClass, setClassSkillProficiencies, setClassFeatureChoice, unlockStep]);
+
+  return null;
+}
+
+function OneSkillSelectedInitializer() {
+  const selectClass = useCharacterStore((state) => state.selectClass);
+  const setClassSkillProficiencies = useCharacterStore(
+    (state) => state.setClassSkillProficiencies,
+  );
+  const unlockStep = useCharacterStore((state) => state.unlockStep);
+
+  useEffect(() => {
+    selectClass("fighter-xphb");
+    setClassSkillProficiencies(["Athletics"]);
+    unlockStep(1);
+  }, [selectClass, setClassSkillProficiencies, unlockStep]);
 
   return null;
 }

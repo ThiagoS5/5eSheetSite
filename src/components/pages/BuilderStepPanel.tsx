@@ -38,6 +38,7 @@ import {
   getHitDieIconClass,
 } from "@/src/components/atoms/FontAwesomeIcon";
 import { BackgroundCard } from "@/src/components/molecules/BackgroundCard";
+import { ChoiceCounter } from "@/src/components/molecules/ChoiceCounter";
 import { FeatureTagList } from "@/src/components/molecules/FeatureTagList";
 import { StartingLevelStepper } from "@/src/components/molecules/StartingLevelStepper";
 import { WizardChoiceCard } from "@/src/components/molecules/WizardChoiceCard";
@@ -780,8 +781,13 @@ function ClassFeaturesStep({
       />
       <div className="grid gap-6 md:grid-cols-2">
         <fieldset className="rounded-lg border border-white/[0.06] bg-card p-4">
-          <legend className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">
-            Pericias da classe ({selectedSkills.length}/{maxSkills})
+          <legend className="mb-3 flex flex-wrap items-center justify-between gap-2 text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">
+            <span>Pericias da classe</span>
+            <ChoiceCounter
+              selected={selectedSkills.length}
+              total={maxSkills}
+              label="pericias escolhidas"
+            />
           </legend>
           <div className="grid gap-2 sm:grid-cols-2">
             {selectedClass.skillChoices.chooseFrom.map((skill) => {
@@ -880,8 +886,13 @@ function ClassFeatureChoiceFieldset({
 
   return (
     <fieldset className="rounded-lg border border-white/[0.06] bg-card p-4">
-      <legend className="mb-2 text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">
-        {group.label} ({selectedValues.length}/{group.count})
+      <legend className="mb-2 flex flex-wrap items-center justify-between gap-2 text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">
+        <span>{group.label}</span>
+        <ChoiceCounter
+          selected={selectedValues.length}
+          total={group.count}
+          label="escolhidos"
+        />
       </legend>
       <p className="mb-4 text-sm leading-6 text-subdued">
         {group.description}
@@ -1460,8 +1471,13 @@ function SpeciesDetailsStep({
         ))}
 
         <fieldset className="rounded-lg border border-white/[0.06] bg-card p-4">
-          <legend className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">
-            Idiomas ({selectedLanguages.length}/{languageLimit})
+          <legend className="mb-3 flex flex-wrap items-center justify-between gap-2 text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">
+            <span>Idiomas</span>
+            <ChoiceCounter
+              selected={selectedLanguages.length}
+              total={languageLimit}
+              label="idiomas escolhidos"
+            />
           </legend>
           <div className="grid gap-5">
             <LanguageGroup
