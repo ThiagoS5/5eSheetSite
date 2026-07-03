@@ -103,6 +103,24 @@ describe("BuilderShell", () => {
     ).not.toBeInTheDocument();
   });
 
+  it("toggles beginner mode from the builder toolbar", () => {
+    render(
+      <CharacterStoreProvider>
+        <BuilderShell>
+          <div>
+            <h1 id="builder-title">Forge & Fate</h1>
+          </div>
+        </BuilderShell>
+      </CharacterStoreProvider>,
+    );
+
+    const toggle = screen.getByRole("switch", { name: "Modo guiado" });
+
+    expect(toggle).toHaveAttribute("aria-checked", "false");
+    fireEvent.click(toggle);
+    expect(toggle).toHaveAttribute("aria-checked", "true");
+  });
+
   it("renders the sidebar content visibly inside the mobile sheet once opened", () => {
     vi.spyOn(useMobileModule, "useIsMobile").mockReturnValue(true);
 

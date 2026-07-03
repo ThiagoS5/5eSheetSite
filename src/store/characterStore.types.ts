@@ -56,6 +56,7 @@ export interface FlatCharacterBuilderState {
   skillModifierOverrides: Record<string, number>;
   hpRollByLevel: Record<string, HpRollChoice>;
   creationPreferences?: CreationPreferences;
+  beginnerMode?: boolean;
 }
 
 export interface CharacterBuilderState extends FlatCharacterBuilderState {
@@ -89,6 +90,7 @@ export interface CharacterBuilderActions {
   setLevelAsiOrFeat: (level: number, choice: AsiOrFeatChoice | undefined) => void;
   setLevelHpRoll: (level: number, roll: HpRollChoice | undefined) => void;
   setCreationPreferences: (prefs: CreationPreferences) => void;
+  setBeginnerMode: (enabled: boolean) => void;
   setSpeciesChoice: (choiceId: string, value: string) => void;
   setSpeciesLanguages: (languages: string[]) => void;
   setAttributeGenerationMethod: (method: AttributeGenerationMethod) => void;

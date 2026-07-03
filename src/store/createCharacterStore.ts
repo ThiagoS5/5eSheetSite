@@ -103,6 +103,8 @@ export function createCharacterStore(
       }),
     setCreationPreferences: (prefs: CreationPreferences) =>
       set((state) => patchCharacterState(state, { creationPreferences: prefs })),
+    setBeginnerMode: (enabled: boolean) =>
+      set((state) => patchCharacterState(state, { beginnerMode: enabled })),
     selectBackground: (selectedBackgroundId) =>
       set((state) =>
         patchCharacterState(state, {
@@ -490,6 +492,7 @@ function extractFlatState(state: FlatCharacterBuilderState): FlatCharacterBuilde
     creationPreferences: state.creationPreferences
       ? { ...state.creationPreferences }
       : undefined,
+    beginnerMode: state.beginnerMode ?? false,
   };
 }
 

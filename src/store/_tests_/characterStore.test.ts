@@ -37,7 +37,7 @@ describe("createCharacterStore", () => {
           selectedBackgroundId: "",
         },
         exportMetadata: {
-          schemaVersion: 6,
+          schemaVersion: 7,
           saveId: expect.any(String),
           createdAt: expect.any(String),
           updatedAt: expect.any(String),
@@ -260,6 +260,16 @@ describe("createCharacterStore", () => {
     const store = createCharacterStore();
     store.getState().setSkillTraining("Stealth", "expertise");
     expect(store.getState().skillTraining.Stealth).toBe("expertise");
+  });
+
+  it("persists beginner mode through the CharacterBuild contract", () => {
+    const store = createCharacterStore();
+
+    store.getState().setBeginnerMode(true);
+
+    expect(store.getState().beginnerMode).toBe(true);
+    expect(store.getState().characterBuild.choices.beginnerMode).toBe(true);
+    expect(store.getState().characterBuild.exportMetadata.schemaVersion).toBe(7);
   });
 });
 

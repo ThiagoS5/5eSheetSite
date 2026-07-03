@@ -5,6 +5,7 @@ import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { saveCharacter } from "@/src/services/characterService";
+import { readGlobalPreferences } from "@/src/services/preferencesService";
 import { createEmptyCharacterBuild } from "@/src/store/characterBuildModel";
 import { CharacterStoreProvider } from "@/src/store/useCharacterStore";
 import { Dashboard } from "@/src/components/pages/Dashboard";
@@ -68,6 +69,13 @@ describe("Dashboard", () => {
   });
 
   it("creates a new local save and routes continue actions to the saved step", async () => {
+    localStorage.setItem(
+      "forge-fate-preferences:v1",
+      JSON.stringify({
+        beginnerMode: false,
+        creationDefaults: { activeSources: ["XPHB"], progressionMode: "xp" },
+      }),
+    );
     await saveCharacter(createDashboardBuild());
 
     render(
@@ -88,6 +96,59 @@ describe("Dashboard", () => {
 
     fireEvent.click(continueButtons[continueButtons.length - 1]);
     expect(push).toHaveBeenCalledWith("/builder/equipamento");
+  });
+
+  it("asks for the creation mode before creating a character without saved beginner defaults", async () => {
+    render(
+      <CharacterStoreProvider>
+        <Dashboard />
+      </CharacterStoreProvider>,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /Criar Novo Personagem/i }));
+
+    expect(
+      screen.getByRole("dialog", {
+        name: "E sua primeira vez jogando Dungeons & Dragons 5e?",
+      }),
+    ).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Modo Guiado" }));
+
+    await waitFor(() => {
+      expect(push).toHaveBeenCalledWith("/builder/classe");
+    });
+    expect(readGlobalPreferences().beginnerMode).toBe(true);
+    const saves = JSON.parse(localStorage.getItem("forge-fate-character-saves:v1") ?? "{}");
+    const savedBuild = Object.values(saves)[0] as CharacterBuild;
+    expect(savedBuild.choices.beginnerMode).toBe(true);
+  });
+
+  it("skips the creation mode dialog when beginner defaults already exist", async () => {
+    localStorage.setItem(
+      "forge-fate-preferences:v1",
+      JSON.stringify({
+        beginnerMode: false,
+        creationDefaults: { activeSources: ["XPHB"], progressionMode: "xp" },
+      }),
+    );
+
+    render(
+      <CharacterStoreProvider>
+        <Dashboard />
+      </CharacterStoreProvider>,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /Criar Novo Personagem/i }));
+
+    await waitFor(() => {
+      expect(push).toHaveBeenCalledWith("/builder/classe");
+    });
+    expect(
+      screen.queryByRole("dialog", {
+        name: "E sua primeira vez jogando Dungeons & Dragons 5e?",
+      }),
+    ).not.toBeInTheDocument();
   });
 });
 
