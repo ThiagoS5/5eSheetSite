@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
+import { createSeededRng } from "@/rules/abilityRollRules";
 import {
   calculateMaxHitPointsWithRolls,
   getHitPointsBreakdown,
+  rollHitDie,
 } from "@/rules/hitPointRules";
 import { calculateMaxHitPoints } from "@/src/adapters/characterDerivedAdapter";
 
@@ -48,5 +50,17 @@ describe("calculateMaxHitPointsWithRolls", () => {
     );
     // rolagens aparecem como parcela separada da média
     expect(parts.some((p) => /rolad/i.test(p.label))).toBe(true);
+  });
+});
+
+describe("rollHitDie", () => {
+  it("stays within 1..hitDie and is seed-deterministic", () => {
+    const rng = createSeededRng(3);
+    for (let i = 0; i < 50; i += 1) {
+      const roll = rollHitDie(10, rng);
+      expect(roll).toBeGreaterThanOrEqual(1);
+      expect(roll).toBeLessThanOrEqual(10);
+    }
+    expect(rollHitDie(8, createSeededRng(9))).toBe(rollHitDie(8, createSeededRng(9)));
   });
 });

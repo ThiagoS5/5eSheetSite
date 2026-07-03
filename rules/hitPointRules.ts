@@ -63,3 +63,7 @@ export function getHitPointsBreakdown(input: HitPointsInput): BreakdownPart[] {
   }
   return parts;
 }
+
+export function rollHitDie(hitDie: number, rng: () => number = Math.random): number {
+  return Math.floor(rng() * hitDie) + 1;
+}

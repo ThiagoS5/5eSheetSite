@@ -14,7 +14,11 @@ import type { BuilderClass } from "@/types/builder";
 import { SubclassStep } from "@/src/components/organisms/levelup/SubclassStep";
 import { FeatureOptionStep } from "@/src/components/organisms/levelup/FeatureOptionStep";
 import { AsiOrFeatStep } from "@/src/components/organisms/levelup/AsiOrFeatStep";
+import { HitPointsStep } from "@/src/components/organisms/levelup/HitPointsStep";
+import { getAbilityModifier } from "@/src/adapters/characterDerivedAdapter";
 import type { AsiAttribute } from "@/src/components/organisms/levelup/types";
+
+const HP_STEP_PREFIX = "hp:";
 
 const ATTRIBUTE_KEYS: AttributeKey[] = ["forca", "destreza", "constituicao", "inteligencia", "sabedoria", "carisma"];
 
@@ -50,7 +54,9 @@ export function LevelUpFlow({ open, onClose }: LevelUpFlowProps) {
   const [snapshotTaken, setSnapshotTaken] = useState(false);
   if (open && characterClass && !snapshotTaken) {
     setSnapshotTaken(true);
-    setStepIds(getPendingRequirements(state, characterClass).map((r) => r.id));
+    const pendingIdsSnapshot = getPendingRequirements(state, characterClass).map((r) => r.id);
+    const needsHpStep = state.level > 1 && state.hpRollByLevel[String(state.level)] === undefined;
+    setStepIds(needsHpStep ? [`${HP_STEP_PREFIX}${state.level}`, ...pendingIdsSnapshot] : pendingIdsSnapshot);
     setActiveIndex(0);
   } else if (!open && snapshotTaken) {
     setSnapshotTaken(false);
@@ -67,13 +73,46 @@ export function LevelUpFlow({ open, onClose }: LevelUpFlowProps) {
 
   if (!characterClass) return null;
 
-  const steps = stepIds.map((id) => allRequirements.get(id)).filter(Boolean) as LevelChoiceRequirement[];
-  const activeReq = steps[activeIndex];
-  const activeResolved = activeReq ? !pendingIds.has(activeReq.id) : true;
+  function isHpStepId(id: string): number | null {
+    if (!id.startsWith(HP_STEP_PREFIX)) return null;
+    const level = Number(id.slice(HP_STEP_PREFIX.length));
+    return Number.isFinite(level) ? level : null;
+  }
+
+  function isStepResolved(id: string): boolean {
+    const hpLevel = isHpStepId(id);
+    if (hpLevel !== null) return state.hpRollByLevel[String(hpLevel)] !== undefined;
+    return !pendingIds.has(id);
+  }
+
+  const steps = stepIds.filter((id) => isHpStepId(id) !== null || allRequirements.has(id));
+  const activeId = steps[activeIndex];
+  const activeHpLevel = activeId !== undefined ? isHpStepId(activeId) : null;
+  const activeReq = activeId !== undefined && activeHpLevel === null ? allRequirements.get(activeId) : undefined;
+  const activeResolved = activeId !== undefined ? isStepResolved(activeId) : true;
   const isLast = activeIndex >= steps.length - 1;
-  const allResolved = steps.every((r) => !pendingIds.has(r.id));
+  const allResolved = steps.every((id) => isStepResolved(id));
 
   const summary = selectCharacterSheetSummary(state);
+
+  function renderActiveStep() {
+    if (activeHpLevel !== null) {
+      const conModifier = getAbilityModifier(summary.finalAttributes.constituicao);
+      return (
+        <HitPointsStep
+          hitDie={characterClass!.hitDie}
+          targetLevel={activeHpLevel}
+          conModifier={conModifier}
+          onChoose={(choice) => {
+            state.setLevelHpRoll(activeHpLevel, choice);
+            setActiveIndex((i) => Math.min(steps.length - 1, i + 1));
+          }}
+        />
+      );
+    }
+    if (!activeReq) return null;
+    return renderStep(activeReq);
+  }
 
   function renderStep(req: LevelChoiceRequirement) {
     if (req.kind === "subclass") {
@@ -138,9 +177,9 @@ export function LevelUpFlow({ open, onClose }: LevelUpFlowProps) {
             </Dialog.Close>
 
             <div className="flex items-center gap-1.5 border-b border-white/[0.07] px-5 py-3">
-              {steps.map((req, i) => (
-                <span key={req.id} aria-hidden="true"
-                  className={`h-2 w-2 rounded-full ${i === activeIndex ? "bg-primary" : !pendingIds.has(req.id) ? "bg-accent" : "bg-white/20"}`} />
+              {steps.map((id, i) => (
+                <span key={id} aria-hidden="true"
+                  className={`h-2 w-2 rounded-full ${i === activeIndex ? "bg-primary" : isStepResolved(id) ? "bg-accent" : "bg-white/20"}`} />
               ))}
               <span className="ml-auto text-[10px] uppercase tracking-widest text-muted-foreground">
                 {steps.length > 0 ? `Passo ${activeIndex + 1} de ${steps.length}` : "Tudo resolvido"}
@@ -148,7 +187,7 @@ export function LevelUpFlow({ open, onClose }: LevelUpFlowProps) {
             </div>
 
             <div className="min-h-0 flex-1 overflow-y-auto p-5">
-              {activeReq ? <div key={activeReq.id}>{renderStep(activeReq)}</div> : <p className="text-sm text-subdued">Nenhuma escolha pendente.</p>}
+              {activeId !== undefined ? <div key={activeId}>{renderActiveStep()}</div> : <p className="text-sm text-subdued">Nenhuma escolha pendente.</p>}
             </div>
 
             <div className="flex items-center justify-between border-t border-white/[0.07] px-5 py-3">

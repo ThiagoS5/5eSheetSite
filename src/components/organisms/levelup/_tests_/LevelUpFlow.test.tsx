@@ -9,12 +9,13 @@ import { CharacterStoreProvider, useCharacterStore } from "@/src/store/useCharac
 import { LevelUpFlow } from "@/src/components/organisms/levelup/LevelUpFlow";
 
 // Opens the flow AFTER setting up state (a real open transition), and pre-resolves
-// the level-1 Weapon Mastery feature-option (3 arbitrary picks satisfy count===3),
-// leaving the level-3 subclass as the sole pending step.
+// the level-1 Weapon Mastery feature-option (3 arbitrary picks satisfy count===3)
+// and the HP roll for the target level, leaving the subclass as the sole pending step.
 function Harness({ level }: { level: number }) {
   const selectClass = useCharacterStore((s) => s.selectClass);
   const setLevel = useCharacterStore((s) => s.setLevel);
   const setClassFeatureChoice = useCharacterStore((s) => s.setClassFeatureChoice);
+  const setLevelHpRoll = useCharacterStore((s) => s.setLevelHpRoll);
   const [open, setOpen] = useState(false);
   return (
     <div>
@@ -23,6 +24,7 @@ function Harness({ level }: { level: number }) {
           selectClass("fighter-xphb");
           setLevel(level);
           setClassFeatureChoice("weapon-mastery", ["a", "b", "c"]);
+          setLevelHpRoll(level, "average");
           setOpen(true);
         }}
       >
@@ -34,7 +36,10 @@ function Harness({ level }: { level: number }) {
 }
 
 describe("LevelUpFlow", () => {
-  afterEach(cleanup);
+  afterEach(() => {
+    cleanup();
+    sessionStorage.clear();
+  });
 
   it("gates Continuar until the subclass step is resolved", () => {
     render(<CharacterStoreProvider><Harness level={3} /></CharacterStoreProvider>);
@@ -54,6 +59,7 @@ describe("LevelUpFlow", () => {
       const setLevel = useCharacterStore((s) => s.setLevel);
       const setClassFeatureChoice = useCharacterStore((s) => s.setClassFeatureChoice);
       const selectSubclass = useCharacterStore((s) => s.selectSubclass);
+      const setLevelHpRoll = useCharacterStore((s) => s.setLevelHpRoll);
       const [open, setOpen] = useState(false);
       return (
         <div>
@@ -62,9 +68,10 @@ describe("LevelUpFlow", () => {
             setLevel(3);
             setClassFeatureChoice("weapon-mastery", ["a", "b", "c"]);
             selectSubclass("battle-master-xphb"); // resolve level-3 subclass too
+            setLevelHpRoll(3, "average");
             setOpen(true);
           }}>open-l3</button>
-          <button onClick={() => { setLevel(4); setOpen(true); }}>raise-and-reopen</button>
+          <button onClick={() => { setLevel(4); setLevelHpRoll(4, "average"); setOpen(true); }}>raise-and-reopen</button>
           <button onClick={() => setOpen(false)}>close</button>
           <LevelUpFlow open={open} onClose={() => setOpen(false)} />
         </div>
@@ -82,5 +89,40 @@ describe("LevelUpFlow", () => {
 
     // The reopened flow must show the freshly-pending level-4 ASI/feat step.
     expect(screen.getByRole("heading", { name: "Aumento de Atributo ou Talento" })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Fechar" }));
+  });
+
+  it("inserts a HitPointsStep first when leveling up past level 1 without a recorded roll", () => {
+    function HpHarness() {
+      const selectClass = useCharacterStore((s) => s.selectClass);
+      const setLevel = useCharacterStore((s) => s.setLevel);
+      const setClassFeatureChoice = useCharacterStore((s) => s.setClassFeatureChoice);
+      const selectSubclass = useCharacterStore((s) => s.selectSubclass);
+      const [open, setOpen] = useState(false);
+      return (
+        <div>
+          <button onClick={() => {
+            selectClass("fighter-xphb");
+            setLevel(3);
+            setClassFeatureChoice("weapon-mastery", ["a", "b", "c"]);
+            selectSubclass("battle-master-xphb");
+            setOpen(true);
+          }}>open</button>
+          <LevelUpFlow open={open} onClose={() => setOpen(false)} />
+        </div>
+      );
+    }
+    render(<CharacterStoreProvider><HpHarness /></CharacterStoreProvider>);
+    fireEvent.click(screen.getByRole("button", { name: "open" }));
+
+    // With subclass + weapon mastery already resolved, the only pending step is HP.
+    expect(screen.getByRole("heading", { name: "Pontos de Vida" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Continuar|Concluir/ })).toBeDisabled();
+
+    fireEvent.click(screen.getByRole("button", { name: /usar média/i }));
+
+    // Choosing média records the roll, resolving the (only) HP step.
+    expect(screen.getByRole("button", { name: /Continuar|Concluir/ })).toBeEnabled();
   });
 });
