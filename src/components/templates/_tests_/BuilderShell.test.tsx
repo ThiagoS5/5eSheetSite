@@ -6,13 +6,16 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { CharacterStoreProvider } from "@/src/store/useCharacterStore";
 import { BuilderShell } from "@/src/components/templates/BuilderShell";
+import * as useMobileModule from "@/src/hooks/use-mobile";
 
 vi.mock("next/navigation", () => ({
   usePathname: () => "/builder/classe",
+  useRouter: () => ({ push: vi.fn() }),
 }));
 
 describe("BuilderShell", () => {
   afterEach(() => {
+    vi.restoreAllMocks();
     cleanup();
   });
 
@@ -77,5 +80,47 @@ describe("BuilderShell", () => {
     fireEvent.keyDown(window, { key: "b", ctrlKey: true });
 
     expect(sidebar).toHaveAttribute("data-collapsible", "icon");
+  });
+
+  it("renders the mobile builder bar and hides the desktop sidebar on mobile", () => {
+    vi.spyOn(useMobileModule, "useIsMobile").mockReturnValue(true);
+
+    render(
+      <CharacterStoreProvider>
+        <BuilderShell>
+          <div>
+            <h1 id="builder-title">Forge & Fate</h1>
+          </div>
+        </BuilderShell>
+      </CharacterStoreProvider>,
+    );
+
+    expect(
+      screen.getByRole("button", { name: /avançar/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("navigation", { name: "Etapas do Character Builder" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("does not render the mobile builder bar on desktop", () => {
+    vi.spyOn(useMobileModule, "useIsMobile").mockReturnValue(false);
+
+    render(
+      <CharacterStoreProvider>
+        <BuilderShell>
+          <div>
+            <h1 id="builder-title">Forge & Fate</h1>
+          </div>
+        </BuilderShell>
+      </CharacterStoreProvider>,
+    );
+
+    expect(
+      screen.queryByRole("button", { name: /avançar/i }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("navigation", { name: "Etapas do Character Builder" }),
+    ).toBeInTheDocument();
   });
 });
