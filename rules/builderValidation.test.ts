@@ -62,6 +62,23 @@ describe("builder validation", () => {
     ).toStrictEqual(["No Point Buy, atributos base devem estar entre 8 e 15."]);
   });
 
+  it("accepts roll-4d6 attributes without the point-buy constraints", () => {
+    expect(
+      validateBuilderStep("atributos", {
+        ...initialCharacterState,
+        attributeGenerationMethod: "roll-4d6",
+        baseAttributes: {
+          forca: 15,
+          destreza: 14,
+          constituicao: 13,
+          inteligencia: 12,
+          sabedoria: 10,
+          carisma: 8,
+        },
+      }),
+    ).toStrictEqual([]);
+  });
+
   it("requires Bard to choose three class skills", () => {
     expect(
       validateBuilderStep("recursos-classe", {
@@ -78,6 +95,90 @@ describe("builder validation", () => {
         classSkillProficiencies: ["Arcana", "Performance", "Stealth"],
       }),
     ).toStrictEqual([]);
+  });
+
+  function validFeatureChoices(cls: ReturnType<typeof getBuilderClasses>[number]) {
+    return Object.fromEntries(
+      cls.featureChoiceGroups.map((group) => [
+        group.id,
+        group.options.slice(0, group.count).map((option) => option.value),
+      ]),
+    );
+  }
+
+  it("requires Rogue to choose four class skills, matching skillChoices.count", () => {
+    const rogue = getBuilderClasses().find((entry) => entry.id === "rogue-xphb");
+    expect(rogue?.skillChoices.count).toBe(4);
+
+    expect(
+      validateBuilderStep("recursos-classe", {
+        ...initialCharacterState,
+        selectedClassId: "rogue-xphb",
+        classSkillProficiencies: ["Acrobatics", "Athletics"],
+        classFeatureChoices: rogue ? validFeatureChoices(rogue) : {},
+      }),
+    ).toStrictEqual(["Escolha 4 pericias de classe para continuar."]);
+
+    expect(
+      validateBuilderStep("recursos-classe", {
+        ...initialCharacterState,
+        selectedClassId: "rogue-xphb",
+        classSkillProficiencies: ["Acrobatics", "Athletics", "Deception", "Insight"],
+        classFeatureChoices: rogue ? validFeatureChoices(rogue) : {},
+      }),
+    ).toStrictEqual([]);
+  });
+
+  it("requires Ranger to choose three class skills, matching skillChoices.count", () => {
+    const ranger = getBuilderClasses().find((entry) => entry.id === "ranger-xphb");
+    expect(ranger?.skillChoices.count).toBe(3);
+
+    expect(
+      validateBuilderStep("recursos-classe", {
+        ...initialCharacterState,
+        selectedClassId: "ranger-xphb",
+        classSkillProficiencies: ["Athletics", "Insight"],
+        classFeatureChoices: ranger ? validFeatureChoices(ranger) : {},
+      }),
+    ).toStrictEqual(["Escolha 3 pericias de classe para continuar."]);
+
+    expect(
+      validateBuilderStep("recursos-classe", {
+        ...initialCharacterState,
+        selectedClassId: "ranger-xphb",
+        classSkillProficiencies: ["Athletics", "Insight", "Perception"],
+        classFeatureChoices: ranger ? validFeatureChoices(ranger) : {},
+      }),
+    ).toStrictEqual([]);
+  });
+
+  it("derives the required class skill count from skillChoices.count for every class", () => {
+    for (const cls of getBuilderClasses()) {
+      const validSkills = cls.skillChoices.chooseFrom.slice(0, cls.skillChoices.count);
+      const featureChoices = validFeatureChoices(cls);
+
+      expect(
+        validateBuilderStep("recursos-classe", {
+          ...initialCharacterState,
+          selectedClassId: cls.id,
+          classSkillProficiencies: validSkills,
+          classFeatureChoices: featureChoices,
+        }),
+      ).toStrictEqual([]);
+
+      if (cls.skillChoices.count > 0) {
+        expect(
+          validateBuilderStep("recursos-classe", {
+            ...initialCharacterState,
+            selectedClassId: cls.id,
+            classSkillProficiencies: validSkills.slice(0, cls.skillChoices.count - 1),
+            classFeatureChoices: featureChoices,
+          }),
+        ).toStrictEqual([
+          `Escolha ${cls.skillChoices.count} pericias de classe para continuar.`,
+        ]);
+      }
+    }
   });
 
   it("requires Barbarian to choose exactly two Weapon Mastery weapons", () => {

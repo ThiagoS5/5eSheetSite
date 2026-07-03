@@ -14,10 +14,13 @@ import {
 } from "@/rules/savingThrowRules";
 import {
   calculateFinalAttributes,
-  calculateMaxHitPoints,
   getAbilityModifier,
   getProficiencyBonus,
 } from "@/src/adapters/characterDerivedAdapter";
+import {
+  calculateMaxHitPointsWithRolls,
+  getHitPointsBreakdown,
+} from "@/rules/hitPointRules";
 import {
   collectAsiBonuses,
   getActiveSubclassFeatures,
@@ -95,11 +98,12 @@ export function selectCharacterSheetSummary(
   const classFeaturesUpToLevel = (characterClass?.allFeatures ?? []).filter(
     (feature) => (feature.level ?? 1) <= state.level,
   );
-  const maxHitPoints = calculateMaxHitPoints(
-    characterClass?.hitDie ?? 6,
-    finalAttributes.constituicao,
-    state.level,
-  );
+  const maxHitPoints = calculateMaxHitPointsWithRolls({
+    hitDie: characterClass?.hitDie ?? 6,
+    constitutionScore: finalAttributes.constituicao,
+    level: state.level,
+    hpRollByLevel: state.hpRollByLevel ?? {},
+  });
   const armorClassResult = deriveArmorClass({
     dexterityScore: finalAttributes.destreza,
     selectedEquipment,
@@ -136,6 +140,12 @@ export function selectCharacterSheetSummary(
     backgroundName: background?.name ?? "",
     currentHp: maxHitPoints,
     maxHp: maxHitPoints,
+    maxHpBreakdown: getHitPointsBreakdown({
+      hitDie: characterClass?.hitDie ?? 6,
+      constitutionScore: finalAttributes.constituicao,
+      level: state.level,
+      hpRollByLevel: state.hpRollByLevel ?? {},
+    }),
     tempHp: 0,
     hitDice: `${state.level}d${characterClass?.hitDie ?? 6}`,
     initiative: getAbilityModifier(finalAttributes.destreza),
@@ -143,6 +153,7 @@ export function selectCharacterSheetSummary(
     speedMeters: feetToMeters(species?.speed ?? 30),
     xp: xpForLevel(state.level),
     xpThreshold: xpThresholdForNextLevel(state.level),
+    progressionMode: state.creationPreferences?.progressionMode ?? "xp",
     isSpellcaster: Boolean(characterClass?.spellcastingAbility),
     attributes: deriveSheetAttributes(finalAttributes),
     skills,
@@ -152,7 +163,7 @@ export function selectCharacterSheetSummary(
       proficiencyBonus,
     }),
     passives: computePassives(skills),
-    senses: [],
+    senses: species?.senses ?? [],
     languages: state.speciesLanguages,
     resistances: [],
     immunities: [],

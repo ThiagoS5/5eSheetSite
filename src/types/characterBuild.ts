@@ -9,7 +9,7 @@ import type {
   Ruleset,
 } from "@/types/dnd";
 
-export const CHARACTER_BUILD_SCHEMA_VERSION = 5;
+export const CHARACTER_BUILD_SCHEMA_VERSION = 6;
 
 export interface CoinPouch {
   pc: number;
@@ -25,7 +25,11 @@ export type AsiOrFeatChoice =
   | { mode: "asi"; increases: AttributeBonuses }
   | { mode: "feat"; featId: string; asi?: AttributeBonuses };
 
-export type AttributeGenerationMethod = "standard-array" | "point-buy" | "manual";
+export type AttributeGenerationMethod =
+  | "standard-array"
+  | "point-buy"
+  | "manual"
+  | "roll-4d6";
 export type EquipmentAcquisitionMode = "items" | "gold";
 export type SkillTrainingLevel = "none" | "half" | "proficient" | "expertise";
 
@@ -51,9 +55,24 @@ export interface CharacterBuildDraft {
   description: CharacterDescription;
 }
 
+export type HpRollChoice = number | "average";
+
+export type ProgressionMode = "xp" | "milestone";
+
+export interface CreationPreferences {
+  activeSources: string[]; // ex.: ["XPHB"] — default
+  progressionMode: ProgressionMode; // default "xp"
+}
+
+export const DEFAULT_CREATION_PREFERENCES: CreationPreferences = {
+  activeSources: ["XPHB"],
+  progressionMode: "xp",
+};
+
 export interface CharacterBuildLevelChoiceState {
   asiOrFeat?: AsiOrFeatChoice;
   classFeatureChoices: Record<string, string[]>;
+  hpRoll?: HpRollChoice; // NOVO v6 — PV ganho no nível (2..20)
 }
 
 export interface CharacterBuildProgression {
@@ -79,6 +98,7 @@ export interface CharacterBuildChoices {
   moneyTouched: boolean;
   carriedLoadKg: number;
   skillModifierOverrides: Record<string, number>;
+  creationPreferences?: CreationPreferences; // NOVO v6 — ausente = defaults
 }
 
 export type CharacterBuildDerivedSheet = CharacterSheetSummary;

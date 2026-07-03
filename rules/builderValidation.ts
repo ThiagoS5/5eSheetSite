@@ -156,7 +156,9 @@ export function validateBuilderStep(
 }
 
 function getRequiredClassSkillCount(classId: string): number {
-  return classId === "bard-xphb" ? 3 : 2;
+  const selectedClass = getBuilderClasses().find((entry) => entry.id === classId);
+
+  return selectedClass?.skillChoices.count ?? 2;
 }
 
 function isValidBackgroundAbilitySelection(state: CharacterBuilderState): boolean {

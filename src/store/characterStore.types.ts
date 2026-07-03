@@ -3,9 +3,11 @@ import type { CharacterBuild, CoinPouch } from "@/src/types/characterBuild";
 import type {
   AsiOrFeatChoice,
   AttributeGenerationMethod,
+  CreationPreferences,
   EquipmentAcquisitionMode,
   EquipmentChoicesBySource,
   EquipmentSourceKey,
+  HpRollChoice,
   InventoryEntry,
   SkillTrainingLevel,
 } from "@/src/types/characterBuild";
@@ -18,9 +20,11 @@ import type {
 export type {
   AsiOrFeatChoice,
   AttributeGenerationMethod,
+  CreationPreferences,
   EquipmentAcquisitionMode,
   EquipmentChoicesBySource,
   EquipmentSourceKey,
+  HpRollChoice,
   InventoryEntry,
   SkillTrainingLevel,
 } from "@/src/types/characterBuild";
@@ -50,6 +54,8 @@ export interface FlatCharacterBuilderState {
   moneyTouched: boolean;
   carriedLoadKg: number;
   skillModifierOverrides: Record<string, number>;
+  hpRollByLevel: Record<string, HpRollChoice>;
+  creationPreferences?: CreationPreferences;
 }
 
 export interface CharacterBuilderState extends FlatCharacterBuilderState {
@@ -58,6 +64,7 @@ export interface CharacterBuilderState extends FlatCharacterBuilderState {
 
 export interface CharacterBuilderActions {
   setLevel: (level: number) => void;
+  levelUp: () => void;
   selectSpecies: (speciesId: string) => void;
   selectClass: (classId: string) => void;
   selectSubclass: (subclassId: string) => void;
@@ -80,6 +87,8 @@ export interface CharacterBuilderActions {
   setSkillOverride: (skill: string, value: number | null) => void;
   setClassFeatureChoice: (choiceId: string, values: string[]) => void;
   setLevelAsiOrFeat: (level: number, choice: AsiOrFeatChoice | undefined) => void;
+  setLevelHpRoll: (level: number, roll: HpRollChoice | undefined) => void;
+  setCreationPreferences: (prefs: CreationPreferences) => void;
   setSpeciesChoice: (choiceId: string, value: string) => void;
   setSpeciesLanguages: (languages: string[]) => void;
   setAttributeGenerationMethod: (method: AttributeGenerationMethod) => void;

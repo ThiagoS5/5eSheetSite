@@ -3,7 +3,7 @@
  */
 import { describe, expect, it } from "vitest";
 import { extractBackgroundGold, extractBackgroundItemsA, extractClassGoldAlternative } from "@/src/adapters/fiveEToolsAdapter";
-import { getBuilderClasses } from "@/src/services/ruleService";
+import { getBuilderClasses, getBuilderSpecies } from "@/src/services/ruleService";
 
 describe("extractBackgroundGold", () => {
   it("returns formatted GP string when option b has a copper value", () => {
@@ -105,4 +105,22 @@ it("marks the subclass-granting feature with grantsSubclass", () => {
   expect(subclassPoint).toBeDefined();
   const secondWind = fighter?.allFeatures.find((f) => f.name === "Second Wind");
   expect(secondWind?.grantsSubclass).toBeFalsy();
+});
+
+describe("species senses", () => {
+  it("populates darkvision for a species that has it (real data)", () => {
+    const withDarkvision = getBuilderSpecies().filter((s) =>
+      s.senses.some((sense) => sense.name === "Visao no Escuro"),
+    );
+    expect(withDarkvision.length).toBeGreaterThan(0);
+    for (const species of withDarkvision) {
+      const sense = species.senses.find((s) => s.name === "Visao no Escuro")!;
+      expect(sense.rangeFeet).toBeGreaterThanOrEqual(60);
+    }
+  });
+
+  it("human has no senses", () => {
+    const human = getBuilderSpecies().find((s) => s.id === "human-xphb");
+    expect(human?.senses).toEqual([]);
+  });
 });

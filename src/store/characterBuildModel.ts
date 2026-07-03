@@ -11,6 +11,7 @@ import {
   type CharacterBuild,
   type EquipmentAcquisitionMode,
   type EquipmentChoicesBySource,
+  type HpRollChoice,
   type InventoryEntry,
 } from "@/src/types/characterBuild";
 import type {
@@ -192,7 +193,19 @@ export function flattenCharacterBuild(
     moneyTouched: build.choices?.moneyTouched,
     carriedLoadKg: build.choices?.carriedLoadKg,
     skillModifierOverrides: build.choices?.skillModifierOverrides,
+    hpRollByLevel: extractHpRollByLevel(build.progression?.levelChoices),
+    creationPreferences: build.choices?.creationPreferences,
   };
+}
+
+function extractHpRollByLevel(
+  levelChoices: CharacterBuild["progression"]["levelChoices"] | undefined,
+): Record<string, HpRollChoice> {
+  const result: Record<string, HpRollChoice> = {};
+  for (const [level, state] of Object.entries(levelChoices ?? {})) {
+    if (state.hpRoll !== undefined) result[level] = state.hpRoll;
+  }
+  return result;
 }
 
 function extractAsiOrFeatByLevel(
@@ -249,6 +262,8 @@ export function getDefaultFlatState(): FlatCharacterBuilderState {
     moneyTouched: false,
     carriedLoadKg: 0,
     skillModifierOverrides: {},
+    hpRollByLevel: {},
+    creationPreferences: undefined,
   };
 }
 
@@ -286,9 +301,18 @@ function createBuildFromFlatState(
   previousBuild?: Partial<CharacterBuild>,
 ): CharacterBuild {
   const normalizedState = normalizeFlatState(state);
-  const levelChoices: CharacterBuild["progression"]["levelChoices"] = {
-    ...(previousBuild?.progression?.levelChoices ?? {}),
-  };
+  const previousLevelChoices = previousBuild?.progression?.levelChoices ?? {};
+  const rawHpRollByLevel: Record<string, HpRollChoice> = {};
+  for (const [level, choice] of Object.entries(previousLevelChoices)) {
+    if (choice.hpRoll !== undefined) {
+      rawHpRollByLevel[level] = choice.hpRoll;
+    }
+  }
+  const sanitizedHpRollByLevel = sanitizeHpRollByLevel(rawHpRollByLevel);
+  const levelChoices: CharacterBuild["progression"]["levelChoices"] = {};
+  for (const [level, choice] of Object.entries(previousLevelChoices)) {
+    levelChoices[level] = { ...choice, hpRoll: sanitizedHpRollByLevel[level] };
+  }
   if (Object.keys(normalizedState.classFeatureChoices).length > 0) {
     const key = String(normalizedState.level);
     levelChoices[key] = {
@@ -298,8 +322,16 @@ function createBuildFromFlatState(
   }
   for (const [level, choice] of Object.entries(normalizedState.asiOrFeatByLevel)) {
     levelChoices[level] = {
+      ...levelChoices[level],
       classFeatureChoices: levelChoices[level]?.classFeatureChoices ?? {},
       asiOrFeat: choice,
+    };
+  }
+  for (const [level, hpRoll] of Object.entries(normalizedState.hpRollByLevel)) {
+    levelChoices[level] = {
+      ...levelChoices[level],
+      classFeatureChoices: levelChoices[level]?.classFeatureChoices ?? {},
+      hpRoll,
     };
   }
   const buildWithoutDerived = {
@@ -333,6 +365,7 @@ function createBuildFromFlatState(
       moneyTouched: normalizedState.moneyTouched,
       carriedLoadKg: normalizedState.carriedLoadKg,
       skillModifierOverrides: normalizedState.skillModifierOverrides,
+      creationPreferences: normalizedState.creationPreferences,
     },
     derivedSheet: createEmptyDerivedSheet(normalizedState),
     exportMetadata: {
@@ -393,7 +426,27 @@ function normalizeFlatState(
     carriedLoadKg: state.carriedLoadKg ?? defaults.carriedLoadKg,
     skillModifierOverrides:
       state.skillModifierOverrides ?? defaults.skillModifierOverrides,
+    hpRollByLevel: sanitizeHpRollByLevel(
+      state.hpRollByLevel ?? defaults.hpRollByLevel,
+    ),
+    creationPreferences: state.creationPreferences ?? defaults.creationPreferences,
   };
+}
+
+function sanitizeHpRollByLevel(
+  hpRollByLevel: Record<string, HpRollChoice>,
+): Record<string, HpRollChoice> {
+  const result: Record<string, HpRollChoice> = {};
+  for (const [level, roll] of Object.entries(hpRollByLevel)) {
+    if (roll === "average") {
+      result[level] = roll;
+      continue;
+    }
+    if (typeof roll === "number" && Number.isFinite(roll) && roll >= 1) {
+      result[level] = roll;
+    }
+  }
+  return result;
 }
 
 function deriveSheet(build: CharacterBuild): CharacterSheetSummary {

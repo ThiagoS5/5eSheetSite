@@ -1,0 +1,67 @@
+{
+  "draft": {
+    "currentStepSlug": "detalhes-especie",
+    "maxUnlockedStepIndex": 4,
+    "pendingChoiceIds": [],
+    "inventory": [{ "itemId": "chain-mail-xphb", "quantity": 1 }],
+    "equipmentChoicesBySource": {
+      "class": { "mode": "gold", "selectedOptionId": null }
+    },
+    "description": {
+      "nome": "V5 Fixture Hero",
+      "alinhamento": "",
+      "faith": "",
+      "lifestyle": "",
+      "age": "",
+      "height": "",
+      "weight": "",
+      "eyes": "",
+      "skin": "",
+      "hair": "",
+      "gender": "",
+      "aparencia": "",
+      "personalidade": "",
+      "tracos": "",
+      "notas": ""
+    }
+  },
+  "progression": {
+    "level": 3,
+    "levelChoices": {
+      "3": { "classFeatureChoices": { "weapon-mastery": ["longsword-xphb"] } }
+    }
+  },
+  "choices": {
+    "ruleset": "2024",
+    "selectedSpeciesId": "human-xphb",
+    "selectedClassId": "fighter-xphb",
+    "selectedSubclassId": "",
+    "selectedBackgroundId": "soldier-xphb",
+    "classSkillProficiencies": ["Athletics", "Perception"],
+    "skillTraining": { "Athletics": "proficient", "Perception": "proficient" },
+    "classFeatureChoices": {},
+    "speciesChoices": {},
+    "speciesLanguages": ["Common"],
+    "attributeGenerationMethod": "standard-array",
+    "baseAttributes": {
+      "forca": 15,
+      "destreza": 14,
+      "constituicao": 13,
+      "inteligencia": 12,
+      "sabedoria": 10,
+      "carisma": 8
+    },
+    "backgroundAbilityBonuses": {},
+    "money": { "pc": 0, "pp": 0, "pe": 0, "po": 42, "pl": 0 },
+    "moneyTouched": true,
+    "carriedLoadKg": 3,
+    "skillModifierOverrides": { "Arcana": 9 }
+  },
+  "derivedSheet": {},
+  "exportMetadata": {
+    "schemaVersion": 5,
+    "saveId": "fixture-v5",
+    "createdAt": "2026-01-01T00:00:00.000Z",
+    "updatedAt": "2026-01-01T00:00:00.000Z"
+  }
+}

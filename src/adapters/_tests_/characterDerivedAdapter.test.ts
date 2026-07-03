@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   calculateInitialHitPoints,
   calculateMaxHitPoints,
+  getMaxHitPointsBreakdown,
 } from "@/src/adapters/characterDerivedAdapter";
 
 describe("calculateMaxHitPoints (level-aware)", () => {
@@ -34,5 +35,32 @@ describe("calculateMaxHitPoints (level-aware)", () => {
 
   it("clamps a level below 1 to a single hit die", () => {
     expect(calculateMaxHitPoints(10, 14, 0)).toBe(12);
+  });
+});
+
+describe("getMaxHitPointsBreakdown", () => {
+  it("parts always sum to calculateMaxHitPoints (d10, CON 14, level 5)", () => {
+    const parts = getMaxHitPointsBreakdown(10, 14, 5);
+    const total = parts.reduce((sum, part) => sum + part.value, 0);
+    expect(total).toBe(calculateMaxHitPoints(10, 14, 5)); // 44
+    expect(parts).toEqual([
+      { label: "Nivel 1 (d10)", value: 10 },
+      { label: "Niveis 2-5 (4 x 6)", value: 24 },
+      { label: "CON (+2 x 5)", value: 10 },
+    ]);
+  });
+
+  it("level 1 with CON mod 0 has only the hit-die part", () => {
+    expect(getMaxHitPointsBreakdown(8, 10, 1)).toEqual([
+      { label: "Nivel 1 (d8)", value: 8 },
+    ]);
+  });
+
+  it("negative CON modifier appears as a negative part", () => {
+    const parts = getMaxHitPointsBreakdown(8, 8, 3);
+    expect(parts.reduce((sum, part) => sum + part.value, 0)).toBe(
+      calculateMaxHitPoints(8, 8, 3), // 15
+    );
+    expect(parts[2]).toEqual({ label: "CON (-1 x 3)", value: -3 });
   });
 });

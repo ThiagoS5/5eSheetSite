@@ -92,6 +92,7 @@ export interface BuilderSpecies {
   traits: BuilderFeature[];
   abilityBonuses: AttributeBonuses[];
   choiceGroups: BuilderChoiceGroup[];
+  senses: SheetSense[];
   detail: string;
 }
 
@@ -320,10 +321,12 @@ export interface Pendency {
   severity: "blocking" | "warning";
 }
 
-export interface ArmorClassBreakdownPart {
+export interface BreakdownPart {
   label: string;
   value: number;
 }
+
+export type ArmorClassBreakdownPart = BreakdownPart;
 
 export interface CharacterSheetSummary {
   // — existing fields (unchanged) —
@@ -358,6 +361,7 @@ export interface CharacterSheetSummary {
   backgroundName: string;
   currentHp: number;
   maxHp: number;
+  maxHpBreakdown?: BreakdownPart[];
   tempHp: number;
   hitDice: string;
   initiative: number;
@@ -365,6 +369,7 @@ export interface CharacterSheetSummary {
   speedMeters: number;
   xp: number;
   xpThreshold: number;
+  progressionMode?: "xp" | "milestone";
   isSpellcaster: boolean;
   attributes: SheetAttribute[];
   skills: SheetSkill[];

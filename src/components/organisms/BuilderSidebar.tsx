@@ -87,7 +87,11 @@ const stepIconBySlug: Record<BuilderStepSlug, string> = {
   conclusao: "fa-solid fa-flag-pennant",
 };
 
-export function BuilderSidebar() {
+interface BuilderSidebarProps {
+  variant?: "desktop" | "drawer";
+}
+
+export function BuilderSidebar({ variant = "desktop" }: BuilderSidebarProps) {
   const { state, toggleSidebar } = useSidebar();
   const pathname = usePathname();
   const characterState = useCharacterStore((state) => state);
@@ -122,12 +126,15 @@ export function BuilderSidebar() {
     [],
   );
 
+  const asideClassName =
+    variant === "drawer"
+      ? "flex min-w-0 h-full min-h-0 flex-col border-border/50 bg-muted text-foreground"
+      : `hidden min-w-0 flex-col border-b border-border/50 bg-muted text-foreground xl:flex xl:min-h-[calc(100dvh-4rem)] xl:border-b-0 xl:border-r ${
+          collapsed ? "xl:w-[4.5rem]" : "xl:w-full"
+        }`;
+
   return (
-    <aside
-      className={`hidden min-w-0 flex-col border-b border-border/50 bg-muted text-foreground xl:flex xl:min-h-[calc(100dvh-4rem)] xl:border-b-0 xl:border-r ${
-        collapsed ? "xl:w-[4.5rem]" : "xl:w-full"
-      }`}
-    >
+    <aside className={asideClassName}>
         <Sidebar collapsible="icon" contained className="w-full bg-transparent">
           <SidebarHeader
             className={cn(

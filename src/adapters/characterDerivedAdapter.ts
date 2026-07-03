@@ -1,4 +1,4 @@
-import type { BuilderEquipmentOption } from "@/types/builder";
+import type { BreakdownPart, BuilderEquipmentOption } from "@/types/builder";
 import type {
   AttributeBonuses,
   AttributeKey,
@@ -50,6 +50,38 @@ export function calculateMaxHitPoints(
   const perAdditionalLevel = Math.floor(hitDie / 2) + 1 + conModifier;
 
   return firstLevel + (effectiveLevel - 1) * perAdditionalLevel;
+}
+
+/**
+ * Parcelas do PV máximo (mesma regra fixa 2024 de calculateMaxHitPoints).
+ * A soma das parcelas é sempre igual ao PV máximo — alimenta o tooltip de
+ * fórmula da ficha ("12 = 10 (d10 nível 1) + 2 (CON)").
+ */
+export function getMaxHitPointsBreakdown(
+  hitDie: number,
+  constitutionScore: number,
+  level: number,
+): BreakdownPart[] {
+  const effectiveLevel = Math.max(1, Math.floor(level));
+  const conModifier = getAbilityModifier(constitutionScore);
+  const perAdditionalLevel = Math.floor(hitDie / 2) + 1;
+
+  const parts: BreakdownPart[] = [
+    { label: `Nivel 1 (d${hitDie})`, value: hitDie },
+  ];
+  if (effectiveLevel > 1) {
+    parts.push({
+      label: `Niveis 2-${effectiveLevel} (${effectiveLevel - 1} x ${perAdditionalLevel})`,
+      value: (effectiveLevel - 1) * perAdditionalLevel,
+    });
+  }
+  if (conModifier !== 0) {
+    parts.push({
+      label: `CON (${conModifier > 0 ? "+" : ""}${conModifier} x ${effectiveLevel})`,
+      value: conModifier * effectiveLevel,
+    });
+  }
+  return parts;
 }
 
 export function calculateArmorClass(

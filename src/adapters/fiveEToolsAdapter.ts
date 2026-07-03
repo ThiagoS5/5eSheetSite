@@ -88,6 +88,10 @@ export function normalizeSpecies(
     traits,
     abilityBonuses: [],
     choiceGroups: normalizeSpeciesChoiceGroups(race.entries),
+    senses:
+      typeof race.darkvision === "number" && race.darkvision > 0
+        ? [{ name: "Visao no Escuro", rangeFeet: race.darkvision }]
+        : [],
     detail: detail || `${race.name} species details.`,
   };
 }

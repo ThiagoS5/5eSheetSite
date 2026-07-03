@@ -19,6 +19,8 @@ import {
   getRequiredLanguageCount,
   validateBuilderStep,
 } from "@/rules/builderValidation";
+import { getClassChangeImpact } from "@/rules/classChangeImpact";
+import { ClassChangeDiffDialog } from "@/src/components/organisms/ClassChangeDiffDialog";
 import { useCharacterStore } from "@/src/store/useCharacterStore";
 import type { CharacterBuilderState, SkillTrainingLevel } from "@/src/store/characterStore.types";
 import type {
@@ -38,6 +40,7 @@ import {
   getHitDieIconClass,
 } from "@/src/components/atoms/FontAwesomeIcon";
 import { BackgroundCard } from "@/src/components/molecules/BackgroundCard";
+import { ChoiceCounter } from "@/src/components/molecules/ChoiceCounter";
 import { FeatureTagList } from "@/src/components/molecules/FeatureTagList";
 import { StartingLevelStepper } from "@/src/components/molecules/StartingLevelStepper";
 import { WizardChoiceCard } from "@/src/components/molecules/WizardChoiceCard";
@@ -84,6 +87,10 @@ export function BuilderStepPanel({
   const actions = useCharacterBuilderActions();
   const [pendingReplacement, setPendingReplacement] =
     useState<PendingReplacement | null>(null);
+  const [pendingClassChange, setPendingClassChange] = useState<{
+    classId: string;
+    items: string[];
+  } | null>(null);
   const messages = validateBuilderStep(step, characterState);
   const currentStepIndex = getStepIndex(step);
   const nextStep = builderStepNavigation[currentStepIndex + 1];
@@ -135,27 +142,31 @@ export function BuilderStepPanel({
   }
 
   function requestClassSelection(classId: string) {
-    const changes = getClassReplacementChanges(characterState);
+    const impact = getClassChangeImpact({
+      state: characterState,
+      currentClass: selectedClass,
+    });
 
     if (
       characterState.selectedClassId &&
       characterState.selectedClassId !== classId &&
-      changes.length > 0
+      impact.items.length > 0
     ) {
-      setPendingReplacement({
-        title: "Alterar classe",
-        description:
-          "Trocar a classe reinicia escolhas que dependem dela para manter a ficha consistente.",
-        changes,
-        onConfirm: () => {
-          actions.selectClass(classId);
-          void unlockAndGo(1);
-        },
-      });
+      setPendingClassChange({ classId, items: impact.items });
       return;
     }
 
     actions.selectClass(classId);
+    void unlockAndGo(1);
+  }
+
+  function confirmClassChange() {
+    if (!pendingClassChange) {
+      return;
+    }
+
+    actions.selectClass(pendingClassChange.classId);
+    setPendingClassChange(null);
     void unlockAndGo(1);
   }
 
@@ -360,6 +371,12 @@ export function BuilderStepPanel({
             setPendingReplacement(null);
           }
         }}
+      />
+      <ClassChangeDiffDialog
+        open={Boolean(pendingClassChange)}
+        items={pendingClassChange?.items ?? []}
+        onConfirm={confirmClassChange}
+        onCancel={() => setPendingClassChange(null)}
       />
     </div>
   );
@@ -780,8 +797,13 @@ function ClassFeaturesStep({
       />
       <div className="grid gap-6 md:grid-cols-2">
         <fieldset className="rounded-lg border border-white/[0.06] bg-card p-4">
-          <legend className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">
-            Pericias da classe ({selectedSkills.length}/{maxSkills})
+          <legend className="mb-3 flex flex-wrap items-center justify-between gap-2 text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">
+            <span>Pericias da classe</span>
+            <ChoiceCounter
+              selected={selectedSkills.length}
+              total={maxSkills}
+              label="pericias escolhidas"
+            />
           </legend>
           <div className="grid gap-2 sm:grid-cols-2">
             {selectedClass.skillChoices.chooseFrom.map((skill) => {
@@ -880,8 +902,13 @@ function ClassFeatureChoiceFieldset({
 
   return (
     <fieldset className="rounded-lg border border-white/[0.06] bg-card p-4">
-      <legend className="mb-2 text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">
-        {group.label} ({selectedValues.length}/{group.count})
+      <legend className="mb-2 flex flex-wrap items-center justify-between gap-2 text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">
+        <span>{group.label}</span>
+        <ChoiceCounter
+          selected={selectedValues.length}
+          total={group.count}
+          label="escolhidos"
+        />
       </legend>
       <p className="mb-4 text-sm leading-6 text-subdued">
         {group.description}
@@ -1460,8 +1487,13 @@ function SpeciesDetailsStep({
         ))}
 
         <fieldset className="rounded-lg border border-white/[0.06] bg-card p-4">
-          <legend className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">
-            Idiomas ({selectedLanguages.length}/{languageLimit})
+          <legend className="mb-3 flex flex-wrap items-center justify-between gap-2 text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">
+            <span>Idiomas</span>
+            <ChoiceCounter
+              selected={selectedLanguages.length}
+              total={languageLimit}
+              label="idiomas escolhidos"
+            />
           </legend>
           <div className="grid gap-5">
             <LanguageGroup
@@ -2012,38 +2044,6 @@ function getAttributeChangeHandler(
   };
 }
 
-function getClassReplacementChanges(state: CharacterBuilderState): string[] {
-  const changes: string[] = [];
-
-  if (state.classSkillProficiencies.length > 0) {
-    changes.push(
-      formatCount(
-        state.classSkillProficiencies.length,
-        "pericia de classe",
-        "pericias de classe",
-      ),
-    );
-  }
-
-  const featureGroupCount = Object.keys(state.classFeatureChoices).length;
-  if (featureGroupCount > 0) {
-    changes.push(
-      formatCount(featureGroupCount, "grupo de recurso", "grupos de recurso"),
-    );
-  }
-
-  if (state.selectedSubclassId) {
-    changes.push("subclasse selecionada");
-  }
-
-  const classEquipment = state.equipmentChoicesBySource.class;
-  if (classEquipment?.mode || classEquipment?.selectedOptionId) {
-    changes.push("equipamento inicial da classe");
-  }
-
-  return changes;
-}
-
 function getSpeciesReplacementChanges(state: CharacterBuilderState): string[] {
   const changes: string[] = [];
   const speciesChoiceCount = Object.keys(state.speciesChoices).length;
@@ -2146,6 +2146,10 @@ function useCharacterBuilderState(): CharacterBuilderState {
   const skillModifierOverrides = useCharacterStore(
     (state) => state.skillModifierOverrides,
   );
+  const hpRollByLevel = useCharacterStore((state) => state.hpRollByLevel);
+  const creationPreferences = useCharacterStore(
+    (state) => state.creationPreferences,
+  );
 
   return useMemo(
     () => ({
@@ -2173,6 +2177,8 @@ function useCharacterBuilderState(): CharacterBuilderState {
       moneyTouched,
       carriedLoadKg,
       skillModifierOverrides,
+      hpRollByLevel,
+      creationPreferences,
     }),
     [
       ruleset,
@@ -2199,6 +2205,8 @@ function useCharacterBuilderState(): CharacterBuilderState {
       moneyTouched,
       carriedLoadKg,
       skillModifierOverrides,
+      hpRollByLevel,
+      creationPreferences,
     ],
   );
 }

@@ -15,6 +15,7 @@ import { modifierColorClass } from "@/src/utils/modifierColor";
 import { cn } from "@/src/lib/utils";
 import { ATTRIBUTE_ICON_CLASS } from "@/src/components/atoms/attributeIcons";
 import { FontAwesomeIcon } from "@/src/components/atoms/FontAwesomeIcon";
+import { AbilityRollPanel } from "@/src/components/organisms/AbilityRollPanel";
 import { Button } from "@/src/components/ui/button";
 import { Input } from "@/src/components/ui/input";
 import {
@@ -39,6 +40,7 @@ const methods: readonly AttributeGenerationMethod[] = [
   "standard-array",
   "point-buy",
   "manual",
+  "roll-4d6",
 ];
 const standardArrayValues = [15, 14, 13, 12, 10, 8] as const;
 const MANUAL_MIN = 3;
@@ -105,6 +107,16 @@ export function AttributeEditor({
         >
           Point Buy: {pointBuySpent} gastos, {pointBuyRemaining} restantes
         </p>
+      ) : null}
+
+      {method === "roll-4d6" ? (
+        <AbilityRollPanel
+          onApply={(scores) => {
+            attributes.forEach((attribute) => {
+              onAttributeChange(attribute, scores[attribute]);
+            });
+          }}
+        />
       ) : null}
 
       <div className="rounded-md border border-border bg-muted p-3 md:p-0">
@@ -223,6 +235,18 @@ function BaseValueControl({
   onAttributeChange: (attribute: AttributeKey, value: number) => void;
 }) {
   const value = baseAttributes[attribute];
+
+  if (method === "roll-4d6") {
+    return (
+      <output
+        aria-label={`${label} ${value}`}
+        aria-live="polite"
+        className="block w-16 text-left font-serif text-lg font-bold text-foreground md:mx-auto md:text-center"
+      >
+        {value}
+      </output>
+    );
+  }
 
   if (method === "standard-array") {
     return (

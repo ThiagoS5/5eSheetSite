@@ -118,7 +118,7 @@ describe("createCharacterStore persistence", () => {
           },
         },
         exportMetadata: {
-          schemaVersion: 5,
+          schemaVersion: 6,
           saveId: expect.any(String),
         },
       },
@@ -171,7 +171,7 @@ describe("createCharacterStore persistence", () => {
     const store = createCharacterStore();
     const build = store.getState().characterBuild;
 
-    expect(build.exportMetadata.schemaVersion).toBe(5);
+    expect(build.exportMetadata.schemaVersion).toBe(6);
     expect(build.choices.selectedSubclassId).toBe("");
     expect(build.progression.levelChoices["1"].classFeatureChoices).toEqual({
       "weapon-mastery": ["Longsword"],
