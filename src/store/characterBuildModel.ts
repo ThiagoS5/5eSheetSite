@@ -195,6 +195,7 @@ export function flattenCharacterBuild(
     skillModifierOverrides: build.choices?.skillModifierOverrides,
     hpRollByLevel: extractHpRollByLevel(build.progression?.levelChoices),
     creationPreferences: build.choices?.creationPreferences,
+    beginnerMode: build.choices?.beginnerMode,
   };
 }
 
@@ -264,6 +265,7 @@ export function getDefaultFlatState(): FlatCharacterBuilderState {
     skillModifierOverrides: {},
     hpRollByLevel: {},
     creationPreferences: undefined,
+    beginnerMode: false,
   };
 }
 
@@ -366,6 +368,7 @@ function createBuildFromFlatState(
       carriedLoadKg: normalizedState.carriedLoadKg,
       skillModifierOverrides: normalizedState.skillModifierOverrides,
       creationPreferences: normalizedState.creationPreferences,
+      beginnerMode: normalizedState.beginnerMode ?? false,
     },
     derivedSheet: createEmptyDerivedSheet(normalizedState),
     exportMetadata: {
@@ -430,6 +433,7 @@ function normalizeFlatState(
       state.hpRollByLevel ?? defaults.hpRollByLevel,
     ),
     creationPreferences: state.creationPreferences ?? defaults.creationPreferences,
+    beginnerMode: state.beginnerMode ?? defaults.beginnerMode,
   };
 }
 

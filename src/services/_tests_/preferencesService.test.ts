@@ -28,4 +28,16 @@ describe("preferencesService", () => {
     localStorage.setItem("forge-fate-preferences:v1", "{not json");
     expect(readGlobalPreferences().creationDefaults).toEqual(DEFAULT_CREATION_PREFERENCES);
   });
+
+  it("persists beginner mode beside creation defaults", () => {
+    writeGlobalPreferences({
+      beginnerMode: true,
+      creationDefaults: { activeSources: ["XPHB"], progressionMode: "milestone" },
+    });
+
+    expect(readGlobalPreferences()).toEqual({
+      beginnerMode: true,
+      creationDefaults: { activeSources: ["XPHB"], progressionMode: "milestone" },
+    });
+  });
 });

@@ -10,6 +10,7 @@ const STORAGE_KEY = "forge-fate-preferences:v1";
 
 export interface GlobalPreferences {
   creationDefaults: CreationPreferences;
+  beginnerMode?: boolean;
 }
 
 const DEFAULT_GLOBAL_PREFERENCES: GlobalPreferences = {
@@ -31,7 +32,11 @@ export function readGlobalPreferences(): GlobalPreferences {
     if (!isValidCreationPreferences(parsed?.creationDefaults)) {
       return DEFAULT_GLOBAL_PREFERENCES;
     }
-    return { creationDefaults: parsed!.creationDefaults! };
+    return {
+      creationDefaults: parsed!.creationDefaults!,
+      beginnerMode:
+        typeof parsed?.beginnerMode === "boolean" ? parsed.beginnerMode : undefined,
+    };
   } catch {
     return DEFAULT_GLOBAL_PREFERENCES;
   }

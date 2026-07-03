@@ -40,6 +40,7 @@ export function useCharacterBuilderState(): CharacterBuilderState {
   const skillModifierOverrides = useCharacterStore((s) => s.skillModifierOverrides);
   const hpRollByLevel = useCharacterStore((s) => s.hpRollByLevel);
   const creationPreferences = useCharacterStore((s) => s.creationPreferences);
+  const beginnerMode = useCharacterStore((s) => s.beginnerMode);
 
   return useMemo(
     () => ({
@@ -69,6 +70,7 @@ export function useCharacterBuilderState(): CharacterBuilderState {
       skillModifierOverrides,
       hpRollByLevel,
       creationPreferences,
+      beginnerMode,
     }),
     [
       ruleset,
@@ -97,6 +99,7 @@ export function useCharacterBuilderState(): CharacterBuilderState {
       skillModifierOverrides,
       hpRollByLevel,
       creationPreferences,
+      beginnerMode,
     ],
   );
 }

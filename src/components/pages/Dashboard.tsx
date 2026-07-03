@@ -9,7 +9,9 @@ import {
   Shield,
   UserCircle,
   WandSparkles,
+  X,
 } from "lucide-react";
+import * as Dialog from "@radix-ui/react-dialog";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState, useSyncExternalStore, type ReactNode } from "react";
@@ -21,8 +23,22 @@ import {
   listCharactersSync,
   saveCharacter,
 } from "@/src/services/characterService";
-import { createEmptyCharacterBuild } from "@/src/store/characterBuildModel";
+import {
+  createCharacterBuildFromLegacyState,
+  createEmptyCharacterBuild,
+} from "@/src/store/characterBuildModel";
+import { readGlobalPreferences, writeGlobalPreferences } from "@/src/services/preferencesService";
+import {
+  getBuilderBackgrounds,
+  getBuilderClasses,
+  getBuilderLanguages,
+  getBuilderSpecies,
+} from "@/src/services/ruleService";
+import { quickBuildProfiles, type QuickBuildProfile } from "@/src/data/quickBuildProfiles";
 import { useCharacterStore } from "@/src/store/useCharacterStore";
+import type { CharacterBuild } from "@/src/types/characterBuild";
+import type { BuilderBackground } from "@/types/builder";
+import type { AttributeBonuses, AttributeKey } from "@/types/dnd";
 import type { Character } from "@/types/Character";
 
 const builderStartHref = "/builder/classe";
@@ -36,6 +52,7 @@ const profileUrl =
 export function Dashboard() {
   const router = useRouter();
   const loadCharacterBuild = useCharacterStore((state) => state.loadCharacterBuild);
+  const [creationModeOpen, setCreationModeOpen] = useState(false);
   const characters = useSyncExternalStore(
     subscribeToLocalCharacters,
     listCharactersSync,
@@ -44,11 +61,38 @@ export function Dashboard() {
   const hasCharacters = characters.length > 0;
 
   function goToBuilder() {
-    const build = createEmptyCharacterBuild();
+    const globalPrefs = readGlobalPreferences();
+
+    if (typeof globalPrefs.beginnerMode === "boolean") {
+      startNewCharacter(globalPrefs.beginnerMode);
+      return;
+    }
+
+    setCreationModeOpen(true);
+  }
+
+  function startNewCharacter(beginnerMode: boolean) {
+    const build = createBuildWithBeginnerMode(beginnerMode);
 
     loadCharacterBuild(build);
     void saveCharacter(build);
+    writeGlobalPreferences({
+      ...readGlobalPreferences(),
+      beginnerMode,
+    });
     router.push(builderStartHref);
+  }
+
+  function startQuickBuild(profile: QuickBuildProfile) {
+    const build = createQuickBuild(profile);
+
+    loadCharacterBuild(build);
+    void saveCharacter(build);
+    writeGlobalPreferences({
+      ...readGlobalPreferences(),
+      beginnerMode: false,
+    });
+    router.push("/builder/descricao");
   }
 
   function continueCharacter(character: Character) {
@@ -84,8 +128,126 @@ export function Dashboard() {
           <EmptyState onCreate={goToBuilder} />
         )}
       </main>
+      <CreationModeDialog
+        open={creationModeOpen}
+        onClose={() => setCreationModeOpen(false)}
+        onGuided={() => {
+          setCreationModeOpen(false);
+          startNewCharacter(true);
+        }}
+        onStandard={() => {
+          setCreationModeOpen(false);
+          startNewCharacter(false);
+        }}
+        onQuickBuild={(profile) => {
+          setCreationModeOpen(false);
+          startQuickBuild(profile);
+        }}
+      />
       <DashboardBottomNav />
     </div>
+  );
+}
+
+function createBuildWithBeginnerMode(beginnerMode: boolean): CharacterBuild {
+  const build = createEmptyCharacterBuild();
+
+  return createCharacterBuildFromLegacyState(
+    {
+      ...build.choices,
+      characterBuild: build,
+      beginnerMode,
+    },
+    {
+      createdAt: build.exportMetadata.createdAt,
+      currentStepSlug: "classe",
+      saveId: build.exportMetadata.saveId,
+      updatedAt: build.exportMetadata.updatedAt,
+    },
+  );
+}
+
+function createQuickBuild(profile: QuickBuildProfile): CharacterBuild {
+  const build = createEmptyCharacterBuild();
+  const classes = getBuilderClasses();
+  const selectedClass = classes.find((entry) => entry.id === profile.classId) ?? classes[0];
+  const species = getBuilderSpecies();
+  const selectedSpecies =
+    species.find((entry) => entry.id === "human-xphb") ?? species[0];
+  const backgrounds = getBuilderBackgrounds();
+  const selectedBackground =
+    backgrounds.find((entry) => entry.id === "guard-xphb") ?? backgrounds[0];
+  const requiredLanguageCount =
+    2 +
+    (selectedClass?.languageChoiceCount ?? 0) +
+    (selectedBackground?.languageChoiceCount ?? 0);
+  const speciesLanguages = getBuilderLanguages()
+    .slice(0, requiredLanguageCount)
+    .map((language) => language.name);
+
+  return createCharacterBuildFromLegacyState(
+    {
+      characterBuild: build,
+      beginnerMode: false,
+      selectedClassId: selectedClass?.id ?? profile.classId,
+      selectedSpeciesId: selectedSpecies?.id ?? "",
+      selectedBackgroundId: selectedBackground?.id ?? "",
+      maxUnlockedStepIndex: 7,
+      classSkillProficiencies: profile.skillProficiencies.slice(
+        0,
+        selectedClass?.skillChoices.count ?? profile.skillProficiencies.length,
+      ),
+      skillTraining: Object.fromEntries(
+        profile.skillProficiencies.map((skill) => [skill, "proficient"]),
+      ),
+      classFeatureChoices: Object.fromEntries(
+        selectedClass?.featureChoiceGroups.map((group) => [
+          group.id,
+          group.options.slice(0, group.count).map((option) => option.value),
+        ]) ?? [],
+      ),
+      speciesLanguages,
+      attributeGenerationMethod: "standard-array",
+      baseAttributes: profile.baseAttributes,
+      backgroundAbilityBonuses: getDefaultBackgroundBonuses(selectedBackground),
+      equipmentChoicesBySource: selectedClass?.startingEquipmentPackages[0]
+        ? {
+            class: {
+              mode: "items",
+              selectedOptionId: selectedClass.startingEquipmentPackages[0].id,
+            },
+          }
+        : {},
+    },
+    {
+      createdAt: build.exportMetadata.createdAt,
+      currentStepSlug: "descricao",
+      saveId: build.exportMetadata.saveId,
+      updatedAt: build.exportMetadata.updatedAt,
+    },
+  );
+}
+
+function getDefaultBackgroundBonuses(
+  background: BuilderBackground | undefined,
+): AttributeBonuses {
+  const option = background?.abilityOptions[0];
+
+  if (!option) {
+    return {};
+  }
+
+  if (option.mode === "+2/+1") {
+    const [major, minor] = option.attributes;
+    return {
+      ...(major ? { [major]: 2 } : {}),
+      ...(minor ? { [minor]: 1 } : {}),
+    } as AttributeBonuses;
+  }
+
+  return option.attributes.reduce<AttributeBonuses>(
+    (bonuses, attribute) => ({ ...bonuses, [attribute as AttributeKey]: 1 }),
+    {},
   );
 }
 
@@ -105,6 +267,109 @@ function subscribeToLocalCharacters(onStoreChange: () => void) {
 
 function getServerCharactersSnapshot(): readonly Character[] {
   return emptyCharactersSnapshot;
+}
+
+function CreationModeDialog({
+  open,
+  onClose,
+  onGuided,
+  onStandard,
+  onQuickBuild,
+}: {
+  open: boolean;
+  onClose: () => void;
+  onGuided: () => void;
+  onStandard: () => void;
+  onQuickBuild: (profile: QuickBuildProfile) => void;
+}) {
+  const classes = getBuilderClasses();
+  const profiles = quickBuildProfiles.filter((profile) =>
+    classes.some((entry) => entry.id === profile.classId),
+  );
+
+  return (
+    <Dialog.Root open={open} onOpenChange={(nextOpen) => { if (!nextOpen) onClose(); }}>
+      <Dialog.Portal>
+        <Dialog.Overlay className="fixed inset-0 z-50 grid place-items-center overflow-y-auto bg-black/75 p-4 backdrop-blur-md">
+          <Dialog.Content className="relative max-h-[90dvh] w-full max-w-3xl overflow-y-auto rounded-lg border border-white/[0.08] bg-surface-nested p-5 text-foreground shadow-2xl shadow-black/60 outline-none focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70">
+            <Dialog.Title className="pr-10 font-serif text-2xl font-bold text-foreground">
+              E sua primeira vez jogando Dungeons & Dragons 5e?
+            </Dialog.Title>
+            <Dialog.Description className="mt-2 text-sm leading-6 text-subdued">
+              Escolha como quer iniciar este personagem. Voce pode mudar o modo guiado depois no builder.
+            </Dialog.Description>
+            <Dialog.Close asChild>
+              <button
+                type="button"
+                aria-label="Fechar"
+                className="absolute right-4 top-4 inline-flex h-9 w-9 items-center justify-center rounded-md border border-border text-muted-foreground outline-none transition hover:text-foreground focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70"
+              >
+                <X aria-hidden="true" className="h-4 w-4" />
+              </button>
+            </Dialog.Close>
+
+            <div className="mt-5 grid gap-3 md:grid-cols-3">
+              <CreationModeButton
+                title="Modo Guiado"
+                description="Sim, me guie com explicacoes e ajuda contextual."
+                onClick={onGuided}
+              />
+              <CreationModeButton
+                title="Modo Padrao"
+                description="Ja conheco as regras e quero o wizard limpo."
+                onClick={onStandard}
+              />
+              <section className="rounded-lg border border-border bg-card p-4">
+                <h3 className="font-serif text-lg font-bold text-foreground">
+                  Construcao Rapida
+                </h3>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  Escolha uma classe para aplicar um kit recomendado e ir direto
+                  para nomear o heroi.
+                </p>
+                <div className="mt-4 grid max-h-56 gap-2 overflow-y-auto pr-1">
+                  {profiles.map((profile) => (
+                    <button
+                      key={profile.classId}
+                      type="button"
+                      onClick={() => onQuickBuild(profile)}
+                      className="rounded-md border border-white/[0.08] px-3 py-2 text-left text-sm font-semibold text-foreground outline-none transition hover:border-primary/60 hover:bg-white/[0.04] focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70"
+                    >
+                      {profile.label}
+                    </button>
+                  ))}
+                </div>
+              </section>
+            </div>
+          </Dialog.Content>
+        </Dialog.Overlay>
+      </Dialog.Portal>
+    </Dialog.Root>
+  );
+}
+
+function CreationModeButton({
+  title,
+  description,
+  onClick,
+}: {
+  title: string;
+  description: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      aria-label={title}
+      onClick={onClick}
+      className="rounded-lg border border-white/[0.08] bg-card p-4 text-left outline-none transition hover:border-primary/60 hover:bg-white/[0.04] focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70"
+    >
+      <span className="font-serif text-lg font-bold text-foreground">{title}</span>
+      <span className="mt-2 block text-sm leading-6 text-muted-foreground">
+        {description}
+      </span>
+    </button>
+  );
 }
 
 function DashboardTopNav() {

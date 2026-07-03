@@ -9,7 +9,7 @@ import type {
   Ruleset,
 } from "@/types/dnd";
 
-export const CHARACTER_BUILD_SCHEMA_VERSION = 6;
+export const CHARACTER_BUILD_SCHEMA_VERSION = 7;
 
 export interface CoinPouch {
   pc: number;
@@ -99,6 +99,7 @@ export interface CharacterBuildChoices {
   carriedLoadKg: number;
   skillModifierOverrides: Record<string, number>;
   creationPreferences?: CreationPreferences; // NOVO v6 — ausente = defaults
+  beginnerMode: boolean; // NOVO v7 — modo didatico por personagem
 }
 
 export type CharacterBuildDerivedSheet = CharacterSheetSummary;

@@ -118,7 +118,7 @@ describe("createCharacterStore persistence", () => {
           },
         },
         exportMetadata: {
-          schemaVersion: 6,
+          schemaVersion: 7,
           saveId: expect.any(String),
         },
       },
@@ -171,12 +171,66 @@ describe("createCharacterStore persistence", () => {
     const store = createCharacterStore();
     const build = store.getState().characterBuild;
 
-    expect(build.exportMetadata.schemaVersion).toBe(6);
+    expect(build.exportMetadata.schemaVersion).toBe(7);
     expect(build.choices.selectedSubclassId).toBe("");
     expect(build.progression.levelChoices["1"].classFeatureChoices).toEqual({
       "weapon-mastery": ["Longsword"],
     });
     expect(store.getState().selectedSubclassId).toBe("");
+  });
+
+  it("migrates a v6 save to v7 with beginnerMode disabled by default", () => {
+    const v6Build = {
+      draft: {
+        currentStepSlug: "classe",
+        maxUnlockedStepIndex: 0,
+        pendingChoiceIds: [],
+        inventory: [],
+        equipmentChoicesBySource: {},
+        description: {},
+      },
+      progression: { level: 1, levelChoices: {} },
+      choices: {
+        ruleset: "2024",
+        selectedSpeciesId: "",
+        selectedClassId: "",
+        selectedSubclassId: "",
+        selectedBackgroundId: "",
+        classSkillProficiencies: [],
+        skillTraining: {},
+        classFeatureChoices: {},
+        speciesChoices: {},
+        speciesLanguages: [],
+        attributeGenerationMethod: "standard-array",
+        baseAttributes: {
+          forca: 8,
+          destreza: 8,
+          constituicao: 8,
+          inteligencia: 8,
+          sabedoria: 8,
+          carisma: 8,
+        },
+        backgroundAbilityBonuses: {},
+        money: { pc: 0, pp: 0, pe: 0, po: 0, pl: 0 },
+        moneyTouched: false,
+        carriedLoadKg: 0,
+        skillModifierOverrides: {},
+        creationPreferences: { activeSources: ["XPHB"], progressionMode: "xp" },
+      },
+      derivedSheet: {},
+      exportMetadata: { schemaVersion: 6, saveId: "legacy-v6", createdAt: "x", updatedAt: "x" },
+    };
+
+    sessionStorage.setItem(
+      "ficha-5e-builder",
+      JSON.stringify({ state: { characterBuild: v6Build }, version: 6 }),
+    );
+
+    const store = createCharacterStore();
+
+    expect(store.getState().characterBuild.exportMetadata.schemaVersion).toBe(7);
+    expect(store.getState().beginnerMode).toBe(false);
+    expect(store.getState().characterBuild.choices.beginnerMode).toBe(false);
   });
 
   it("commits the active build into the local repository when advancing", async () => {

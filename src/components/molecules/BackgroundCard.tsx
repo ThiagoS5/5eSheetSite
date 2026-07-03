@@ -3,7 +3,10 @@
 import { useId, useRef, useState, type ReactNode, type RefObject } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import Image from "next/image";
-import { WizardChoiceCard } from "@/src/components/molecules/WizardChoiceCard";
+import {
+  HeroChoiceCard,
+  type HeroChoiceTheme,
+} from "@/src/components/molecules/HeroChoiceCard";
 import type { BuilderBackground, BuilderFeatureBlock } from "@/types/builder";
 import {
   ATTRIBUTE_LABELS,
@@ -20,6 +23,12 @@ interface BackgroundCardProps {
   onBonusesChange: (bonuses: AttributeBonuses) => void;
   onCommit: () => void;
 }
+
+/** Tema pergaminho para os cards de antecedente. */
+const heroBackgroundTheme: HeroChoiceTheme = {
+  theme: "#3A2C1A",
+  accent: "#C19429",
+};
 
 const attributeKeys: readonly AttributeKey[] = [
   "forca",
@@ -67,37 +76,58 @@ export function BackgroundCard({
 
   return (
     <>
-      <WizardChoiceCard
+      <HeroChoiceCard
         title={background.name}
-        subtitle={background.source}
+        badges={[background.source].filter(Boolean)}
+        description={background.summary}
         imageSrc={background.image?.src}
         imageAlt={background.image?.alt}
         icon={<i aria-hidden="true" className="fa-solid fa-scroll-old" />}
+        theme={heroBackgroundTheme}
         isActive={selected}
         disabled={disabled}
         onClickDetails={() => setDetailsOpen(true)}
         onClickSelect={handleSelect}
-        selectLabel="SELECIONAR"
-        selectedLabel="SELECIONADO"
-        imageSizes="(min-width: 1280px) 24rem, (min-width: 768px) 50vw, 100vw"
       >
-        <p className="line-clamp-3 flex-1 text-base leading-relaxed text-foreground">
-          {background.summary}
-        </p>
-
-        <BackgroundRewardCallout background={background} />
-
-        <BackgroundAbilitySelector
-          controlsRef={bonusControlsRef}
-          background={background}
-          selected={selectedBonuses}
-          disabled={disabled}
-          onChange={(bonuses) => {
-            onSelect();
-            onBonusesChange(bonuses);
-          }}
-        />
-      </WizardChoiceCard>
+        <div className="grid gap-2 rounded-lg bg-black/40 p-3 backdrop-blur-[2px]">
+          <div>
+            <h4 className="mb-1 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.14em] text-white/70">
+              <i
+                aria-hidden="true"
+                className="fa-solid fa-wand-sparkles text-xs text-[var(--hero-accent)]"
+              />
+              Talento de Origem
+            </h4>
+            <p className="text-sm font-semibold text-white">
+              {background.originFeat || "-"}
+            </p>
+            <p className="mt-0.5 line-clamp-2 text-xs leading-5 text-white/80">
+              {[
+                background.skillProficiencies.length
+                  ? `Pericias: ${background.skillProficiencies.join(", ")}`
+                  : "",
+                background.toolProficiencies.length
+                  ? `Ferramentas: ${background.toolProficiencies.join(", ")}`
+                  : "",
+              ]
+                .filter(Boolean)
+                .join(" | ") ||
+                background.equipmentSummary ||
+                "-"}
+            </p>
+          </div>
+          <BackgroundAbilitySelector
+            controlsRef={bonusControlsRef}
+            background={background}
+            selected={selectedBonuses}
+            disabled={disabled}
+            // onBonusesChange ja seleciona o antecedente e aplica os bonus de
+            // forma atomica; um onSelect() extra aqui reiniciaria os bonus
+            // recem-escolhidos ao trocar de card antes de selecionar.
+            onChange={onBonusesChange}
+          />
+        </div>
+      </HeroChoiceCard>
 
       <BackgroundDetailsModal
         open={detailsOpen}
@@ -294,41 +324,6 @@ function BackgroundDetailsModal({
         </Dialog.Overlay>
       </Dialog.Portal>
     </Dialog.Root>
-  );
-}
-
-function BackgroundRewardCallout({
-  background,
-}: {
-  background: BuilderBackground;
-}) {
-  const rewardPreview = [
-    background.skillProficiencies.length
-      ? `Pericias: ${formatList(background.skillProficiencies)}`
-      : "",
-    background.toolProficiencies.length
-      ? `Ferramentas: ${formatList(background.toolProficiencies)}`
-      : "",
-  ]
-    .filter(Boolean)
-    .join(" | ");
-
-  return (
-    <section className="mb-6 rounded-lg border border-primary/30 bg-muted p-4 shadow-[inset_0_0_15px_rgba(196,30,30,0.05)]">
-      <div className="mb-2 flex items-center gap-2">
-        <i
-          aria-hidden="true"
-          className="fa-solid fa-wand-sparkles text-sm text-primary"
-        />
-        <h4 className="text-[10px] font-bold uppercase tracking-[0.14em] text-foreground">
-          Talento de Origem
-        </h4>
-      </div>
-      <p className="font-semibold text-foreground">{background.originFeat || "-"}</p>
-      <p className="mt-1 line-clamp-2 text-base leading-relaxed text-muted-foreground">
-        {rewardPreview || background.equipmentSummary || "-"}
-      </p>
-    </section>
   );
 }
 
@@ -642,8 +637,4 @@ function formatAbilityOption(
   attributes: AttributeKey[],
 ): string {
   return `${mode} ${formatAbilityAttributes(attributes)}`;
-}
-
-function formatList(items: readonly string[]): string {
-  return items.length ? items.join(", ") : "";
 }

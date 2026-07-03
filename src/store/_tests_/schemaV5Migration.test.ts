@@ -55,7 +55,7 @@ describe("schema v5 migration — money, carried load, skill overrides", () => {
 
     const normalized = normalizeCharacterBuild(v4Build as never);
 
-    expect(normalized.exportMetadata.schemaVersion).toBe(6);
+    expect(normalized.exportMetadata.schemaVersion).toBe(7);
     expect(normalized.choices.money).toEqual(EMPTY_COIN_POUCH);
     expect(normalized.choices.moneyTouched).toBe(false);
     expect(normalized.choices.carriedLoadKg).toBe(0);

@@ -20,6 +20,7 @@ import { builderStepNavigation } from "@/src/components/templates/builderStepNav
 import { deriveBuilderPendencies } from "@/rules/pendencyRules";
 import { validateBuilderStep } from "@/rules/builderValidation";
 import { getBuilderClasses } from "@/src/services/ruleService";
+import { readGlobalPreferences, writeGlobalPreferences } from "@/src/services/preferencesService";
 import { selectCharacterSheetSummary } from "@/src/store/characterSelectors";
 import { useCharacterStore } from "@/src/store/useCharacterStore";
 
@@ -179,9 +180,40 @@ export function BuilderShell({ children }: BuilderShellProps) {
 function AutosaveStatus({ updatedAt }: { updatedAt: string }) {
   const savedAt = formatSavedAt(updatedAt);
   const [preferencesOpen, setPreferencesOpen] = useState(false);
+  const beginnerMode = useCharacterStore((state) => state.beginnerMode);
+  const setBeginnerMode = useCharacterStore((state) => state.setBeginnerMode);
+
+  function handleBeginnerModeToggle() {
+    const next = !beginnerMode;
+    setBeginnerMode(next);
+    writeGlobalPreferences({
+      ...readGlobalPreferences(),
+      beginnerMode: next,
+    });
+  }
 
   return (
-    <div className="mb-4 flex justify-end gap-2">
+    <div className="mb-4 flex flex-wrap justify-end gap-2">
+      <button
+        type="button"
+        role="switch"
+        aria-checked={beginnerMode}
+        aria-label="Modo guiado"
+        onClick={handleBeginnerModeToggle}
+        className={`inline-flex h-9 items-center gap-2 rounded-md border px-3 text-[10px] font-bold uppercase tracking-[0.14em] outline-none transition focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70 ${
+          beginnerMode
+            ? "border-brand-gold-alt/60 bg-brand-gold-alt/15 text-foreground"
+            : "border-white/[0.08] bg-card text-muted-foreground hover:text-foreground"
+        }`}
+      >
+        Modo guiado
+        <span
+          aria-hidden="true"
+          className={`h-2.5 w-2.5 rounded-full ${
+            beginnerMode ? "bg-brand-gold-alt" : "bg-muted-foreground"
+          }`}
+        />
+      </button>
       <button
         type="button"
         aria-label="Preferências da criação"

@@ -43,7 +43,12 @@ import { BackgroundCard } from "@/src/components/molecules/BackgroundCard";
 import { ChoiceCounter } from "@/src/components/molecules/ChoiceCounter";
 import { FeatureTagList } from "@/src/components/molecules/FeatureTagList";
 import { StartingLevelStepper } from "@/src/components/molecules/StartingLevelStepper";
-import { WizardChoiceCard } from "@/src/components/molecules/WizardChoiceCard";
+import { StepIntroCard } from "@/src/components/molecules/StepIntroCard";
+import {
+  HeroChoiceCard,
+  defaultHeroChoiceTheme,
+  type HeroChoiceTheme,
+} from "@/src/components/molecules/HeroChoiceCard";
 import { WizardStepHeader } from "@/src/components/molecules/WizardStepHeader";
 import {
   Accordion,
@@ -231,6 +236,7 @@ export function BuilderStepPanel({
         <ClassStep
           classes={classes}
           selectedClassId={characterState.selectedClassId}
+          beginnerMode={Boolean(characterState.beginnerMode)}
           disabled={!canUseCurrentStep}
           onSelectClass={requestClassSelection}
         />
@@ -467,18 +473,29 @@ function BuilderStepToolbar() {
 function ClassStep({
   classes,
   selectedClassId,
+  beginnerMode,
   disabled,
   onSelectClass,
 }: {
   classes: BuilderClass[];
   selectedClassId: string;
+  beginnerMode: boolean;
   disabled: boolean;
   onSelectClass: (classId: string) => void;
 }) {
   const [searchQuery, setSearchQuery] = useState("");
+  const [quizOpen, setQuizOpen] = useState(false);
+  const [quizAnswers, setQuizAnswers] = useState<string[]>([]);
   const filteredClasses = useMemo(
     () => classes.filter((entry) => matchesClassSearch(entry, searchQuery)),
     [classes, searchQuery],
+  );
+  const suggestedClassIds = useMemo(
+    () => getSuggestedClassIds(quizAnswers),
+    [quizAnswers],
+  );
+  const suggestedClasses = classes.filter((entry) =>
+    suggestedClassIds.includes(entry.id),
   );
   const resultCountLabel =
     filteredClasses.length === 1
@@ -500,6 +517,57 @@ function ClassStep({
         onSearch={setSearchQuery}
       />
 
+      {beginnerMode ? (
+        <>
+          <StepIntroCard
+            conceptId="class"
+            title="O que e uma classe?"
+            beginnerMode={beginnerMode}
+          />
+          <section
+            aria-labelledby="class-quiz-title"
+            className="rounded-lg border border-white/[0.08] bg-card p-4"
+          >
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h3
+                  id="class-quiz-title"
+                  className="font-serif text-lg font-bold text-foreground"
+                >
+                  Me ajude a escolher
+                </h3>
+                <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                  Responda tres preferencias para destacar algumas classes. As
+                  outras continuam disponiveis.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setQuizOpen((value) => !value);
+                  setQuizAnswers([]);
+                }}
+                className="rounded-md border border-brand-gold-alt/50 px-4 py-2 text-sm font-bold text-foreground outline-none transition hover:bg-brand-gold-alt/10 focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70"
+              >
+                Me ajude a escolher
+              </button>
+            </div>
+
+            {quizOpen ? (
+              <ClassSuggestionQuiz
+                answers={quizAnswers}
+                suggestedClasses={suggestedClasses}
+                onAnswer={(answer) =>
+                  setQuizAnswers((current) =>
+                    current.length >= 3 ? current : [...current, answer],
+                  )
+                }
+              />
+            ) : null}
+          </section>
+        </>
+      ) : null}
+
       <div className="mb-4">
         <StartingLevelStepper />
       </div>
@@ -507,13 +575,21 @@ function ClassStep({
       {filteredClasses.length ? (
         <div className="grid min-w-0 grid-cols-1 gap-3 md:gap-4 md:grid-cols-2 xl:grid-cols-3">
           {filteredClasses.map((entry) => (
-            <ClassOptionCard
+            <div
               key={entry.id}
-              classEntry={entry}
-              selected={selectedClassId === entry.id}
-              disabled={disabled}
-              onSelect={() => onSelectClass(entry.id)}
-            />
+              className={
+                beginnerMode && suggestedClassIds.includes(entry.id)
+                  ? "rounded-xl ring-2 ring-brand-gold-alt/80 ring-offset-2 ring-offset-background"
+                  : ""
+              }
+            >
+              <ClassOptionCard
+                classEntry={entry}
+                selected={selectedClassId === entry.id}
+                disabled={disabled}
+                onSelect={() => onSelectClass(entry.id)}
+              />
+            </div>
           ))}
         </div>
       ) : (
@@ -530,6 +606,67 @@ function ClassStep({
   );
 }
 
+function ClassSuggestionQuiz({
+  answers,
+  suggestedClasses,
+  onAnswer,
+}: {
+  answers: string[];
+  suggestedClasses: BuilderClass[];
+  onAnswer: (answer: string) => void;
+}) {
+  const questionIndex = answers.length;
+  const questions = [
+    {
+      label: "Prefere lutar de perto, a distancia ou com magia?",
+      options: ["Perto", "Distancia", "Magia"],
+    },
+    {
+      label: "Quer causar dano, proteger ou apoiar aliados?",
+      options: ["Causar dano", "Proteger", "Apoiar aliados"],
+    },
+    {
+      label: "Prefere uma classe simples ou cheia de escolhas?",
+      options: ["Simples", "Muitas escolhas", "Equilibrada"],
+    },
+  ];
+  const currentQuestion = questions[questionIndex];
+
+  return (
+    <div className="mt-4 border-t border-white/[0.08] pt-4">
+      {currentQuestion ? (
+        <fieldset className="grid gap-3">
+          <legend className="text-sm font-semibold text-foreground">
+            {currentQuestion.label}
+          </legend>
+          <div className="flex flex-wrap gap-2">
+            {currentQuestion.options.map((option) => (
+              <button
+                key={option}
+                type="button"
+                onClick={() => onAnswer(option)}
+                className="rounded-md border border-white/[0.08] bg-muted px-3 py-2 text-sm font-semibold text-foreground outline-none transition hover:border-brand-gold-alt/60 focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70"
+              >
+                {option}
+              </button>
+            ))}
+          </div>
+        </fieldset>
+      ) : (
+        <div aria-live="polite">
+          <p className="text-sm font-bold text-brand-gold-alt">
+            Sugestoes destacadas:{" "}
+            {suggestedClasses.map((entry) => entry.name).join(", ") || "Guerreiro"}
+          </p>
+          <p className="mt-1 text-sm leading-6 text-muted-foreground">
+            Use as sugestoes como ponto de partida, nao como trava.
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function ClassOptionCard({
   classEntry,
   selected,
@@ -541,57 +678,47 @@ function ClassOptionCard({
   disabled: boolean;
   onSelect: () => void;
 }) {
-  const tone = getClassTone(classEntry);
   const tags = getClassTags(classEntry);
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const primaryAbility = formatList(classEntry.primaryAbility);
 
   return (
     <>
-      <WizardChoiceCard
+      <HeroChoiceCard
         title={classEntry.name}
-        subtitle={classEntry.source}
+        badges={[classEntry.source, tags[0], primaryAbility].filter(Boolean)}
+        description={classEntry.summary}
         imageSrc={classEntry.image?.src}
         imageAlt={classEntry.image?.alt}
+        icon={
+          <FontAwesomeIcon iconClassName={getClassBannerIconClass(classEntry)} />
+        }
+        theme={getHeroClassTheme(classEntry)}
         isActive={selected}
         disabled={disabled}
         onClickDetails={() => setDetailsOpen(true)}
         onClickSelect={onSelect}
-        tone={tone}
       >
-        <div className="mb-3 flex flex-wrap gap-2">
-          {tags.map((tag) => (
-            <span
-              key={tag}
-              className="rounded border border-border bg-muted px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-subdued"
-            >
-              {tag}
+        <div className="grid gap-2 rounded-lg bg-black/40 p-3 backdrop-blur-[2px]">
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/70">
+              Dado de Vida
             </span>
-          ))}
-        </div>
-
-        <p className="line-clamp-3 flex-1 text-base leading-relaxed text-subdued">
-          {classEntry.summary}
-        </p>
-
-        <div className="mt-5 grid gap-3 border-t border-white/[0.06] pt-4">
-          <div className="grid grid-cols-2 gap-3">
-            <ClassMetric
-              label="DADO DE VIDA"
-              value={`d${classEntry.hitDie}`}
-              iconClassName={getHitDieIconClass(classEntry.hitDie)}
-            />
-            <ClassMetric label="FONTE" value={classEntry.source} />
+            <span className="flex items-center gap-1.5 font-mono text-sm font-bold text-white">
+              <FontAwesomeIcon
+                iconClassName={getHitDieIconClass(classEntry.hitDie)}
+                className="text-[var(--hero-accent)]"
+              />
+              d{classEntry.hitDie}
+            </span>
           </div>
-          <ClassSummaryLine
-            label="Atributo Primario"
-            value={formatList(classEntry.primaryAbility)}
-          />
-          <ClassSummaryLine
+          <HeroCardDetailLine label="Atributo Primario" value={primaryAbility} />
+          <HeroCardDetailLine
             label="Salvaguardas"
             value={formatList(classEntry.savingThrows)}
           />
           <div>
-            <h4 className="mb-2 text-[10px] font-bold uppercase tracking-[0.14em] text-subdued">
+            <h4 className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-white/70">
               Recursos de Nível 1
             </h4>
             <FeatureTagList
@@ -601,7 +728,7 @@ function ClassOptionCard({
             />
           </div>
         </div>
-      </WizardChoiceCard>
+      </HeroChoiceCard>
 
       <ClassDetailsDialog
         open={detailsOpen}
@@ -615,27 +742,13 @@ function ClassOptionCard({
   );
 }
 
-function ClassMetric({
-  label,
-  value,
-  iconClassName,
-}: {
-  label: string;
-  value: string;
-  iconClassName?: string;
-}) {
+
+function HeroCardDetailLine({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded border border-white/[0.06] bg-muted px-3 py-2">
-      <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
-        {iconClassName ? (
-          <FontAwesomeIcon iconClassName={iconClassName} className="text-primary" />
-        ) : null}
-        {label}
-      </p>
-      <p className="mt-1 font-mono text-sm font-bold text-foreground">
-        {value || "-"}
-      </p>
-    </div>
+    <p className="text-sm leading-5 text-white/90">
+      <strong className="font-semibold text-white">{label}:</strong>{" "}
+      {value || "-"}
+    </p>
   );
 }
 
@@ -668,6 +781,175 @@ function getClassTags(classEntry: BuilderClass): string[] {
       : "Especialista";
 
   return [combatRole, armorRole].filter(Boolean).slice(0, 2);
+}
+
+function getSuggestedClassIds(answers: readonly string[]): string[] {
+  if (answers.length < 3) {
+    return [];
+  }
+
+  const scores = new Map<string, number>();
+  const add = (classId: string, score = 1) => {
+    scores.set(classId, (scores.get(classId) ?? 0) + score);
+  };
+
+  for (const answer of answers) {
+    if (answer === "Magia") {
+      add("wizard-xphb", 2);
+      add("sorcerer-xphb", 2);
+      add("cleric-xphb", 1);
+    } else if (answer === "Perto") {
+      add("fighter-xphb", 2);
+      add("barbarian-xphb", 2);
+      add("paladin-xphb", 1);
+    } else if (answer === "Distancia") {
+      add("ranger-xphb", 2);
+      add("rogue-xphb", 1);
+      add("fighter-xphb", 1);
+    } else if (answer === "Apoiar aliados") {
+      add("cleric-xphb", 2);
+      add("bard-xphb", 2);
+      add("paladin-xphb", 1);
+    } else if (answer === "Proteger") {
+      add("paladin-xphb", 2);
+      add("fighter-xphb", 1);
+      add("cleric-xphb", 1);
+    } else if (answer === "Causar dano") {
+      add("rogue-xphb", 2);
+      add("barbarian-xphb", 1);
+      add("sorcerer-xphb", 1);
+    } else if (answer === "Simples") {
+      add("fighter-xphb", 2);
+      add("rogue-xphb", 1);
+      add("cleric-xphb", 1);
+    } else if (answer === "Muitas escolhas") {
+      add("wizard-xphb", 2);
+      add("druid-xphb", 1);
+      add("bard-xphb", 1);
+    } else {
+      add("ranger-xphb", 1);
+      add("paladin-xphb", 1);
+      add("warlock-xphb", 1);
+    }
+  }
+
+  return [...scores.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3)
+    .map(([classId]) => classId);
+}
+
+/**
+ * Temas por classe transcritos do character builder da D&D Beyond
+ * (custom properties --theme-color / --accent-color de cada card).
+ */
+const heroClassThemes: Array<{ keyword: string; theme: HeroChoiceTheme }> = [
+  { keyword: "artificer", theme: { theme: "#3B2A1E", accent: "#D59139" } },
+  { keyword: "artifice", theme: { theme: "#3B2A1E", accent: "#D59139" } },
+  { keyword: "barbar", theme: { theme: "#2E200F", accent: "#B56906" } },
+  { keyword: "bard", theme: { theme: "#2C1A2C", accent: "#FF40FF" } },
+  { keyword: "cleric", theme: { theme: "#7A661F", accent: "#FFE8B5" } },
+  { keyword: "clerigo", theme: { theme: "#7A661F", accent: "#FFE8B5" } },
+  { keyword: "druid", theme: { theme: "#4E5E16", accent: "#8AC249" } },
+  { keyword: "fighter", theme: { theme: "#4A2B01", accent: "#A5865C" } },
+  { keyword: "guerreiro", theme: { theme: "#4A2B01", accent: "#A5865C" } },
+  { keyword: "monk", theme: { theme: "#3E8080", accent: "#48FDFF" } },
+  { keyword: "monge", theme: { theme: "#3E8080", accent: "#48FDFF" } },
+  { keyword: "paladin", theme: { theme: "#3D4C4C", accent: "#D6D6D6" } },
+  { keyword: "ranger", theme: { theme: "#2B3D1A", accent: "#539100" } },
+  { keyword: "patrulheiro", theme: { theme: "#2B3D1A", accent: "#539100" } },
+  { keyword: "rogue", theme: { theme: "#041343", accent: "#1F6CBF" } },
+  { keyword: "ladino", theme: { theme: "#041343", accent: "#1F6CBF" } },
+  { keyword: "sorcerer", theme: { theme: "#6F5624", accent: "#F2AA21" } },
+  { keyword: "feiticeiro", theme: { theme: "#6F5624", accent: "#F2AA21" } },
+  { keyword: "warlock", theme: { theme: "#47110B", accent: "#F54E39" } },
+  { keyword: "bruxo", theme: { theme: "#47110B", accent: "#F54E39" } },
+  { keyword: "wizard", theme: { theme: "#2C0E4E", accent: "#BA7DFF" } },
+  { keyword: "mago", theme: { theme: "#2C0E4E", accent: "#BA7DFF" } },
+];
+
+/**
+ * Temas por espécie acompanhando a paleta da arte de cada card
+ * (fallback esverdeado neutro para espécies fora do mapa).
+ */
+const heroSpeciesFallbackTheme: HeroChoiceTheme = {
+  theme: "#1F3226",
+  accent: "#7BAF6C",
+};
+
+const heroSpeciesThemes: Array<{ keyword: string; theme: HeroChoiceTheme }> = [
+  { keyword: "aasimar", theme: { theme: "#1E3D3A", accent: "#8FD6C8" } },
+  { keyword: "changeling", theme: { theme: "#2E2A33", accent: "#B9AFC9" } },
+  { keyword: "dragonborn", theme: { theme: "#4A2410", accent: "#E8833A" } },
+  { keyword: "draconato", theme: { theme: "#4A2410", accent: "#E8833A" } },
+  { keyword: "dwarf", theme: { theme: "#3D2B12", accent: "#E0A93E" } },
+  { keyword: "anao", theme: { theme: "#3D2B12", accent: "#E0A93E" } },
+  { keyword: "elf", theme: { theme: "#24391C", accent: "#9BC97A" } },
+  { keyword: "elfo", theme: { theme: "#24391C", accent: "#9BC97A" } },
+  { keyword: "gnome", theme: { theme: "#3A2C1C", accent: "#E2B15C" } },
+  { keyword: "gnomo", theme: { theme: "#3A2C1C", accent: "#E2B15C" } },
+  { keyword: "goliath", theme: { theme: "#2A3540", accent: "#9FB9CC" } },
+  { keyword: "golias", theme: { theme: "#2A3540", accent: "#9FB9CC" } },
+  { keyword: "halfling", theme: { theme: "#3B3A14", accent: "#D6C75A" } },
+  { keyword: "human", theme: { theme: "#3C1F1A", accent: "#D98A4B" } },
+  { keyword: "humano", theme: { theme: "#3C1F1A", accent: "#D98A4B" } },
+  { keyword: "orc", theme: { theme: "#26331D", accent: "#7FA653" } },
+  { keyword: "tiefling", theme: { theme: "#3A1230", accent: "#C75B8B" } },
+  { keyword: "shifter", theme: { theme: "#33261A", accent: "#C08A4E" } },
+  { keyword: "warforged", theme: { theme: "#2C3136", accent: "#A9B4BD" } },
+  { keyword: "kalashtar", theme: { theme: "#243247", accent: "#8FB3E8" } },
+];
+
+function getHeroSpeciesTheme(species: BuilderSpecies): HeroChoiceTheme {
+  const normalizedName = normalizeSearchText(species.name);
+  const match = heroSpeciesThemes.find((entry) =>
+    normalizedName.includes(entry.keyword),
+  );
+
+  return match?.theme ?? heroSpeciesFallbackTheme;
+}
+
+function getHeroClassTheme(classEntry: BuilderClass): HeroChoiceTheme {
+  const normalizedName = normalizeSearchText(classEntry.name);
+  const match = heroClassThemes.find((entry) =>
+    normalizedName.includes(entry.keyword),
+  );
+
+  return match?.theme ?? defaultHeroChoiceTheme;
+}
+
+const classBannerIcons: Array<{ keyword: string; iconClassName: string }> = [
+  { keyword: "artificer", iconClassName: "fa-solid fa-wrench" },
+  { keyword: "artifice", iconClassName: "fa-solid fa-wrench" },
+  { keyword: "barbar", iconClassName: "fa-solid fa-axe-battle" },
+  { keyword: "bard", iconClassName: "fa-solid fa-music" },
+  { keyword: "cleric", iconClassName: "fa-solid fa-sun" },
+  { keyword: "clerigo", iconClassName: "fa-solid fa-sun" },
+  { keyword: "druid", iconClassName: "fa-solid fa-leaf" },
+  { keyword: "fighter", iconClassName: "fa-solid fa-swords" },
+  { keyword: "guerreiro", iconClassName: "fa-solid fa-swords" },
+  { keyword: "monk", iconClassName: "fa-solid fa-hand-fist" },
+  { keyword: "monge", iconClassName: "fa-solid fa-hand-fist" },
+  { keyword: "paladin", iconClassName: "fa-solid fa-shield-cross" },
+  { keyword: "ranger", iconClassName: "fa-solid fa-bow-arrow" },
+  { keyword: "patrulheiro", iconClassName: "fa-solid fa-bow-arrow" },
+  { keyword: "rogue", iconClassName: "fa-solid fa-user-ninja" },
+  { keyword: "ladino", iconClassName: "fa-solid fa-user-ninja" },
+  { keyword: "sorcerer", iconClassName: "fa-solid fa-fire" },
+  { keyword: "feiticeiro", iconClassName: "fa-solid fa-fire" },
+  { keyword: "warlock", iconClassName: "fa-solid fa-eye" },
+  { keyword: "bruxo", iconClassName: "fa-solid fa-eye" },
+  { keyword: "wizard", iconClassName: "fa-solid fa-hat-wizard" },
+  { keyword: "mago", iconClassName: "fa-solid fa-hat-wizard" },
+];
+
+function getClassBannerIconClass(classEntry: BuilderClass): string {
+  const normalizedName = normalizeSearchText(classEntry.name);
+  const match = classBannerIcons.find((entry) =>
+    normalizedName.includes(entry.keyword),
+  );
+
+  return match?.iconClassName ?? getHitDieIconClass(classEntry.hitDie);
 }
 
 function getClassTone(classEntry: BuilderClass) {
@@ -1150,40 +1432,37 @@ function SpeciesOptionCard({
 
   return (
     <>
-      <WizardChoiceCard
+      <HeroChoiceCard
         title={species.name}
-        subtitle={species.summary}
-        subtitleVariant="summary"
+        badges={[species.source].filter(Boolean)}
+        description={species.summary}
         imageSrc={species.image?.src}
         imageAlt={species.image?.alt}
+        icon={<FontAwesomeIcon iconClassName="fa-solid fa-dragon" />}
+        theme={getHeroSpeciesTheme(species)}
         isActive={selected}
         disabled={disabled}
-        selectedLabel="SELECIONADO"
         onClickDetails={() => setDetailsOpen(true)}
         onClickSelect={onSelect}
       >
-        <div className="mb-3 flex flex-wrap gap-2">
-          <span className="rounded border border-border bg-muted px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-subdued">
-            {species.source}
-          </span>
-        </div>
-
-        <div className="grid grid-cols-2 gap-3">
-          <ClassMetric label="Tamanho" value={species.size} />
-          <ClassMetric label="Deslocamento" value={`${species.speed} ft.`} />
-        </div>
-
-        <div className="mt-5 grid gap-3 border-t border-white/[0.06] pt-4">
-          <h4 className="text-[10px] font-bold uppercase tracking-[0.14em] text-subdued">
-            Tracos Raciais
-          </h4>
-          <FeatureTagList
-            features={species.traits}
-            emptyLabel="Nenhum traco racial"
-            ariaLabel="Tracos Raciais"
+        <div className="grid gap-2 rounded-lg bg-black/40 p-3 backdrop-blur-[2px]">
+          <HeroCardDetailLine label="Tamanho" value={species.size} />
+          <HeroCardDetailLine
+            label="Deslocamento"
+            value={`${species.speed} ft.`}
           />
+          <div>
+            <h4 className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-white/70">
+              Tracos Raciais
+            </h4>
+            <FeatureTagList
+              features={species.traits}
+              emptyLabel="Nenhum traco racial"
+              ariaLabel="Tracos Raciais"
+            />
+          </div>
         </div>
-      </WizardChoiceCard>
+      </HeroChoiceCard>
 
       <SpeciesDetailsDialog
         open={detailsOpen}
@@ -2150,6 +2429,7 @@ function useCharacterBuilderState(): CharacterBuilderState {
   const creationPreferences = useCharacterStore(
     (state) => state.creationPreferences,
   );
+  const beginnerMode = useCharacterStore((state) => state.beginnerMode);
 
   return useMemo(
     () => ({
@@ -2179,6 +2459,7 @@ function useCharacterBuilderState(): CharacterBuilderState {
       skillModifierOverrides,
       hpRollByLevel,
       creationPreferences,
+      beginnerMode,
     }),
     [
       ruleset,
@@ -2207,6 +2488,7 @@ function useCharacterBuilderState(): CharacterBuilderState {
       skillModifierOverrides,
       hpRollByLevel,
       creationPreferences,
+      beginnerMode,
     ],
   );
 }
