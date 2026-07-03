@@ -468,6 +468,54 @@ describe("BuilderStepPanel", () => {
     });
   }, 15000);
 
+  it("keeps the newly picked bonus when choosing it on a background before selecting the card", async () => {
+    render(
+      <CharacterStoreProvider>
+        <SelectedBackgroundWithBonusesInitializer />
+        <BuilderStepPanel step="antecedente" {...builderData} />
+      </CharacterStoreProvider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Soldier" })).toBeInTheDocument();
+    });
+
+    const plusTwoSelect = screen.getByLabelText(
+      "Soldier: atributo com bonus +2",
+    ) as HTMLSelectElement;
+    const firstAttribute = Array.from(plusTwoSelect.options)
+      .map((option) => option.value)
+      .find(Boolean);
+
+    expect(firstAttribute).toBeTruthy();
+
+    // Escolher o bonus em um antecedente ainda nao selecionado deve trocar a
+    // selecao (o antecedente atual ja tem bonus, entao abre o aviso de troca).
+    fireEvent.change(plusTwoSelect, { target: { value: firstAttribute } });
+
+    const dialog = screen.getByRole("dialog", { name: "Alterar antecedente" });
+    fireEvent.click(
+      within(dialog).getByRole("button", { name: "Confirmar troca" }),
+    );
+
+    // O bonus recem-escolhido nao pode ser descartado pela troca de card.
+    await waitFor(() => {
+      expect(
+        (
+          screen.getByLabelText(
+            "Soldier: atributo com bonus +2",
+          ) as HTMLSelectElement
+        ).value,
+      ).toBe(firstAttribute);
+    });
+
+    expect(
+      screen.getByRole("heading", { name: "Soldier" }).closest("article"),
+    ).toContainElement(
+      screen.getByRole("button", { name: "Selecionado" }),
+    );
+  }, 15000);
+
   it("renders species cards with the class card visual system", () => {
     const firstSpecies = builderData.species.find(
       (entry) => entry.image && entry.traits.length > 0,

@@ -121,10 +121,10 @@ export function BackgroundCard({
             background={background}
             selected={selectedBonuses}
             disabled={disabled}
-            onChange={(bonuses) => {
-              onSelect();
-              onBonusesChange(bonuses);
-            }}
+            // onBonusesChange ja seleciona o antecedente e aplica os bonus de
+            // forma atomica; um onSelect() extra aqui reiniciaria os bonus
+            // recem-escolhidos ao trocar de card antes de selecionar.
+            onChange={onBonusesChange}
           />
         </div>
       </HeroChoiceCard>
