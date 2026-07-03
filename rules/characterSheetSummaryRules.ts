@@ -153,6 +153,7 @@ export function selectCharacterSheetSummary(
     speedMeters: feetToMeters(species?.speed ?? 30),
     xp: xpForLevel(state.level),
     xpThreshold: xpThresholdForNextLevel(state.level),
+    progressionMode: state.creationPreferences?.progressionMode ?? "xp",
     isSpellcaster: Boolean(characterClass?.spellcastingAbility),
     attributes: deriveSheetAttributes(finalAttributes),
     skills,

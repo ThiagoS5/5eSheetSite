@@ -369,6 +369,7 @@ export interface CharacterSheetSummary {
   speedMeters: number;
   xp: number;
   xpThreshold: number;
+  progressionMode?: "xp" | "milestone";
   isSpellcaster: boolean;
   attributes: SheetAttribute[];
   skills: SheetSkill[];

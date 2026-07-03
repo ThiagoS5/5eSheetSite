@@ -2,9 +2,10 @@
 
 import { useState, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
-import { Save } from "lucide-react";
+import { Save, Settings } from "lucide-react";
 import { BuilderSidebar } from "@/src/components/organisms/BuilderSidebar";
 import { CharacterSheetPreview } from "@/src/components/organisms/CharacterSheetPreview";
+import { CreationPreferencesDialog } from "@/src/components/organisms/CreationPreferencesDialog";
 import { Header } from "@/src/components/organisms/Header";
 import { SidebarProvider } from "@/src/components/ui/sidebar";
 import { useCharacterStore } from "@/src/store/useCharacterStore";
@@ -71,9 +72,18 @@ export function BuilderShell({ children }: BuilderShellProps) {
 
 function AutosaveStatus({ updatedAt }: { updatedAt: string }) {
   const savedAt = formatSavedAt(updatedAt);
+  const [preferencesOpen, setPreferencesOpen] = useState(false);
 
   return (
-    <div className="mb-4 flex justify-end">
+    <div className="mb-4 flex justify-end gap-2">
+      <button
+        type="button"
+        aria-label="Preferências da criação"
+        onClick={() => setPreferencesOpen(true)}
+        className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-white/[0.08] bg-card text-muted-foreground outline-none transition hover:text-foreground focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70"
+      >
+        <Settings aria-hidden="true" className="h-4 w-4" />
+      </button>
       <div
         role="status"
         aria-label="Rascunho salvo"
@@ -82,6 +92,10 @@ function AutosaveStatus({ updatedAt }: { updatedAt: string }) {
         <Save aria-hidden="true" className="h-3.5 w-3.5 text-brand-green" />
         Salvo <span suppressHydrationWarning>{savedAt}</span>
       </div>
+      <CreationPreferencesDialog
+        open={preferencesOpen}
+        onClose={() => setPreferencesOpen(false)}
+      />
     </div>
   );
 }
