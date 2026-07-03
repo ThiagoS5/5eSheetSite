@@ -4,10 +4,9 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { getItemCatalog } from "@/src/services/itemCatalogService";
-import { writeGlobalPreferences } from "@/src/services/preferencesService";
+import { readGlobalPreferences, writeGlobalPreferences } from "@/src/services/preferencesService";
 import { useCharacterStore } from "@/src/store/useCharacterStore";
 import type { ProgressionMode } from "@/src/types/characterBuild";
-import { DEFAULT_CREATION_PREFERENCES } from "@/src/types/characterBuild";
 
 const BASE_SOURCE = "XPHB";
 
@@ -23,11 +22,25 @@ export function CreationPreferencesDialog({
   const creationPreferences = useCharacterStore((s) => s.creationPreferences);
   const setCreationPreferences = useCharacterStore((s) => s.setCreationPreferences);
 
-  const saved = creationPreferences ?? DEFAULT_CREATION_PREFERENCES;
-  const [activeSources, setActiveSources] = useState<string[]>(saved.activeSources);
-  const [progressionMode, setProgressionMode] = useState<ProgressionMode>(
-    saved.progressionMode,
-  );
+  const [activeSources, setActiveSources] = useState<string[]>([]);
+  const [progressionMode, setProgressionMode] = useState<ProgressionMode>("xp");
+
+  // Snapshot the effective defaults (per-character prefs, falling back to the
+  // saved global defaults) once per "open" transition, so re-opening the
+  // dialog — including for a brand-new character with no per-character prefs
+  // yet — always re-evaluates the seed instead of reusing stale state from a
+  // previous mount. Mirrors LevelUpFlow's "adjust state while rendering"
+  // pattern (this project's eslint forbids calling setState synchronously
+  // inside a useEffect body).
+  const [snapshotTaken, setSnapshotTaken] = useState(false);
+  if (open && !snapshotTaken) {
+    setSnapshotTaken(true);
+    const saved = creationPreferences ?? readGlobalPreferences().creationDefaults;
+    setActiveSources(saved.activeSources);
+    setProgressionMode(saved.progressionMode);
+  } else if (!open && snapshotTaken) {
+    setSnapshotTaken(false);
+  }
 
   const otherSources = useMemo(() => {
     const sources = new Set(getItemCatalog().map((item) => item.source));
