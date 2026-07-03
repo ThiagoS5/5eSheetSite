@@ -135,6 +135,51 @@ describe("MobileBuilderBar", () => {
     ).toBeInTheDocument();
   });
 
+  it("disables Avançar with a visible reason on the last step", () => {
+    const onNext = vi.fn();
+
+    render(
+      <MobileBuilderBar
+        currentStepIndex={8}
+        totalSteps={9}
+        onBack={() => {}}
+        onNext={onNext}
+        identity={baseIdentity}
+        onOpenSheet={() => {}}
+        hasNextStep={false}
+      />,
+    );
+
+    const nextButton = screen.getByRole("button", { name: /avançar/i });
+    expect(nextButton).toHaveAttribute("aria-disabled", "true");
+    expect(screen.getByText(/última etapa/i)).toBeInTheDocument();
+
+    fireEvent.click(nextButton);
+    expect(onNext).not.toHaveBeenCalled();
+  });
+
+  it("disables Voltar with no-op guard on the first step", () => {
+    const onBack = vi.fn();
+
+    render(
+      <MobileBuilderBar
+        currentStepIndex={0}
+        totalSteps={9}
+        onBack={onBack}
+        onNext={() => {}}
+        identity={baseIdentity}
+        onOpenSheet={() => {}}
+        hasPreviousStep={false}
+      />,
+    );
+
+    const backButton = screen.getByRole("button", { name: /voltar/i });
+    expect(backButton).toHaveAttribute("aria-disabled", "true");
+
+    fireEvent.click(backButton);
+    expect(onBack).not.toHaveBeenCalled();
+  });
+
   it("calls onOpenSheet when the identity button is clicked", () => {
     const onOpenSheet = vi.fn();
 

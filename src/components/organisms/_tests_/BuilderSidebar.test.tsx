@@ -172,6 +172,32 @@ describe("BuilderSidebar", () => {
       screen.queryByRole("button", { name: /Recolher sidebar|Expandir sidebar/i }),
     ).not.toBeInTheDocument();
   });
+
+  it("renders without the 'hidden' wrapper class when variant is drawer", () => {
+    render(
+      <SidebarProvider open>
+        <BuilderSidebar variant="drawer" />
+      </SidebarProvider>,
+    );
+
+    const asideElement = screen
+      .getByRole("navigation", { name: "Etapas do Character Builder" })
+      .closest("aside");
+
+    expect(asideElement).not.toHaveClass("hidden");
+    expect(asideElement).toHaveClass("flex");
+    expect(screen.getByText("FORGE & FATE")).toBeInTheDocument();
+  });
+
+  it("keeps the desktop variant byte-identical (hidden until xl breakpoint)", () => {
+    renderSidebar();
+
+    const asideElement = screen
+      .getByRole("navigation", { name: "Etapas do Character Builder" })
+      .closest("aside");
+
+    expect(asideElement).toHaveClass("hidden", "xl:flex");
+  });
 });
 
 function renderSidebar(collapsed = false) {

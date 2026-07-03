@@ -123,7 +123,11 @@ export function BuilderShell({ children }: BuilderShellProps) {
             aria-labelledby="builder-title"
             className="min-w-0 border-x border-white/[0.06] bg-surface-nested"
           >
-            <div className={`px-4 py-5 md:px-6 ${isMobile ? "pb-28" : ""}`}>
+            <div
+              className={`px-4 py-5 md:px-6 ${
+                isMobile ? (nextBlockedReason ? "pb-36" : "pb-28") : ""
+              }`}
+            >
               <AutosaveStatus updatedAt={updatedAt} />
               {children}
             </div>
@@ -144,6 +148,8 @@ export function BuilderShell({ children }: BuilderShellProps) {
             onBack={handleBack}
             onNext={handleNext}
             nextBlockedReason={nextBlockedReason}
+            hasPreviousStep={Boolean(previousStep)}
+            hasNextStep={Boolean(nextStep)}
             identity={{
               name: description.nome || "Herói sem nome",
               className: className || "Classe",
@@ -162,7 +168,7 @@ export function BuilderShell({ children }: BuilderShellProps) {
             <SheetHeader>
               <SheetTitle>Ficha viva</SheetTitle>
             </SheetHeader>
-            <BuilderSidebar />
+            <BuilderSidebar variant="drawer" />
           </SheetContent>
         </Sheet>
       ) : null}

@@ -18,6 +18,8 @@ interface MobileBuilderBarProps {
   nextBlockedReason?: string;
   identity: MobileBuilderBarIdentity;
   onOpenSheet: () => void;
+  hasPreviousStep?: boolean;
+  hasNextStep?: boolean;
 }
 
 export function MobileBuilderBar({
@@ -28,9 +30,12 @@ export function MobileBuilderBar({
   nextBlockedReason,
   identity,
   onOpenSheet,
+  hasPreviousStep = true,
+  hasNextStep = true,
 }: MobileBuilderBarProps) {
-  const isBlocked = Boolean(nextBlockedReason);
+  const isBlocked = Boolean(nextBlockedReason) || !hasNextStep;
   const stepPositionLabel = `Etapa ${Math.max(currentStepIndex + 1, 1)}/${totalSteps}`;
+  const nextReason = !hasNextStep ? "Última etapa." : nextBlockedReason;
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-40 border-t border-white/[0.08] bg-surface-nested/95 pb-[env(safe-area-inset-bottom)] backdrop-blur">
@@ -65,8 +70,15 @@ export function MobileBuilderBar({
       <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 px-4 py-3">
         <button
           type="button"
-          onClick={onBack}
-          className="inline-flex min-h-11 items-center justify-center rounded-md border border-border bg-white/5 px-4 py-2 text-sm font-bold uppercase tracking-[0.08em] text-foreground outline-none transition hover:border-white/20 hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-accent"
+          aria-disabled={!hasPreviousStep ? "true" : undefined}
+          onClick={() => {
+            if (!hasPreviousStep) {
+              return;
+            }
+
+            onBack();
+          }}
+          className="inline-flex min-h-11 items-center justify-center rounded-md border border-border bg-white/5 px-4 py-2 text-sm font-bold uppercase tracking-[0.08em] text-foreground outline-none transition hover:border-white/20 hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-accent disabled:cursor-not-allowed aria-disabled:cursor-not-allowed aria-disabled:opacity-50"
         >
           Voltar
         </button>
@@ -89,9 +101,9 @@ export function MobileBuilderBar({
         </button>
       </div>
 
-      {nextBlockedReason ? (
+      {nextReason ? (
         <p className="px-4 pb-3 text-xs leading-5 text-accent">
-          {nextBlockedReason}
+          {nextReason}
         </p>
       ) : null}
     </div>
