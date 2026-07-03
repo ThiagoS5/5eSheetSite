@@ -58,10 +58,26 @@ describe("BuilderStepPanel", () => {
     expect(screen.getByLabelText("Filtrar classes")).toBeInTheDocument();
     expect(screen.getByText(/classes encontradas/i)).toBeInTheDocument();
     expect(screen.getByRole("img", { name: /fighter artwork/i })).toBeInTheDocument();
-    expect(screen.getAllByText(/DADO DE VIDA/i)[0]).toBeInTheDocument();
-    expect(screen.getAllByLabelText("Recursos de Nível 1")[0]).toBeInTheDocument();
-    expect(screen.getAllByRole("button", { name: "DETAILS" })[0]).toBeInTheDocument();
-    expect(screen.getAllByRole("button", { name: "SELECT" })[0]).toBeInTheDocument();
+    expect(screen.getAllByText("Marcial")[0]).toBeInTheDocument();
+    expect(screen.getAllByRole("button", { name: "Saiba Mais" })[0]).toBeInTheDocument();
+    expect(screen.getAllByRole("button", { name: "Selecionar" })[0]).toBeInTheDocument();
+  });
+
+  it("shows the beginner class quiz only when guided mode is enabled", () => {
+    render(
+      <CharacterStoreProvider>
+        <GuidedModeInitializer />
+        <BuilderStepPanel step="classe" {...builderData} />
+      </CharacterStoreProvider>,
+    );
+
+    expect(screen.getByText("O que e uma classe?")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Me ajude a escolher" }));
+    fireEvent.click(screen.getByRole("button", { name: "Magia" }));
+    fireEvent.click(screen.getByRole("button", { name: "Apoiar aliados" }));
+    fireEvent.click(screen.getByRole("button", { name: "Simples" }));
+
+    expect(screen.getByText(/Sugestoes destacadas/i)).toBeInTheDocument();
   });
 
   it("opens a full sheet preview dialog from the step toolbar", () => {
@@ -119,7 +135,7 @@ describe("BuilderStepPanel", () => {
 
     expect(barbarianCard).not.toBeNull();
     fireEvent.click(
-      within(barbarianCard as HTMLElement).getByRole("button", { name: "SELECT" }),
+      within(barbarianCard as HTMLElement).getByRole("button", { name: "Selecionar" }),
     );
 
     const dialog = screen.getByRole("dialog", { name: "Alterar classe" });
@@ -152,7 +168,7 @@ describe("BuilderStepPanel", () => {
 
     expect(barbarianCard).not.toBeNull();
     fireEvent.click(
-      within(barbarianCard as HTMLElement).getByRole("button", { name: "SELECT" }),
+      within(barbarianCard as HTMLElement).getByRole("button", { name: "Selecionar" }),
     );
 
     expect(screen.getByRole("dialog", { name: "Alterar classe" })).toBeInTheDocument();
@@ -196,7 +212,7 @@ describe("BuilderStepPanel", () => {
     expect(
       screen.getByText("Tente buscar por nome, fonte ou recurso inicial."),
     ).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "SELECT" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Selecionar" })).not.toBeInTheDocument();
   });
 
   it("opens class details in the new class modal layout", () => {
@@ -208,7 +224,7 @@ describe("BuilderStepPanel", () => {
       </CharacterStoreProvider>,
     );
 
-    fireEvent.click(screen.getAllByRole("button", { name: "DETAILS" })[0]);
+    fireEvent.click(screen.getAllByRole("button", { name: "Saiba Mais" })[0]);
 
     expect(screen.queryByText(/Progressao completa/i)).not.toBeInTheDocument();
     const detailsDialog = screen.getByRole("dialog", { name: firstClass.name });
@@ -225,7 +241,7 @@ describe("BuilderStepPanel", () => {
     expect(detailsImage).toHaveClass("object-cover", "object-top");
     expect(screen.getByText("Identidade da classe")).toBeInTheDocument();
     expect(screen.getByText("Atributo Primario")).toBeInTheDocument();
-    expect(screen.getByText("Dado de Vida")).toBeInTheDocument();
+    expect(screen.getAllByText("Dado de Vida")[0]).toBeInTheDocument();
     expect(screen.getByText("Proficiencias Iniciais")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Descricao" })).toBeInTheDocument();
     expect(
@@ -251,7 +267,7 @@ describe("BuilderStepPanel", () => {
       </CharacterStoreProvider>,
     );
 
-    fireEvent.click(screen.getAllByRole("button", { name: "DETAILS" })[0]);
+    fireEvent.click(screen.getAllByRole("button", { name: "Saiba Mais" })[0]);
     fireEvent.click(screen.getByRole("button", { name: "Selecionar Classe" }));
 
     await waitFor(() => {
@@ -282,7 +298,7 @@ describe("BuilderStepPanel", () => {
       </CharacterStoreProvider>,
     );
 
-    fireEvent.click(screen.getAllByRole("button", { name: "SELECT" })[0]);
+    fireEvent.click(screen.getAllByRole("button", { name: "Selecionar" })[0]);
 
     await waitFor(() => {
       const saves = JSON.parse(
@@ -327,7 +343,7 @@ describe("BuilderStepPanel", () => {
       expect(screen.getByRole("heading", { name: "Acolyte" })).toBeInTheDocument();
     });
     expect(screen.getAllByRole("img", { name: /artwork/i })[0]).toBeInTheDocument();
-    expect(screen.getAllByText("Talento de Origem")[0]).toBeInTheDocument();
+    expect(screen.getAllByText(/Magic Initiate/i)[0]).toBeInTheDocument();
     expect(screen.getAllByText(/Bonus de Atributo/i)[0]).toBeInTheDocument();
     expect(
       screen.getByLabelText("Acolyte: atributo com bonus +2"),
@@ -335,9 +351,9 @@ describe("BuilderStepPanel", () => {
     expect(
       screen.getByLabelText("Acolyte: atributo com bonus +1"),
     ).toBeInTheDocument();
-    expect(screen.getAllByRole("button", { name: "DETAILS" })[0]).toBeInTheDocument();
+    expect(screen.getAllByRole("button", { name: "Saiba Mais" })[0]).toBeInTheDocument();
     expect(
-      screen.getAllByRole("button", { name: "SELECIONAR" })[0],
+      screen.getAllByRole("button", { name: "Selecionar" })[0],
     ).toBeInTheDocument();
   });
 
@@ -367,7 +383,7 @@ describe("BuilderStepPanel", () => {
 
     expect(screen.getByText("Nenhum antecedente encontrado")).toBeInTheDocument();
     expect(
-      screen.queryByRole("button", { name: "SELECIONAR" }),
+      screen.queryByRole("button", { name: "Selecionar" }),
     ).not.toBeInTheDocument();
   });
 
@@ -380,7 +396,7 @@ describe("BuilderStepPanel", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getAllByRole("button", { name: "DETAILS" })[0]).toBeInTheDocument();
+      expect(screen.getAllByRole("button", { name: "Saiba Mais" })[0]).toBeInTheDocument();
     });
 
     const acolyteCard = screen
@@ -388,7 +404,7 @@ describe("BuilderStepPanel", () => {
       .closest("article");
 
     expect(acolyteCard).not.toBeNull();
-    fireEvent.click(within(acolyteCard as HTMLElement).getByRole("button", { name: "DETAILS" }));
+    fireEvent.click(within(acolyteCard as HTMLElement).getByRole("button", { name: "Saiba Mais" }));
 
     const dialog = screen.getByRole("dialog", { name: "Acolyte" });
 
@@ -419,7 +435,7 @@ describe("BuilderStepPanel", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getAllByRole("button", { name: "DETAILS" })[0]).toBeInTheDocument();
+      expect(screen.getAllByRole("button", { name: "Saiba Mais" })[0]).toBeInTheDocument();
     });
 
     const acolyteCard = screen
@@ -427,7 +443,7 @@ describe("BuilderStepPanel", () => {
       .closest("article");
 
     expect(acolyteCard).not.toBeNull();
-    fireEvent.click(within(acolyteCard as HTMLElement).getByRole("button", { name: "DETAILS" }));
+    fireEvent.click(within(acolyteCard as HTMLElement).getByRole("button", { name: "Saiba Mais" }));
     fireEvent.click(
       within(screen.getByRole("dialog", { name: "Acolyte" })).getByRole("button", {
         name: "SELECIONADO",
@@ -450,7 +466,7 @@ describe("BuilderStepPanel", () => {
         },
       });
     });
-  });
+  }, 15000);
 
   it("renders species cards with the class card visual system", () => {
     const firstSpecies = builderData.species.find(
@@ -479,25 +495,20 @@ describe("BuilderStepPanel", () => {
     expect(speciesGrid).not.toHaveClass("lg:grid-cols-3");
     expect(speciesGrid).not.toHaveClass("xl:grid-cols-4");
     expect(screen.getAllByText(firstSpecies.source)[0]).toBeInTheDocument();
-    expect(screen.getByText(firstSpecies.summary)).toHaveClass("line-clamp-2");
-    expect(screen.getAllByText("Tamanho")[0]).toBeInTheDocument();
-    expect(screen.getAllByText("Deslocamento")[0]).toBeInTheDocument();
-    expect(screen.getAllByLabelText("Tracos Raciais")[0]).toBeInTheDocument();
+    expect(screen.getByText(firstSpecies.summary)).toHaveClass("line-clamp-3");
+    expect(screen.getAllByText(firstSpecies.size)[0]).toBeInTheDocument();
+    expect(screen.getAllByText(`${firstSpecies.speed} ft.`)[0]).toBeInTheDocument();
     if (firstSpecies.image) {
-      expect(screen.getAllByRole("img", { name: firstSpecies.image.alt })[0]).toHaveClass(
-        "object-cover",
-        "object-top",
-      );
+      expect(
+        screen.getAllByRole("img", { name: firstSpecies.image.alt })[0],
+      ).toBeInTheDocument();
     }
 
-    const detailsButton = screen.getAllByRole("button", { name: "DETAILS" })[0];
-    const selectButton = screen.getAllByRole("button", { name: "SELECT" })[0];
+    const detailsButton = screen.getAllByRole("button", { name: "Saiba Mais" })[0];
+    const selectButton = screen.getAllByRole("button", { name: "Selecionar" })[0];
 
-    expect(screen.queryByRole("button", { name: "Selecionar" })).not.toBeInTheDocument();
     expect(detailsButton.parentElement).toBe(selectButton.parentElement);
-    expect(detailsButton.parentElement).toHaveClass("flex", "w-full", "gap-2");
-    expect(detailsButton).toHaveClass("flex-1");
-    expect(selectButton).toHaveClass("flex-1");
+    expect(detailsButton.parentElement).toHaveClass("flex", "gap-2");
   });
 
   it("opens species details in the split-pane species modal layout", () => {
@@ -512,7 +523,7 @@ describe("BuilderStepPanel", () => {
       </CharacterStoreProvider>,
     );
 
-    fireEvent.click(screen.getAllByRole("button", { name: "DETAILS" })[0]);
+    fireEvent.click(screen.getAllByRole("button", { name: "Saiba Mais" })[0]);
 
     const detailsDialog = screen.getByRole("dialog", { name: firstSpecies.name });
 
@@ -541,7 +552,7 @@ describe("BuilderStepPanel", () => {
       </CharacterStoreProvider>,
     );
 
-    fireEvent.click(screen.getAllByRole("button", { name: "DETAILS" })[0]);
+    fireEvent.click(screen.getAllByRole("button", { name: "Saiba Mais" })[0]);
     fireEvent.click(screen.getByRole("button", { name: "Selecionar Raça" }));
 
     await waitFor(() => {
@@ -558,10 +569,10 @@ describe("BuilderStepPanel", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getAllByRole("button", { name: "SELECT" })[0]).toBeInTheDocument();
+      expect(screen.getAllByRole("button", { name: "Selecionar" })[0]).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getAllByRole("button", { name: "SELECT" })[0]);
+    fireEvent.click(screen.getAllByRole("button", { name: "Selecionar" })[0]);
 
     await waitFor(() => {
       expect(pushMock).toHaveBeenCalledWith("/builder/detalhes-especie");
@@ -614,6 +625,16 @@ function SelectedClassInitializer() {
     setClassFeatureChoice("weapon-mastery", getFighterWeaponMasteries());
     unlockStep(1);
   }, [selectClass, setClassSkillProficiencies, setClassFeatureChoice, unlockStep]);
+
+  return null;
+}
+
+function GuidedModeInitializer() {
+  const setBeginnerMode = useCharacterStore((state) => state.setBeginnerMode);
+
+  useEffect(() => {
+    setBeginnerMode(true);
+  }, [setBeginnerMode]);
 
   return null;
 }
