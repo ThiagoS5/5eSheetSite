@@ -345,10 +345,10 @@ export function HeroChoiceCard({
             onClick={onClickSelect}
             disabled={disabled}
             aria-pressed={isActive}
-            className="group/select flex h-10 items-stretch outline-none transition focus-visible:drop-shadow-[0_0_6px_rgba(236,207,131,0.9)] disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex h-10 items-stretch outline-none transition hover:brightness-150 focus-visible:drop-shadow-[0_0_6px_rgba(236,207,131,0.9)] disabled:cursor-not-allowed disabled:opacity-50"
           >
             <span
-              className="relative z-[1] flex h-10 items-center justify-center gap-2 rounded-l-lg py-2 pl-4 text-sm font-bold uppercase leading-6 tracking-[0.8px] shadow-[inset_0_2px_0_rgba(236,207,131,1),inset_0_-2px_0_rgba(236,207,131,1),inset_2px_0_0_rgba(236,207,131,1)] transition group-hover/select:brightness-150"
+              className="relative z-[1] flex h-10 items-center justify-center gap-2 rounded-l-lg py-2 pl-4 text-sm font-bold uppercase leading-6 tracking-[0.8px] shadow-[inset_0_2px_0_rgba(236,207,131,1),inset_0_-2px_0_rgba(236,207,131,1),inset_2px_0_0_rgba(236,207,131,1)]"
               style={{ backgroundColor: BUTTON_DARK, color: TEXT_SOFT }}
             >
               {isActive ? selectedLabel : selectLabel}

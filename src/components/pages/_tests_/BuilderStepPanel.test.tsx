@@ -496,8 +496,8 @@ describe("BuilderStepPanel", () => {
     expect(speciesGrid).not.toHaveClass("xl:grid-cols-4");
     expect(screen.getAllByText(firstSpecies.source)[0]).toBeInTheDocument();
     expect(screen.getByText(firstSpecies.summary)).toHaveClass("line-clamp-3");
-    expect(screen.getAllByText(firstSpecies.size)[0]).toBeInTheDocument();
-    expect(screen.getAllByText(`${firstSpecies.speed} ft.`)[0]).toBeInTheDocument();
+    expect(screen.getAllByText(/Tamanho:/)[0]).toBeInTheDocument();
+    expect(screen.getAllByText(/Deslocamento:/)[0]).toBeInTheDocument();
     if (firstSpecies.image) {
       expect(
         screen.getAllByRole("img", { name: firstSpecies.image.alt })[0],

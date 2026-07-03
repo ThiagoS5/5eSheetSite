@@ -868,8 +868,46 @@ const heroClassThemes: Array<{ keyword: string; theme: HeroChoiceTheme }> = [
   { keyword: "mago", theme: { theme: "#2C0E4E", accent: "#BA7DFF" } },
 ];
 
-/** Tema neutro esverdeado para os cards de espécie. */
-const heroSpeciesTheme: HeroChoiceTheme = { theme: "#1F3226", accent: "#7BAF6C" };
+/**
+ * Temas por espécie acompanhando a paleta da arte de cada card
+ * (fallback esverdeado neutro para espécies fora do mapa).
+ */
+const heroSpeciesFallbackTheme: HeroChoiceTheme = {
+  theme: "#1F3226",
+  accent: "#7BAF6C",
+};
+
+const heroSpeciesThemes: Array<{ keyword: string; theme: HeroChoiceTheme }> = [
+  { keyword: "aasimar", theme: { theme: "#1E3D3A", accent: "#8FD6C8" } },
+  { keyword: "changeling", theme: { theme: "#2E2A33", accent: "#B9AFC9" } },
+  { keyword: "dragonborn", theme: { theme: "#4A2410", accent: "#E8833A" } },
+  { keyword: "draconato", theme: { theme: "#4A2410", accent: "#E8833A" } },
+  { keyword: "dwarf", theme: { theme: "#3D2B12", accent: "#E0A93E" } },
+  { keyword: "anao", theme: { theme: "#3D2B12", accent: "#E0A93E" } },
+  { keyword: "elf", theme: { theme: "#24391C", accent: "#9BC97A" } },
+  { keyword: "elfo", theme: { theme: "#24391C", accent: "#9BC97A" } },
+  { keyword: "gnome", theme: { theme: "#3A2C1C", accent: "#E2B15C" } },
+  { keyword: "gnomo", theme: { theme: "#3A2C1C", accent: "#E2B15C" } },
+  { keyword: "goliath", theme: { theme: "#2A3540", accent: "#9FB9CC" } },
+  { keyword: "golias", theme: { theme: "#2A3540", accent: "#9FB9CC" } },
+  { keyword: "halfling", theme: { theme: "#3B3A14", accent: "#D6C75A" } },
+  { keyword: "human", theme: { theme: "#3C1F1A", accent: "#D98A4B" } },
+  { keyword: "humano", theme: { theme: "#3C1F1A", accent: "#D98A4B" } },
+  { keyword: "orc", theme: { theme: "#26331D", accent: "#7FA653" } },
+  { keyword: "tiefling", theme: { theme: "#3A1230", accent: "#C75B8B" } },
+  { keyword: "shifter", theme: { theme: "#33261A", accent: "#C08A4E" } },
+  { keyword: "warforged", theme: { theme: "#2C3136", accent: "#A9B4BD" } },
+  { keyword: "kalashtar", theme: { theme: "#243247", accent: "#8FB3E8" } },
+];
+
+function getHeroSpeciesTheme(species: BuilderSpecies): HeroChoiceTheme {
+  const normalizedName = normalizeSearchText(species.name);
+  const match = heroSpeciesThemes.find((entry) =>
+    normalizedName.includes(entry.keyword),
+  );
+
+  return match?.theme ?? heroSpeciesFallbackTheme;
+}
 
 function getHeroClassTheme(classEntry: BuilderClass): HeroChoiceTheme {
   const normalizedName = normalizeSearchText(classEntry.name);
@@ -1396,14 +1434,12 @@ function SpeciesOptionCard({
     <>
       <HeroChoiceCard
         title={species.name}
-        badges={[species.source, species.size, `${species.speed} ft.`].filter(
-          Boolean,
-        )}
+        badges={[species.source].filter(Boolean)}
         description={species.summary}
         imageSrc={species.image?.src}
         imageAlt={species.image?.alt}
         icon={<FontAwesomeIcon iconClassName="fa-solid fa-dragon" />}
-        theme={heroSpeciesTheme}
+        theme={getHeroSpeciesTheme(species)}
         isActive={selected}
         disabled={disabled}
         onClickDetails={() => setDetailsOpen(true)}
