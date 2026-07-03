@@ -362,6 +362,10 @@ export function getAttributeMethodLabel(method: AttributeGenerationMethod): stri
     return "Point Buy";
   }
 
+  if (method === "roll-4d6") {
+    return "Rolagem 4d6 (descarta o menor)";
+  }
+
   return "Manual";
 }
 

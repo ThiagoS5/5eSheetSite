@@ -62,6 +62,23 @@ describe("builder validation", () => {
     ).toStrictEqual(["No Point Buy, atributos base devem estar entre 8 e 15."]);
   });
 
+  it("accepts roll-4d6 attributes without the point-buy constraints", () => {
+    expect(
+      validateBuilderStep("atributos", {
+        ...initialCharacterState,
+        attributeGenerationMethod: "roll-4d6",
+        baseAttributes: {
+          forca: 15,
+          destreza: 14,
+          constituicao: 13,
+          inteligencia: 12,
+          sabedoria: 10,
+          carisma: 8,
+        },
+      }),
+    ).toStrictEqual([]);
+  });
+
   it("requires Bard to choose three class skills", () => {
     expect(
       validateBuilderStep("recursos-classe", {
