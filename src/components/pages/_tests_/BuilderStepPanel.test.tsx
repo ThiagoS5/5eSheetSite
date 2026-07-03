@@ -122,11 +122,48 @@ describe("BuilderStepPanel", () => {
       within(barbarianCard as HTMLElement).getByRole("button", { name: "SELECT" }),
     );
 
-    expect(screen.getByRole("dialog", { name: "Alterar classe" })).toBeInTheDocument();
-    expect(screen.getByText("2 pericias de classe")).toBeInTheDocument();
-    expect(screen.getByText("1 grupo de recurso")).toBeInTheDocument();
+    const dialog = screen.getByRole("dialog", { name: "Alterar classe" });
+
+    expect(dialog).toBeInTheDocument();
+    expect(within(dialog).getByText("2 pericias de classe")).toBeInTheDocument();
+    expect(within(dialog).getByText("Weapon Mastery")).toBeInTheDocument();
     expect(pushMock).not.toHaveBeenCalled();
   });
+
+  it("does not change selectedClassId until the class change diff is confirmed", async () => {
+    function SelectedClassIdProbe() {
+      const selectedClassId = useCharacterStore((state) => state.selectedClassId);
+      return <span data-testid="selected-class-id">{selectedClassId}</span>;
+    }
+
+    render(
+      <CharacterStoreProvider>
+        <SelectedClassInitializer />
+        <SelectedClassIdProbe />
+        <BuilderStepPanel step="classe" {...builderData} />
+      </CharacterStoreProvider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId("selected-class-id")).toHaveTextContent("fighter-xphb");
+    });
+
+    const barbarianCard = screen.getByRole("heading", { name: "Barbarian" }).closest("article");
+
+    expect(barbarianCard).not.toBeNull();
+    fireEvent.click(
+      within(barbarianCard as HTMLElement).getByRole("button", { name: "SELECT" }),
+    );
+
+    expect(screen.getByRole("dialog", { name: "Alterar classe" })).toBeInTheDocument();
+    expect(screen.getByTestId("selected-class-id")).toHaveTextContent("fighter-xphb");
+
+    fireEvent.click(screen.getByRole("button", { name: "Trocar de classe" }));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("selected-class-id")).toHaveTextContent("barbarian-xphb");
+    });
+  }, 15000);
 
   it("filters class cards by name, summary, source, and level one features", () => {
     render(

@@ -19,6 +19,8 @@ import {
   getRequiredLanguageCount,
   validateBuilderStep,
 } from "@/rules/builderValidation";
+import { getClassChangeImpact } from "@/rules/classChangeImpact";
+import { ClassChangeDiffDialog } from "@/src/components/organisms/ClassChangeDiffDialog";
 import { useCharacterStore } from "@/src/store/useCharacterStore";
 import type { CharacterBuilderState, SkillTrainingLevel } from "@/src/store/characterStore.types";
 import type {
@@ -85,6 +87,10 @@ export function BuilderStepPanel({
   const actions = useCharacterBuilderActions();
   const [pendingReplacement, setPendingReplacement] =
     useState<PendingReplacement | null>(null);
+  const [pendingClassChange, setPendingClassChange] = useState<{
+    classId: string;
+    items: string[];
+  } | null>(null);
   const messages = validateBuilderStep(step, characterState);
   const currentStepIndex = getStepIndex(step);
   const nextStep = builderStepNavigation[currentStepIndex + 1];
@@ -136,27 +142,31 @@ export function BuilderStepPanel({
   }
 
   function requestClassSelection(classId: string) {
-    const changes = getClassReplacementChanges(characterState);
+    const impact = getClassChangeImpact({
+      state: characterState,
+      currentClass: selectedClass,
+    });
 
     if (
       characterState.selectedClassId &&
       characterState.selectedClassId !== classId &&
-      changes.length > 0
+      impact.items.length > 0
     ) {
-      setPendingReplacement({
-        title: "Alterar classe",
-        description:
-          "Trocar a classe reinicia escolhas que dependem dela para manter a ficha consistente.",
-        changes,
-        onConfirm: () => {
-          actions.selectClass(classId);
-          void unlockAndGo(1);
-        },
-      });
+      setPendingClassChange({ classId, items: impact.items });
       return;
     }
 
     actions.selectClass(classId);
+    void unlockAndGo(1);
+  }
+
+  function confirmClassChange() {
+    if (!pendingClassChange) {
+      return;
+    }
+
+    actions.selectClass(pendingClassChange.classId);
+    setPendingClassChange(null);
     void unlockAndGo(1);
   }
 
@@ -361,6 +371,12 @@ export function BuilderStepPanel({
             setPendingReplacement(null);
           }
         }}
+      />
+      <ClassChangeDiffDialog
+        open={Boolean(pendingClassChange)}
+        items={pendingClassChange?.items ?? []}
+        onConfirm={confirmClassChange}
+        onCancel={() => setPendingClassChange(null)}
       />
     </div>
   );
@@ -2026,38 +2042,6 @@ function getAttributeChangeHandler(
   return (attribute, value) => {
     actions[attribute](value);
   };
-}
-
-function getClassReplacementChanges(state: CharacterBuilderState): string[] {
-  const changes: string[] = [];
-
-  if (state.classSkillProficiencies.length > 0) {
-    changes.push(
-      formatCount(
-        state.classSkillProficiencies.length,
-        "pericia de classe",
-        "pericias de classe",
-      ),
-    );
-  }
-
-  const featureGroupCount = Object.keys(state.classFeatureChoices).length;
-  if (featureGroupCount > 0) {
-    changes.push(
-      formatCount(featureGroupCount, "grupo de recurso", "grupos de recurso"),
-    );
-  }
-
-  if (state.selectedSubclassId) {
-    changes.push("subclasse selecionada");
-  }
-
-  const classEquipment = state.equipmentChoicesBySource.class;
-  if (classEquipment?.mode || classEquipment?.selectedOptionId) {
-    changes.push("equipamento inicial da classe");
-  }
-
-  return changes;
 }
 
 function getSpeciesReplacementChanges(state: CharacterBuilderState): string[] {
