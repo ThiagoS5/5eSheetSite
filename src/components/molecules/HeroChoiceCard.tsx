@@ -13,6 +13,10 @@ interface HeroChoiceCardProps {
   description: string;
   imageSrc?: string;
   imageAlt?: string;
+  /** background-size da arte no card (default "cover"). */
+  imageSize?: string;
+  /** background-position da arte no card (default "top"). */
+  imagePosition?: string;
   icon?: ReactNode;
   theme?: HeroChoiceTheme;
   isActive: boolean;
@@ -210,6 +214,8 @@ export function HeroChoiceCard({
   description,
   imageSrc,
   imageAlt,
+  imageSize = "cover",
+  imagePosition = "top",
   icon,
   theme = defaultHeroChoiceTheme,
   isActive,
@@ -249,12 +255,14 @@ export function HeroChoiceCard({
       >
         {/* Arte de fundo */}
         <div
-          className="absolute inset-x-[9px] bottom-0 top-[9px] rounded-lg bg-cover bg-top bg-no-repeat transition-transform duration-300 group-hover:scale-[1.03]"
+          className="absolute inset-x-[9px] bottom-0 top-[9px] rounded-lg bg-no-repeat transition-transform duration-300 group-hover:scale-[1.03]"
           style={{
             backgroundColor: "var(--hero-theme)",
             backgroundImage: imageSrc
               ? `url("${imageSrc}")`
               : `radial-gradient(120% 90% at 50% 0%, color-mix(in srgb, var(--hero-accent) 35%, var(--hero-theme)) 0%, var(--hero-theme) 65%, color-mix(in srgb, var(--hero-theme) 60%, #000) 100%)`,
+            backgroundSize: imageSrc ? imageSize : "cover",
+            backgroundPosition: imageSrc ? imagePosition : "top",
           }}
           role={imageSrc && imageAlt ? "img" : undefined}
           aria-label={imageSrc ? imageAlt : undefined}

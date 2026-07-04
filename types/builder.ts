@@ -47,6 +47,15 @@ export interface BuilderClassImage {
   src: string;
   alt: string;
   credit?: string;
+  /**
+   * Enquadramento da arte quando exibida como fundo do card (`HeroChoiceCard`).
+   * Muitas splashes do XPHB trazem uma moldura decorativa embutida ~6% para
+   * dentro da borda; estes overrides (mapeados para `background-size` /
+   * `background-position`) recortam a moldura para a arte preencher o card.
+   * Ausentes = `cover` / topo (comportamento full-bleed padrão).
+   */
+  cardBackgroundSize?: string;
+  cardBackgroundPosition?: string;
 }
 
 export interface BuilderClassProgressionRow {

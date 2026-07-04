@@ -869,6 +869,8 @@ function ClassOptionCard({
         description={classEntry.summary}
         imageSrc={classEntry.image?.src}
         imageAlt={classEntry.image?.alt}
+        imageSize={classEntry.image?.cardBackgroundSize}
+        imagePosition={classEntry.image?.cardBackgroundPosition}
         icon={
           <FontAwesomeIcon iconClassName={getClassBannerIconClass(classEntry)} />
         }

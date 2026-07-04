@@ -19,6 +19,7 @@ import {
   ATTRIBUTE_LABELS,
   type AttributeKey,
 } from "@/types/dnd";
+import { applyClassCardFraming } from "@/src/data/classCardArt";
 import type {
   Raw5eBackground,
   Raw5eClass,
@@ -172,7 +173,10 @@ export function normalizeClass(
       formatTaggedTextAsPlain,
     ),
     spellcastingAbility,
-    image: lore?.image ?? normalizeClassImage(rawClass, classFluff),
+    image: applyClassCardFraming(
+      toSlug(rawClass.name, rawClass.source),
+      lore?.image ?? normalizeClassImage(rawClass, classFluff),
+    ),
     progressionRows: normalizeClassProgressionRows(rawClass, allFeatures),
     skillChoices,
     languageChoiceCount: normalizeLanguageChoiceCount(
