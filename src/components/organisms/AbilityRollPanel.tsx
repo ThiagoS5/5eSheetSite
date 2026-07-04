@@ -71,16 +71,16 @@ export function AbilityRollPanel({
           id="ability-roll-title"
           className="font-serif text-lg font-bold tracking-wide text-foreground"
         >
-          Rolagem 4d6 (descarta o menor)
+          Roll 4d6 (drop lowest)
         </h3>
         <p className="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">
-          Role seis conjuntos de 4d6 e distribua os totais entre os atributos.
+          Roll six sets of 4d6 and assign the totals to ability scores.
         </p>
       </div>
 
       <div>
         <Button type="button" onClick={handleRoll}>
-          Rolar 4d6
+          Roll 4d6
         </Button>
       </div>
 
@@ -106,10 +106,10 @@ export function AbilityRollPanel({
                 ))}
               </div>
               <p className="mt-1 text-xs text-muted-foreground">
-                descartado: {roll.dropped}
+                dropped: <span translate="no" className="notranslate">{roll.dropped}</span>
               </p>
               <p className="font-serif text-xl font-bold text-foreground">
-                Total: {roll.total}
+                Total: <span translate="no" className="notranslate">{roll.total}</span>
               </p>
             </li>
           ))}
@@ -128,7 +128,7 @@ export function AbilityRollPanel({
                   {label}
                 </span>
                 <select
-                  aria-label={`Valor para ${label}`}
+                  aria-label={`Value for ${label}`}
                   value={currentValue ?? ""}
                   onChange={(event) => handleAssign(attribute, event.target.value)}
                   className="rounded-md border border-border bg-surface-nested px-2 py-1.5 text-foreground outline-none focus:border-brand-crimson-alt focus:ring-2 focus:ring-brand-crimson-alt/50"
@@ -157,7 +157,7 @@ export function AbilityRollPanel({
 
       <div>
         <Button type="button" onClick={handleApply} disabled={!allAssigned}>
-          Aplicar
+          Apply
         </Button>
       </div>
     </section>

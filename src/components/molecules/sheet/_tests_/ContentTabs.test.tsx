@@ -24,14 +24,14 @@ vi.mock("@/src/store/useCharacterStore", () => ({
 
 const summary = {
   isSpellcaster: false,
-  weapons: [{ name: "Adaga", attackBonus: "+6", damage: "1d4+3 Perfurante", notes: "Acuidade" }],
+  weapons: [{ name: "Dagger", attackBonus: "+6", damage: "1d4+3 Piercing", notes: "Finesse" }],
   selectedEquipment: [
-    { id: "grimoire", name: "Grimório", source: "Mago", sourceType: "class", value: 50, category: "Wondrous" },
-    { id: "sword", name: "Espada Longa", source: "Manual", sourceType: "manual", value: 15, category: "Weapon" },
+    { id: "grimoire", name: "Spellbook", source: "Wizard", sourceType: "class", value: 50, category: "Wondrous" },
+    { id: "sword", name: "Longsword", source: "Manual", sourceType: "manual", value: 15, category: "Weapon" },
   ],
   features: [
-    { name: "Conjuração", description: "…", source: "class" },
-    { name: "Visão no Escuro", description: "…", source: "species" },
+    { name: "Spellcasting", description: "...", source: "class" },
+    { name: "Darkvision", description: "...", source: "species" },
   ],
   money: { pc: 1, pp: 2, pe: 3, po: 4, pl: 5 },
   carry: { currentKg: 10, maxKg: 50 },
@@ -41,28 +41,28 @@ describe("ContentTabs", () => {
   afterEach(cleanup);
   beforeEach(() => render(<ContentTabs summary={summary} />));
 
-  it("shows weapons as cards on the Ações tab by default", () => {
-    expect(screen.getByText("Adaga")).toBeInTheDocument();
+  it("shows weapons as cards on the Actions tab by default", () => {
+    expect(screen.getByText("Dagger")).toBeInTheDocument();
   });
 
-  it("shows an intentional empty state on the Magias tab for a non-caster", () => {
-    fireEvent.click(screen.getByRole("tab", { name: /Magias/ }));
-    expect(screen.getByText(/não possui magias|Nenhuma magia/i)).toBeInTheDocument();
+  it("shows an intentional empty state on the Spells tab for a non-caster", () => {
+    fireEvent.click(screen.getByRole("tab", { name: /Spells/ }));
+    expect(screen.getByText(/does not have spells|No spells/i)).toBeInTheDocument();
   });
 
-  it("filters features by origin on the Características tab", () => {
-    fireEvent.click(screen.getByRole("tab", { name: /Características/ }));
-    expect(screen.getByText("Conjuração")).toBeInTheDocument();
-    expect(screen.getByText("Visão no Escuro")).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "Espécie" }));
-    expect(screen.queryByText("Conjuração")).not.toBeInTheDocument();
-    expect(screen.getByText("Visão no Escuro")).toBeInTheDocument();
+  it("filters features by origin on the Features tab", () => {
+    fireEvent.click(screen.getByRole("tab", { name: /Features/ }));
+    expect(screen.getByText("Spellcasting")).toBeInTheDocument();
+    expect(screen.getByText("Darkvision")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Species" }));
+    expect(screen.queryByText("Spellcasting")).not.toBeInTheDocument();
+    expect(screen.getByText("Darkvision")).toBeInTheDocument();
   });
 
   it("opens the detail modal when a weapon card is clicked", () => {
-    fireEvent.click(screen.getByText("Adaga"));
+    fireEvent.click(screen.getByText("Dagger"));
     const dialog = screen.getByRole("dialog");
-    expect(within(dialog).getByText("1d4+3 Perfurante")).toBeInTheDocument();
+    expect(within(dialog).getByText("1d4+3 Piercing")).toBeInTheDocument();
   });
 
   it("has a fixed-height scrollable tabpanel container", () => {
@@ -70,28 +70,28 @@ describe("ContentTabs", () => {
     expect(panel.className).toMatch(/overflow-y-auto/);
   });
 
-  it("shows five coin cards and a carga card on the Inventário tab", () => {
-    fireEvent.click(screen.getByRole("tab", { name: /Inventário/ }));
-    expect(screen.getByText("PL")).toBeInTheDocument();
-    expect(screen.getByText("PO")).toBeInTheDocument();
-    expect(screen.getByText("PE")).toBeInTheDocument();
+  it("shows five coin cards and a load card on the Inventory tab", () => {
+    fireEvent.click(screen.getByRole("tab", { name: /Inventory/ }));
     expect(screen.getByText("PP")).toBeInTheDocument();
-    expect(screen.getByText("PC")).toBeInTheDocument();
+    expect(screen.getByText("GP")).toBeInTheDocument();
+    expect(screen.getByText("EP")).toBeInTheDocument();
+    expect(screen.getByText("SP")).toBeInTheDocument();
+    expect(screen.getByText("CP")).toBeInTheDocument();
     expect(screen.getByText("10 / 50 kg")).toBeInTheDocument();
   });
 
-  it("calls adjustCoin when clicking the increase button for PO", () => {
-    fireEvent.click(screen.getByRole("tab", { name: /Inventário/ }));
-    fireEvent.click(screen.getByRole("button", { name: "Aumentar PO" }));
+  it("calls adjustCoin when clicking the increase button for GP", () => {
+    fireEvent.click(screen.getByRole("tab", { name: /Inventory/ }));
+    fireEvent.click(screen.getByRole("button", { name: "Increase GP" }));
     expect(adjustCoin).toHaveBeenCalledWith("po", 1);
   });
 
-  it("filters inventory to weapons only via the Armas chip", () => {
-    fireEvent.click(screen.getByRole("tab", { name: /Inventário/ }));
-    expect(screen.getByText("Grimório")).toBeInTheDocument();
-    expect(screen.getByText("Espada Longa")).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "Armas" }));
-    expect(screen.queryByText("Grimório")).not.toBeInTheDocument();
-    expect(screen.getByText("Espada Longa")).toBeInTheDocument();
+  it("filters inventory to weapons only via the Weapons chip", () => {
+    fireEvent.click(screen.getByRole("tab", { name: /Inventory/ }));
+    expect(screen.getByText("Spellbook")).toBeInTheDocument();
+    expect(screen.getByText("Longsword")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Weapons" }));
+    expect(screen.queryByText("Spellbook")).not.toBeInTheDocument();
+    expect(screen.getByText("Longsword")).toBeInTheDocument();
   });
 });

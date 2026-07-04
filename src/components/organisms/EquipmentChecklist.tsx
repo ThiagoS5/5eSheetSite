@@ -73,7 +73,7 @@ function buildEquipmentSources(
   if (selectedClass?.startingEquipmentPackages.length) {
     sources.push({
       key: "class",
-      heading: "EQUIPAMENTO DA CLASSE",
+      heading: "CLASS EQUIPMENT",
       kits: selectedClass.startingEquipmentPackages.map(
         (entry: BuilderEquipmentPackage) => ({
           id: entry.id,
@@ -82,7 +82,7 @@ function buildEquipmentSources(
           items: entry.items,
         }),
       ),
-      goldLabel: selectedClass.startingEquipmentGold || "Ouro inicial",
+      goldLabel: selectedClass.startingEquipmentGold || "Starting gold",
       summary: "",
     });
   }
@@ -90,16 +90,16 @@ function buildEquipmentSources(
   if (selectedBackground?.equipmentSummary) {
     sources.push({
       key: "background",
-      heading: "EQUIPAMENTO DO ANTECEDENTE",
+      heading: "BACKGROUND EQUIPMENT",
       kits: [
         {
           id: "background-kit",
-          label: "Itens do Antecedente",
+          label: "Background Items",
           summary: selectedBackground.equipmentSummary,
           items: selectedBackground.equipmentItemsA ?? [],
         },
       ],
-      goldLabel: selectedBackground.equipmentGold ?? "Ouro do antecedente",
+      goldLabel: selectedBackground.equipmentGold ?? "Background gold",
       summary: selectedBackground.equipmentSummary ?? "",
     });
   }
@@ -126,10 +126,10 @@ export function EquipmentChecklist({
           id="equipment-title"
           className="mt-1 font-serif text-xl font-bold tracking-wide text-foreground"
         >
-          Equipamento Inicial
+          Starting Equipment
         </h2>
         <p className="mt-2 text-sm leading-6 text-muted-foreground">
-          Escolha entre os itens oferecidos pela classe ou o ouro inicial.
+          Choose between class offered items or starting gold.
         </p>
       </div>
 
@@ -151,7 +151,7 @@ export function EquipmentChecklist({
               <div className="grid grid-cols-2 gap-2">
                 <ModeButton
                   active={selectedMode === "items"}
-                  label="Itens Oferecidos"
+                  label="Offered Items"
                   onClick={() => {
                     onSourceModeChange(source.key, "items");
                     if (source.kits[0]) onSourceOptionChange(source.key, source.kits[0].id);
@@ -159,7 +159,7 @@ export function EquipmentChecklist({
                 />
                 <ModeButton
                   active={selectedMode === "gold"}
-                  label="Ouro Inicial"
+                  label="Starting Gold"
                   onClick={() => onSourceModeChange(source.key, "gold")}
                 />
               </div>
@@ -176,8 +176,8 @@ export function EquipmentChecklist({
                             .filter((item) => item.value === undefined)
                             .map((item, index) => (
                               <li key={`${kit.id}-${item.id}-${index}`} className="flex gap-2">
-                                <span className="font-semibold text-foreground">{item.quantity}×</span>
-                                <span>{item.label}</span>
+                                <span translate="no" className="notranslate font-semibold text-foreground">{item.quantity}×</span>
+                                <span translate="no" className="notranslate">{item.label}</span>
                               </li>
                             ))}
                         </ul>
@@ -187,11 +187,11 @@ export function EquipmentChecklist({
                             (entry, index) => (
                               <li key={`${kit.id}-a-${index}`} className="flex gap-2">
                                 {entry.qty ? (
-                                  <span className="font-semibold text-foreground">
+                                  <span translate="no" className="notranslate font-semibold text-foreground">
                                     {entry.qty}×
                                   </span>
                                 ) : null}
-                                <span>{entry.label}</span>
+                                <span translate="no" className="notranslate">{entry.label}</span>
                               </li>
                             ),
                           )}

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { SKILL_DESCRIPTIONS } from "@/src/data/skillDescriptions";
 
-const VALID_ABILITIES = ["Força", "Destreza", "Constituição", "Inteligência", "Sabedoria", "Carisma"];
+const VALID_ABILITIES = ["Strength", "Dexterity", "Constitution", "Intelligence", "Wisdom", "Charisma"];
 
 const EXPECTED_SKILLS = [
   "Acrobatics", "Animal Handling", "Arcana", "Athletics", "Deception",
@@ -39,7 +39,7 @@ describe("SKILL_DESCRIPTIONS", () => {
     }
   });
 
-  it("each ability is one of the six valid pt-BR attribute names", () => {
+  it("each ability is one of the six valid English ability names", () => {
     for (const skill of EXPECTED_SKILLS) {
       const entry = SKILL_DESCRIPTIONS[skill];
       expect(VALID_ABILITIES).toContain(entry.ability);
@@ -48,24 +48,24 @@ describe("SKILL_DESCRIPTIONS", () => {
 
   it("has the correct ability mapping per D&D 5e rules", () => {
     const expectedMapping: Record<string, string> = {
-      "Athletics": "Força",
-      "Acrobatics": "Destreza",
-      "Sleight of Hand": "Destreza",
-      "Stealth": "Destreza",
-      "Arcana": "Inteligência",
-      "History": "Inteligência",
-      "Investigation": "Inteligência",
-      "Nature": "Inteligência",
-      "Religion": "Inteligência",
-      "Animal Handling": "Sabedoria",
-      "Insight": "Sabedoria",
-      "Medicine": "Sabedoria",
-      "Perception": "Sabedoria",
-      "Survival": "Sabedoria",
-      "Deception": "Carisma",
-      "Intimidation": "Carisma",
-      "Performance": "Carisma",
-      "Persuasion": "Carisma",
+      "Athletics": "Strength",
+      "Acrobatics": "Dexterity",
+      "Sleight of Hand": "Dexterity",
+      "Stealth": "Dexterity",
+      "Arcana": "Intelligence",
+      "History": "Intelligence",
+      "Investigation": "Intelligence",
+      "Nature": "Intelligence",
+      "Religion": "Intelligence",
+      "Animal Handling": "Wisdom",
+      "Insight": "Wisdom",
+      "Medicine": "Wisdom",
+      "Perception": "Wisdom",
+      "Survival": "Wisdom",
+      "Deception": "Charisma",
+      "Intimidation": "Charisma",
+      "Performance": "Charisma",
+      "Persuasion": "Charisma",
     };
 
     for (const [skill, expectedAbility] of Object.entries(expectedMapping)) {

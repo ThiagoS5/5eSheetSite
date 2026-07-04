@@ -13,26 +13,26 @@ type OriginFilter = "all" | "class" | "species" | "background";
 type InvFilter = "all" | "weapons" | "armor" | "utility" | "magic";
 
 const MAIN_TABS: { id: MainTab; label: string; icon: string }[] = [
-  { id: "actions",   label: "Ações",          icon: "fa-khanda" },
-  { id: "spells",    label: "Magias",         icon: "fa-wand-sparkles" },
-  { id: "inventory", label: "Inventário",     icon: "fa-box-open" },
-  { id: "features",  label: "Características", icon: "fa-scroll" },
-  { id: "notes",     label: "Anotações",      icon: "fa-feather" },
+  { id: "actions",   label: "Actions",        icon: "fa-khanda" },
+  { id: "spells",    label: "Spells",         icon: "fa-wand-sparkles" },
+  { id: "inventory", label: "Inventory",      icon: "fa-box-open" },
+  { id: "features",  label: "Features",       icon: "fa-scroll" },
+  { id: "notes",     label: "Notes",          icon: "fa-feather" },
 ];
 
 const ORIGIN_FILTERS: { id: OriginFilter; label: string }[] = [
-  { id: "all",        label: "Todos" },
-  { id: "class",      label: "Classe" },
-  { id: "species",    label: "Espécie" },
-  { id: "background", label: "Antecedente" },
+  { id: "all",        label: "All" },
+  { id: "class",      label: "Class" },
+  { id: "species",    label: "Species" },
+  { id: "background", label: "Background" },
 ];
 
 const INV_FILTERS: { id: InvFilter; label: string }[] = [
-  { id: "all",     label: "Todos" },
-  { id: "weapons", label: "Armas" },
-  { id: "armor",   label: "Armaduras" },
-  { id: "utility", label: "Utilitários" },
-  { id: "magic",   label: "Mágicos" },
+  { id: "all",     label: "All" },
+  { id: "weapons", label: "Weapons" },
+  { id: "armor",   label: "Armor" },
+  { id: "utility", label: "Utility" },
+  { id: "magic",   label: "Magic" },
 ];
 
 const MAGIC_CATS = new Set(["Ring", "Rod", "Scroll", "Staff", "Wand", "Wondrous", "Potion"]);
@@ -99,7 +99,7 @@ export function ContentTabs({ summary }: ContentTabsProps) {
       {/* Tab bar */}
       <div
         role="tablist"
-        aria-label="Conteúdo da ficha"
+        aria-label="Sheet content"
         className="flex gap-0.5 overflow-x-auto border-b border-border px-2"
       >
         {MAIN_TABS.map((tab) => (
@@ -184,7 +184,7 @@ export function ContentTabs({ summary }: ContentTabsProps) {
             {realWeapons.length > 0 ? (
               <div>
                 <p className="mb-[9px] text-[9.5px] font-bold uppercase leading-none tracking-[0.14em] text-brand-crimson-alt">
-                  Armas
+                  Weapons
                 </p>
                 <div className="flex flex-col gap-2">
                   {realWeapons.map((w, i) => (
@@ -201,14 +201,14 @@ export function ContentTabs({ summary }: ContentTabsProps) {
                         <i aria-hidden="true" className="fa-solid fa-khanda text-sm text-brand-crimson-alt" />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="text-[13.5px] font-bold text-foreground">{w.name}</p>
+                        <p translate="no" className="notranslate text-[13.5px] font-bold text-foreground">{w.name}</p>
                         <p className="text-[11px] text-muted-foreground">{w.notes || "—"}</p>
                       </div>
                       <div className="flex shrink-0 flex-col items-center">
-                        <span className="font-serif text-[17px] font-extrabold leading-none text-primary">{w.attackBonus}</span>
-                        <span className="text-[8px] uppercase tracking-[0.08em] text-muted-foreground">Acerto</span>
+                        <span translate="no" className="notranslate font-serif text-[17px] font-extrabold leading-none text-primary">{w.attackBonus}</span>
+                        <span className="text-[8px] uppercase tracking-[0.08em] text-muted-foreground">Hit</span>
                       </div>
-                      <div className="flex min-w-[96px] shrink-0 items-center justify-center rounded-[7px] border border-border bg-card px-[10px] py-[7px] text-center text-xs font-semibold text-subdued">
+                      <div translate="no" className="notranslate flex min-w-[96px] shrink-0 items-center justify-center rounded-[7px] border border-border bg-card px-[10px] py-[7px] text-center text-xs font-semibold text-subdued">
                         {w.damage || "—"}
                       </div>
                     </button>
@@ -216,7 +216,7 @@ export function ContentTabs({ summary }: ContentTabsProps) {
                 </div>
               </div>
             ) : (
-              <EmptyState label="Nenhuma ação registrada." />
+              <EmptyState label="No recorded action." />
             )}
           </div>
         )}
@@ -224,7 +224,7 @@ export function ContentTabs({ summary }: ContentTabsProps) {
         {/* MAGIAS — selector computes no spells today; intentional empty state */}
         {activeTab === "spells" && (
           <EmptyState
-            label={summary.isSpellcaster ? "Nenhuma magia desta origem." : "Este personagem não possui magias."}
+            label={summary.isSpellcaster ? "No spell from this origin." : "This character has no spells."}
           />
         )}
 
@@ -232,20 +232,20 @@ export function ContentTabs({ summary }: ContentTabsProps) {
         {activeTab === "inventory" && (
           <div className="flex flex-col gap-[14px]">
             <div className="flex flex-wrap gap-[9px]">
-              <CoinCard label="PL" value={summary.money.pl} onDec={() => adjustCoin("pl", -1)} onInc={() => adjustCoin("pl", 1)} />
-              <CoinCard label="PO" value={summary.money.po} onDec={() => adjustCoin("po", -1)} onInc={() => adjustCoin("po", 1)} />
-              <CoinCard label="PE" value={summary.money.pe} onDec={() => adjustCoin("pe", -1)} onInc={() => adjustCoin("pe", 1)} />
-              <CoinCard label="PP" value={summary.money.pp} onDec={() => adjustCoin("pp", -1)} onInc={() => adjustCoin("pp", 1)} />
-              <CoinCard label="PC" value={summary.money.pc} onDec={() => adjustCoin("pc", -1)} onInc={() => adjustCoin("pc", 1)} />
+              <CoinCard label="PP" value={summary.money.pl} onDec={() => adjustCoin("pl", -1)} onInc={() => adjustCoin("pl", 1)} />
+              <CoinCard label="GP" value={summary.money.po} onDec={() => adjustCoin("po", -1)} onInc={() => adjustCoin("po", 1)} />
+              <CoinCard label="EP" value={summary.money.pe} onDec={() => adjustCoin("pe", -1)} onInc={() => adjustCoin("pe", 1)} />
+              <CoinCard label="SP" value={summary.money.pp} onDec={() => adjustCoin("pp", -1)} onInc={() => adjustCoin("pp", 1)} />
+              <CoinCard label="CP" value={summary.money.pc} onDec={() => adjustCoin("pc", -1)} onInc={() => adjustCoin("pc", 1)} />
               <div className="flex flex-1 basis-[90px] flex-col items-center gap-[3px] rounded-[10px] border border-border bg-surface-nested p-[11px]">
                 <span className="font-serif text-xl font-extrabold text-foreground">
                   {summary.carry.currentKg} / {summary.carry.maxKg} kg
                 </span>
-                <span className="text-[9.5px] uppercase tracking-[0.1em] text-muted-foreground">Carga</span>
+                <span className="text-[9.5px] uppercase tracking-[0.1em] text-muted-foreground">Load</span>
                 <div className="mt-1 flex items-center gap-1">
                   <button
                     type="button"
-                    aria-label="Reduzir carga"
+                    aria-label="Decrease load"
                     onClick={() => setCarriedLoadKg(summary.carry.currentKg - 1)}
                     className={cn("h-6 w-6 rounded-md border border-border text-muted-foreground hover:text-foreground", focusRing)}
                   >
@@ -253,7 +253,7 @@ export function ContentTabs({ summary }: ContentTabsProps) {
                   </button>
                   <button
                     type="button"
-                    aria-label="Aumentar carga"
+                    aria-label="Increase load"
                     onClick={() => setCarriedLoadKg(summary.carry.currentKg + 1)}
                     className={cn("h-6 w-6 rounded-md border border-border text-muted-foreground hover:text-foreground", focusRing)}
                   >
@@ -274,8 +274,8 @@ export function ContentTabs({ summary }: ContentTabsProps) {
                           kind: "equipment",
                           name: item.name,
                           qty: 1,
-                          source: item.sourceType === "class" ? "Classe" : "Manual",
-                          cost: item.value != null ? `${item.value} PO` : undefined,
+                          source: item.sourceType === "class" ? "Class" : "Manual",
+                          cost: item.value != null ? `${item.value} GP` : undefined,
                           armorClass: item.armorClass ?? undefined,
                         })}
                         className={cn(
@@ -283,15 +283,15 @@ export function ContentTabs({ summary }: ContentTabsProps) {
                           focusRing,
                         )}
                       >
-                        <span className={cn("font-bold", color)}>1×</span>
-                        <span>{item.name}</span>
+                        <span translate="no" className={cn("notranslate font-bold", color)}>1×</span>
+                        <span translate="no" className="notranslate">{item.name}</span>
                       </button>
                     </li>
                   );
                 })}
               </ul>
             ) : (
-              <EmptyState label="Nenhum item desta origem." />
+              <EmptyState label="No item from this origin." />
             )}
           </div>
         )}
@@ -309,12 +309,12 @@ export function ContentTabs({ summary }: ContentTabsProps) {
                     style={{ borderLeftColor: v.color }}
                   >
                     <div className="mb-[5px] flex items-center justify-between gap-2">
-                      <span className="font-serif text-[15px] font-bold leading-tight text-foreground">{f.name}</span>
+                      <span translate="no" className="notranslate font-serif text-[15px] font-bold leading-tight text-foreground">{f.name}</span>
                       <span
                         className="whitespace-nowrap rounded border px-[7px] py-0.5 text-[8.5px] font-bold uppercase tracking-[0.1em]"
                         style={{ color: v.color, background: v.colorBg, borderColor: v.colorSoft }}
                       >
-                        {f.source === "class" ? "Classe" : f.source === "species" ? "Espécie" : "Antecedente"}
+                        {f.source === "class" ? "Class" : f.source === "species" ? "Species" : "Background"}
                       </span>
                     </div>
                     {f.description && <p className="m-0 text-xs leading-relaxed text-subdued">{f.description}</p>}
@@ -322,7 +322,7 @@ export function ContentTabs({ summary }: ContentTabsProps) {
                 );
               })
             ) : (
-              <EmptyState label="Nenhuma característica desta origem." />
+              <EmptyState label="No feature from this origin." />
             )}
           </div>
         )}
@@ -334,7 +334,7 @@ export function ContentTabs({ summary }: ContentTabsProps) {
             onBlur={(e) => setDescriptionField("notas", e.target.value)}
             onChange={(e) => setDescriptionField("notas", e.target.value)}
             rows={8}
-            placeholder="Escreva as anotações do personagem…"
+            placeholder="Write character notes..."
             className={cn(
               "h-[440px] w-full resize-y rounded-[9px] border border-border bg-background px-4 py-[14px] text-[13px] text-subdued outline-none placeholder:text-muted-foreground focus:border-primary",
               focusRing,
@@ -370,12 +370,12 @@ function CoinCard({
 }) {
   return (
     <div className="flex flex-1 basis-[90px] flex-col items-center gap-[3px] rounded-[10px] border border-border bg-surface-nested p-[11px]">
-      <span className="font-serif text-xl font-extrabold text-foreground">{value}</span>
-      <span className="text-[9.5px] uppercase tracking-[0.1em] text-muted-foreground">{label}</span>
+      <span translate="no" className="notranslate font-serif text-xl font-extrabold text-foreground">{value}</span>
+      <span translate="no" className="notranslate text-[9.5px] uppercase tracking-[0.1em] text-muted-foreground">{label}</span>
       <div className="mt-1 flex items-center gap-1">
         <button
           type="button"
-          aria-label={`Reduzir ${label}`}
+          aria-label={`Decrease ${label}`}
           onClick={onDec}
           className={cn("h-6 w-6 rounded-md border border-border text-muted-foreground hover:text-foreground", focusRing)}
         >
@@ -383,7 +383,7 @@ function CoinCard({
         </button>
         <button
           type="button"
-          aria-label={`Aumentar ${label}`}
+          aria-label={`Increase ${label}`}
           onClick={onInc}
           className={cn("h-6 w-6 rounded-md border border-border text-muted-foreground hover:text-foreground", focusRing)}
         >

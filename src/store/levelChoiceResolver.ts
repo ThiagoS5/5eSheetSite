@@ -151,9 +151,9 @@ export function getPendingRequirements(
 }
 
 function requirementLabel(req: LevelChoiceRequirement): string {
-  if (req.kind === "subclass") return `Nível ${req.level}: escolha uma subclasse`;
-  if (req.kind === "asi-or-feat") return `Nível ${req.level}: escolha ASI ou talento`;
-  return `Nível ${req.level}: ${req.featureName}`;
+  if (req.kind === "subclass") return `Level ${req.level}: choose a subclass`;
+  if (req.kind === "asi-or-feat") return `Level ${req.level}: choose ASI or feat`;
+  return `Level ${req.level}: ${req.featureName}`;
 }
 
 /** Which level choices (1..currentLevel) are still missing or invalid. */

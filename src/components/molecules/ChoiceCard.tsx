@@ -17,7 +17,7 @@ export function ChoiceCard({
   eyebrow,
   selected,
   disabled = false,
-  actionLabel = "Selecionar",
+  actionLabel = "Select",
   showDefaultAction = true,
   footer,
   onSelect,
@@ -55,7 +55,7 @@ export function ChoiceCard({
               aria-pressed={selected}
               className="shrink-0 rounded-md border border-border bg-white/5 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.08em] text-subdued outline-none transition hover:border-brand-crimson-alt/70 hover:text-foreground focus-visible:ring-2 focus-visible:ring-brand-crimson-alt/70 disabled:cursor-not-allowed disabled:opacity-50 aria-pressed:border-brand-crimson-alt aria-pressed:bg-brand-crimson-alt aria-pressed:text-foreground"
             >
-              {selected ? "Selecionado" : actionLabel}
+              {selected ? "Selected" : actionLabel}
             </button>
           ) : null}
         </div>

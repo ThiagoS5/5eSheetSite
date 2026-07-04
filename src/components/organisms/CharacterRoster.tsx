@@ -12,8 +12,8 @@ export function CharacterRoster({ characters }: CharacterRosterProps) {
   const { filteredCharacters, query, setQuery } = useCharacterFilters(characters);
   const resultLabel =
     filteredCharacters.length === 1
-      ? "1 personagem encontrado"
-      : `${filteredCharacters.length} personagens encontrados`;
+      ? "1 character found"
+      : `${filteredCharacters.length} characters found`;
 
   return (
     <section
@@ -23,10 +23,10 @@ export function CharacterRoster({ characters }: CharacterRosterProps) {
       <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
           <h2 id="characters-title" className="text-2xl font-semibold text-foreground">
-            Personagens cadastrados
+            Registered Characters
           </h2>
           <p id="characters-description" className="mt-2 text-sm text-slate-400">
-            Busque por nome, classe ou espécie.
+            Search by name, class, or species.
           </p>
         </div>
 
@@ -35,7 +35,7 @@ export function CharacterRoster({ characters }: CharacterRosterProps) {
             htmlFor="character-search"
             className="block text-sm font-medium text-slate-200"
           >
-            Buscar personagem
+            Search character
           </label>
           <input
             id="character-search"
@@ -44,7 +44,7 @@ export function CharacterRoster({ characters }: CharacterRosterProps) {
             onChange={(event) => setQuery(event.target.value)}
             aria-describedby="characters-description character-results"
             className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-base text-foreground outline-none transition placeholder:text-slate-500 focus:border-cyan-300 focus:ring-2 focus:ring-cyan-300/40"
-            placeholder="Ex.: paladina"
+            placeholder="e.g. paladin"
           />
         </div>
       </div>
@@ -70,7 +70,7 @@ export function CharacterRoster({ characters }: CharacterRosterProps) {
           role="status"
           className="mt-4 rounded-lg border border-amber-300/30 bg-amber-300/10 p-4 text-sm text-amber-100"
         >
-          Nenhum personagem corresponde a busca atual.
+          No character matches the current search.
         </p>
       )}
     </section>

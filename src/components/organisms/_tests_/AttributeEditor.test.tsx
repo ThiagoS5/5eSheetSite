@@ -34,24 +34,24 @@ describe("AttributeEditor", () => {
       />,
     );
 
-    expect(screen.getByText("Point Buy: 26 gastos, 1 restantes")).toBeInTheDocument();
+    expect(screen.getByText("Point Buy: 26 spent, 1 remaining")).toBeInTheDocument();
     expect(screen.getByRole("table")).toHaveClass(
       "block",
       "min-w-0",
       "md:table",
     );
-    expect(screen.getByRole("row", { name: /Forca/i })).toHaveClass(
+    expect(screen.getByRole("row", { name: /Strength/i })).toHaveClass(
       "grid",
       "md:table-row",
     );
     expect(
-      screen.getByRole("button", { name: "Aumentar Forca" }),
+      screen.getByRole("button", { name: "Increase Strength" }),
     ).toBeDisabled();
     expect(
-      screen.getByRole("button", { name: "Diminuir Inteligencia" }),
+      screen.getByRole("button", { name: "Decrease Intelligence" }),
     ).toBeEnabled();
 
-    fireEvent.click(screen.getByRole("button", { name: "Diminuir Inteligencia" }));
+    fireEvent.click(screen.getByRole("button", { name: "Decrease Intelligence" }));
 
     expect(onAttributeChange).toHaveBeenCalledWith("inteligencia", 8);
   });
@@ -77,13 +77,13 @@ describe("AttributeEditor", () => {
     );
 
     expect(
-      screen.queryByRole("button", { name: /Aumentar/i }),
+      screen.queryByRole("button", { name: /Increase/i }),
     ).not.toBeInTheDocument();
     expect(
-      screen.queryByRole("button", { name: /Diminuir/i }),
+      screen.queryByRole("button", { name: /Decrease/i }),
     ).not.toBeInTheDocument();
 
-    expect(screen.getByLabelText("Forca 15")).toBeInTheDocument();
-    expect(screen.getByLabelText("Carisma 8")).toBeInTheDocument();
+    expect(screen.getByLabelText("Strength 15")).toBeInTheDocument();
+    expect(screen.getByLabelText("Charisma 8")).toBeInTheDocument();
   });
 });

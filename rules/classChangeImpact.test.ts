@@ -26,10 +26,10 @@ describe("getClassChangeImpact", () => {
     });
 
     expect(impact.items).toStrictEqual([
-      "2 pericias de classe",
+      "2 class skills",
       "Weapon Mastery",
-      "Kit de equipamento da classe",
-      "Subclasse: Champion",
+      "Class equipment kit",
+      "Subclass: Champion",
     ]);
   });
 

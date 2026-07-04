@@ -13,17 +13,17 @@ export function SensesPanel({ senses, languages }: SensesPanelProps) {
           <div className="mb-1 flex items-center gap-1.5">
             <i aria-hidden="true" className="fa-solid fa-tower-observation text-muted-foreground" />
             <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-              Sentidos
+              Senses
             </p>
           </div>
           <ul className="mb-3 space-y-0.5">
             {senses.map((s) => (
               <li key={s.name} className="flex items-center gap-2 text-xs text-subdued">
                 <i aria-hidden="true" className="fa-solid fa-eye text-muted-foreground" />
-                {s.name}
+                <span translate="no" className="notranslate">{s.name}</span>
                 {s.rangeFeet != null && (
                   <span className="ml-auto text-muted-foreground">
-                    {Math.round(s.rangeFeet / 0.3)} m
+                    <span translate="no" className="notranslate">{s.rangeFeet} ft.</span>
                   </span>
                 )}
               </li>
@@ -36,10 +36,10 @@ export function SensesPanel({ senses, languages }: SensesPanelProps) {
           <div className="mb-1 flex items-center gap-1.5">
             <i aria-hidden="true" className="fa-solid fa-language text-muted-foreground" />
             <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-              Idiomas
+              Languages
             </p>
           </div>
-          <p className="text-xs text-subdued">{languages.join(", ")}</p>
+          <p translate="no" className="notranslate text-xs text-subdued">{languages.join(", ")}</p>
         </>
       )}
     </section>

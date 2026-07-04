@@ -20,19 +20,19 @@ describe("Header", () => {
     ).toBeInTheDocument();
 
     const navigation = screen.getByRole("navigation", {
-      name: "Navegacao principal",
+      name: "Primary navigation",
     });
 
     expect(navigation).toHaveClass("hidden", "md:flex");
     expect(screen.getByRole("link", { name: "Vault" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Codex" })).toBeInTheDocument();
 
-    expect(screen.getByRole("button", { name: "Abrir menu" })).toHaveClass(
+    expect(screen.getByRole("button", { name: "Open menu" })).toHaveClass(
       "md:hidden",
     );
     expect(screen.queryByTitle(/barra lateral/i)).not.toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: "Abrir perfil do usuario" }),
+      screen.getByRole("button", { name: "Open user profile" }),
     ).toBeInTheDocument();
   });
 });

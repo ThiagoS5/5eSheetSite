@@ -12,14 +12,14 @@ export function CombatStatsCard({ summary }: CombatStatsCardProps) {
     ?.map((part) => `${part.value} ${part.label}`)
     .join(" + ");
   const armorClassTitle = armorClassFormula
-    ? `CA ${summary.armorClass} = ${armorClassFormula}`
+    ? `AC ${summary.armorClass} = ${armorClassFormula}`
     : undefined;
 
   const hitPointsFormula = summary.maxHpBreakdown
     ?.map((part) => `${part.value} ${part.label}`)
     .join(" + ");
   const hitPointsTitle = hitPointsFormula
-    ? `PV ${summary.hitPoints} = ${hitPointsFormula}`
+    ? `HP ${summary.hitPoints} = ${hitPointsFormula}`
     : undefined;
 
   return (
@@ -31,23 +31,23 @@ export function CombatStatsCard({ summary }: CombatStatsCardProps) {
         id="combat-stats-title"
         className="font-serif text-lg font-bold tracking-wide text-foreground"
       >
-        Combate
+        Combat
       </h3>
       <dl className="mt-4 grid grid-cols-2 gap-3 2xl:grid-cols-4">
         <StatBadge
-          label="CA"
+          label="AC"
           value={summary.armorClass}
           detail={armorClassFormula}
           title={armorClassTitle}
         />
         <StatBadge
-          label="PV"
+          label="HP"
           value={summary.hitPoints}
           detail={hitPointsFormula}
           title={hitPointsTitle}
         />
-        <StatBadge label="Iniciativa" value={formatModifier(initiative)} />
-        <StatBadge label="Proficiência" value={formatModifier(summary.proficiencyBonus)} />
+        <StatBadge label="Initiative" value={formatModifier(initiative)} />
+        <StatBadge label="Proficiency" value={formatModifier(summary.proficiencyBonus)} />
       </dl>
     </section>
   );

@@ -25,41 +25,41 @@ describe("AbilityRollPanel", () => {
   it("rolls and shows six totals with the lowest die struck through", () => {
     render(<AbilityRollPanel onApply={vi.fn()} rollFn={fixedRollFn} />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Rolar 4d6" }));
+    fireEvent.click(screen.getByRole("button", { name: "Roll 4d6" }));
 
     for (const total of fixedTotals) {
       expect(screen.getAllByText(String(total)).length).toBeGreaterThan(0);
     }
 
-    expect(screen.getAllByText("descartado: 2").length).toBe(6);
+    expect(screen.getAllByText((_, element) => element?.textContent === "dropped: 2").length).toBe(6);
   });
 
   it("assigns all six rolls to attributes and calls onApply with the mapping", () => {
     const onApply = vi.fn();
     render(<AbilityRollPanel onApply={onApply} rollFn={fixedRollFn} />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Rolar 4d6" }));
+    fireEvent.click(screen.getByRole("button", { name: "Roll 4d6" }));
 
-    fireEvent.change(screen.getByLabelText("Valor para Forca"), {
+    fireEvent.change(screen.getByLabelText("Value for Strength"), {
       target: { value: "0" },
     });
-    fireEvent.change(screen.getByLabelText("Valor para Destreza"), {
+    fireEvent.change(screen.getByLabelText("Value for Dexterity"), {
       target: { value: "1" },
     });
-    fireEvent.change(screen.getByLabelText("Valor para Constituicao"), {
+    fireEvent.change(screen.getByLabelText("Value for Constitution"), {
       target: { value: "2" },
     });
-    fireEvent.change(screen.getByLabelText("Valor para Inteligencia"), {
+    fireEvent.change(screen.getByLabelText("Value for Intelligence"), {
       target: { value: "3" },
     });
-    fireEvent.change(screen.getByLabelText("Valor para Sabedoria"), {
+    fireEvent.change(screen.getByLabelText("Value for Wisdom"), {
       target: { value: "4" },
     });
-    fireEvent.change(screen.getByLabelText("Valor para Carisma"), {
+    fireEvent.change(screen.getByLabelText("Value for Charisma"), {
       target: { value: "5" },
     });
 
-    const applyButton = screen.getByRole("button", { name: "Aplicar" });
+    const applyButton = screen.getByRole("button", { name: "Apply" });
     expect(applyButton).toBeEnabled();
 
     fireEvent.click(applyButton);
@@ -77,14 +77,14 @@ describe("AbilityRollPanel", () => {
   it("does not offer a roll already consumed by another attribute", () => {
     render(<AbilityRollPanel onApply={vi.fn()} rollFn={fixedRollFn} />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Rolar 4d6" }));
+    fireEvent.click(screen.getByRole("button", { name: "Roll 4d6" }));
 
-    fireEvent.change(screen.getByLabelText("Valor para Forca"), {
+    fireEvent.change(screen.getByLabelText("Value for Strength"), {
       target: { value: "0" },
     });
 
     const destrezaSelect = screen.getByLabelText(
-      "Valor para Destreza",
+      "Value for Dexterity",
     ) as HTMLSelectElement;
     const optionValues = Array.from(destrezaSelect.options).map(
       (option) => option.value,
@@ -93,12 +93,12 @@ describe("AbilityRollPanel", () => {
     expect(optionValues).not.toContain("0");
   });
 
-  it("keeps Aplicar disabled until all six attributes are assigned", () => {
+  it("keeps Apply disabled until all six attributes are assigned", () => {
     render(<AbilityRollPanel onApply={vi.fn()} rollFn={fixedRollFn} />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Rolar 4d6" }));
+    fireEvent.click(screen.getByRole("button", { name: "Roll 4d6" }));
 
-    expect(screen.getByRole("button", { name: "Aplicar" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Apply" })).toBeDisabled();
   });
 
   it("allows assigning both rolls when two totals tie, without locking either out", () => {
@@ -115,11 +115,11 @@ describe("AbilityRollPanel", () => {
     const onApply = vi.fn();
     render(<AbilityRollPanel onApply={onApply} rollFn={tiedRollFn} />);
 
-    fireEvent.click(screen.getByRole("button", { name: "Rolar 4d6" }));
+    fireEvent.click(screen.getByRole("button", { name: "Roll 4d6" }));
 
-    const forcaSelect = screen.getByLabelText("Valor para Forca") as HTMLSelectElement;
+    const forcaSelect = screen.getByLabelText("Value for Strength") as HTMLSelectElement;
     const destrezaSelect = screen.getByLabelText(
-      "Valor para Destreza",
+      "Value for Dexterity",
     ) as HTMLSelectElement;
 
     // Both rolls (index 0 and 1) with total 13 must be independently offered.
@@ -140,20 +140,20 @@ describe("AbilityRollPanel", () => {
 
     fireEvent.change(destrezaSelect, { target: { value: "1" } });
 
-    fireEvent.change(screen.getByLabelText("Valor para Constituicao"), {
+    fireEvent.change(screen.getByLabelText("Value for Constitution"), {
       target: { value: "2" },
     });
-    fireEvent.change(screen.getByLabelText("Valor para Inteligencia"), {
+    fireEvent.change(screen.getByLabelText("Value for Intelligence"), {
       target: { value: "3" },
     });
-    fireEvent.change(screen.getByLabelText("Valor para Sabedoria"), {
+    fireEvent.change(screen.getByLabelText("Value for Wisdom"), {
       target: { value: "4" },
     });
-    fireEvent.change(screen.getByLabelText("Valor para Carisma"), {
+    fireEvent.change(screen.getByLabelText("Value for Charisma"), {
       target: { value: "5" },
     });
 
-    const applyButton = screen.getByRole("button", { name: "Aplicar" });
+    const applyButton = screen.getByRole("button", { name: "Apply" });
     expect(applyButton).toBeEnabled();
 
     fireEvent.click(applyButton);

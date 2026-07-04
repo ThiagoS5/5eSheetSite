@@ -96,18 +96,18 @@ export function BackgroundCard({
                 aria-hidden="true"
                 className="fa-solid fa-wand-sparkles text-xs text-[var(--hero-accent)]"
               />
-              Talento de Origem
+              Origin Feat
             </h4>
-            <p className="text-sm font-semibold text-white">
+            <p translate="no" className="notranslate text-sm font-semibold text-white">
               {background.originFeat || "-"}
             </p>
             <p className="mt-0.5 line-clamp-2 text-xs leading-5 text-white/80">
               {[
                 background.skillProficiencies.length
-                  ? `Pericias: ${background.skillProficiencies.join(", ")}`
+                  ? `Skills: ${background.skillProficiencies.join(", ")}`
                   : "",
                 background.toolProficiencies.length
-                  ? `Ferramentas: ${background.toolProficiencies.join(", ")}`
+                  ? `Tools: ${background.toolProficiencies.join(", ")}`
                   : "",
               ]
                 .filter(Boolean)
@@ -184,13 +184,13 @@ function BackgroundDetailsModal({
           <Dialog.Content className="relative flex h-[100svh] w-full max-w-2xl flex-col overflow-y-auto border border-white/[0.08] bg-surface-nested text-foreground shadow-2xl shadow-black/60 outline-none focus-visible:ring-2 focus-visible:ring-primary md:h-[min(88vh,760px)] md:overflow-hidden md:rounded-xl">
             <Dialog.Title className="sr-only">{background.name}</Dialog.Title>
             <Dialog.Description className="sr-only">
-              {`Detalhes do antecedente ${background.name}`}
+              {`Background details for ${background.name}`}
             </Dialog.Description>
 
             <Dialog.Close asChild>
               <button
                 type="button"
-                aria-label="Fechar detalhes"
+                aria-label="Close details"
                 className="absolute right-4 top-4 z-20 flex h-8 w-8 items-center justify-center rounded-full border-border bg-background/70 text-subdued outline-none backdrop-blur transition hover:text-foreground focus-visible:ring-2 focus-visible:ring-primary border"
               >
                 <i aria-hidden="true" className="fa-solid fa-xmark text-sm" />
@@ -219,9 +219,9 @@ function BackgroundDetailsModal({
               />
               <div className="absolute bottom-0 left-0 w-full p-6">
                 <span className="mb-1 block text-[10px] font-bold uppercase tracking-[0.14em] text-foreground">
-                  Antecedente
+                  Background
                 </span>
-                <h2 className="font-serif text-3xl font-bold text-foreground">
+                <h2 translate="no" className="notranslate font-serif text-3xl font-bold text-foreground">
                   {background.name}
                 </h2>
               </div>
@@ -229,7 +229,7 @@ function BackgroundDetailsModal({
 
             <div
               tabIndex={0}
-              aria-label={`Conteudo dos detalhes de ${background.name}`}
+              aria-label={`Details content for ${background.name}`}
               className="flex-1 p-4 outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary sm:p-6 md:overflow-y-auto"
             >
               <div className="grid gap-6">
@@ -250,22 +250,22 @@ function BackgroundDetailsModal({
                     id={`${background.id}-modal-rewards`}
                     className="mb-4 font-serif text-lg font-semibold text-foreground"
                   >
-                    Recompensas
+                    Rewards
                   </h3>
                   <div className="grid gap-4">
                     <RewardPanel
                       iconClassName="fa-solid fa-wand-sparkles"
-                      title="Talento de Origem"
+                      title="Origin Feat"
                       accent
                     >
-                      <p className="font-medium text-foreground">
+                      <p translate="no" className="notranslate font-medium text-foreground">
                         {background.originFeat || "-"}
                       </p>
                     </RewardPanel>
 
                     <RewardPanel
                       iconClassName="fa-solid fa-arrow-trend-up"
-                      title="Bonus de Atributo"
+                      title="Ability Score Bonus"
                     >
                       <div className="mt-2 flex flex-wrap gap-2">
                         {background.abilityOptions.map((option) => (
@@ -281,15 +281,15 @@ function BackgroundDetailsModal({
 
                     <div className="grid gap-4 sm:grid-cols-2">
                       <RewardList
-                        title="Proficiencias"
+                        title="Proficiencies"
                         items={background.skillProficiencies}
                       />
                       <RewardList
-                        title="Ferramentas e Idiomas"
+                        title="Tools and Languages"
                         items={[
                           ...background.toolProficiencies,
                           background.languageChoiceCount > 0
-                            ? `${background.languageChoiceCount} idioma(s) a escolha`
+                            ? `${background.languageChoiceCount} language(s) of your choice`
                             : "",
                         ].filter(Boolean)}
                       />
@@ -297,7 +297,7 @@ function BackgroundDetailsModal({
 
                     <RewardPanel
                       iconClassName="fa-solid fa-backpack"
-                      title="Equipamento Inicial"
+                      title="Starting Equipment"
                     >
                       <p className="text-sm leading-6 text-subdued">
                         {background.equipmentSummary || "-"}
@@ -316,7 +316,7 @@ function BackgroundDetailsModal({
                 aria-pressed={selected}
                 className="flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 text-xs font-bold uppercase tracking-[0.14em] text-foreground shadow-elevation-1 outline-none transition hover:bg-brand-crimson-alt active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {selected ? "SELECIONADO" : "SELECIONAR"}
+                {selected ? "SELECTED" : "SELECT"}
                 <i aria-hidden="true" className="fa-solid fa-check text-xs" />
               </button>
             </div>
@@ -365,10 +365,10 @@ function BackgroundAbilitySelector({
   return (
     <fieldset ref={controlsRef} className="mb-0">
       <legend className="mb-3 block text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
-        Bonus de Atributo ({formatAbilityAttributes(splitOption?.attributes)})
+        Ability Score Bonus ({formatAbilityAttributes(splitOption?.attributes)})
       </legend>
       <p id={`${background.id}-bonus-help`} className="sr-only">
-        Escolha uma distribuicao de bonus antes de avancar.
+        Choose a bonus distribution before continuing.
       </p>
       <div className="grid gap-3">
         {splitOption ? (
@@ -392,11 +392,11 @@ function BackgroundAbilitySelector({
               className="mt-1 h-4 w-4 border-white/20 bg-surface-nested accent-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
             />
             <span>
-              <span className="block font-semibold">Opcao A (+2 / +1)</span>
+              <span className="block font-semibold">Option A (+2 / +1)</span>
               <span className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
                 <SelectBonusControl
                   label="Bonus +2"
-                  ariaLabel={`${background.name}: atributo com bonus +2`}
+                  ariaLabel={`${background.name}: ability score with +2 bonus`}
                   value={plusTwoAttribute ?? ""}
                   disabled={disabled}
                   options={splitOption.attributes}
@@ -407,7 +407,7 @@ function BackgroundAbilitySelector({
                 />
                 <SelectBonusControl
                   label="Bonus +1"
-                  ariaLabel={`${background.name}: atributo com bonus +1`}
+                  ariaLabel={`${background.name}: ability score with +1 bonus`}
                   value={plusOneAttribute ?? ""}
                   disabled={disabled}
                   options={splitOption.attributes}
@@ -432,9 +432,9 @@ function BackgroundAbilitySelector({
               className="mt-1 h-4 w-4 border-white/20 bg-surface-nested accent-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
             />
             <span>
-              <span className="block font-semibold">Opcao B (+1 / +1 / +1)</span>
+              <span className="block font-semibold">Option B (+1 / +1 / +1)</span>
               <span className="text-xs leading-5 text-muted-foreground">
-                Aumente tres atributos permitidos em 1 cada.
+                Increase three allowed ability scores by 1 each.
               </span>
             </span>
           </label>
@@ -473,7 +473,7 @@ function SelectBonusControl({
         onChange={(event) => onChange(event.target.value)}
         className="rounded border border-border bg-surface-nested p-2 text-xs text-foreground outline-none transition focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-50"
       >
-        <option value="">Selecione</option>
+        <option value="">Select</option>
         {options.map((attribute) => (
           <option
             key={attribute}
@@ -537,11 +537,11 @@ function RewardList({ title, items }: { title: string; items: string[] }) {
       {items.length ? (
         <ul className="grid gap-1 text-sm leading-6 text-foreground">
           {items.map((item) => (
-            <li key={item}>{item}</li>
+            <li translate="no" className="notranslate" key={item}>{item}</li>
           ))}
         </ul>
       ) : (
-        <p className="text-sm text-muted-foreground">Nenhuma</p>
+        <p className="text-sm text-muted-foreground">None</p>
       )}
     </div>
   );

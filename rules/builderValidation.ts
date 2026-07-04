@@ -16,22 +16,22 @@ export function validateBuilderStep(
   state: CharacterBuilderState,
 ): string[] {
   if (step === "classe" && !state.selectedClassId) {
-    return ["Escolha uma Classe para continuar."];
+    return ["Choose a Class to continue."];
   }
 
   if (step === "recursos-classe") {
     if (!state.selectedClassId) {
-      return ["Escolha uma Classe antes de configurar seus recursos."];
+      return ["Choose a Class before configuring its features."];
     }
 
     const requiredSkills = getRequiredClassSkillCount(state.selectedClassId);
 
     if (state.classSkillProficiencies.length < requiredSkills) {
-      return [`Escolha ${requiredSkills} pericias de classe para continuar.`];
+      return [`Choose ${requiredSkills} class skills to continue.`];
     }
 
     if (new Set(state.classSkillProficiencies).size !== state.classSkillProficiencies.length) {
-      return ["Pericias de classe nao podem se repetir."];
+      return ["Class skills cannot be selected more than once."];
     }
 
     const selectedClass = getBuilderClasses().find(
@@ -48,7 +48,7 @@ export function validateBuilderStep(
           new Set(selectedValues).size !== selectedValues.length ||
           hasInvalidValue
         ) {
-          return [`Escolha ${group.count} opcoes para ${group.label}.`];
+          return [`Choose ${group.count} options for ${group.label}.`];
         }
 
         return [];
@@ -60,33 +60,33 @@ export function validateBuilderStep(
   }
 
   if (step === "antecedente" && !state.selectedBackgroundId) {
-    return ["Escolha um Antecedente para aplicar bonus de atributo e Talento de Origem."];
+    return ["Choose a Background to apply ability bonuses and an Origin Feat."];
   }
 
   if (step === "antecedente" && !isValidBackgroundAbilitySelection(state)) {
-    return ["Escolha os bonus de atributo do Antecedente 2024."];
+    return ["Choose the 2024 Background ability bonuses."];
   }
 
   if (step === "especie" && !state.selectedSpeciesId) {
-    return ["Escolha uma Raca/Especie para continuar."];
+    return ["Choose a Species to continue."];
   }
 
   if (step === "detalhes-especie") {
     if (!state.selectedSpeciesId) {
-      return ["Escolha uma Raca/Especie antes de configurar seus detalhes."];
+      return ["Choose a Species before configuring its details."];
     }
 
     if (state.selectedSpeciesId === "dragonborn-xphb") {
       const messages: string[] = [];
 
       if (!state.speciesChoices["draconic-ancestry"]) {
-        messages.push("Escolha o ancestral draconico.");
+        messages.push("Choose your Draconic Ancestry.");
       }
 
       const requiredLanguages = getRequiredLanguageCount(state);
 
       if (state.speciesLanguages.length !== requiredLanguages) {
-        messages.push(`Escolha ${requiredLanguages} idiomas de especie.`);
+        messages.push(`Choose ${requiredLanguages} species languages.`);
       }
 
       return messages;
@@ -95,7 +95,7 @@ export function validateBuilderStep(
     const requiredLanguages = getRequiredLanguageCount(state);
 
     if (state.speciesLanguages.length !== requiredLanguages) {
-      return [`Escolha ${requiredLanguages} idiomas de especie.`];
+      return [`Choose ${requiredLanguages} species languages.`];
     }
   }
 
@@ -105,7 +105,7 @@ export function validateBuilderStep(
     );
 
     if (invalidAttributes) {
-      return ["Todos os atributos base devem estar entre 3 e 20."];
+      return ["All base ability scores must be between 3 and 20."];
     }
 
     if (state.attributeGenerationMethod === "point-buy") {
@@ -114,15 +114,15 @@ export function validateBuilderStep(
       );
 
       if (invalidPointBuyAttributes) {
-        return ["No Point Buy, atributos base devem estar entre 8 e 15."];
+        return ["In Point Buy, base ability scores must be between 8 and 15."];
       }
 
       if (getPointBuySpent(state.baseAttributes) > POINT_BUY_BUDGET) {
-        return ["Point Buy nao pode ultrapassar 27 pontos."];
+        return ["Point Buy cannot exceed 27 points."];
       }
 
       if (!isPointBuyComplete(state.baseAttributes)) {
-        return ["Gaste exatamente 27 pontos no Point Buy para continuar."];
+        return ["Spend exactly 27 points in Point Buy to continue."];
       }
     }
   }
@@ -131,7 +131,7 @@ export function validateBuilderStep(
     const classChoice = state.equipmentChoicesBySource.class;
 
     if (!classChoice || (classChoice.mode === "items" && !classChoice.selectedOptionId)) {
-      return ["Selecione o equipamento inicial da classe."];
+      return ["Select your class starting equipment."];
     }
   }
 

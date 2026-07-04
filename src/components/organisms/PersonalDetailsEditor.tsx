@@ -14,25 +14,25 @@ import {
 } from "@/src/schemas/personalDetailsSchema";
 
 const ALIGNMENTS = [
-  "Leal e Bom",
-  "Neutro e Bom",
-  "Caótico e Bom",
-  "Leal e Neutro",
-  "Verdadeiro Neutro",
-  "Caótico e Neutro",
-  "Leal e Mau",
-  "Neutro e Mau",
-  "Caótico e Mau",
+  "Lawful Good",
+  "Neutral Good",
+  "Chaotic Good",
+  "Lawful Neutral",
+  "True Neutral",
+  "Chaotic Neutral",
+  "Lawful Evil",
+  "Neutral Evil",
+  "Chaotic Evil",
 ];
 
 const LIFESTYLES = [
-  "Miserável (0 PO/dia)",
-  "Esquálido (1 PC/dia)",
-  "Pobre (2 PP/dia)",
-  "Modesto (1 PO/dia)",
-  "Confortável (2 PO/dia)",
-  "Rico (4 PO/dia)",
-  "Aristocrático (10+ PO/dia)",
+  "Wretched (0 GP/day)",
+  "Squalid (1 CP/day)",
+  "Poor (2 SP/day)",
+  "Modest (1 GP/day)",
+  "Comfortable (2 GP/day)",
+  "Wealthy (4 GP/day)",
+  "Aristocratic (10+ GP/day)",
 ];
 
 const inputCls =
@@ -111,15 +111,15 @@ export function PersonalDetailsEditor() {
       <section className="glass-card rounded-xl p-4 sm:p-6">
         <h3 className="mb-5 flex items-center gap-2.5 border-b border-border/50 pb-3 text-sm font-semibold uppercase tracking-widest text-foreground">
           <i aria-hidden="true" className="fa-solid fa-fingerprint text-primary" />
-          Identidade
+          Identity
         </h3>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-5">
           <div>
-            <label className={labelCls} htmlFor="pd-nome">Nome do Personagem</label>
+            <label className={labelCls} htmlFor="pd-nome">Character Name</label>
             <Input
               id="pd-nome"
               className={inputCls}
-              placeholder="Nome do seu personagem"
+              placeholder="Your character's name"
               {...register("nome")}
             />
             {errors.nome && (
@@ -127,9 +127,9 @@ export function PersonalDetailsEditor() {
             )}
           </div>
           <div>
-            <label className={labelCls} htmlFor="pd-alinhamento">Alinhamento</label>
+            <label className={labelCls} htmlFor="pd-alinhamento">Alignment</label>
             <select id="pd-alinhamento" className={selectCls} {...register("alinhamento")}>
-              <option value="">Escolher…</option>
+              <option value="">Choose...</option>
               {ALIGNMENTS.map((a) => (
                 <option key={a} value={a}>
                   {a}
@@ -138,18 +138,18 @@ export function PersonalDetailsEditor() {
             </select>
           </div>
           <div>
-            <label className={labelCls} htmlFor="pd-faith">Fé / Divindade</label>
+            <label className={labelCls} htmlFor="pd-faith">Faith / Deity</label>
             <Input
               id="pd-faith"
               className={inputCls}
-              placeholder="Divindade ou crença"
+              placeholder="Deity or belief"
               {...register("faith")}
             />
           </div>
           <div>
-            <label className={labelCls} htmlFor="pd-lifestyle">Estilo de Vida</label>
+            <label className={labelCls} htmlFor="pd-lifestyle">Lifestyle</label>
             <select id="pd-lifestyle" className={selectCls} {...register("lifestyle")}>
-              <option value="">Escolher…</option>
+              <option value="">Choose...</option>
               {LIFESTYLES.map((l) => (
                 <option key={l} value={l}>
                   {l}
@@ -164,18 +164,18 @@ export function PersonalDetailsEditor() {
       <section className="glass-card rounded-xl p-4 sm:p-6">
         <h3 className="mb-5 flex items-center gap-2.5 border-b border-border/50 pb-3 text-sm font-semibold uppercase tracking-widest text-foreground">
           <i aria-hidden="true" className="fa-solid fa-person text-primary" />
-          Características Físicas
+          Physical Characteristics
         </h3>
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-5">
           <div>
-            <label className={labelCls} htmlFor="pd-age">Idade</label>
+            <label className={labelCls} htmlFor="pd-age">Age</label>
             <Input
               id="pd-age"
               type="number"
               min={0}
               max={AGE_MAX}
               className={inputCls}
-              placeholder="Ex.: 24"
+              placeholder="e.g. 24"
               {...register("age")}
               onInput={(e) => {
                 const el = e.currentTarget;
@@ -184,25 +184,25 @@ export function PersonalDetailsEditor() {
             />
           </div>
           <div>
-            <label className={labelCls} htmlFor="pd-gender">Gênero</label>
+            <label className={labelCls} htmlFor="pd-gender">Gender</label>
             <Input
               id="pd-gender"
               className={inputCls}
-              placeholder="Ex.: Masculino"
+              placeholder="e.g. Male"
               {...register("gender")}
             />
           </div>
           <div>
-            <label className={labelCls} htmlFor="pd-height">Altura</label>
+            <label className={labelCls} htmlFor="pd-height">Height</label>
             <Input
               id="pd-height"
               className={inputCls}
-              placeholder="Ex.: 1,72 m"
+              placeholder="e.g. 5 ft. 8 in."
               {...register("height")}
             />
           </div>
           <div>
-            <label className={labelCls} htmlFor="pd-weight">Peso</label>
+            <label className={labelCls} htmlFor="pd-weight">Weight</label>
             <div className="flex gap-2">
               <Input
                 id="pd-weight"
@@ -210,7 +210,7 @@ export function PersonalDetailsEditor() {
                 min={0}
                 step={0.1}
                 className={cn(inputCls, "flex-1")}
-                placeholder="Ex.: 77"
+                placeholder="e.g. 170"
                 {...register("weightValue")}
               />
               <div className="flex overflow-hidden rounded-md border border-border">
@@ -235,16 +235,16 @@ export function PersonalDetailsEditor() {
         </div>
         <div className="mt-4 grid grid-cols-1 gap-4 md:mt-5 md:grid-cols-3 md:gap-5">
           <div>
-            <label className={labelCls} htmlFor="pd-eyes">Olhos</label>
-            <Input id="pd-eyes" className={inputCls} placeholder="Cor dos olhos" {...register("eyes")} />
+            <label className={labelCls} htmlFor="pd-eyes">Eyes</label>
+            <Input id="pd-eyes" className={inputCls} placeholder="Eye color" {...register("eyes")} />
           </div>
           <div>
-            <label className={labelCls} htmlFor="pd-skin">Pele</label>
-            <Input id="pd-skin" className={inputCls} placeholder="Tom da pele" {...register("skin")} />
+            <label className={labelCls} htmlFor="pd-skin">Skin</label>
+            <Input id="pd-skin" className={inputCls} placeholder="Skin tone" {...register("skin")} />
           </div>
           <div>
-            <label className={labelCls} htmlFor="pd-hair">Cabelo</label>
-            <Input id="pd-hair" className={inputCls} placeholder="Cor e estilo" {...register("hair")} />
+            <label className={labelCls} htmlFor="pd-hair">Hair</label>
+            <Input id="pd-hair" className={inputCls} placeholder="Color and style" {...register("hair")} />
           </div>
         </div>
       </section>
@@ -253,46 +253,46 @@ export function PersonalDetailsEditor() {
       <section className="glass-card rounded-xl p-4 sm:p-6">
         <h3 className="mb-5 flex items-center gap-2.5 border-b border-border/50 pb-3 text-sm font-semibold uppercase tracking-widest text-foreground">
           <i aria-hidden="true" className="fa-solid fa-book-open text-primary" />
-          Narrativa & Histórico
+          Narrative & Backstory
         </h3>
         <div className="space-y-4 md:space-y-5">
           <div>
-            <label className={labelCls} htmlFor="pd-aparencia">Aparência Física</label>
+            <label className={labelCls} htmlFor="pd-aparencia">Physical Appearance</label>
             <textarea
               id="pd-aparencia"
               className={textareaCls}
               rows={4}
-              placeholder="Descreva como seu personagem aparece aos outros…"
+              placeholder="Describe how your character appears to others..."
               {...register("aparencia")}
             />
           </div>
           <div>
-            <label className={labelCls} htmlFor="pd-personalidade">Personalidade & Maneirismos</label>
+            <label className={labelCls} htmlFor="pd-personalidade">Personality & Mannerisms</label>
             <textarea
               id="pd-personalidade"
               className={textareaCls}
               rows={4}
-              placeholder="Como o personagem age, fala e o que acredita…"
+              placeholder="How the character acts, speaks, and what they believe..."
               {...register("personalidade")}
             />
           </div>
           <div>
-            <label className={labelCls} htmlFor="pd-tracos">História Prévia</label>
+            <label className={labelCls} htmlFor="pd-tracos">Backstory</label>
             <textarea
               id="pd-tracos"
               className={textareaCls}
               rows={4}
-              placeholder="De onde veio, o que viveu e o que o trouxe até aqui…"
+              placeholder="Where they came from, what they lived through, and what brought them here..."
               {...register("tracos")}
             />
           </div>
           <div>
-            <label className={labelCls} htmlFor="pd-notas">Notas Adicionais</label>
+            <label className={labelCls} htmlFor="pd-notas">Additional Notes</label>
             <textarea
               id="pd-notas"
               className={textareaCls}
               rows={3}
-              placeholder="Anotações livres, segredos, objetivos…"
+              placeholder="Free notes, secrets, goals..."
               {...register("notas")}
             />
           </div>

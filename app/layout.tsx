@@ -21,8 +21,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "5e Fichas",
-  description: "Gerenciador acessivel de personagens para D&D 5e.",
+  title: "Forge & Fate",
+  description: "Accessible character manager for D&D 5e.",
 };
 
 export default function RootLayout({
@@ -32,7 +32,7 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="pt-BR"
+      lang="en-US"
       suppressHydrationWarning
       data-scroll-behavior="smooth"
       className={`${geistSans.variable} ${geistMono.variable} dark min-h-full scroll-smooth bg-slate-950 antialiased`}

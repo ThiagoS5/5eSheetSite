@@ -44,15 +44,15 @@ describe("getMaxHitPointsBreakdown", () => {
     const total = parts.reduce((sum, part) => sum + part.value, 0);
     expect(total).toBe(calculateMaxHitPoints(10, 14, 5)); // 44
     expect(parts).toEqual([
-      { label: "Nivel 1 (d10)", value: 10 },
-      { label: "Niveis 2-5 (4 x 6)", value: 24 },
+      { label: "Level 1 (d10)", value: 10 },
+      { label: "Levels 2-5 (4 x 6)", value: 24 },
       { label: "CON (+2 x 5)", value: 10 },
     ]);
   });
 
   it("level 1 with CON mod 0 has only the hit-die part", () => {
     expect(getMaxHitPointsBreakdown(8, 10, 1)).toEqual([
-      { label: "Nivel 1 (d8)", value: 8 },
+      { label: "Level 1 (d8)", value: 8 },
     ]);
   });
 

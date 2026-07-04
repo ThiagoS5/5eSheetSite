@@ -24,10 +24,10 @@ export function HitPointsStep({ hitDie, targetLevel, conModifier, onChoose, roll
   }
 
   return (
-    <section aria-label={`Nível ${targetLevel} · Pontos de Vida`}>
+    <section aria-label={`Level ${targetLevel} · Hit Points`}>
       <header className="mb-4">
-        <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">Nível {targetLevel}</p>
-        <h2 className="font-serif text-xl font-bold tracking-wide text-foreground">Pontos de Vida</h2>
+        <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">Level <span translate="no" className="notranslate">{targetLevel}</span></p>
+        <h2 className="font-serif text-xl font-bold tracking-wide text-foreground">Hit Points</h2>
       </header>
 
       <div className="grid gap-2 sm:grid-cols-2">
@@ -36,8 +36,8 @@ export function HitPointsStep({ hitDie, targetLevel, conModifier, onChoose, roll
           onClick={() => onChoose("average")}
           className="flex flex-col items-start gap-1 rounded-md border border-white/[0.08] bg-card px-3 py-2 text-left text-sm text-subdued outline-none transition hover:border-white/15 focus-visible:ring-2 focus-visible:ring-brand-crimson-alt/70"
         >
-          <span className="font-semibold text-foreground">Usar média ({average})</span>
-          <span className="text-xs text-faint">Ganho total: {averageTotal}</span>
+          <span className="font-semibold text-foreground">Use average (<span translate="no" className="notranslate">{average}</span>)</span>
+          <span className="text-xs text-faint">Total gain: <span translate="no" className="notranslate">{averageTotal}</span></span>
         </button>
 
         <button
@@ -45,9 +45,9 @@ export function HitPointsStep({ hitDie, targetLevel, conModifier, onChoose, roll
           onClick={handleRoll}
           className="flex flex-col items-start gap-1 rounded-md border border-white/[0.08] bg-card px-3 py-2 text-left text-sm text-subdued outline-none transition hover:border-white/15 focus-visible:ring-2 focus-visible:ring-brand-crimson-alt/70"
         >
-          <span className="font-semibold text-foreground">Rolar dado (d{hitDie})</span>
+          <span className="font-semibold text-foreground">Roll die (<span translate="no" className="notranslate">d{hitDie}</span>)</span>
           <span aria-live="polite" className="text-xs text-faint">
-            {rolled !== null ? `Rolou ${rolled} (total ${rolledTotal})` : "Ainda não rolado"}
+            {rolled !== null ? `Rolled ${rolled} (total ${rolledTotal})` : "Not rolled yet"}
           </span>
         </button>
       </div>
@@ -58,7 +58,7 @@ export function HitPointsStep({ hitDie, targetLevel, conModifier, onChoose, roll
           onClick={() => onChoose(rolled)}
           className="mt-4 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-foreground outline-none transition focus-visible:ring-2 focus-visible:ring-brand-crimson-alt/70"
         >
-          Confirmar rolagem
+          Confirm roll
         </button>
       ) : null}
     </section>

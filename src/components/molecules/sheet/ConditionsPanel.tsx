@@ -4,10 +4,9 @@ import { useState } from "react";
 import { cn } from "@/src/lib/utils";
 
 const CONDITION_LIST = [
-  "Amedrontado", "Agarrado", "Caído", "Cego", "Confuso",
-  "Encantado", "Enjoado", "Ensurdecido", "Envenenado",
-  "Exausto", "Incapacitado", "Invisível", "Paralisado",
-  "Petrificado", "Surdo",
+  "Blinded", "Charmed", "Confused", "Deafened", "Exhausted",
+  "Frightened", "Grappled", "Incapacitated", "Invisible",
+  "Paralyzed", "Petrified", "Poisoned", "Prone", "Sickened",
 ];
 
 export function ConditionsPanel() {
@@ -29,7 +28,7 @@ export function ConditionsPanel() {
         <div className="flex items-center gap-1.5">
           <i aria-hidden="true" className="fa-solid fa-circle-exclamation text-muted-foreground text-[10px]" />
           <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-            Condições
+            Conditions
           </p>
         </div>
         <button
@@ -37,7 +36,7 @@ export function ConditionsPanel() {
           onClick={() => setExpanded((v) => !v)}
           className="text-[10px] text-foreground hover:underline"
         >
-          {expanded ? "Fechar" : "+ Adicionar"}
+          {expanded ? "Close" : "+ Add"}
         </button>
       </div>
 
@@ -59,7 +58,7 @@ export function ConditionsPanel() {
       )}
 
       {active.size === 0 && !expanded && (
-        <p className="text-xs text-muted-foreground">Nenhuma condição ativa.</p>
+        <p className="text-xs text-muted-foreground">No active condition.</p>
       )}
 
       {/* Condition picker */}

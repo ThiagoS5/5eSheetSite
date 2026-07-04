@@ -13,7 +13,7 @@ describe("MobileBuilderBar", () => {
 
   const baseIdentity = {
     name: "Aria",
-    className: "Guerreiro",
+    className: "Fighter",
     level: 3,
     hp: 28,
     ac: 16,
@@ -31,7 +31,7 @@ describe("MobileBuilderBar", () => {
       />,
     );
 
-    expect(screen.getByText(/Etapa 3\/9/)).toBeInTheDocument();
+    expect(screen.getByText(/Step 3\/9/)).toBeInTheDocument();
   });
 
   it("shows the blocked reason as always-visible text and does not fire onNext", () => {
@@ -43,16 +43,16 @@ describe("MobileBuilderBar", () => {
         totalSteps={9}
         onBack={() => {}}
         onNext={onNext}
-        nextBlockedReason="Selecione uma perícia de classe."
+        nextBlockedReason="Select a class skill."
         identity={baseIdentity}
         onOpenSheet={() => {}}
       />,
     );
 
-    const reason = screen.getByText("Selecione uma perícia de classe.");
+    const reason = screen.getByText("Select a class skill.");
     expect(reason).toBeInTheDocument();
 
-    const nextButton = screen.getByRole("button", { name: /avançar/i });
+    const nextButton = screen.getByRole("button", { name: /next/i });
     expect(nextButton).toHaveAttribute("aria-disabled", "true");
 
     fireEvent.click(nextButton);
@@ -73,7 +73,7 @@ describe("MobileBuilderBar", () => {
       />,
     );
 
-    const nextButton = screen.getByRole("button", { name: /avançar/i });
+    const nextButton = screen.getByRole("button", { name: /next/i });
     expect(nextButton).not.toHaveAttribute("aria-disabled", "true");
 
     fireEvent.click(nextButton);
@@ -94,11 +94,11 @@ describe("MobileBuilderBar", () => {
       />,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: /voltar/i }));
+    fireEvent.click(screen.getByRole("button", { name: /back/i }));
     expect(onBack).toHaveBeenCalledTimes(1);
   });
 
-  it("shows identity name, PV and CA", () => {
+  it("shows identity name, HP and AC", () => {
     render(
       <MobileBuilderBar
         currentStepIndex={2}
@@ -111,7 +111,7 @@ describe("MobileBuilderBar", () => {
     );
 
     expect(screen.getByText("Aria")).toBeInTheDocument();
-    expect(screen.getByText("Guerreiro")).toBeInTheDocument();
+    expect(screen.getByText("Fighter")).toBeInTheDocument();
     expect(screen.getByText(/28/)).toBeInTheDocument();
     expect(screen.getByText(/16/)).toBeInTheDocument();
   });
@@ -128,14 +128,14 @@ describe("MobileBuilderBar", () => {
       />,
     );
 
-    expect(screen.getByRole("button", { name: /voltar/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /avançar/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /back/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /next/i })).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: /abrir ficha/i }),
+      screen.getByRole("button", { name: /open sheet/i }),
     ).toBeInTheDocument();
   });
 
-  it("disables Avançar with a visible reason on the last step", () => {
+  it("disables Next with a visible reason on the last step", () => {
     const onNext = vi.fn();
 
     render(
@@ -150,15 +150,15 @@ describe("MobileBuilderBar", () => {
       />,
     );
 
-    const nextButton = screen.getByRole("button", { name: /avançar/i });
+    const nextButton = screen.getByRole("button", { name: /next/i });
     expect(nextButton).toHaveAttribute("aria-disabled", "true");
-    expect(screen.getByText(/última etapa/i)).toBeInTheDocument();
+    expect(screen.getByText(/last step/i)).toBeInTheDocument();
 
     fireEvent.click(nextButton);
     expect(onNext).not.toHaveBeenCalled();
   });
 
-  it("disables Voltar with no-op guard on the first step", () => {
+  it("disables Back with no-op guard on the first step", () => {
     const onBack = vi.fn();
 
     render(
@@ -173,7 +173,7 @@ describe("MobileBuilderBar", () => {
       />,
     );
 
-    const backButton = screen.getByRole("button", { name: /voltar/i });
+    const backButton = screen.getByRole("button", { name: /back/i });
     expect(backButton).toHaveAttribute("aria-disabled", "true");
 
     fireEvent.click(backButton);
@@ -194,7 +194,7 @@ describe("MobileBuilderBar", () => {
       />,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: /abrir ficha/i }));
+    fireEvent.click(screen.getByRole("button", { name: /open sheet/i }));
     expect(onOpenSheet).toHaveBeenCalledTimes(1);
   });
 });

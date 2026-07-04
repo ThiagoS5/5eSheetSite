@@ -26,7 +26,7 @@ describe("ItemDetailModal", () => {
   it("calls onClose when the close button is pressed", () => {
     const onClose = vi.fn();
     render(<ItemDetailModal item={weapon} onClose={onClose} />);
-    fireEvent.click(screen.getByLabelText("Fechar"));
+    fireEvent.click(screen.getByLabelText("Close"));
     expect(onClose).toHaveBeenCalled();
   });
 });

@@ -15,7 +15,7 @@ describe("CreationPreferencesDialog", () => {
     localStorage.clear();
   });
 
-  it("renders the Fontes ativas and Progressao sections", () => {
+  it("renders the Active Sources and Progression sections", () => {
     render(
       <CharacterStoreProvider>
         <CreationPreferencesDialog open onClose={() => {}} />
@@ -23,10 +23,10 @@ describe("CreationPreferencesDialog", () => {
     );
 
     expect(
-      screen.getByRole("group", { name: "Fontes ativas" }),
+      screen.getByRole("group", { name: "Active sources" }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("radiogroup", { name: "Progressão" }),
+      screen.getByRole("radiogroup", { name: "Progression" }),
     ).toBeInTheDocument();
   });
 
@@ -42,8 +42,8 @@ describe("CreationPreferencesDialog", () => {
       </CharacterStoreProvider>,
     );
 
-    fireEvent.click(screen.getByRole("radio", { name: "Marco" }));
-    fireEvent.click(screen.getByRole("button", { name: "Salvar" }));
+    fireEvent.click(screen.getByRole("radio", { name: "Milestone" }));
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
 
     expect(screen.getByTestId("mode")).toHaveTextContent("milestone");
   });
@@ -59,7 +59,7 @@ describe("CreationPreferencesDialog", () => {
       </CharacterStoreProvider>,
     );
 
-    expect(screen.getByRole("radio", { name: "Marco" })).toBeChecked();
+    expect(screen.getByRole("radio", { name: "Milestone" })).toBeChecked();
   });
 
   it("prefers per-character prefs over global defaults", () => {

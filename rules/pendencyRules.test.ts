@@ -22,7 +22,7 @@ describe("pendency rules", () => {
     expect(pendencies).toContainEqual({
       id: "classe-0",
       stepSlug: "classe",
-      label: "Escolha uma Classe para continuar.",
+      label: "Choose a Class to continue.",
       severity: "blocking",
     });
   });
@@ -40,7 +40,7 @@ describe("pendency rules", () => {
     expect(pendencies).toContainEqual({
       id: "level-3-subclass",
       stepSlug: "recursos-classe",
-      label: "Nivel 3: escolha uma subclasse",
+      label: "Level 3: choose a subclass",
       severity: "blocking",
     });
   });

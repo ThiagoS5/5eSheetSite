@@ -173,10 +173,10 @@ function toDashboardCharacter(character: CharacterBuild): Character {
 
   return {
     id: character.exportMetadata.saveId,
-    nome: character.draft.description.nome || "Personagem sem nome",
-    classe: sheet.className || characterClass?.name || "Classe pendente",
-    species: sheet.speciesName || species?.name || "Espécie pendente",
-    background: sheet.backgroundName || background?.name || "Antecedente pendente",
+    nome: character.draft.description.nome || "Unnamed Character",
+    classe: sheet.className || characterClass?.name || "Class pending",
+    species: sheet.speciesName || species?.name || "Species pending",
+    background: sheet.backgroundName || background?.name || "Background pending",
     level: character.progression.level,
     hitPoints: sheet.maxHp || sheet.hitPoints,
     armorClass: sheet.armorClass,
@@ -189,7 +189,7 @@ function toDashboardCharacter(character: CharacterBuild): Character {
 }
 
 function createDuplicateName(name: string): string {
-  return `${name || "Personagem sem nome"} (Cópia)`;
+  return `${name || "Unnamed Character"} (Copy)`;
 }
 
 function getStorageItem(key: string): string | null {

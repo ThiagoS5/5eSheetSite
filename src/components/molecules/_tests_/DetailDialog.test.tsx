@@ -18,7 +18,7 @@ describe("DetailDialog", () => {
       </DetailDialog>,
     );
 
-    const trigger = screen.getByRole("button", { name: "Detalhes" });
+    const trigger = screen.getByRole("button", { name: "Details" });
 
     expect(trigger).toBeInTheDocument();
     fireEvent.click(trigger);
@@ -26,7 +26,7 @@ describe("DetailDialog", () => {
     expect(screen.getByRole("dialog")).toBeInTheDocument();
     expect(screen.getByText("Second Wind details.")).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: "Fechar detalhes de Fighter" }),
+      screen.getByRole("button", { name: "Close Fighter details" }),
     ).toBeInTheDocument();
   });
 });

@@ -8,7 +8,7 @@ import { z } from "zod";
  * form-only and never persisted as separate fields.
  */
 export const personalDetailsSchema = z.object({
-  nome: z.string().min(1, "Nome é obrigatório").max(60, "Máximo de 60 caracteres"),
+  nome: z.string().min(1, "Name is required").max(60, "Maximum of 60 characters"),
   alinhamento: z.string().max(40).optional(),
   faith: z.string().max(60).optional(),
   lifestyle: z.string().max(60).optional(),

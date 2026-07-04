@@ -20,19 +20,19 @@ function openSection(name: RegExp) {
 describe("InventoryManager", () => {
   it("renders both accordion sections collapsed by default", () => {
     render(<InventoryManager catalog={catalog} inventory={[]} onAddItem={vi.fn()} onSetQuantity={vi.fn()} onRemoveItem={vi.fn()} />);
-    expect(screen.getByRole("button", { name: /Inventário Atual/ })).toHaveAttribute("aria-expanded", "false");
-    expect(screen.getByRole("button", { name: /Adicionar Itens/ })).toHaveAttribute("aria-expanded", "false");
+    expect(screen.getByRole("button", { name: /Current Inventory/ })).toHaveAttribute("aria-expanded", "false");
+    expect(screen.getByRole("button", { name: /Add Items/ })).toHaveAttribute("aria-expanded", "false");
     // Conteúdo só aparece após expandir.
-    expect(screen.queryByText("Nenhum item no inventário.")).not.toBeInTheDocument();
-    openSection(/Inventário Atual/);
-    expect(screen.getByText("Nenhum item no inventário.")).toBeInTheDocument();
+    expect(screen.queryByText("No items in inventory.")).not.toBeInTheDocument();
+    openSection(/Current Inventory/);
+    expect(screen.getByText("No items in inventory.")).toBeInTheDocument();
   });
 
   it("filters the catalog by the search query", () => {
     render(<InventoryManager catalog={catalog} inventory={[]} onAddItem={vi.fn()} onSetQuantity={vi.fn()} onRemoveItem={vi.fn()} />);
-    openSection(/Adicionar Itens/);
+    openSection(/Add Items/);
     expect(screen.getByText("Longsword")).toBeInTheDocument();
-    fireEvent.change(screen.getByLabelText("Buscar item"), { target: { value: "ring" } });
+    fireEvent.change(screen.getByLabelText("Search item"), { target: { value: "ring" } });
     expect(screen.queryByText("Longsword")).not.toBeInTheDocument();
     expect(screen.getByText("Ring of Protection")).toBeInTheDocument();
   });
@@ -40,7 +40,7 @@ describe("InventoryManager", () => {
   it("calls onAddItem when ADD is clicked", () => {
     const onAddItem = vi.fn();
     render(<InventoryManager catalog={catalog} inventory={[]} onAddItem={onAddItem} onSetQuantity={vi.fn()} onRemoveItem={vi.fn()} />);
-    openSection(/Adicionar Itens/);
+    openSection(/Add Items/);
     fireEvent.click(screen.getAllByText("ADD")[0]);
     expect(onAddItem).toHaveBeenCalledWith("longsword-xphb");
   });
@@ -49,12 +49,12 @@ describe("InventoryManager", () => {
     const onSetQuantity = vi.fn();
     const onRemoveItem = vi.fn();
     render(<InventoryManager catalog={catalog} inventory={[{ itemId: "longsword-xphb", quantity: 2 }]} onAddItem={vi.fn()} onSetQuantity={onSetQuantity} onRemoveItem={onRemoveItem} />);
-    openSection(/Inventário Atual/);
-    fireEvent.click(screen.getByLabelText("Aumentar Longsword"));
+    openSection(/Current Inventory/);
+    fireEvent.click(screen.getByLabelText("Increase Longsword"));
     expect(onSetQuantity).toHaveBeenCalledWith("longsword-xphb", 3);
-    fireEvent.click(screen.getByLabelText("Diminuir Longsword"));
+    fireEvent.click(screen.getByLabelText("Decrease Longsword"));
     expect(onSetQuantity).toHaveBeenCalledWith("longsword-xphb", 1);
-    fireEvent.click(screen.getByLabelText("Remover Longsword"));
+    fireEvent.click(screen.getByLabelText("Remove Longsword"));
     expect(onRemoveItem).toHaveBeenCalledWith("longsword-xphb");
   });
 });

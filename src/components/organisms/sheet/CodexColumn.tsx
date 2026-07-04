@@ -77,7 +77,7 @@ function NarrativeField({
 export function CodexColumn({ description, className }: CodexColumnProps) {
   return (
     <aside
-      aria-label="Códice do personagem"
+      aria-label="Character codex"
       className={cn(
         "relative flex flex-col gap-3 overflow-hidden rounded-xl border border-border bg-card p-4",
         className,
@@ -93,7 +93,7 @@ export function CodexColumn({ description, className }: CodexColumnProps) {
       <div className="flex items-center gap-2 border-b border-border pb-3">
         <i aria-hidden="true" className="fa-solid fa-scroll text-primary" />
         <h2 className="text-sm font-semibold uppercase tracking-widest text-foreground">
-          Códice do Personagem
+          Character Codex
         </h2>
       </div>
 
@@ -102,32 +102,32 @@ export function CodexColumn({ description, className }: CodexColumnProps) {
         <div className="flex aspect-[3/4] w-full items-center justify-center rounded-lg border border-border/50 bg-muted">
           <i aria-hidden="true" className="fa-solid fa-user text-5xl text-muted-foreground" />
         </div>
-        <NarrativeField label="Aparência Fiel" value={description.aparencia} limit={150} />
+        <NarrativeField label="True Appearance" value={description.aparencia} limit={150} />
       </div>
 
       {/* Dados pessoais */}
       <div className="flex flex-col gap-3 rounded-lg border border-border/50 bg-surface-nested p-3">
-        <CodexField label="Tendência" value={description.alinhamento} limit={25} />
-        <CodexField label="Fé" value={description.faith} limit={40} />
-        <CodexField label="Estilo de Vida" value={description.lifestyle} limit={40} />
+        <CodexField label="Alignment" value={description.alinhamento} limit={25} />
+        <CodexField label="Faith" value={description.faith} limit={40} />
+        <CodexField label="Lifestyle" value={description.lifestyle} limit={40} />
         <div className="grid grid-cols-2 gap-3">
-          <CodexField label="Idade" value={description.age} limit={12} />
-          <CodexField label="Gênero" value={description.gender} limit={20} />
+          <CodexField label="Age" value={description.age} limit={12} />
+          <CodexField label="Gender" value={description.gender} limit={20} />
         </div>
         <div className="grid grid-cols-2 gap-3">
-          <CodexField label="Altura" value={description.height} limit={12} />
-          <CodexField label="Peso" value={description.weight} limit={12} />
+          <CodexField label="Height" value={description.height} limit={12} />
+          <CodexField label="Weight" value={description.weight} limit={12} />
         </div>
       </div>
 
       {/* Traços de Personalidade — campos narrativos */}
       <section className="flex flex-col gap-4 rounded-lg border border-border/50 bg-surface-nested p-3">
         <h3 className="border-b border-border/50 pb-2 text-base font-semibold text-foreground">
-          Traços de Personalidade
+          Personality Traits
         </h3>
-        <NarrativeField label="Personalidade & Maneirismos" value={description.personalidade} limit={100} />
-        <NarrativeField label="História Prévia" value={description.tracos} limit={200} />
-        <NarrativeField label="Notas" value={description.notas} limit={150} />
+        <NarrativeField label="Personality & Mannerisms" value={description.personalidade} limit={100} />
+        <NarrativeField label="Backstory" value={description.tracos} limit={200} />
+        <NarrativeField label="Notes" value={description.notas} limit={150} />
       </section>
     </aside>
   );

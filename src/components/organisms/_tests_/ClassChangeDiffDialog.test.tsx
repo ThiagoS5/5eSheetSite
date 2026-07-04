@@ -15,17 +15,17 @@ describe("ClassChangeDiffDialog", () => {
     render(
       <ClassChangeDiffDialog
         open
-        items={["2 pericias de classe", "Weapon Mastery", "Kit de equipamento da classe", "Subclasse: Champion"]}
+        items={["2 class skills", "Weapon Mastery", "Class equipment kit", "Subclass: Champion"]}
         onConfirm={() => {}}
         onCancel={() => {}}
       />,
     );
 
     expect(screen.getByRole("dialog")).toBeInTheDocument();
-    expect(screen.getByText("2 pericias de classe")).toBeInTheDocument();
+    expect(screen.getByText("2 class skills")).toBeInTheDocument();
     expect(screen.getByText("Weapon Mastery")).toBeInTheDocument();
-    expect(screen.getByText("Kit de equipamento da classe")).toBeInTheDocument();
-    expect(screen.getByText("Subclasse: Champion")).toBeInTheDocument();
+    expect(screen.getByText("Class equipment kit")).toBeInTheDocument();
+    expect(screen.getByText("Subclass: Champion")).toBeInTheDocument();
   });
 
   it("fires onConfirm when confirming the class change", () => {
@@ -33,13 +33,13 @@ describe("ClassChangeDiffDialog", () => {
     render(
       <ClassChangeDiffDialog
         open
-        items={["2 pericias de classe"]}
+        items={["2 class skills"]}
         onConfirm={onConfirm}
         onCancel={() => {}}
       />,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Trocar de classe" }));
+    fireEvent.click(screen.getByRole("button", { name: "Change class" }));
 
     expect(onConfirm).toHaveBeenCalledTimes(1);
   });
@@ -49,7 +49,7 @@ describe("ClassChangeDiffDialog", () => {
     render(
       <ClassChangeDiffDialog
         open
-        items={["2 pericias de classe"]}
+        items={["2 class skills"]}
         onConfirm={() => {}}
         onCancel={onCancel}
       />,
@@ -60,18 +60,18 @@ describe("ClassChangeDiffDialog", () => {
     expect(onCancel).toHaveBeenCalledTimes(1);
   });
 
-  it("fires onCancel when clicking Cancelar", () => {
+  it("fires onCancel when clicking Cancel", () => {
     const onCancel = vi.fn();
     render(
       <ClassChangeDiffDialog
         open
-        items={["2 pericias de classe"]}
+        items={["2 class skills"]}
         onConfirm={() => {}}
         onCancel={onCancel}
       />,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Cancelar" }));
+    fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
 
     expect(onCancel).toHaveBeenCalledTimes(1);
   });

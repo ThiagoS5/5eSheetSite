@@ -49,7 +49,7 @@ describe("calculateMaxHitPointsWithRolls", () => {
       calculateMaxHitPointsWithRolls(input),
     );
     // rolagens aparecem como parcela separada da média
-    expect(parts.some((p) => /rolad/i.test(p.label))).toBe(true);
+    expect(parts.some((p) => /rolled/i.test(p.label))).toBe(true);
   });
 });
 

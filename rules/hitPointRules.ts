@@ -32,7 +32,7 @@ export function getHitPointsBreakdown(input: HitPointsInput): BreakdownPart[] {
   const effectiveLevel = Math.max(1, Math.floor(input.level));
   const conModifier = getAbilityModifier(input.constitutionScore);
   const parts: BreakdownPart[] = [
-    { label: `Nivel 1 (d${input.hitDie})`, value: input.hitDie },
+    { label: `Level 1 (d${input.hitDie})`, value: input.hitDie },
   ];
   let averageSum = 0;
   let averageCount = 0;
@@ -50,10 +50,10 @@ export function getHitPointsBreakdown(input: HitPointsInput): BreakdownPart[] {
     }
   }
   if (averageCount > 0) {
-    parts.push({ label: `Media (${averageCount} niveis)`, value: averageSum });
+    parts.push({ label: `Average (${averageCount} levels)`, value: averageSum });
   }
   if (rolledCount > 0) {
-    parts.push({ label: `Rolados (${rolledCount} niveis)`, value: rolledSum });
+    parts.push({ label: `Rolled (${rolledCount} levels)`, value: rolledSum });
   }
   if (conModifier !== 0) {
     parts.push({

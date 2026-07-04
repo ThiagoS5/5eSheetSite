@@ -25,27 +25,27 @@ describe("builder data services", () => {
   it("maps the 5etools files that feed the MVP wizard", () => {
     expect(getDataSourceAudit()).toStrictEqual([
       {
-        step: "Classe",
+        step: "Class",
         files: ["data/class/*.json"],
         purpose: "Classes, hit dice, proficiencies, features, and starting equipment.",
       },
       {
-        step: "Raca/Especie",
+        step: "Species",
         files: ["data/races.json", "data/languages.json"],
         purpose: "2024 species traits, size, speed, senses, resistances, and magic.",
       },
       {
-        step: "Antecedente",
+        step: "Background",
         files: ["data/backgrounds.json", "data/feats.json"],
         purpose: "2024 ability bonuses, origin feats, skills, tools, and equipment.",
       },
       {
-        step: "Atributos",
+        step: "Ability Scores",
         files: ["data/charcreationoptions.json", "data/backgrounds.json"],
         purpose: "Attribute generation methods and background ability choices.",
       },
       {
-        step: "Equipamento",
+        step: "Equipment",
         files: ["data/items.json", "data/class/*.json", "data/backgrounds.json"],
         purpose: "Class/background equipment and item-derived sheet values.",
       },
@@ -96,8 +96,8 @@ describe("builder data services", () => {
       descriptionBlocks: expect.arrayContaining([
         expect.objectContaining({ type: "paragraph" }),
       ]),
-      primaryAbility: ["Forca", "Destreza"],
-      savingThrows: ["Forca", "Constituicao"],
+      primaryAbility: ["Strength", "Dexterity"],
+      savingThrows: ["Strength", "Constitution"],
       levelOneFeatures: [
         expect.objectContaining({ name: "Fighting Style" }),
         expect.objectContaining({ name: "Second Wind" }),
@@ -141,8 +141,8 @@ describe("builder data services", () => {
     expect(artificer).toMatchObject({
       name: "Artificer",
       source: "EFA",
-      primaryAbility: ["Inteligencia"],
-      spellcastingAbility: "Inteligencia",
+      primaryAbility: ["Intelligence"],
+      spellcastingAbility: "Intelligence",
       armorProficiencies: ["light", "medium", "shield"],
       weaponProficiencies: ["simple"],
       toolProficiencies: [

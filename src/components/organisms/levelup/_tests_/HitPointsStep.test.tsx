@@ -10,12 +10,12 @@ import { HitPointsStep } from "@/src/components/organisms/levelup/HitPointsStep"
 describe("HitPointsStep", () => {
   afterEach(cleanup);
 
-  it("offers média and rolagem, and confirms média", async () => {
+  it("offers average and roll, and confirms average", async () => {
     const onChoose = vi.fn();
     render(
       <HitPointsStep hitDie={10} targetLevel={5} conModifier={2} onChoose={onChoose} />,
     );
-    await userEvent.click(screen.getByRole("button", { name: /média/i }));
+    await userEvent.click(screen.getByRole("button", { name: /average/i }));
     expect(onChoose).toHaveBeenCalledWith("average");
     // média exibida: floor(10/2)+1 = 6 (+2 CON)
     expect(screen.getByText(/6/)).toBeInTheDocument();
@@ -32,8 +32,8 @@ describe("HitPointsStep", () => {
         rollFn={() => 7}
       />,
     );
-    await userEvent.click(screen.getByRole("button", { name: /rolar/i }));
-    await userEvent.click(screen.getByRole("button", { name: /confirmar/i }));
+    await userEvent.click(screen.getByRole("button", { name: /roll/i }));
+    await userEvent.click(screen.getByRole("button", { name: /confirm/i }));
     expect(onChoose).toHaveBeenCalledWith(7);
   });
 });

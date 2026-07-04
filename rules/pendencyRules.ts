@@ -47,5 +47,5 @@ function normalizeLevelChoiceLabel(label: string): string {
   return label
     .normalize("NFD")
     .replace(/\p{Diacritic}/gu, "")
-    .replace(/^N\S*vel/, "Nivel");
+    .replace(/^Level/, "Level");
 }

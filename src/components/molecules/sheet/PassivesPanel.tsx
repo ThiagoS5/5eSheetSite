@@ -6,9 +6,9 @@ interface PassivesPanelProps {
 
 export function PassivesPanel({ perception, investigation, insight }: PassivesPanelProps) {
   const items = [
-    { label: "Percepção Passiva", value: perception },
-    { label: "Investigação Passiva", value: investigation },
-    { label: "Intuição Passiva", value: insight },
+    { label: "Passive Perception", value: perception },
+    { label: "Passive Investigation", value: investigation },
+    { label: "Passive Insight", value: insight },
   ];
 
   return (
@@ -16,13 +16,13 @@ export function PassivesPanel({ perception, investigation, insight }: PassivesPa
       <div className="mb-2 flex items-center gap-1.5">
         <i aria-hidden="true" className="fa-solid fa-eye text-muted-foreground" />
         <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-          Sentidos Passivos
+          Passive Senses
         </p>
       </div>
       <dl className="space-y-1">
         {items.map(({ label, value }) => (
           <div key={label} className="flex items-baseline gap-2">
-            <dd className="w-6 text-right text-sm font-bold text-foreground">{value}</dd>
+            <dd translate="no" className="notranslate w-6 text-right text-sm font-bold text-foreground">{value}</dd>
             <dt className="text-xs text-subdued">{label}</dt>
           </div>
         ))}

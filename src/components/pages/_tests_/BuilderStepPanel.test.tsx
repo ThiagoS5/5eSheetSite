@@ -53,14 +53,14 @@ describe("BuilderStepPanel", () => {
       </CharacterStoreProvider>,
     );
 
-    expect(screen.queryByText("Etapa válida.")).not.toBeInTheDocument();
-    expect(screen.queryByText("Etapa inválida.")).not.toBeInTheDocument();
-    expect(screen.getByLabelText("Filtrar classes")).toBeInTheDocument();
-    expect(screen.getByText(/classes encontradas/i)).toBeInTheDocument();
+    expect(screen.queryByText("Step valid.")).not.toBeInTheDocument();
+    expect(screen.queryByText("Step invalid.")).not.toBeInTheDocument();
+    expect(screen.getByLabelText("Filter classes")).toBeInTheDocument();
+    expect(screen.getByText(/classes found/i)).toBeInTheDocument();
     expect(screen.getByRole("img", { name: /fighter artwork/i })).toBeInTheDocument();
-    expect(screen.getAllByText("Marcial")[0]).toBeInTheDocument();
-    expect(screen.getAllByRole("button", { name: "Saiba Mais" })[0]).toBeInTheDocument();
-    expect(screen.getAllByRole("button", { name: "Selecionar" })[0]).toBeInTheDocument();
+    expect(screen.getAllByText("Martial")[0]).toBeInTheDocument();
+    expect(screen.getAllByRole("button", { name: "Learn More" })[0]).toBeInTheDocument();
+    expect(screen.getAllByRole("button", { name: "Select" })[0]).toBeInTheDocument();
   });
 
   it("shows the beginner class quiz only when guided mode is enabled", () => {
@@ -71,31 +71,31 @@ describe("BuilderStepPanel", () => {
       </CharacterStoreProvider>,
     );
 
-    expect(screen.getByText("O que e uma classe?")).toBeInTheDocument();
-    expect(screen.getByText("Não sabe por onde começar?")).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "Me ajude a escolher" }));
+    expect(screen.getByText("What is a class?")).toBeInTheDocument();
+    expect(screen.getByText("Not sure where to start?")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Help me choose" }));
 
     // As perguntas e as respostas são sorteadas: responde sempre a primeira
     // opção de cada uma das 5 perguntas exibidas.
     for (let questionIndex = 1; questionIndex <= 5; questionIndex += 1) {
       expect(
-        screen.getByText(`Pergunta ${questionIndex} de 5`),
+        screen.getByText(`Question ${questionIndex} of 5`),
       ).toBeInTheDocument();
       fireEvent.click(screen.getAllByTestId("quiz-option")[0]);
     }
 
     // Resultado: exatamente 2 classes — principal (verde) e segunda opção
     // (âmbar) — com flags sobre os cards correspondentes da lista.
-    expect(screen.getAllByText("Recomendado")).toHaveLength(2);
-    expect(screen.getByText("Segunda opção")).toBeInTheDocument();
+    expect(screen.getAllByText("Recommended")).toHaveLength(2);
+    expect(screen.getByText("Second option")).toBeInTheDocument();
     expect(
       screen.getByTestId("recommendation-flag-primary"),
-    ).toHaveTextContent("Recomendado");
+    ).toHaveTextContent("Recommended");
     expect(
       screen.getByTestId("recommendation-flag-secondary"),
-    ).toHaveTextContent("2ª opção");
+    ).toHaveTextContent("2nd option");
     expect(
-      screen.getByRole("button", { name: "Refazer com novas perguntas" }),
+      screen.getByRole("button", { name: "Retake with new questions" }),
     ).toBeInTheDocument();
   }, 15000);
 
@@ -107,10 +107,10 @@ describe("BuilderStepPanel", () => {
       </CharacterStoreProvider>,
     );
 
-    expect(screen.getByText("1 de 2 pericias escolhidas")).toBeInTheDocument();
+    expect(screen.getByText("1 of 2 skills chosen")).toBeInTheDocument();
   });
 
-  it("explains why Avancar is disabled", () => {
+  it("explains why Next is disabled", () => {
     render(
       <CharacterStoreProvider>
         <ClassOnlyInitializer />
@@ -118,12 +118,12 @@ describe("BuilderStepPanel", () => {
       </CharacterStoreProvider>,
     );
 
-    const nextButton = screen.getByRole("button", { name: "Avancar" });
+    const nextButton = screen.getByRole("button", { name: "Next" });
 
     expect(nextButton).toBeDisabled();
     expect(nextButton).toHaveAttribute("aria-describedby", "builder-next-blocker");
-    expect(screen.getByText("Etapa 2/9")).toBeInTheDocument();
-    expect(screen.getByText(/Escolha 2 pericias de classe para continuar/i)).toHaveAttribute(
+    expect(screen.getByText("Step 2/9")).toBeInTheDocument();
+    expect(screen.getByText(/Choose 2 class skills to continue/i)).toHaveAttribute(
       "id",
       "builder-next-blocker",
     );
@@ -141,13 +141,13 @@ describe("BuilderStepPanel", () => {
 
     expect(barbarianCard).not.toBeNull();
     fireEvent.click(
-      within(barbarianCard as HTMLElement).getByRole("button", { name: "Selecionar" }),
+      within(barbarianCard as HTMLElement).getByRole("button", { name: "Select" }),
     );
 
-    const dialog = screen.getByRole("dialog", { name: "Alterar classe" });
+    const dialog = screen.getByRole("dialog", { name: "Change class" });
 
     expect(dialog).toBeInTheDocument();
-    expect(within(dialog).getByText("2 pericias de classe")).toBeInTheDocument();
+    expect(within(dialog).getByText("2 class skills")).toBeInTheDocument();
     expect(within(dialog).getByText("Weapon Mastery")).toBeInTheDocument();
     expect(pushMock).not.toHaveBeenCalled();
   });
@@ -174,13 +174,13 @@ describe("BuilderStepPanel", () => {
 
     expect(barbarianCard).not.toBeNull();
     fireEvent.click(
-      within(barbarianCard as HTMLElement).getByRole("button", { name: "Selecionar" }),
+      within(barbarianCard as HTMLElement).getByRole("button", { name: "Select" }),
     );
 
-    expect(screen.getByRole("dialog", { name: "Alterar classe" })).toBeInTheDocument();
+    expect(screen.getByRole("dialog", { name: "Change class" })).toBeInTheDocument();
     expect(screen.getByTestId("selected-class-id")).toHaveTextContent("fighter-xphb");
 
-    fireEvent.click(screen.getByRole("button", { name: "Trocar de classe" }));
+    fireEvent.click(screen.getByRole("button", { name: "Change class" }));
 
     await waitFor(() => {
       expect(screen.getByTestId("selected-class-id")).toHaveTextContent("barbarian-xphb");
@@ -194,13 +194,13 @@ describe("BuilderStepPanel", () => {
       </CharacterStoreProvider>,
     );
 
-    fireEvent.change(screen.getByLabelText("Filtrar classes"), {
+    fireEvent.change(screen.getByLabelText("Filter classes"), {
       target: { value: "arcane recovery" },
     });
 
     expect(screen.getByRole("heading", { name: "Wizard" })).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Fighter" })).not.toBeInTheDocument();
-    expect(screen.getByText("1 classe encontrada")).toBeInTheDocument();
+    expect(screen.getByText("1 class found")).toBeInTheDocument();
   });
 
   it("renders an accessible empty state when no class matches the search", () => {
@@ -210,15 +210,15 @@ describe("BuilderStepPanel", () => {
       </CharacterStoreProvider>,
     );
 
-    fireEvent.change(screen.getByLabelText("Filtrar classes"), {
+    fireEvent.change(screen.getByLabelText("Filter classes"), {
       target: { value: "classe inexistente" },
     });
 
-    expect(screen.getByText("Nenhuma classe encontrada")).toBeInTheDocument();
+    expect(screen.getByText("No class found")).toBeInTheDocument();
     expect(
-      screen.getByText("Tente buscar por nome, fonte ou recurso inicial."),
+      screen.getByText("Try searching by name, source, or starting feature."),
     ).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "Selecionar" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Select" })).not.toBeInTheDocument();
   });
 
   it("opens class details in the new class modal layout", () => {
@@ -230,9 +230,9 @@ describe("BuilderStepPanel", () => {
       </CharacterStoreProvider>,
     );
 
-    fireEvent.click(screen.getAllByRole("button", { name: "Saiba Mais" })[0]);
+    fireEvent.click(screen.getAllByRole("button", { name: "Learn More" })[0]);
 
-    expect(screen.queryByText(/Progressao completa/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Complete progression/i)).not.toBeInTheDocument();
     const detailsDialog = screen.getByRole("dialog", { name: firstClass.name });
     const detailsImage = within(detailsDialog).getByRole("img", {
       name: firstClass.image?.alt,
@@ -245,21 +245,21 @@ describe("BuilderStepPanel", () => {
       "md:overflow-hidden",
     );
     expect(detailsImage).toHaveClass("object-cover", "object-top");
-    expect(screen.getByText("Identidade da classe")).toBeInTheDocument();
-    expect(screen.getByText("Atributo Primario")).toBeInTheDocument();
-    expect(screen.getAllByText("Dado de Vida")[0]).toBeInTheDocument();
-    expect(screen.getByText("Proficiencias Iniciais")).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Descricao" })).toBeInTheDocument();
+    expect(screen.getByText("Class Identity")).toBeInTheDocument();
+    expect(screen.getByText("Primary Ability")).toBeInTheDocument();
+    expect(screen.getAllByText("Hit Die")[0]).toBeInTheDocument();
+    expect(screen.getByText("Starting Proficiencies")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Description" })).toBeInTheDocument();
     expect(
-      screen.getByRole("heading", { name: /Progress.*Classe/i }),
+      screen.getByRole("heading", { name: /Class Progression/i }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("heading", { name: /Progress.*Classe/i }).closest("section"),
+      screen.getByRole("heading", { name: /Class Progression/i }).closest("section"),
     ).toHaveClass("min-w-0");
     expect(
-      screen.getByRole("button", { name: `Fechar detalhes de ${firstClass.name}` }),
+      screen.getByRole("button", { name: `Close ${firstClass.name} details` }),
     ).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Selecionar Classe" })).toHaveAttribute(
+    expect(screen.getByRole("button", { name: "Select Class" })).toHaveAttribute(
       "aria-pressed",
       "false",
     );
@@ -273,11 +273,11 @@ describe("BuilderStepPanel", () => {
       </CharacterStoreProvider>,
     );
 
-    fireEvent.click(screen.getAllByRole("button", { name: "Saiba Mais" })[0]);
-    fireEvent.click(screen.getByRole("button", { name: "Selecionar Classe" }));
+    fireEvent.click(screen.getAllByRole("button", { name: "Learn More" })[0]);
+    fireEvent.click(screen.getByRole("button", { name: "Select Class" }));
 
     await waitFor(() => {
-      expect(screen.getByRole("button", { name: "Classe Selecionada" })).toHaveAttribute(
+      expect(screen.getByRole("button", { name: "Class Selected" })).toHaveAttribute(
         "aria-pressed",
         "true",
       );
@@ -304,7 +304,7 @@ describe("BuilderStepPanel", () => {
       </CharacterStoreProvider>,
     );
 
-    fireEvent.click(screen.getAllByRole("button", { name: "Selecionar" })[0]);
+    fireEvent.click(screen.getAllByRole("button", { name: "Select" })[0]);
 
     await waitFor(() => {
       const saves = JSON.parse(
@@ -329,13 +329,13 @@ describe("BuilderStepPanel", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText("PROFICIÊNCIAS INICIAIS DA CLASSE")).toBeInTheDocument();
+      expect(screen.getByText("STARTING CLASS PROFICIENCIES")).toBeInTheDocument();
     });
-    expect(screen.queryByText("Nivel de treinamento")).not.toBeInTheDocument();
+    expect(screen.queryByText("Training level")).not.toBeInTheDocument();
     expect(screen.queryByRole("combobox")).not.toBeInTheDocument();
     expect(screen.getAllByText(/Weapon Mastery/)[0]).toBeInTheDocument();
-    expect(screen.getByText("Armaduras:")).toBeInTheDocument();
-    expect(screen.getByText("Recursos Iniciais de Nível 1:")).toBeInTheDocument();
+    expect(screen.getByText("Armor:")).toBeInTheDocument();
+    expect(screen.getByText("Starting Level 1 Features:")).toBeInTheDocument();
   });
   it("renders background cards with artwork, content, actions, and accessible bonus controls", async () => {
     render(
@@ -350,16 +350,16 @@ describe("BuilderStepPanel", () => {
     });
     expect(screen.getAllByRole("img", { name: /artwork/i })[0]).toBeInTheDocument();
     expect(screen.getAllByText(/Magic Initiate/i)[0]).toBeInTheDocument();
-    expect(screen.getAllByText(/Bonus de Atributo/i)[0]).toBeInTheDocument();
+    expect(screen.getAllByText(/Ability Score Bonus/i)[0]).toBeInTheDocument();
     expect(
-      screen.getByLabelText("Acolyte: atributo com bonus +2"),
+      screen.getByLabelText("Acolyte: ability score with +2 bonus"),
     ).toBeInTheDocument();
     expect(
-      screen.getByLabelText("Acolyte: atributo com bonus +1"),
+      screen.getByLabelText("Acolyte: ability score with +1 bonus"),
     ).toBeInTheDocument();
-    expect(screen.getAllByRole("button", { name: "Saiba Mais" })[0]).toBeInTheDocument();
+    expect(screen.getAllByRole("button", { name: "Learn More" })[0]).toBeInTheDocument();
     expect(
-      screen.getAllByRole("button", { name: "Selecionar" })[0],
+      screen.getAllByRole("button", { name: "Select" })[0],
     ).toBeInTheDocument();
   });
 
@@ -372,24 +372,24 @@ describe("BuilderStepPanel", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByLabelText("Filtrar antecedentes")).toBeInTheDocument();
+      expect(screen.getByLabelText("Filter backgrounds")).toBeInTheDocument();
     });
 
-    fireEvent.change(screen.getByLabelText("Filtrar antecedentes"), {
+    fireEvent.change(screen.getByLabelText("Filter backgrounds"), {
       target: { value: "magic initiate cleric" },
     });
 
     expect(screen.getByRole("heading", { name: "Acolyte" })).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Soldier" })).not.toBeInTheDocument();
-    expect(screen.getByText(/antecedente encontrado/i)).toBeInTheDocument();
+    expect(screen.getByText(/background found/i)).toBeInTheDocument();
 
-    fireEvent.change(screen.getByLabelText("Filtrar antecedentes"), {
+    fireEvent.change(screen.getByLabelText("Filter backgrounds"), {
       target: { value: "antecedente inexistente" },
     });
 
-    expect(screen.getByText("Nenhum antecedente encontrado")).toBeInTheDocument();
+    expect(screen.getByText("No background found")).toBeInTheDocument();
     expect(
-      screen.queryByRole("button", { name: "Selecionar" }),
+      screen.queryByRole("button", { name: "Select" }),
     ).not.toBeInTheDocument();
   });
 
@@ -402,7 +402,7 @@ describe("BuilderStepPanel", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getAllByRole("button", { name: "Saiba Mais" })[0]).toBeInTheDocument();
+      expect(screen.getAllByRole("button", { name: "Learn More" })[0]).toBeInTheDocument();
     });
 
     const acolyteCard = screen
@@ -410,7 +410,7 @@ describe("BuilderStepPanel", () => {
       .closest("article");
 
     expect(acolyteCard).not.toBeNull();
-    fireEvent.click(within(acolyteCard as HTMLElement).getByRole("button", { name: "Saiba Mais" }));
+    fireEvent.click(within(acolyteCard as HTMLElement).getByRole("button", { name: "Learn More" }));
 
     const dialog = screen.getByRole("dialog", { name: "Acolyte" });
 
@@ -420,15 +420,15 @@ describe("BuilderStepPanel", () => {
       "overflow-y-auto",
       "md:overflow-hidden",
     );
-    expect(within(dialog).getByText("Recompensas")).toBeInTheDocument();
-    expect(within(dialog).getByText("Talento de Origem")).toBeInTheDocument();
-    expect(within(dialog).getByText("Bonus de Atributo")).toBeInTheDocument();
-    expect(within(dialog).getByText("Proficiencias")).toBeInTheDocument();
-    expect(within(dialog).getByText("Equipamento Inicial")).toBeInTheDocument();
+    expect(within(dialog).getByText("Rewards")).toBeInTheDocument();
+    expect(within(dialog).getByText("Origin Feat")).toBeInTheDocument();
+    expect(within(dialog).getByText("Ability Score Bonus")).toBeInTheDocument();
+    expect(within(dialog).getByText("Proficiencies")).toBeInTheDocument();
+    expect(within(dialog).getByText("Starting Equipment")).toBeInTheDocument();
     expect(
-      within(dialog).getByRole("button", { name: "Fechar detalhes" }),
+      within(dialog).getByRole("button", { name: "Close details" }),
     ).toBeInTheDocument();
-    expect(screen.queryByRole("heading", { name: "Detalhes" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Details" })).not.toBeInTheDocument();
     expect(screen.queryByText(/Ability Scores::/i)).not.toBeInTheDocument();
   });
 
@@ -441,7 +441,7 @@ describe("BuilderStepPanel", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getAllByRole("button", { name: "Saiba Mais" })[0]).toBeInTheDocument();
+      expect(screen.getAllByRole("button", { name: "Learn More" })[0]).toBeInTheDocument();
     });
 
     const acolyteCard = screen
@@ -449,10 +449,10 @@ describe("BuilderStepPanel", () => {
       .closest("article");
 
     expect(acolyteCard).not.toBeNull();
-    fireEvent.click(within(acolyteCard as HTMLElement).getByRole("button", { name: "Saiba Mais" }));
+    fireEvent.click(within(acolyteCard as HTMLElement).getByRole("button", { name: "Learn More" }));
     fireEvent.click(
       within(screen.getByRole("dialog", { name: "Acolyte" })).getByRole("button", {
-        name: "SELECIONADO",
+        name: "SELECTED",
       }),
     );
 
@@ -487,7 +487,7 @@ describe("BuilderStepPanel", () => {
     });
 
     const plusTwoSelect = screen.getByLabelText(
-      "Soldier: atributo com bonus +2",
+      "Soldier: ability score with +2 bonus",
     ) as HTMLSelectElement;
     const firstAttribute = Array.from(plusTwoSelect.options)
       .map((option) => option.value)
@@ -499,9 +499,9 @@ describe("BuilderStepPanel", () => {
     // selecao (o antecedente atual ja tem bonus, entao abre o aviso de troca).
     fireEvent.change(plusTwoSelect, { target: { value: firstAttribute } });
 
-    const dialog = screen.getByRole("dialog", { name: "Alterar antecedente" });
+    const dialog = screen.getByRole("dialog", { name: "Change background" });
     fireEvent.click(
-      within(dialog).getByRole("button", { name: "Confirmar troca" }),
+      within(dialog).getByRole("button", { name: "Confirm change" }),
     );
 
     // O bonus recem-escolhido nao pode ser descartado pela troca de card.
@@ -509,7 +509,7 @@ describe("BuilderStepPanel", () => {
       expect(
         (
           screen.getByLabelText(
-            "Soldier: atributo com bonus +2",
+            "Soldier: ability score with +2 bonus",
           ) as HTMLSelectElement
         ).value,
       ).toBe(firstAttribute);
@@ -518,7 +518,7 @@ describe("BuilderStepPanel", () => {
     expect(
       screen.getByRole("heading", { name: "Soldier" }).closest("article"),
     ).toContainElement(
-      screen.getByRole("button", { name: "Selecionado" }),
+      screen.getByRole("button", { name: "Selected" }),
     );
   }, 15000);
 
@@ -534,8 +534,8 @@ describe("BuilderStepPanel", () => {
       </CharacterStoreProvider>,
     );
 
-    expect(screen.getByLabelText("Filtrar especies")).toBeInTheDocument();
-    expect(screen.getByText(/especies encontradas/i)).toBeInTheDocument();
+    expect(screen.getByLabelText("Filter species")).toBeInTheDocument();
+    expect(screen.getByText(/species found/i)).toBeInTheDocument();
 
     const speciesHeading = screen.getByRole("heading", { name: firstSpecies.name });
     const speciesCard = speciesHeading.closest("article");
@@ -550,16 +550,16 @@ describe("BuilderStepPanel", () => {
     expect(speciesGrid).not.toHaveClass("xl:grid-cols-4");
     expect(screen.getAllByText(firstSpecies.source)[0]).toBeInTheDocument();
     expect(screen.getByText(firstSpecies.summary)).toHaveClass("line-clamp-3");
-    expect(screen.getAllByText(/Tamanho:/)[0]).toBeInTheDocument();
-    expect(screen.getAllByText(/Deslocamento:/)[0]).toBeInTheDocument();
+    expect(screen.getAllByText(/Size:/)[0]).toBeInTheDocument();
+    expect(screen.getAllByText(/Speed:/)[0]).toBeInTheDocument();
     if (firstSpecies.image) {
       expect(
         screen.getAllByRole("img", { name: firstSpecies.image.alt })[0],
       ).toBeInTheDocument();
     }
 
-    const detailsButton = screen.getAllByRole("button", { name: "Saiba Mais" })[0];
-    const selectButton = screen.getAllByRole("button", { name: "Selecionar" })[0];
+    const detailsButton = screen.getAllByRole("button", { name: "Learn More" })[0];
+    const selectButton = screen.getAllByRole("button", { name: "Select" })[0];
 
     expect(detailsButton.parentElement).toBe(selectButton.parentElement);
     expect(detailsButton.parentElement).toHaveClass("flex", "gap-2");
@@ -577,16 +577,16 @@ describe("BuilderStepPanel", () => {
       </CharacterStoreProvider>,
     );
 
-    fireEvent.click(screen.getAllByRole("button", { name: "Saiba Mais" })[0]);
+    fireEvent.click(screen.getAllByRole("button", { name: "Learn More" })[0]);
 
     const detailsDialog = screen.getByRole("dialog", { name: firstSpecies.name });
 
-    expect(within(detailsDialog).getByRole("heading", { name: "Descricao" })).toBeInTheDocument();
+    expect(within(detailsDialog).getByRole("heading", { name: "Description" })).toBeInTheDocument();
     expect(
-      within(detailsDialog).getByRole("heading", { name: "Tracos Raciais" }),
+      within(detailsDialog).getByRole("heading", { name: "Species Traits" }),
     ).toBeInTheDocument();
-    expect(within(detailsDialog).getByText("Tamanho")).toBeInTheDocument();
-    expect(within(detailsDialog).getByText("Deslocamento")).toBeInTheDocument();
+    expect(within(detailsDialog).getByText("Size")).toBeInTheDocument();
+    expect(within(detailsDialog).getByText("Speed")).toBeInTheDocument();
     if (firstSpecies.image) {
       expect(within(detailsDialog).getByRole("img", { name: firstSpecies.image.alt })).toHaveClass(
         "object-cover",
@@ -594,7 +594,7 @@ describe("BuilderStepPanel", () => {
       );
     }
     expect(
-      within(detailsDialog).getByRole("button", { name: "Selecionar Raça" }),
+      within(detailsDialog).getByRole("button", { name: "Select Species" }),
     ).toHaveAttribute("aria-pressed", "false");
   });
 
@@ -606,8 +606,8 @@ describe("BuilderStepPanel", () => {
       </CharacterStoreProvider>,
     );
 
-    fireEvent.click(screen.getAllByRole("button", { name: "Saiba Mais" })[0]);
-    fireEvent.click(screen.getByRole("button", { name: "Selecionar Raça" }));
+    fireEvent.click(screen.getAllByRole("button", { name: "Learn More" })[0]);
+    fireEvent.click(screen.getByRole("button", { name: "Select Species" }));
 
     await waitFor(() => {
       expect(pushMock).toHaveBeenCalledWith("/builder/detalhes-especie");
@@ -623,10 +623,10 @@ describe("BuilderStepPanel", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getAllByRole("button", { name: "Selecionar" })[0]).toBeInTheDocument();
+      expect(screen.getAllByRole("button", { name: "Select" })[0]).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getAllByRole("button", { name: "Selecionar" })[0]);
+    fireEvent.click(screen.getAllByRole("button", { name: "Select" })[0]);
 
     await waitFor(() => {
       expect(pushMock).toHaveBeenCalledWith("/builder/detalhes-especie");
@@ -642,7 +642,7 @@ describe("BuilderStepPanel", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText("Raros e Exoticos")).toBeInTheDocument();
+      expect(screen.getByText("Rare and Exotic")).toBeInTheDocument();
     });
     expect(screen.getByText("Abyssal")).toBeInTheDocument();
   });
@@ -656,10 +656,10 @@ describe("BuilderStepPanel", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Identidade" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Identity" })).toBeInTheDocument();
     });
-    expect(screen.getByLabelText("Nome do Personagem")).toBeInTheDocument();
-    expect(screen.queryByText("Etapa válida.")).not.toBeInTheDocument();
+    expect(screen.getByLabelText("Character Name")).toBeInTheDocument();
+    expect(screen.queryByText("Step valid.")).not.toBeInTheDocument();
   });
 });
 

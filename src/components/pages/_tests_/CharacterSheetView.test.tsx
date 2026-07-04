@@ -11,7 +11,7 @@ afterEach(() => {
 });
 
 vi.mock("@/src/components/molecules/LevelUpButton", () => ({
-  LevelUpButton: () => <button type="button">Subir de Nível</button>,
+  LevelUpButton: () => <button type="button">Level Up</button>,
 }));
 
 // Minimal store/selector fakes so the view renders in isolation.
@@ -22,8 +22,8 @@ vi.mock("@/src/store/useCharacterStore", () => ({
 }));
 vi.mock("@/src/store/characterSelectors", () => ({
   selectCharacterSheetSummary: () => ({
-    ruleset: "2024", name: "Thalindra", level: 5, className: "Mago", speciesName: "Alta Elfa",
-    backgroundName: "Sábia", armorClass: 13, initiative: 3, speedMeters: 9, currentHp: 27, maxHp: 27,
+    ruleset: "2024", name: "Thalindra", level: 5, className: "Wizard", speciesName: "High Elf",
+    backgroundName: "Sage", armorClass: 13, initiative: 3, speedFeet: 30, currentHp: 27, maxHp: 27,
     proficiencyBonus: 3, attributes: [], skills: [], savingThrows: [], features: [], weapons: [],
     selectedEquipment: [], isSpellcaster: false, resistances: [], immunities: [], vulnerabilities: [],
     passives: { perception: 11, investigation: 11, insight: 13 }, senses: [], languages: [],

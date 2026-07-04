@@ -21,13 +21,13 @@ describe("SubclassStep", () => {
 
     expect(screen.getByText("Battle Master")).toBeInTheDocument();
     expect(screen.getByText("Champion")).toBeInTheDocument();
-    const cards = screen.getAllByRole("button", { name: /Selecionar|Selecionado/i });
+    const cards = screen.getAllByRole("button", { name: /Select|Selected/i });
     cards[0].click();
     expect(onSelect).toHaveBeenCalledWith("battle-master-xphb");
   });
 
   it("marks the selected subclass", () => {
     render(<SubclassStep level={3} subclasses={subclasses} selectedSubclassId="champion-xphb" onSelect={() => {}} />);
-    expect(screen.getByRole("button", { name: "Selecionado" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Selected" })).toBeInTheDocument();
   });
 });

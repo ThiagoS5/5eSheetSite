@@ -13,12 +13,12 @@ export type AttributeBonuses = Partial<Record<AttributeKey, number>>;
 export type CharacterAttributes = Record<AttributeKey, number>;
 
 export const ATTRIBUTE_LABELS: Record<AttributeKey, string> = {
-  forca: "Forca",
-  destreza: "Destreza",
-  constituicao: "Constituicao",
-  inteligencia: "Inteligencia",
-  sabedoria: "Sabedoria",
-  carisma: "Carisma",
+  forca: "Strength",
+  destreza: "Dexterity",
+  constituicao: "Constitution",
+  inteligencia: "Intelligence",
+  sabedoria: "Wisdom",
+  carisma: "Charisma",
 };
 
 export const ATTRIBUTE_ABBREVIATION_MAP: Record<string, AttributeKey> = {

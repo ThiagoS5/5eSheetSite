@@ -107,20 +107,20 @@ export function AsiOrFeatStep({
   }
 
   return (
-    <section aria-label={`Nivel ${level} - Aumento de Atributo ou Talento`}>
+    <section aria-label={`Level ${level} - Ability Score Improvement or Feat`}>
       <header className="mb-4">
-        <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">Nivel {level}</p>
-        <h2 className="font-serif text-xl font-bold tracking-wide text-foreground">Aumento de Atributo ou Talento</h2>
+        <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">Level <span translate="no" className="notranslate">{level}</span></p>
+        <h2 className="font-serif text-xl font-bold tracking-wide text-foreground">Ability Score Improvement or Feat</h2>
       </header>
 
       <div className="mb-4 flex gap-2">
         <button type="button" aria-pressed={tab === "asi"} onClick={() => switchTab("asi")}
           className="flex-1 rounded-md border px-3 py-2 text-sm font-semibold outline-none transition aria-pressed:border-brand-crimson-alt aria-pressed:bg-brand-crimson-alt/10 aria-pressed:text-foreground [&:not([aria-pressed=true])]:border-white/[0.08] [&:not([aria-pressed=true])]:text-muted-foreground [&:not([aria-pressed=true])]:opacity-60 focus-visible:ring-2 focus-visible:ring-brand-crimson-alt/70">
-          Aumento de Atributo
+          Ability Score Improvement
         </button>
         <button type="button" aria-pressed={tab === "feat"} onClick={() => switchTab("feat")}
           className="flex-1 rounded-md border px-3 py-2 text-sm font-semibold outline-none transition aria-pressed:border-brand-crimson-alt aria-pressed:bg-brand-crimson-alt/10 aria-pressed:text-foreground [&:not([aria-pressed=true])]:border-white/[0.08] [&:not([aria-pressed=true])]:text-muted-foreground [&:not([aria-pressed=true])]:opacity-60 focus-visible:ring-2 focus-visible:ring-brand-crimson-alt/70">
-          Talento
+          Feat
         </button>
       </div>
 
@@ -129,15 +129,15 @@ export function AsiOrFeatStep({
           <div className="mb-3 flex gap-2">
             <button type="button" onClick={() => switchMode("one")} aria-pressed={mode === "one"}
               className="rounded-full border px-3 py-1 text-xs outline-none aria-pressed:border-accent aria-pressed:bg-accent/10 aria-pressed:text-accent [&:not([aria-pressed=true])]:border-white/[0.12] [&:not([aria-pressed=true])]:text-muted-foreground">
-              +2 em um
+              +2 to one
             </button>
             <button type="button" onClick={() => switchMode("two")} aria-pressed={mode === "two"}
               className="rounded-full border px-3 py-1 text-xs outline-none aria-pressed:border-accent aria-pressed:bg-accent/10 aria-pressed:text-accent [&:not([aria-pressed=true])]:border-white/[0.12] [&:not([aria-pressed=true])]:text-muted-foreground">
-              +1 em dois
+              +1 to two
             </button>
           </div>
           <p className="mb-3 text-xs text-faint">
-            {mode === "one" ? "Selecione 1 atributo para receber +2." : "Marque 2 atributos para receber +1 cada."}
+            {mode === "one" ? "Select 1 ability score to receive +2." : "Mark 2 ability scores to receive +1 each."}
           </p>
           <div className="grid gap-2 sm:grid-cols-2">
             {attributes.map((attr) => {
@@ -148,7 +148,7 @@ export function AsiOrFeatStep({
                 <button key={attr.key} type="button" onClick={() => pickAttr(attr.key)} disabled={isLocked} aria-pressed={isSel}
                   className="flex items-center justify-between rounded-md border border-white/[0.08] bg-card px-3 py-2 text-sm text-subdued outline-none transition hover:border-white/15 focus-visible:ring-2 focus-visible:ring-brand-crimson-alt/70 disabled:cursor-not-allowed disabled:opacity-40 aria-pressed:border-brand-crimson-alt aria-pressed:bg-brand-crimson-alt/10 aria-pressed:text-foreground">
                   <span>{attr.label}</span>
-                  <span>{isSel ? <span className="font-bold text-accent">+{perPoint} </span> : null}{attr.current} -&gt; {newVal}</span>
+                  <span translate="no" className="notranslate">{isSel ? <span className="font-bold text-accent">+{perPoint} </span> : null}{attr.current} -&gt; {newVal}</span>
                 </button>
               );
             })}
@@ -157,19 +157,19 @@ export function AsiOrFeatStep({
       ) : (
         <div className="grid gap-2">
           {selectableFeats.length === 0 && blockedFeats.length === 0 ? (
-            <p className="text-sm text-faint">Nenhum talento elegivel.</p>
+            <p className="text-sm text-faint">No eligible feat.</p>
           ) : (
             <>
               {selectableFeats.map((feat) => (
                 <button key={feat.id} type="button" onClick={() => chooseFeat(feat)} aria-pressed={feat.id === selectedFeatId}
                   className="rounded-md border border-white/[0.08] bg-card px-3 py-2 text-left outline-none transition hover:border-white/15 focus-visible:ring-2 focus-visible:ring-brand-crimson-alt/70 aria-pressed:border-brand-crimson-alt aria-pressed:bg-brand-crimson-alt/10">
-                  <span className="block text-sm font-semibold text-foreground">{feat.name}</span>
+                  <span translate="no" className="notranslate block text-sm font-semibold text-foreground">{feat.name}</span>
                   {feat.description ? <span className="mt-0.5 block text-xs text-faint">{feat.description}</span> : null}
                 </button>
               ))}
               {blockedFeats.map(({ feat, reason }) => (
                 <div key={feat.id} className="rounded-md border border-white/[0.06] bg-muted/30 px-3 py-2 text-left opacity-70">
-                  <span className="block text-sm font-semibold text-foreground">{feat.name}</span>
+                  <span translate="no" className="notranslate block text-sm font-semibold text-foreground">{feat.name}</span>
                   <span className="mt-0.5 block text-xs text-faint">{reason}</span>
                 </div>
               ))}
@@ -177,7 +177,7 @@ export function AsiOrFeatStep({
           )}
           {selectedFeat?.abilityBonus?.choose ? (
             <div className="mt-2 rounded-md border border-white/[0.08] bg-background/40 p-3">
-              <p className="mb-2 text-xs text-faint">Escolha o atributo aumentado por este talento.</p>
+              <p className="mb-2 text-xs text-faint">Choose the ability score increased by this feat.</p>
               <div className="grid gap-2 sm:grid-cols-2">
                 {attributes
                   .filter((attr) => selectedFeat.abilityBonus?.choose?.from.includes(attr.key))
@@ -193,7 +193,7 @@ export function AsiOrFeatStep({
                         className="flex items-center justify-between rounded-md border border-white/[0.08] bg-card px-3 py-2 text-sm text-subdued outline-none transition hover:border-white/15 focus-visible:ring-2 focus-visible:ring-brand-crimson-alt/70 aria-pressed:border-brand-crimson-alt aria-pressed:bg-brand-crimson-alt/10 aria-pressed:text-foreground"
                       >
                         <span>{attr.label}</span>
-                        <span><span className="font-bold text-accent">+{amount} </span>{attr.current} -&gt; {attr.current + amount}</span>
+                        <span translate="no" className="notranslate"><span className="font-bold text-accent">+{amount} </span>{attr.current} -&gt; {attr.current + amount}</span>
                       </button>
                     );
                   })}
@@ -203,9 +203,9 @@ export function AsiOrFeatStep({
           {selectedFeat && selectedSkillRequirement ? (
             <div className="mt-2 rounded-md border border-white/[0.08] bg-background/40 p-3">
               <p className="mb-2 text-xs text-faint">
-                Escolha {selectedSkillRequirement.count} pericia
-                {selectedSkillRequirement.count > 1 ? "s" : ""} concedida
-                {selectedSkillRequirement.count > 1 ? "s" : ""} por este talento.
+                Choose {selectedSkillRequirement.count} skill
+                {selectedSkillRequirement.count > 1 ? "s" : ""} granted
+                by this feat.
               </p>
               <div className="grid max-h-56 gap-2 overflow-y-auto pr-1 sm:grid-cols-2">
                 {(selectedSkillRequirement.options ?? SKILL_NAMES).map((skill) => {
@@ -221,7 +221,7 @@ export function AsiOrFeatStep({
                       aria-pressed={isSelected}
                       className="rounded-md border border-white/[0.08] bg-card px-3 py-2 text-left text-sm text-subdued outline-none transition hover:border-white/15 focus-visible:ring-2 focus-visible:ring-brand-crimson-alt/70 disabled:cursor-not-allowed disabled:opacity-40 aria-pressed:border-brand-crimson-alt aria-pressed:bg-brand-crimson-alt/10 aria-pressed:text-foreground"
                     >
-                      {skill}
+                      <span translate="no" className="notranslate">{skill}</span>
                     </button>
                   );
                 })}

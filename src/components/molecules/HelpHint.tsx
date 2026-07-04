@@ -18,7 +18,7 @@ export function HelpHint({ conceptId, beginnerMode = false }: HelpHintProps) {
         <Tooltip.Trigger asChild>
           <button
             type="button"
-            aria-label={`O que e ${concept.term}?`}
+            aria-label={`What is ${concept.term}?`}
             className={`inline-flex h-7 w-7 items-center justify-center rounded-full border border-border bg-card outline-none transition hover:text-foreground focus-visible:ring-2 focus-visible:ring-accent ${
               beginnerMode ? "text-brand-gold-alt" : "text-muted-foreground"
             }`}

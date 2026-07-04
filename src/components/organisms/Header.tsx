@@ -17,7 +17,7 @@ export function Header() {
         </div>
 
         <nav
-          aria-label="Navegacao principal"
+          aria-label="Primary navigation"
           className="ml-4 hidden items-center gap-6 md:flex"
         >
           {["Vault", "Codex"].map((item) => (
@@ -35,7 +35,7 @@ export function Header() {
       <div className="flex items-center gap-4">
         <button
           type="button"
-          aria-label="Abrir menu"
+          aria-label="Open menu"
           className="flex h-10 w-10 items-center justify-center rounded-md text-subdued outline-none transition-colors hover:text-primary focus-visible:ring-2 focus-visible:ring-primary/70 md:hidden"
         >
           <Menu className="h-6 w-6" />
@@ -43,7 +43,7 @@ export function Header() {
 
         <button
           type="button"
-          aria-label="Abrir perfil do usuario"
+          aria-label="Open user profile"
           className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-card text-subdued outline-none transition-colors hover:border-primary hover:text-foreground focus-visible:ring-2 focus-visible:ring-primary/70"
         >
           <UserCircle className="h-6 w-6" />

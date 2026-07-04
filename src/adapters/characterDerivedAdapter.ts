@@ -67,11 +67,11 @@ export function getMaxHitPointsBreakdown(
   const perAdditionalLevel = Math.floor(hitDie / 2) + 1;
 
   const parts: BreakdownPart[] = [
-    { label: `Nivel 1 (d${hitDie})`, value: hitDie },
+    { label: `Level 1 (d${hitDie})`, value: hitDie },
   ];
   if (effectiveLevel > 1) {
     parts.push({
-      label: `Niveis 2-${effectiveLevel} (${effectiveLevel - 1} x ${perAdditionalLevel})`,
+      label: `Levels 2-${effectiveLevel} (${effectiveLevel - 1} x ${perAdditionalLevel})`,
       value: (effectiveLevel - 1) * perAdditionalLevel,
     });
   }

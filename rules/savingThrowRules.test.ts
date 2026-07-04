@@ -20,15 +20,15 @@ describe("saving throw rules", () => {
     });
 
     expect(savingThrows.find((save) => save.attributeKey === "forca")).toMatchObject({
-      label: "Forca",
-      abbr: "FOR",
+      label: "Strength",
+      abbr: "STR",
       modifier: 5,
       isProficient: true,
     });
     expect(
       savingThrows.find((save) => save.attributeKey === "constituicao"),
     ).toMatchObject({
-      label: "Constituicao",
+      label: "Constitution",
       abbr: "CON",
       modifier: 3,
       isProficient: true,

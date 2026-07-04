@@ -56,10 +56,10 @@ const logoUrl =
   "https://lh3.googleusercontent.com/aida/AP1WRLs6nBKMZFXZPQWc3Dz44sd79kupXgFWy3_yGtyD_0pCoeQxNVqB_QUwSfqIpLA1hl-IVPXhnNf5ilC7E2rHE77Byl-_k6fE1pWeVQ34b3ewaoU9cNIx7DA-qNPTeftY3LpW8BX4__-HMQIu3eMmr335p7fBUXDeifo1qzI8SfHC96x6ONDvLU926xzzi2pHr4IYop0-hizeYiiLJ-KpoI-7yuXhvXl1jakw-iUuIWMbzYR2Fc440hKXTyw";
 const profileUrl =
   "https://lh3.googleusercontent.com/aida-public/AB6AXuCPKVEQ-mHIcoHy24XPfpu3mf4Bcm836Y_tQSZ2L6gRoKP8XVR71TdBH8n7r9wL3UUmGYAI5_xPOS5RjWTnzLCAYPm62RM1PW-Z0lhEhTs2oTkQEUkRgf85kFIrc4escY8aA0vL2ewW1hwkEczeVZkp-2Co4_x6r34rngTf4PrkfrOCCRR1N3Rov0PaKESs4opO2MFVFNddvZOh8M6J5p3H-CtJijvLR2voTvqx9tnSKzY5O-qNy8S4AqTVYOSC9c2F_bdwZHZx1S0-";
-const missingCharacterName = "Personagem sem nome";
-const missingSpeciesLabel = "Espécie pendente";
-const missingClassLabel = "Classe pendente";
-const missingBackgroundLabel = "Antecedente pendente";
+const missingCharacterName = "Unnamed Character";
+const missingSpeciesLabel = "Species pending";
+const missingClassLabel = "Class pending";
+const missingBackgroundLabel = "Background pending";
 const builderStepOrder = [
   "classe",
   "recursos-classe",
@@ -74,16 +74,16 @@ const builderStepOrder = [
 
 const primaryNavigation = [
   { label: "Vault", href: "/", active: true },
-  { label: "Criar", href: builderStartHref, active: false },
-  { label: "Ficha", href: sheetHref, active: false },
-  { label: "Codex", href: null, active: false, status: "Em breve" },
+  { label: "Create", href: builderStartHref, active: false },
+  { label: "Sheet", href: sheetHref, active: false },
+  { label: "Codex", href: null, active: false, status: "Coming soon" },
 ] as const;
 
 const mobileNavigation = [
   { label: "Vault", href: "/", active: true, icon: Shield },
-  { label: "Criar", href: builderStartHref, active: false, icon: WandSparkles },
-  { label: "Ficha", href: sheetHref, active: false, icon: Eye },
-  { label: "Perfil", href: null, active: false, icon: UserCircle },
+  { label: "Create", href: builderStartHref, active: false, icon: WandSparkles },
+  { label: "Sheet", href: sheetHref, active: false, icon: Eye },
+  { label: "Profile", href: null, active: false, icon: UserCircle },
 ] as const;
 
 export function Dashboard() {
@@ -174,7 +174,7 @@ export function Dashboard() {
   function deleteSavedCharacter(character: Character) {
     const characterName = getCharacterName(character);
 
-    if (!window.confirm(`Excluir ${characterName} do Vault?`)) {
+    if (!window.confirm(`Delete ${characterName} from the Vault?`)) {
       return;
     }
 
@@ -372,15 +372,15 @@ function CreationModeDialog({
         <Dialog.Overlay className="fixed inset-0 z-50 grid place-items-center overflow-y-auto bg-black/75 p-4 backdrop-blur-md">
           <Dialog.Content className="relative max-h-[90dvh] w-full max-w-3xl overflow-y-auto rounded-lg border border-white/[0.08] bg-surface-nested p-5 text-foreground shadow-2xl shadow-black/60 outline-none focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70">
             <Dialog.Title className="pr-10 font-serif text-2xl font-bold text-foreground">
-              É sua primeira vez jogando Dungeons & Dragons 5e?
+              Is this your first time playing Dungeons & Dragons 5e?
             </Dialog.Title>
             <Dialog.Description className="mt-2 text-sm leading-6 text-subdued">
-              Escolha como quer começar este personagem. Você pode mudar o modo guiado depois no builder.
+              Choose how you want to start this character. You can change guided mode later in the builder.
             </Dialog.Description>
             <Dialog.Close asChild>
               <button
                 type="button"
-                aria-label="Fechar"
+                aria-label="Close"
                 className="absolute right-4 top-4 inline-flex h-9 w-9 items-center justify-center rounded-md border border-border text-muted-foreground outline-none transition hover:text-foreground focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70"
               >
                 <X aria-hidden="true" className="h-4 w-4" />
@@ -389,22 +389,22 @@ function CreationModeDialog({
 
             <div className="mt-5 grid gap-3 md:grid-cols-3">
               <CreationModeButton
-                title="Modo guiado"
-                description="Explique as escolhas com ajuda contextual durante a criação."
+                title="Guided mode"
+                description="Explain choices with contextual help during character creation."
                 onClick={onGuided}
               />
               <CreationModeButton
-                title="Modo padrão"
-                description="Já conheço as regras e quero avançar sem explicações extras."
+                title="Standard mode"
+                description="I already know the rules and want to proceed without extra explanations."
                 onClick={onStandard}
               />
               <section className="rounded-lg border border-border bg-card p-4">
                 <h3 className="font-serif text-lg font-bold text-foreground">
-                  Construção rápida
+                  Quick Build
                 </h3>
                 <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                  Escolha uma classe para aplicar um kit recomendado e ir direto
-                  para nomear o herói.
+                  Choose a class to apply a recommended kit and go straight
+                  to naming the hero.
                 </p>
                 <div className="mt-4 grid max-h-56 gap-2 overflow-y-auto pr-1">
                   {profiles.map((profile) => (
@@ -461,7 +461,7 @@ function DashboardTopNav() {
         </h1>
       </div>
 
-      <nav aria-label="Navegação principal" className="hidden items-center gap-6 md:flex">
+      <nav aria-label="Primary navigation" className="hidden items-center gap-6 md:flex">
         {primaryNavigation.map((item) =>
           item.href ? (
             <Link
@@ -493,17 +493,17 @@ function DashboardTopNav() {
       <div className="flex items-center gap-4">
         <IconButton
           disabled
-          label="Notificações em breve"
+          label="Notifications coming soon"
           icon={<Bell className="h-5 w-5" />}
         />
         <IconButton
           disabled
-          label="Configurações em breve"
+          label="Settings coming soon"
           icon={<Settings className="h-5 w-5" />}
         />
         <button
           type="button"
-          aria-label="Perfil"
+          aria-label="Profile"
           className="h-10 w-10 overflow-hidden rounded-full border border-white/[0.1] outline-none transition-transform active:scale-95 focus-visible:ring-2 focus-visible:ring-primary"
         >
           <Image
@@ -543,17 +543,17 @@ function EmptyState({ onCreate }: { onCreate: () => void }) {
               Character Vault
             </p>
             <h2 id="empty-state-title" className="font-serif text-4xl font-bold text-foreground sm:text-5xl">
-              Crie seu primeiro personagem
+              Create your first character
             </h2>
             <p className="mt-4 max-w-xl font-sans text-base leading-7 text-subdued">
-              O Vault guarda rascunhos, fichas vivas e personagens prontos para
-              exportação. Comece pela criação guiada e volte aqui para acompanhar
-              o progresso.
+              The Vault stores drafts, living sheets, and characters ready for
+              export. Start with guided creation and return here to track
+              progress.
             </p>
             <div className="mt-6 grid gap-3 text-sm text-subdued sm:grid-cols-3">
-              <VaultBenefit label="Rascunhos seguros" value="Continue de onde parou" />
-              <VaultBenefit label="Ficha viva" value="HP, AC e nível no card" />
-              <VaultBenefit label="Saída de mesa" value="Status de exportação" />
+              <VaultBenefit label="Safe drafts" value="Continue where you left off" />
+              <VaultBenefit label="Living sheet" value="HP, AC, and level on the card" />
+              <VaultBenefit label="Table output" value="Export status" />
             </div>
             <Button
               type="button"
@@ -562,7 +562,7 @@ function EmptyState({ onCreate }: { onCreate: () => void }) {
               className="mt-8 h-auto gap-3 px-6 py-3 font-sans font-bold hover:bg-destructive active:scale-95"
             >
               <Plus className="h-5 w-5" />
-              Criar personagem
+              Create Character
             </Button>
           </div>
         </CardContent>
@@ -600,7 +600,7 @@ function PopulatedState({
   onView: (character: Character) => void;
 }) {
   const [query, setQuery] = useState("");
-  const normalizedQuery = query.trim().toLocaleLowerCase("pt-BR");
+  const normalizedQuery = query.trim().toLocaleLowerCase("en-US");
   const filteredCharacters = characters.filter((character) =>
     getSearchText(character).includes(normalizedQuery),
   );
@@ -618,8 +618,8 @@ function PopulatedState({
   const exportReadyCount = characters.length - draftCount;
   const resultLabel =
     visibleCharacters.length === 1
-      ? "1 personagem encontrado"
-      : `${visibleCharacters.length} personagens encontrados`;
+      ? "1 character found"
+      : `${visibleCharacters.length} characters found`;
 
   return (
     <section id="populated-state" aria-labelledby="dashboard-title">
@@ -627,10 +627,10 @@ function PopulatedState({
         <div>
           <p className="mb-2 text-sm font-semibold text-subdued">Character Vault</p>
           <h2 id="dashboard-title" className="font-serif text-4xl font-semibold text-foreground">
-            Vault de personagens
+            Character Vault
           </h2>
           <p className="mt-2 max-w-2xl font-sans text-base leading-7 text-subdued">
-            Continue rascunhos, organize fichas salvas e prepare personagens para a mesa.
+            Continue drafts, organize saved sheets, and prepare characters for the table.
           </p>
         </div>
         <Button
@@ -639,19 +639,19 @@ function PopulatedState({
           className="h-auto w-full gap-2 px-5 py-3 font-sans font-bold active:scale-95 sm:w-auto"
         >
           <Plus className="h-5 w-5" />
-          Criar personagem
+          Create Character
         </Button>
       </header>
 
       <div className="mb-6 grid gap-3 sm:grid-cols-3">
         <VaultMetric label="No Vault" value={String(characters.length)} />
-        <VaultMetric label="Em criação" value={String(draftCount)} />
-        <VaultMetric label="Prontas para exportar" value={String(exportReadyCount)} />
+        <VaultMetric label="In progress" value={String(draftCount)} />
+        <VaultMetric label="Ready to export" value={String(exportReadyCount)} />
       </div>
 
       <div className="mb-5 rounded-lg border border-border/70 bg-surface-base p-3">
         <label htmlFor="vault-search" className="sr-only">
-          Buscar personagem
+          Search character
         </label>
         <div className="flex items-center gap-3 rounded-md border border-border/70 bg-surface-nested px-3 py-2 focus-within:ring-2 focus-within:ring-brand-gold-alt/70">
           <Search aria-hidden="true" className="h-4 w-4 shrink-0 text-subdued" />
@@ -660,7 +660,7 @@ function PopulatedState({
             type="search"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Buscar por nome, classe, espécie, antecedente ou status"
+            placeholder="Search by name, class, species, background, or status"
             aria-describedby="vault-results"
             className="min-w-0 flex-1 bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
           />
@@ -689,7 +689,7 @@ function PopulatedState({
         </div>
       ) : (
         <div className="rounded-lg border border-border/70 bg-surface-base p-6 text-sm text-subdued">
-          Nenhum personagem corresponde à busca atual.
+          No character matches the current search.
         </div>
       )}
     </section>
@@ -717,10 +717,10 @@ function AddCharacterCard({ onCreate }: { onCreate: () => void }) {
       </span>
       <span>
         <span className="block font-serif text-2xl font-semibold text-foreground">
-          Criar personagem
+          Create Character
         </span>
         <span className="mt-2 block text-sm leading-6 text-subdued">
-          Inicie uma ficha guiada, padrão ou uma construção rápida.
+          Start a guided sheet, a standard sheet, or a quick build.
         </span>
       </span>
     </button>
@@ -778,7 +778,8 @@ function DashboardCharacterCard({
             <div className="flex items-start justify-between gap-2">
               <h4
                 id={`${character.id}-title`}
-                className="min-w-0 truncate font-serif text-2xl font-semibold text-foreground"
+                translate="no"
+                className="notranslate min-w-0 truncate font-serif text-2xl font-semibold text-foreground"
               >
                 {characterName}
               </h4>
@@ -788,8 +789,8 @@ function DashboardCharacterCard({
                 aria-pressed={isFavorite}
                 aria-label={
                   isFavorite
-                    ? `Remover ${characterName} dos favoritos`
-                    : `Favoritar ${characterName}`
+                    ? `Remove ${characterName} from favorites`
+                    : `Favorite ${characterName}`
                 }
                 className="rounded-md p-1 text-subdued outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70"
               >
@@ -799,7 +800,7 @@ function DashboardCharacterCard({
                 />
               </button>
             </div>
-            <p className="mt-1 line-clamp-2 text-sm leading-5 text-subdued">
+            <p translate="no" className="notranslate mt-1 line-clamp-2 text-sm leading-5 text-subdued">
               {characterLine}
             </p>
           </div>
@@ -807,26 +808,26 @@ function DashboardCharacterCard({
 
         <div className="mb-4 flex flex-wrap gap-2">
           <StatusBadge label={status} />
-          <StatusBadge label={readyToExport ? "Exportação pronta" : "Exportação pendente"} />
+          <StatusBadge label={readyToExport ? "Export ready" : "Export pending"} />
         </div>
 
         <dl className="grid grid-cols-3 gap-2">
-          <CharacterMetric label="Nível" value={String(character.level ?? 1)} />
+          <CharacterMetric label="Level" value={String(character.level ?? 1)} />
           <CharacterMetric label="HP" value={formatNullableNumber(character.hitPoints)} />
           <CharacterMetric label="AC" value={formatNullableNumber(character.armorClass)} />
         </dl>
 
         <div className="mt-4 rounded-lg border border-border/60 bg-surface-nested px-3 py-3 text-sm leading-6 text-subdued">
           <p>
-            <span className="font-semibold text-foreground">Passo atual:</span>{" "}
+            <span className="font-semibold text-foreground">Current step:</span>{" "}
             {currentStepLabel}
           </p>
           <p>
-            <span className="font-semibold text-foreground">Conclusão:</span>{" "}
+            <span className="font-semibold text-foreground">Completion:</span>{" "}
             {completionLabel}
           </p>
           <p>
-            <span className="font-semibold text-foreground">Última edição:</span>{" "}
+            <span className="font-semibold text-foreground">Last edit:</span>{" "}
             {formatLastUpdated(character.updatedAt)}
           </p>
         </div>
@@ -838,25 +839,25 @@ function DashboardCharacterCard({
           onClick={readyToExport ? onView : onContinue}
           className="rounded-lg bg-primary px-3 py-2 font-sans text-sm font-bold text-foreground outline-none transition-colors hover:bg-destructive active:scale-95 focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70"
         >
-          {readyToExport ? "Abrir ficha" : "Continuar criação"}
+          {readyToExport ? "Open Sheet" : "Continue Creation"}
         </button>
         <div className="grid grid-cols-4 gap-2">
           <QuickActionButton
-            label={`Exportar ${characterName}`}
+            label={`Export ${characterName}`}
             disabled={!readyToExport}
             onClick={onExport}
-            title={readyToExport ? "Abrir ficha para exportar" : "Conclua a criação para exportar"}
+            title={readyToExport ? "Open sheet to export" : "Complete creation to export"}
           >
             <FileDown className="h-4 w-4" />
           </QuickActionButton>
-          <QuickActionButton label={`Duplicar ${characterName}`} onClick={onDuplicate}>
+          <QuickActionButton label={`Duplicate ${characterName}`} onClick={onDuplicate}>
             <Copy className="h-4 w-4" />
           </QuickActionButton>
-          <QuickActionButton label={`Ver ficha de ${characterName}`} onClick={onView}>
+          <QuickActionButton label={`View ${characterName} sheet`} onClick={onView}>
             <Eye className="h-4 w-4" />
           </QuickActionButton>
           <QuickActionButton
-            label={`Excluir ${characterName}`}
+            label={`Delete ${characterName}`}
             onClick={onDelete}
             variant="danger"
           >
@@ -922,7 +923,7 @@ function QuickActionButton({
 function DashboardBottomNav() {
   return (
     <nav
-      aria-label="Navegação mobile"
+      aria-label="Mobile navigation"
       className="fixed bottom-0 left-0 z-50 flex w-full items-center justify-around rounded-t-xl border-t border-white/[0.06] bg-surface-base/95 px-4 py-2 shadow-2xl backdrop-blur-lg lg:hidden"
     >
       {mobileNavigation.map((item) => (
@@ -962,7 +963,7 @@ function MobileNavItem({
     <button
       type="button"
       aria-disabled="true"
-      title={`${label}: em breve`}
+      title={`${label}: coming soon`}
       className={`${className} cursor-not-allowed opacity-60`}
     >
       <Icon aria-hidden="true" className="h-5 w-5" />
@@ -998,23 +999,33 @@ function isCharacterDraft(character: Character): boolean {
     !character.nome ||
     character.nome === missingCharacterName ||
     !character.classe ||
-    character.classe === missingClassLabel ||
-    character.classe === "Classe nao definida" ||
+    isMissingClass(character.classe) ||
     !character.species ||
-    character.species === missingSpeciesLabel ||
-    character.species === "Especie nao definida"
+    isMissingSpecies(character.species)
   );
+}
+
+function isMissingClass(value: string): boolean {
+  return value === missingClassLabel || value === "Classe nao definida" || value === "Class not set";
+}
+
+function isMissingSpecies(value: string): boolean {
+  return value === missingSpeciesLabel || value === "Especie nao definida" || value === "Species not set";
 }
 
 function getCharacterName(character: Character): string {
   return character.nome && character.nome !== missingCharacterName
     ? character.nome
-    : "Rascunho sem nome";
+    : "Unnamed Draft";
 }
 
 function getCharacterLine(character: Character): string {
-  const characterClass = character.classe || missingClassLabel;
-  const species = character.species || missingSpeciesLabel;
+  const characterClass = character.classe && !isMissingClass(character.classe)
+    ? character.classe
+    : missingClassLabel;
+  const species = character.species && !isMissingSpecies(character.species)
+    ? character.species
+    : missingSpeciesLabel;
   const background = character.background || missingBackgroundLabel;
 
   return `${characterClass} / ${species} / ${background}`;
@@ -1026,22 +1037,22 @@ function getSearchText(character: Character): string {
     getCharacterLine(character),
     getCurrentStepLabel(character.currentStepHref),
     getCharacterStatus(character),
-    isExportReady(character) ? "exportacao pronta pronto exportar" : "exportacao pendente",
+    isExportReady(character) ? "export ready ready export" : "export pending",
   ]
     .join(" ")
-    .toLocaleLowerCase("pt-BR");
+    .toLocaleLowerCase("en-US");
 }
 
 function getCharacterStatus(character: Character): string {
   if (isExportReady(character)) {
-    return "Pronta para exportar";
+    return "Ready to export";
   }
 
   if (hasBlockingIssue(character)) {
-    return "Incompleta";
+    return "Incomplete";
   }
 
-  return "Em criação";
+  return "In progress";
 }
 
 function isExportReady(character: Character): boolean {
@@ -1059,7 +1070,7 @@ function hasBlockingIssue(character: Character): boolean {
 
 function getCompletionLabel(character: Character): string {
   if (isExportReady(character)) {
-    return "Ficha completa";
+    return "Sheet complete";
   }
 
   const currentStep = getCurrentStepSlug(character.currentStepHref);
@@ -1067,7 +1078,7 @@ function getCompletionLabel(character: Character): string {
   const safeIndex = currentIndex >= 0 ? currentIndex : 0;
   const completion = Math.round(((safeIndex + 1) / builderStepOrder.length) * 100);
 
-  return `${completion}% concluído`;
+  return `${completion}% complete`;
 }
 
 function formatNullableNumber(value: number | undefined): string {
@@ -1076,16 +1087,16 @@ function formatNullableNumber(value: number | undefined): string {
 
 function formatLastUpdated(updatedAt: string | undefined): string {
   if (!updatedAt) {
-    return "Sem registro";
+    return "No record";
   }
 
   const date = new Date(updatedAt);
 
   if (Number.isNaN(date.getTime())) {
-    return "Sem registro";
+    return "No record";
   }
 
-  return new Intl.DateTimeFormat("pt-BR", {
+  return new Intl.DateTimeFormat("en-US", {
     day: "2-digit",
     month: "short",
     year: "numeric",
@@ -1096,28 +1107,28 @@ function getCurrentStepLabel(currentStepHref: string | undefined): string {
   const step = getCurrentStepSlug(currentStepHref);
 
   if (!step) {
-    return "Classe";
+    return "Class";
   }
 
   switch (step) {
     case "recursos-classe":
-      return "Recursos de classe";
+      return "Class Features";
     case "antecedente":
-      return "Antecedente";
+      return "Background";
     case "especie":
-      return "Espécie";
+      return "Species";
     case "detalhes-especie":
-      return "Detalhes da espécie";
+      return "Species Details";
     case "atributos":
-      return "Atributos";
+      return "Ability Scores";
     case "equipamento":
-      return "Equipamento";
+      return "Equipment";
     case "descricao":
-      return "Descrição";
+      return "Description";
     case "conclusao":
-      return "Conclusão";
+      return "Summary";
     default:
-      return "Classe";
+      return "Class";
   }
 }
 

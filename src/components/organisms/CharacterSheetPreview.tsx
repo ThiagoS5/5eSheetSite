@@ -45,8 +45,8 @@ export function CharacterSheetPreview({
     <button
       type="button"
       aria-expanded={!collapsed}
-      aria-label={collapsed ? "Expandir informações do herói" : "Recolher informações do herói"}
-      title={collapsed ? "Expandir painel" : "Recolher painel"}
+      aria-label={collapsed ? "Expand hero information" : "Collapse hero information"}
+      title={collapsed ? "Expand panel" : "Collapse panel"}
       onClick={onToggleCollapsed}
       className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-transparent text-subdued outline-none transition hover:bg-white/5 hover:text-foreground focus-visible:ring-2 focus-visible:ring-primary/70"
     >
@@ -74,7 +74,7 @@ export function CharacterSheetPreview({
               {description.nome.trim().charAt(0).toUpperCase() || "?"}
             </span>
             <p className="sr-only" id="sheet-preview-title">
-              Ficha do herói recolhida
+              Hero sheet collapsed
             </p>
           </div>
         ) : (
@@ -90,16 +90,17 @@ export function CharacterSheetPreview({
             </span>
             <div className="min-w-0">
               <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                Nível {summary.level} · Regras {summary.ruleset}
+                Level <span translate="no" className="notranslate">{summary.level}</span> · Rules <span translate="no" className="notranslate">{summary.ruleset}</span>
               </p>
               <h2
                 id="sheet-preview-title"
-                className="truncate font-serif text-lg font-bold tracking-wide text-foreground"
+                translate="no"
+                className="notranslate truncate font-serif text-lg font-bold tracking-wide text-foreground"
               >
-                {description.nome || "Herói sem nome"}
+                {description.nome || "Unnamed Hero"}
               </h2>
-              <p className="text-base text-muted-foreground">
-                {speciesName || "Espécie"} · {className || "Classe"}
+              <p translate="no" className="notranslate text-base text-muted-foreground">
+                {speciesName || "Species"} · {className || "Class"}
               </p>
             </div>
           </div>
@@ -110,31 +111,31 @@ export function CharacterSheetPreview({
             id="sheet-core-title"
             className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground"
           >
-            Resumo
+            Summary
           </h3>
           <dl className="mt-3 grid gap-3 text-sm">
             <div className="grid grid-cols-2 gap-3">
-              <Metric label="PV" value={String(summary.hitPoints)} tone="red" />
-              <Metric label="CA" value={String(summary.armorClass)} tone="blue" />
+              <Metric label="HP" value={String(summary.hitPoints)} tone="red" />
+              <Metric label="AC" value={String(summary.armorClass)} tone="blue" />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <Metric
-                label="Proficiência"
+                label="Proficiency"
                 value={`+${summary.proficiencyBonus}`}
                 tone="green"
               />
-              <Metric label="Iniciativa" value={formatSigned(getAbilityModifier(summary.finalAttributes.destreza))} tone="gold" />
+              <Metric label="Initiative" value={formatSigned(getAbilityModifier(summary.finalAttributes.destreza))} tone="gold" />
             </div>
             <div>
-              <dt className="text-muted-foreground">Antecedente</dt>
-              <dd className="font-semibold text-foreground">
-                {backgroundName || "Não definido"}
+              <dt className="text-muted-foreground">Background</dt>
+              <dd translate="no" className="notranslate font-semibold text-foreground">
+                {backgroundName || "Not set"}
               </dd>
             </div>
             <div>
-              <dt className="text-muted-foreground">Talento de Origem</dt>
-              <dd className="font-semibold text-foreground">
-                {summary.originFeat || "Definido pelo antecedente"}
+              <dt className="text-muted-foreground">Origin Feat</dt>
+              <dd translate="no" className="notranslate font-semibold text-foreground">
+                {summary.originFeat || "Defined by background"}
               </dd>
             </div>
           </dl>
@@ -145,7 +146,7 @@ export function CharacterSheetPreview({
             id="sheet-attributes-title"
             className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground"
           >
-            Atributos
+            Ability Scores
           </h3>
           <dl className="mt-3 grid grid-cols-3 gap-2">
             {attributes.map((attribute) => {
@@ -176,16 +177,16 @@ export function CharacterSheetPreview({
             id="sheet-features-title"
             className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground"
           >
-            Traços e Recursos
+            Traits and Features
           </h3>
           <div className="mt-3 grid gap-3">
             <TagList
               items={summary.selectedTraits.map((trait) => trait.name)}
-              emptyLabel="Traços selecionados"
+              emptyLabel="Selected traits"
             />
             <TagList
               items={summary.classFeatures.map((feature) => feature.name)}
-              emptyLabel="Recursos de classe"
+              emptyLabel="Class features"
             />
           </div>
         </section>
@@ -195,7 +196,7 @@ export function CharacterSheetPreview({
             id="sheet-status-title"
             className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground"
           >
-            Pendências
+            Pending Items
           </h3>
           {summary.validationMessages.length > 0 ? (
             <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-accent">
@@ -205,7 +206,7 @@ export function CharacterSheetPreview({
             </ul>
           ) : (
             <p className="mt-3 rounded-md border border-brand-green/30 bg-brand-green/10 px-3 py-2 text-sm text-brand-green">
-              Todas as etapas obrigatórias estão preenchidas.
+              All required steps are complete.
             </p>
           )}
         </section>
@@ -241,7 +242,7 @@ function Metric({
       <dt className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
         {label}
       </dt>
-      <dd className="mt-1 font-serif text-xl font-bold text-foreground">{value}</dd>
+      <dd translate="no" className="notranslate mt-1 font-serif text-xl font-bold text-foreground">{value}</dd>
     </div>
   );
 }
