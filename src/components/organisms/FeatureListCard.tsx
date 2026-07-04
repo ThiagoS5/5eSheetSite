@@ -28,8 +28,8 @@ export function FeatureListCard({
       </h3>
       {features.length > 0 ? (
         <ul className="mt-4 grid gap-3">
-          {features.map((feature) => (
-            <FeatureRow key={`${title}-${feature.name}`} feature={feature} />
+          {features.map((feature, index) => (
+            <FeatureRow key={`${title}-${feature.name}-${index}`} feature={feature} />
           ))}
         </ul>
       ) : (

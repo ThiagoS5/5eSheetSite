@@ -125,6 +125,61 @@ describe("character selectors", () => {
     expect(after.maxHp).toBe(before.maxHp + 4);
   });
 
+  it("applies half-feat ability bonuses to final attributes and derived values", () => {
+    const store = createCharacterStore();
+    store.getState().selectClass("fighter-xphb");
+    store.getState().setLevel(4);
+    store.getState().setConstituicao(13);
+    const before = selectCharacterSheetSummary(store.getState());
+
+    store.getState().setLevelAsiOrFeat(4, {
+      mode: "feat",
+      featId: "speedy-xphb",
+      asi: { constituicao: 1 },
+    });
+    const after = selectCharacterSheetSummary(store.getState());
+
+    expect(after.finalAttributes.constituicao).toBe(before.finalAttributes.constituicao + 1);
+    expect(after.maxHp).toBe(before.maxHp + 4);
+  });
+
+  it("applies skill proficiencies selected inside a feat", () => {
+    const store = createCharacterStore();
+    store.getState().selectClass("fighter-xphb");
+    store.getState().setLevel(4);
+    store.getState().setSabedoria(13);
+    const before = selectCharacterSheetSummary(store.getState());
+
+    store.getState().setLevelAsiOrFeat(4, {
+      mode: "feat",
+      featId: "skill-expert-xphb",
+      asi: { sabedoria: 1 },
+      skillProficiencies: ["Perception"],
+    });
+    const after = selectCharacterSheetSummary(store.getState());
+    const perception = after.skills.find((skill) => skill.name === "Perception");
+
+    expect(after.finalAttributes.sabedoria).toBe(before.finalAttributes.sabedoria + 1);
+    expect(perception?.isProficient).toBe(true);
+    expect(after.passives.perception).toBe(before.passives.perception + 3);
+  });
+
+  it("uses the real origin feat description and applies origin feat effects", () => {
+    const store = createCharacterStore();
+    store.getState().selectBackground("criminal-xphb");
+    store.getState().setDestreza(10);
+
+    const summary = selectCharacterSheetSummary(store.getState());
+    const originFeature = summary.features.find(
+      (feature) => feature.source === "background" && feature.name === "Alert",
+    );
+
+    expect(summary.originFeat).toBe("Alert");
+    expect(summary.initiative).toBe(5);
+    expect(originFeature?.description).toMatch(/initiative/i);
+    expect(originFeature?.description).not.toMatch(/gp|po|equipment|equipamento/i);
+  });
+
   it("includes selected subclass features and reports level pendings", () => {
     const store = createCharacterStore();
     store.getState().selectClass("fighter-xphb");

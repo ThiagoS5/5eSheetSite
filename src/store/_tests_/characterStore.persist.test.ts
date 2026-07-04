@@ -118,7 +118,7 @@ describe("createCharacterStore persistence", () => {
           },
         },
         exportMetadata: {
-          schemaVersion: 7,
+          schemaVersion: 8,
           saveId: expect.any(String),
         },
       },
@@ -171,7 +171,7 @@ describe("createCharacterStore persistence", () => {
     const store = createCharacterStore();
     const build = store.getState().characterBuild;
 
-    expect(build.exportMetadata.schemaVersion).toBe(7);
+    expect(build.exportMetadata.schemaVersion).toBe(8);
     expect(build.choices.selectedSubclassId).toBe("");
     expect(build.progression.levelChoices["1"].classFeatureChoices).toEqual({
       "weapon-mastery": ["Longsword"],
@@ -179,7 +179,7 @@ describe("createCharacterStore persistence", () => {
     expect(store.getState().selectedSubclassId).toBe("");
   });
 
-  it("migrates a v6 save to v7 with beginnerMode disabled by default", () => {
+  it("migrates a v6 save to v8 with beginnerMode disabled by default", () => {
     const v6Build = {
       draft: {
         currentStepSlug: "classe",
@@ -228,9 +228,75 @@ describe("createCharacterStore persistence", () => {
 
     const store = createCharacterStore();
 
-    expect(store.getState().characterBuild.exportMetadata.schemaVersion).toBe(7);
+    expect(store.getState().characterBuild.exportMetadata.schemaVersion).toBe(8);
     expect(store.getState().beginnerMode).toBe(false);
     expect(store.getState().characterBuild.choices.beginnerMode).toBe(false);
+  });
+
+  it("migrates a v7 save to v8 preserving feat choices", () => {
+    const v7Build = {
+      draft: {
+        currentStepSlug: "classe",
+        maxUnlockedStepIndex: 0,
+        pendingChoiceIds: [],
+        inventory: [],
+        equipmentChoicesBySource: {},
+        description: {},
+      },
+      progression: {
+        level: 4,
+        levelChoices: {
+          "4": {
+            classFeatureChoices: {},
+            asiOrFeat: { mode: "feat", featId: "grappler-xphb", asi: { forca: 1 } },
+          },
+        },
+      },
+      choices: {
+        ruleset: "2024",
+        selectedSpeciesId: "",
+        selectedClassId: "fighter-xphb",
+        selectedSubclassId: "",
+        selectedBackgroundId: "",
+        classSkillProficiencies: [],
+        skillTraining: {},
+        classFeatureChoices: {},
+        speciesChoices: {},
+        speciesLanguages: [],
+        attributeGenerationMethod: "standard-array",
+        baseAttributes: {
+          forca: 8,
+          destreza: 8,
+          constituicao: 8,
+          inteligencia: 8,
+          sabedoria: 8,
+          carisma: 8,
+        },
+        backgroundAbilityBonuses: {},
+        money: { pc: 0, pp: 0, pe: 0, po: 0, pl: 0 },
+        moneyTouched: false,
+        carriedLoadKg: 0,
+        skillModifierOverrides: {},
+        creationPreferences: { activeSources: ["XPHB"], progressionMode: "xp" },
+        beginnerMode: false,
+      },
+      derivedSheet: {},
+      exportMetadata: { schemaVersion: 7, saveId: "legacy-v7", createdAt: "x", updatedAt: "x" },
+    };
+
+    sessionStorage.setItem(
+      "ficha-5e-builder",
+      JSON.stringify({ state: { characterBuild: v7Build }, version: 7 }),
+    );
+
+    const store = createCharacterStore();
+
+    expect(store.getState().characterBuild.exportMetadata.schemaVersion).toBe(8);
+    expect(store.getState().asiOrFeatByLevel["4"]).toEqual({
+      mode: "feat",
+      featId: "grappler-xphb",
+      asi: { forca: 1 },
+    });
   });
 
   it("commits the active build into the local repository when advancing", async () => {

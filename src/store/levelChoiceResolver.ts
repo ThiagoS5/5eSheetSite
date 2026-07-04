@@ -1,9 +1,11 @@
 import { getLevelRequirements, type LevelChoiceRequirement } from "@/rules/levelProgression";
-import { getSubclassesForClass } from "@/src/services/ruleService";
+import { getFeats, getSubclassesForClass } from "@/src/services/ruleService";
 import type { CharacterBuilderState } from "@/src/store/characterStore.types";
 import type { AsiOrFeatChoice } from "@/src/types/characterBuild";
 import type { BuilderClass, BuilderFeature } from "@/types/builder";
 import type { AttributeBonuses, AttributeKey } from "@/types/dnd";
+import { calculateFinalAttributes } from "@/src/adapters/characterDerivedAdapter";
+import { ASI_FEAT_ID, getFeatPrerequisiteStatus } from "@/src/adapters/featCatalog";
 
 export interface UnresolvedChoice {
   level: number;
@@ -43,6 +45,67 @@ function isValidAsi(choice: AsiOrFeatChoice): boolean {
   );
 }
 
+function selectedFeatIds(state: CharacterBuilderState): string[] {
+  return Object.values(state.asiOrFeatByLevel)
+    .filter((choice) => choice.mode === "feat")
+    .map((choice) => (choice as { featId: string }).featId);
+}
+
+function finalAttributesForPrerequisites(state: CharacterBuilderState) {
+  const mergedBonuses = { ...state.backgroundAbilityBonuses };
+  addBonuses(mergedBonuses, collectAsiBonuses(state));
+  return calculateFinalAttributes(state.baseAttributes, mergedBonuses);
+}
+
+function hasRequiredFeatChoices(choice: Extract<AsiOrFeatChoice, { mode: "feat" }>): boolean {
+  const feat = getFeats().find((entry) => entry.id === choice.featId);
+  if (!feat) return false;
+  const requirements = feat.effects?.choiceRequirements ?? [];
+  for (const requirement of requirements) {
+    if (requirement.kind === "ability") {
+      const picked = Object.entries(choice.asi ?? {}).filter(
+        ([key, value]) =>
+          typeof value === "number" &&
+          value > 0 &&
+          (!requirement.options || requirement.options.includes(key)),
+      );
+      if (picked.length !== requirement.count) return false;
+    }
+    if (requirement.kind === "skill") {
+      const picked = choice.skillProficiencies ?? [];
+      if (picked.length < requirement.count) return false;
+      if (requirement.options && !picked.every((entry) => requirement.options?.includes(entry))) {
+        return false;
+      }
+    }
+    if (requirement.kind === "tool") {
+      if ((choice.toolProficiencies ?? []).length < requirement.count) return false;
+    }
+    if (requirement.kind === "language") {
+      if ((choice.languageProficiencies ?? []).length < requirement.count) return false;
+    }
+  }
+  return true;
+}
+
+function isValidFeatChoice(
+  req: Extract<LevelChoiceRequirement, { kind: "asi-or-feat" }>,
+  choice: Extract<AsiOrFeatChoice, { mode: "feat" }>,
+  state: CharacterBuilderState,
+): boolean {
+  const feat = getFeats().find((entry) => entry.id === choice.featId);
+  if (!feat) return false;
+  if (feat.id === ASI_FEAT_ID) return false;
+  const expectedCategory = req.level >= 19 ? "epic-boon" : "general";
+  if (feat.category !== expectedCategory) return false;
+  const status = getFeatPrerequisiteStatus(feat, {
+    level: req.level,
+    finalAttributes: finalAttributesForPrerequisites(state),
+    chosenFeatIds: selectedFeatIds(state),
+  });
+  return status.met && hasRequiredFeatChoices(choice);
+}
+
 /** Subclass features unlocked up to the current level for the selected subclass. */
 export function getActiveSubclassFeatures(
   state: CharacterBuilderState,
@@ -68,7 +131,7 @@ function isRequirementResolved(
     const choice = state.asiOrFeatByLevel[String(req.level)];
     return (
       choice !== undefined &&
-      (choice.mode === "feat" ? choice.featId !== "" : isValidAsi(choice))
+      (choice.mode === "feat" ? isValidFeatChoice(req, choice, state) : isValidAsi(choice))
     );
   }
   return (state.classFeatureChoices[req.id] ?? []).length === req.count;

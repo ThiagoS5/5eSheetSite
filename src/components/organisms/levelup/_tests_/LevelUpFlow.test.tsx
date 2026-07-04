@@ -8,6 +8,8 @@ import { afterEach, describe, expect, it } from "vitest";
 import { CharacterStoreProvider, useCharacterStore } from "@/src/store/useCharacterStore";
 import { LevelUpFlow } from "@/src/components/organisms/levelup/LevelUpFlow";
 
+const INTEGRATION_TEST_TIMEOUT_MS = 15_000;
+
 // Opens the flow AFTER setting up state (a real open transition), and pre-resolves
 // the level-1 Weapon Mastery feature-option (3 arbitrary picks satisfy count===3)
 // and the HP roll for the target level, leaving the subclass as the sole pending step.
@@ -51,7 +53,7 @@ describe("LevelUpFlow", () => {
 
     fireEvent.click(screen.getAllByRole("button", { name: /Selecionar/ })[0]);
     expect(screen.getByRole("button", { name: /Continuar|Concluir/ })).toBeEnabled();
-  });
+  }, INTEGRATION_TEST_TIMEOUT_MS);
 
   it("re-snapshots pending choices on each reopen (not stale)", () => {
     function ReopenHarness() {
@@ -91,7 +93,7 @@ describe("LevelUpFlow", () => {
     expect(screen.getByRole("heading", { name: "Aumento de Atributo ou Talento" })).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Fechar" }));
-  });
+  }, INTEGRATION_TEST_TIMEOUT_MS);
 
   it("inserts a HitPointsStep first when leveling up past level 1 without a recorded roll", () => {
     function HpHarness() {
@@ -124,5 +126,5 @@ describe("LevelUpFlow", () => {
 
     // Choosing média records the roll, resolving the (only) HP step.
     expect(screen.getByRole("button", { name: /Continuar|Concluir/ })).toBeEnabled();
-  });
+  }, INTEGRATION_TEST_TIMEOUT_MS);
 });

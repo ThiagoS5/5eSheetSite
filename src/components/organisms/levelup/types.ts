@@ -28,6 +28,7 @@ export interface AsiOrFeatStepProps {
   level: number;
   attributes: AsiAttribute[];
   selectableFeats: BuilderFeat[];
+  blockedFeats?: Array<{ feat: BuilderFeat; reason: string }>;
   value: AsiOrFeatChoice | undefined;
   onChange: (choice: AsiOrFeatChoice | undefined) => void;
 }

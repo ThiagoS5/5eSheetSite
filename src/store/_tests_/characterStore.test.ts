@@ -37,7 +37,7 @@ describe("createCharacterStore", () => {
           selectedBackgroundId: "",
         },
         exportMetadata: {
-          schemaVersion: 7,
+          schemaVersion: 8,
           saveId: expect.any(String),
           createdAt: expect.any(String),
           updatedAt: expect.any(String),
@@ -269,7 +269,7 @@ describe("createCharacterStore", () => {
 
     expect(store.getState().beginnerMode).toBe(true);
     expect(store.getState().characterBuild.choices.beginnerMode).toBe(true);
-    expect(store.getState().characterBuild.exportMetadata.schemaVersion).toBe(7);
+    expect(store.getState().characterBuild.exportMetadata.schemaVersion).toBe(8);
   });
 });
 

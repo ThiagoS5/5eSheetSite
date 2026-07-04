@@ -1,6 +1,7 @@
 import {
   getBuilderBackgrounds,
   getBuilderClasses,
+  getFeats,
   getBuilderSpecies,
 } from "@/src/services/ruleService";
 import { getItemCatalog } from "@/src/services/itemCatalogService";
@@ -25,6 +26,7 @@ import {
   collectAsiBonuses,
   getActiveSubclassFeatures,
 } from "@/src/store/levelChoiceResolver";
+import { applyFeatEffects, type AppliedFeatEffects } from "@/src/adapters/featCatalog";
 import type { CharacterBuilderState } from "@/src/store/characterStore.types";
 import { EMPTY_COIN_POUCH } from "@/src/types/characterBuild";
 import type {
@@ -85,12 +87,17 @@ export function selectCharacterSheetSummary(
   const background = getBuilderBackgrounds().find(
     (entry) => entry.id === state.selectedBackgroundId,
   );
+  const featEffects = deriveFeatEffects(state, background);
   const selectedEquipment = deriveSelectedEquipment(state, characterClass);
-  const finalAttributes = deriveFinalAttributes(state);
+  const finalAttributes = deriveFinalAttributes(state, featEffects.abilityBonuses);
   const proficiencyBonus = getProficiencyBonus(state.level);
+  const classAndFeatSkillProficiencies = [
+    ...state.classSkillProficiencies,
+    ...featEffects.skillProficiencies,
+  ];
   const skills = computeSkills({
     finalAttributes,
-    classSkillProficiencies: state.classSkillProficiencies,
+    classSkillProficiencies: classAndFeatSkillProficiencies,
     skillTraining: state.skillTraining,
     proficiencyBonus,
     skillModifierOverrides: state.skillModifierOverrides,
@@ -127,7 +134,7 @@ export function selectCharacterSheetSummary(
     selectedEquipment,
     selectedTraits: species?.traits ?? [],
     classFeatures: classFeaturesUpToLevel,
-    classSkillProficiencies: state.classSkillProficiencies,
+    classSkillProficiencies: classAndFeatSkillProficiencies,
     skillTraining: state.skillTraining,
     classFeatureChoices: state.classFeatureChoices,
     speciesChoices: state.speciesChoices,
@@ -148,9 +155,9 @@ export function selectCharacterSheetSummary(
     }),
     tempHp: 0,
     hitDice: `${state.level}d${characterClass?.hitDie ?? 6}`,
-    initiative: getAbilityModifier(finalAttributes.destreza),
-    speedFeet: species?.speed ?? 30,
-    speedMeters: feetToMeters(species?.speed ?? 30),
+    initiative: getAbilityModifier(finalAttributes.destreza) + featEffects.initiativeBonus,
+    speedFeet: (species?.speed ?? 30) + featEffects.speedBonusFeet,
+    speedMeters: feetToMeters((species?.speed ?? 30) + featEffects.speedBonusFeet),
     xp: xpForLevel(state.level),
     xpThreshold: xpThresholdForNextLevel(state.level),
     progressionMode: state.creationPreferences?.progressionMode ?? "xp",
@@ -164,7 +171,7 @@ export function selectCharacterSheetSummary(
     }),
     passives: computePassives(skills),
     senses: species?.senses ?? [],
-    languages: state.speciesLanguages,
+    languages: [...state.speciesLanguages, ...featEffects.languageProficiencies],
     resistances: [],
     immunities: [],
     vulnerabilities: [],
@@ -222,14 +229,69 @@ function deriveSelectedEquipment(
     }));
 }
 
-function deriveFinalAttributes(state: CharacterBuilderState) {
+function deriveFinalAttributes(
+  state: CharacterBuilderState,
+  featAbilityBonuses: Partial<Record<AttributeKey, number>> = {},
+) {
   const asiBonuses = collectAsiBonuses(state);
   const mergedBonuses = { ...state.backgroundAbilityBonuses };
   for (const [key, value] of Object.entries(asiBonuses)) {
     mergedBonuses[key as AttributeKey] =
       (mergedBonuses[key as AttributeKey] ?? 0) + (value ?? 0);
   }
+  for (const [key, value] of Object.entries(featAbilityBonuses)) {
+    mergedBonuses[key as AttributeKey] =
+      (mergedBonuses[key as AttributeKey] ?? 0) + (value ?? 0);
+  }
   return calculateFinalAttributes(state.baseAttributes, mergedBonuses);
+}
+
+function resolveOriginFeat(
+  background: ReturnType<typeof getBuilderBackgrounds>[number] | undefined,
+) {
+  if (!background?.originFeat) return undefined;
+  const feats = getFeats();
+  const originName = background.originFeat;
+  const baseName = originName.replace(/\s*\(.+\)\s*$/, "");
+  return (
+    feats.find((feat) => feat.name === originName && feat.source === "XPHB") ??
+    feats.find((feat) => feat.name === baseName && feat.source === "XPHB") ??
+    feats.find((feat) => feat.name === originName) ??
+    feats.find((feat) => feat.name === baseName)
+  );
+}
+
+function deriveFeatEffects(
+  state: CharacterBuilderState,
+  background: ReturnType<typeof getBuilderBackgrounds>[number] | undefined,
+): AppliedFeatEffects {
+  const feats = getFeats();
+  let effects: AppliedFeatEffects = {
+    abilityBonuses: {},
+    initiativeBonus: 0,
+    speedBonusFeet: 0,
+    skillProficiencies: [],
+    toolProficiencies: [],
+    languageProficiencies: [],
+  };
+
+  const originFeat = resolveOriginFeat(background);
+  if (originFeat) {
+    effects = applyFeatEffects(effects, originFeat);
+  }
+
+  for (const [level, choice] of Object.entries(state.asiOrFeatByLevel)) {
+    if (Number(level) > state.level || choice.mode !== "feat") continue;
+    const feat = feats.find((entry) => entry.id === choice.featId);
+    if (!feat) continue;
+    const nonAbilityChoice = {
+      ...choice,
+      asi: undefined,
+    };
+    effects = applyFeatEffects(effects, feat, nonAbilityChoice);
+  }
+
+  return effects;
 }
 
 function deriveSheetAttributes(
@@ -272,7 +334,7 @@ function deriveFeatures(input: {
     ...(input.background
       ? [{
           name: input.background.originFeat,
-          description: input.background.equipmentSummary,
+          description: resolveOriginFeat(input.background)?.description ?? "",
           source: "background" as const,
         }]
       : []),

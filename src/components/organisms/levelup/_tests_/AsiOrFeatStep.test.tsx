@@ -20,16 +20,62 @@ const attributes: AsiAttribute[] = [
 ];
 const feats: BuilderFeat[] = [
   { id: "alert-xphb", name: "Alert", source: "XPHB", category: "general", prerequisites: [], repeatable: false, description: "" },
+  {
+    id: "grappler-xphb",
+    name: "Grappler",
+    source: "XPHB",
+    category: "general",
+    prerequisites: [],
+    repeatable: false,
+    description: "",
+    abilityBonus: { choose: { from: ["forca", "destreza"], amount: 1 } },
+  },
+  {
+    id: "skill-expert-xphb",
+    name: "Skill Expert",
+    source: "XPHB",
+    category: "general",
+    prerequisites: [],
+    repeatable: false,
+    description: "",
+    abilityBonus: { choose: { from: ["sabedoria", "inteligencia"], amount: 1 } },
+    effects: {
+      choiceRequirements: [
+        { kind: "ability", count: 1, options: ["sabedoria", "inteligencia"] },
+        { kind: "skill", count: 1, options: ["Perception", "Investigation"] },
+      ],
+    },
+  },
 ];
 
 // Controlled harness: feeds the emitted value back as the prop, like the real orchestrator.
-function Harness({ onChange }: { onChange: (c: AsiOrFeatChoice | undefined) => void }) {
-  const [value, setValue] = useState<AsiOrFeatChoice | undefined>(undefined);
+function Harness({
+  onChange,
+  initialValue,
+}: {
+  onChange: (c: AsiOrFeatChoice | undefined) => void;
+  initialValue?: AsiOrFeatChoice;
+}) {
+  const [value, setValue] = useState<AsiOrFeatChoice | undefined>(initialValue);
   return (
     <AsiOrFeatStep
       level={4}
       attributes={attributes}
       selectableFeats={feats}
+      blockedFeats={[
+        {
+          feat: {
+            id: "epic-boon-of-fate-xphb",
+            name: "Epic Boon of Fate",
+            source: "XPHB",
+            category: "epic-boon",
+            prerequisites: [{ level: 19 }],
+            repeatable: false,
+            description: "",
+          },
+          reason: "Requer nivel 19.",
+        },
+      ]}
       value={value}
       onChange={(c) => { onChange(c); setValue(c); }}
     />
@@ -61,5 +107,59 @@ describe("AsiOrFeatStep", () => {
     fireEvent.click(screen.getByRole("button", { name: "Talento" }));
     fireEvent.click(screen.getByRole("button", { name: /Alert/ }));
     expect(onChange).toHaveBeenCalledWith({ mode: "feat", featId: "alert-xphb" });
+  });
+
+  it("clears an existing ASI when switching to the feat tab", () => {
+    const onChange = vi.fn();
+    render(<Harness onChange={onChange} initialValue={{ mode: "asi", increases: { constituicao: 2 } }} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Talento" }));
+
+    expect(onChange).toHaveBeenCalledWith(undefined);
+  });
+
+  it("stores a half-feat attribute choice inside the feat choice", () => {
+    const onChange = vi.fn();
+    render(<Harness onChange={onChange} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Talento" }));
+    fireEvent.click(screen.getByRole("button", { name: /Grappler/ }));
+    expect(screen.getByText(/escolha o atributo/i)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /Força/ }));
+
+    expect(onChange).toHaveBeenLastCalledWith({
+      mode: "feat",
+      featId: "grappler-xphb",
+      asi: { forca: 1 },
+    });
+  });
+
+  it("stores required feat proficiency choices with the feat", () => {
+    const onChange = vi.fn();
+    render(<Harness onChange={onChange} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Talento" }));
+    fireEvent.click(screen.getByRole("button", { name: /Skill Expert/ }));
+    expect(screen.getByText(/escolha 1 pericia/i)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /Sabedoria/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Perception/ }));
+
+    expect(onChange).toHaveBeenLastCalledWith({
+      mode: "feat",
+      featId: "skill-expert-xphb",
+      asi: { sabedoria: 1 },
+      skillProficiencies: ["Perception"],
+    });
+  });
+
+  it("renders blocked feats with a visible reason", () => {
+    const onChange = vi.fn();
+    render(<Harness onChange={onChange} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Talento" }));
+
+    expect(screen.getByText("Epic Boon of Fate")).toBeInTheDocument();
+    expect(screen.getByText(/requer nivel 19/i)).toBeInTheDocument();
   });
 });

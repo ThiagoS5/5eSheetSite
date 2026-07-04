@@ -9,7 +9,7 @@ import type {
   Ruleset,
 } from "@/types/dnd";
 
-export const CHARACTER_BUILD_SCHEMA_VERSION = 7;
+export const CHARACTER_BUILD_SCHEMA_VERSION = 8;
 
 export interface CoinPouch {
   pc: number;
@@ -23,7 +23,14 @@ export const EMPTY_COIN_POUCH: CoinPouch = { pc: 0, pp: 0, pe: 0, po: 0, pl: 0 }
 
 export type AsiOrFeatChoice =
   | { mode: "asi"; increases: AttributeBonuses }
-  | { mode: "feat"; featId: string; asi?: AttributeBonuses };
+  | {
+      mode: "feat";
+      featId: string;
+      asi?: AttributeBonuses;
+      skillProficiencies?: string[];
+      toolProficiencies?: string[];
+      languageProficiencies?: string[];
+    };
 
 export type AttributeGenerationMethod =
   | "standard-array"

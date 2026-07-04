@@ -238,6 +238,22 @@ export interface FeatPrerequisite {
   feat?: string[];
 }
 
+export interface FeatChoiceRequirement {
+  kind: "ability" | "skill" | "tool" | "language";
+  count: number;
+  options?: string[];
+}
+
+export interface FeatStructuredEffects {
+  abilityBonuses?: AttributeBonuses;
+  initiativeBonus?: number;
+  speedBonusFeet?: number;
+  skillProficiencies?: string[];
+  toolProficiencies?: string[];
+  languageProficiencies?: string[];
+  choiceRequirements?: FeatChoiceRequirement[];
+}
+
 export interface BuilderFeat {
   id: string;
   name: string;
@@ -245,6 +261,7 @@ export interface BuilderFeat {
   category: FeatCategory;
   prerequisites: FeatPrerequisite[];
   abilityBonus?: FeatAbilityBonus;
+  effects?: FeatStructuredEffects;
   repeatable: boolean;
   description: string;
 }

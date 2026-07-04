@@ -6,7 +6,7 @@ import { useMemo, useState } from "react";
 import { getBuilderClasses, getFeats } from "@/src/services/ruleService";
 import { selectCharacterSheetSummary } from "@/src/store/characterSelectors";
 import { getPendingRequirements } from "@/src/store/levelChoiceResolver";
-import { getSelectableFeats } from "@/src/adapters/featCatalog";
+import { getFeatPrerequisiteStatus, getSelectableFeats } from "@/src/adapters/featCatalog";
 import { useCharacterStore } from "@/src/store/useCharacterStore";
 import { ATTRIBUTE_LABELS, type AttributeKey } from "@/types/dnd";
 import { getLevelRequirements, type LevelChoiceRequirement } from "@/rules/levelProgression";
@@ -144,19 +144,33 @@ export function LevelUpFlow({ open, onClose }: LevelUpFlowProps) {
       label: ATTRIBUTE_LABELS[key],
       current: summary.finalAttributes[key] - (contribution[key] ?? 0),
     }));
+    const allFeats = getFeats();
+    const featCategory = req.level >= 19 ? "epic-boon" : "general";
+    const chosenFeatIds = Object.entries(state.asiOrFeatByLevel)
+      .filter(([level, c]) => Number(level) !== req.level && c.mode === "feat")
+      .map(([, c]) => (c as { featId: string }).featId);
     const ctx = {
       level: req.level,
       finalAttributes: summary.finalAttributes,
-      chosenFeatIds: Object.values(state.asiOrFeatByLevel)
-        .filter((c) => c.mode === "feat")
-        .map((c) => (c as { featId: string }).featId),
+      chosenFeatIds,
     };
-    const selectableFeats = getSelectableFeats("general", getFeats(), ctx);
+    const selectableFeats = getSelectableFeats(featCategory, allFeats, ctx);
+    const selectedIds = new Set(chosenFeatIds);
+    const selectableIds = new Set(selectableFeats.map((feat) => feat.id));
+    const blockedFeats = allFeats
+      .filter((feat) => feat.category === featCategory && !selectableIds.has(feat.id))
+      .map((feat) => ({ feat, status: getFeatPrerequisiteStatus(feat, ctx) }))
+      .filter(({ feat, status }) => !status.met || (!feat.repeatable && selectedIds.has(feat.id)))
+      .map(({ feat, status }) => ({
+        feat,
+        reason: status.reason ?? "Talento ja escolhido.",
+      }));
     return (
       <AsiOrFeatStep
         level={req.level}
         attributes={attributes}
         selectableFeats={selectableFeats}
+        blockedFeats={blockedFeats}
         value={value}
         onChange={(choice) => state.setLevelAsiOrFeat(req.level, choice)}
       />

@@ -1,24 +1,48 @@
 "use client";
 
 import { useState } from "react";
+import { SKILL_NAMES } from "@/rules/skillRules";
 import type { AsiOrFeatStepProps } from "@/src/components/organisms/levelup/types";
+import type { BuilderFeat } from "@/types/builder";
 import type { AttributeKey } from "@/types/dnd";
 
 type Tab = "asi" | "feat";
 type AsiMode = "one" | "two";
 
-export function AsiOrFeatStep({ level, attributes, selectableFeats, value, onChange }: AsiOrFeatStepProps) {
+export function AsiOrFeatStep({
+  level,
+  attributes,
+  selectableFeats,
+  blockedFeats = [],
+  value,
+  onChange,
+}: AsiOrFeatStepProps) {
   const [tab, setTab] = useState<Tab>(value?.mode === "feat" ? "feat" : "asi");
   const [mode, setMode] = useState<AsiMode>(() => {
     if (value?.mode === "asi" && Object.keys(value.increases).length === 2) return "two";
     return "one";
   });
   const increases = value?.mode === "asi" ? value.increases : {};
-
   const picked = Object.keys(increases) as AttributeKey[];
   const perPoint = mode === "one" ? 2 : 1;
   const maxPicks = mode === "one" ? 1 : 2;
   const selectedFeatId = value?.mode === "feat" ? value.featId : "";
+  const selectedFeat = selectableFeats.find((feat) => feat.id === selectedFeatId);
+  const selectedSkillRequirement = selectedFeat?.effects?.choiceRequirements?.find(
+    (requirement) => requirement.kind === "skill",
+  );
+  const selectedFeatSkills = value?.mode === "feat" ? (value.skillProficiencies ?? []) : [];
+
+  function activeFeatValue(feat: BuilderFeat) {
+    return value?.mode === "feat" && value.featId === feat.id ? value : undefined;
+  }
+
+  function switchTab(nextTab: Tab) {
+    setTab(nextTab);
+    if (value !== undefined && value.mode !== nextTab) {
+      onChange(undefined);
+    }
+  }
 
   function emitAsi(next: Partial<Record<AttributeKey, number>>) {
     onChange({ mode: "asi", increases: next });
@@ -44,19 +68,57 @@ export function AsiOrFeatStep({ level, attributes, selectableFeats, value, onCha
     onChange({ mode: "asi", increases: {} });
   }
 
+  function chooseFeat(feat: BuilderFeat) {
+    onChange({ mode: "feat", featId: feat.id });
+  }
+
+  function chooseFeatAbility(feat: BuilderFeat, key: AttributeKey) {
+    const activeValue = activeFeatValue(feat);
+    onChange({
+      mode: "feat",
+      featId: feat.id,
+      asi: { [key]: feat.abilityBonus?.choose?.amount ?? 1 },
+      skillProficiencies: activeValue?.skillProficiencies,
+      toolProficiencies: activeValue?.toolProficiencies,
+      languageProficiencies: activeValue?.languageProficiencies,
+    });
+  }
+
+  function chooseFeatSkill(feat: BuilderFeat, skill: string) {
+    const activeValue = activeFeatValue(feat);
+    const requirement = feat.effects?.choiceRequirements?.find((entry) => entry.kind === "skill");
+    const current = activeValue?.skillProficiencies ?? [];
+    const next = current.includes(skill)
+      ? current.filter((entry) => entry !== skill)
+      : requirement?.count === 1
+        ? [skill]
+        : current.length < (requirement?.count ?? 1)
+          ? [...current, skill]
+          : current;
+
+    onChange({
+      mode: "feat",
+      featId: feat.id,
+      asi: activeValue?.asi,
+      skillProficiencies: next,
+      toolProficiencies: activeValue?.toolProficiencies,
+      languageProficiencies: activeValue?.languageProficiencies,
+    });
+  }
+
   return (
-    <section aria-label={`Nível ${level} · Aumento de Atributo ou Talento`}>
+    <section aria-label={`Nivel ${level} - Aumento de Atributo ou Talento`}>
       <header className="mb-4">
-        <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">Nível {level}</p>
+        <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">Nivel {level}</p>
         <h2 className="font-serif text-xl font-bold tracking-wide text-foreground">Aumento de Atributo ou Talento</h2>
       </header>
 
       <div className="mb-4 flex gap-2">
-        <button type="button" aria-pressed={tab === "asi"} onClick={() => setTab("asi")}
+        <button type="button" aria-pressed={tab === "asi"} onClick={() => switchTab("asi")}
           className="flex-1 rounded-md border px-3 py-2 text-sm font-semibold outline-none transition aria-pressed:border-brand-crimson-alt aria-pressed:bg-brand-crimson-alt/10 aria-pressed:text-foreground [&:not([aria-pressed=true])]:border-white/[0.08] [&:not([aria-pressed=true])]:text-muted-foreground [&:not([aria-pressed=true])]:opacity-60 focus-visible:ring-2 focus-visible:ring-brand-crimson-alt/70">
           Aumento de Atributo
         </button>
-        <button type="button" aria-pressed={tab === "feat"} onClick={() => setTab("feat")}
+        <button type="button" aria-pressed={tab === "feat"} onClick={() => switchTab("feat")}
           className="flex-1 rounded-md border px-3 py-2 text-sm font-semibold outline-none transition aria-pressed:border-brand-crimson-alt aria-pressed:bg-brand-crimson-alt/10 aria-pressed:text-foreground [&:not([aria-pressed=true])]:border-white/[0.08] [&:not([aria-pressed=true])]:text-muted-foreground [&:not([aria-pressed=true])]:opacity-60 focus-visible:ring-2 focus-visible:ring-brand-crimson-alt/70">
           Talento
         </button>
@@ -86,7 +148,7 @@ export function AsiOrFeatStep({ level, attributes, selectableFeats, value, onCha
                 <button key={attr.key} type="button" onClick={() => pickAttr(attr.key)} disabled={isLocked} aria-pressed={isSel}
                   className="flex items-center justify-between rounded-md border border-white/[0.08] bg-card px-3 py-2 text-sm text-subdued outline-none transition hover:border-white/15 focus-visible:ring-2 focus-visible:ring-brand-crimson-alt/70 disabled:cursor-not-allowed disabled:opacity-40 aria-pressed:border-brand-crimson-alt aria-pressed:bg-brand-crimson-alt/10 aria-pressed:text-foreground">
                   <span>{attr.label}</span>
-                  <span>{isSel ? <span className="font-bold text-accent">+{perPoint} </span> : null}{attr.current} → {newVal}</span>
+                  <span>{isSel ? <span className="font-bold text-accent">+{perPoint} </span> : null}{attr.current} -&gt; {newVal}</span>
                 </button>
               );
             })}
@@ -94,17 +156,78 @@ export function AsiOrFeatStep({ level, attributes, selectableFeats, value, onCha
         </div>
       ) : (
         <div className="grid gap-2">
-          {selectableFeats.length === 0 ? (
-            <p className="text-sm text-faint">Nenhum talento elegível.</p>
+          {selectableFeats.length === 0 && blockedFeats.length === 0 ? (
+            <p className="text-sm text-faint">Nenhum talento elegivel.</p>
           ) : (
-            selectableFeats.map((feat) => (
-              <button key={feat.id} type="button" onClick={() => onChange({ mode: "feat", featId: feat.id })} aria-pressed={feat.id === selectedFeatId}
-                className="rounded-md border border-white/[0.08] bg-card px-3 py-2 text-left outline-none transition hover:border-white/15 focus-visible:ring-2 focus-visible:ring-brand-crimson-alt/70 aria-pressed:border-brand-crimson-alt aria-pressed:bg-brand-crimson-alt/10">
-                <span className="block text-sm font-semibold text-foreground">{feat.name}</span>
-                {feat.description ? <span className="mt-0.5 block text-xs text-faint">{feat.description}</span> : null}
-              </button>
-            ))
+            <>
+              {selectableFeats.map((feat) => (
+                <button key={feat.id} type="button" onClick={() => chooseFeat(feat)} aria-pressed={feat.id === selectedFeatId}
+                  className="rounded-md border border-white/[0.08] bg-card px-3 py-2 text-left outline-none transition hover:border-white/15 focus-visible:ring-2 focus-visible:ring-brand-crimson-alt/70 aria-pressed:border-brand-crimson-alt aria-pressed:bg-brand-crimson-alt/10">
+                  <span className="block text-sm font-semibold text-foreground">{feat.name}</span>
+                  {feat.description ? <span className="mt-0.5 block text-xs text-faint">{feat.description}</span> : null}
+                </button>
+              ))}
+              {blockedFeats.map(({ feat, reason }) => (
+                <div key={feat.id} className="rounded-md border border-white/[0.06] bg-muted/30 px-3 py-2 text-left opacity-70">
+                  <span className="block text-sm font-semibold text-foreground">{feat.name}</span>
+                  <span className="mt-0.5 block text-xs text-faint">{reason}</span>
+                </div>
+              ))}
+            </>
           )}
+          {selectedFeat?.abilityBonus?.choose ? (
+            <div className="mt-2 rounded-md border border-white/[0.08] bg-background/40 p-3">
+              <p className="mb-2 text-xs text-faint">Escolha o atributo aumentado por este talento.</p>
+              <div className="grid gap-2 sm:grid-cols-2">
+                {attributes
+                  .filter((attr) => selectedFeat.abilityBonus?.choose?.from.includes(attr.key))
+                  .map((attr) => {
+                    const amount = selectedFeat.abilityBonus?.choose?.amount ?? 1;
+                    const isSelected = value?.mode === "feat" && value.asi?.[attr.key] === amount;
+                    return (
+                      <button
+                        key={attr.key}
+                        type="button"
+                        onClick={() => chooseFeatAbility(selectedFeat, attr.key)}
+                        aria-pressed={isSelected}
+                        className="flex items-center justify-between rounded-md border border-white/[0.08] bg-card px-3 py-2 text-sm text-subdued outline-none transition hover:border-white/15 focus-visible:ring-2 focus-visible:ring-brand-crimson-alt/70 aria-pressed:border-brand-crimson-alt aria-pressed:bg-brand-crimson-alt/10 aria-pressed:text-foreground"
+                      >
+                        <span>{attr.label}</span>
+                        <span><span className="font-bold text-accent">+{amount} </span>{attr.current} -&gt; {attr.current + amount}</span>
+                      </button>
+                    );
+                  })}
+              </div>
+            </div>
+          ) : null}
+          {selectedFeat && selectedSkillRequirement ? (
+            <div className="mt-2 rounded-md border border-white/[0.08] bg-background/40 p-3">
+              <p className="mb-2 text-xs text-faint">
+                Escolha {selectedSkillRequirement.count} pericia
+                {selectedSkillRequirement.count > 1 ? "s" : ""} concedida
+                {selectedSkillRequirement.count > 1 ? "s" : ""} por este talento.
+              </p>
+              <div className="grid max-h-56 gap-2 overflow-y-auto pr-1 sm:grid-cols-2">
+                {(selectedSkillRequirement.options ?? SKILL_NAMES).map((skill) => {
+                  const isSelected = selectedFeatSkills.includes(skill);
+                  const isLocked =
+                    !isSelected && selectedFeatSkills.length >= selectedSkillRequirement.count;
+                  return (
+                    <button
+                      key={skill}
+                      type="button"
+                      onClick={() => chooseFeatSkill(selectedFeat, skill)}
+                      disabled={isLocked}
+                      aria-pressed={isSelected}
+                      className="rounded-md border border-white/[0.08] bg-card px-3 py-2 text-left text-sm text-subdued outline-none transition hover:border-white/15 focus-visible:ring-2 focus-visible:ring-brand-crimson-alt/70 disabled:cursor-not-allowed disabled:opacity-40 aria-pressed:border-brand-crimson-alt aria-pressed:bg-brand-crimson-alt/10 aria-pressed:text-foreground"
+                    >
+                      {skill}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ) : null}
         </div>
       )}
     </section>

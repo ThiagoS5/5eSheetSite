@@ -44,7 +44,7 @@ const SKILL_ATTRIBUTE: Record<string, AttributeKey> = {
   Persuasion: "carisma",
 };
 
-const ALL_SKILLS = Object.keys(SKILL_DISPLAY);
+export const SKILL_NAMES = Object.keys(SKILL_DISPLAY);
 
 export function computeSkills(input: {
   finalAttributes: CharacterAttributes;
@@ -62,7 +62,7 @@ export function computeSkills(input: {
   } = input;
   const profSet = new Set(classSkillProficiencies);
 
-  return ALL_SKILLS.map((name) => {
+  return SKILL_NAMES.map((name) => {
     const attrKey = SKILL_ATTRIBUTE[name] ?? "inteligencia";
     const baseMod = getAbilityModifier(finalAttributes[attrKey]);
     const training =
