@@ -11,13 +11,13 @@ describe("builder validation", () => {
         ...initialCharacterState,
         selectedClassId: "fighter-xphb",
       }),
-    ).toStrictEqual(["Escolha 2 pericias de classe para continuar."]);
+    ).toStrictEqual(["Choose 2 class skills to continue."]);
     expect(
       validateBuilderStep("antecedente", {
         ...initialCharacterState,
         selectedBackgroundId: "acolyte-xphb",
       }),
-    ).toStrictEqual(["Escolha os bonus de atributo do Antecedente 2024."]);
+    ).toStrictEqual(["Choose the 2024 Background ability bonuses."]);
     expect(validateBuilderStep("especie", initialCharacterState)).toHaveLength(1);
     expect(
       validateBuilderStep("detalhes-especie", {
@@ -25,8 +25,8 @@ describe("builder validation", () => {
         selectedSpeciesId: "dragonborn-xphb",
       }),
     ).toStrictEqual([
-      "Escolha o ancestral draconico.",
-      "Escolha 2 idiomas de especie.",
+      "Choose your Draconic Ancestry.",
+      "Choose 2 species languages.",
     ]);
     expect(validateBuilderStep("equipamento", initialCharacterState)).toHaveLength(1);
   });
@@ -48,7 +48,7 @@ describe("builder validation", () => {
         ...initialCharacterState,
         attributeGenerationMethod: "point-buy",
       }),
-    ).toStrictEqual(["Gaste exatamente 27 pontos no Point Buy para continuar."]);
+    ).toStrictEqual(["Spend exactly 27 points in Point Buy to continue."]);
 
     expect(
       validateBuilderStep("atributos", {
@@ -59,7 +59,7 @@ describe("builder validation", () => {
           forca: 16,
         },
       }),
-    ).toStrictEqual(["No Point Buy, atributos base devem estar entre 8 e 15."]);
+    ).toStrictEqual(["In Point Buy, base ability scores must be between 8 and 15."]);
   });
 
   it("accepts roll-4d6 attributes without the point-buy constraints", () => {
@@ -86,7 +86,7 @@ describe("builder validation", () => {
         selectedClassId: "bard-xphb",
         classSkillProficiencies: ["Arcana", "Performance"],
       }),
-    ).toStrictEqual(["Escolha 3 pericias de classe para continuar."]);
+    ).toStrictEqual(["Choose 3 class skills to continue."]);
 
     expect(
       validateBuilderStep("recursos-classe", {
@@ -117,7 +117,7 @@ describe("builder validation", () => {
         classSkillProficiencies: ["Acrobatics", "Athletics"],
         classFeatureChoices: rogue ? validFeatureChoices(rogue) : {},
       }),
-    ).toStrictEqual(["Escolha 4 pericias de classe para continuar."]);
+    ).toStrictEqual(["Choose 4 class skills to continue."]);
 
     expect(
       validateBuilderStep("recursos-classe", {
@@ -140,7 +140,7 @@ describe("builder validation", () => {
         classSkillProficiencies: ["Athletics", "Insight"],
         classFeatureChoices: ranger ? validFeatureChoices(ranger) : {},
       }),
-    ).toStrictEqual(["Escolha 3 pericias de classe para continuar."]);
+    ).toStrictEqual(["Choose 3 class skills to continue."]);
 
     expect(
       validateBuilderStep("recursos-classe", {
@@ -175,7 +175,7 @@ describe("builder validation", () => {
             classFeatureChoices: featureChoices,
           }),
         ).toStrictEqual([
-          `Escolha ${cls.skillChoices.count} pericias de classe para continuar.`,
+          `Choose ${cls.skillChoices.count} class skills to continue.`,
         ]);
       }
     }
@@ -195,7 +195,7 @@ describe("builder validation", () => {
         selectedClassId: "barbarian-xphb",
         classSkillProficiencies: ["Athletics", "Perception"],
       }),
-    ).toStrictEqual(["Escolha 2 opcoes para Weapon Mastery."]);
+    ).toStrictEqual(["Choose 2 options for Weapon Mastery."]);
 
     expect(
       validateBuilderStep("recursos-classe", {
@@ -219,7 +219,7 @@ describe("builder validation", () => {
           sabedoria: 2,
         },
       }),
-    ).toStrictEqual(["Escolha os bonus de atributo do Antecedente 2024."]);
+    ).toStrictEqual(["Choose the 2024 Background ability bonuses."]);
 
     expect(
       validateBuilderStep("antecedente", {

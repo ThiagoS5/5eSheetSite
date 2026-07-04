@@ -65,27 +65,27 @@ const classFiles = [
 export function getDataSourceAudit(): DataSourceAuditEntry[] {
   return [
     {
-      step: "Classe",
+      step: "Class",
       files: ["data/class/*.json"],
       purpose: "Classes, hit dice, proficiencies, features, and starting equipment.",
     },
     {
-      step: "Raca/Especie",
+      step: "Species",
       files: ["data/races.json", "data/languages.json"],
       purpose: "2024 species traits, size, speed, senses, resistances, and magic.",
     },
     {
-      step: "Antecedente",
+      step: "Background",
       files: ["data/backgrounds.json", "data/feats.json"],
       purpose: "2024 ability bonuses, origin feats, skills, tools, and equipment.",
     },
     {
-      step: "Atributos",
+      step: "Ability Scores",
       files: ["data/charcreationoptions.json", "data/backgrounds.json"],
       purpose: "Attribute generation methods and background ability choices.",
     },
     {
-      step: "Equipamento",
+      step: "Equipment",
       files: ["data/items.json", "data/class/*.json", "data/backgrounds.json"],
       purpose: "Class/background equipment and item-derived sheet values.",
     },

@@ -6,7 +6,7 @@ export interface ClassChangeImpact {
 }
 
 function formatSkillCount(count: number): string {
-  return count === 1 ? "1 pericia de classe" : `${count} pericias de classe`;
+  return count === 1 ? "1 class skill" : `${count} class skills`;
 }
 
 /**
@@ -37,7 +37,7 @@ export function getClassChangeImpact({
   }
 
   if (state.equipmentChoicesBySource.class) {
-    items.push("Kit de equipamento da classe");
+    items.push("Class equipment kit");
   }
 
   if (state.selectedSubclassId) {
@@ -45,7 +45,7 @@ export function getClassChangeImpact({
       (entry) => entry.id === state.selectedSubclassId,
     );
     if (subclass) {
-      items.push(`Subclasse: ${subclass.name}`);
+      items.push(`Subclass: ${subclass.name}`);
     }
   }
 

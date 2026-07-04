@@ -4,6 +4,7 @@ import {
   normalizeCharacterBuild,
 } from "@/src/store/characterBuildModel";
 import {
+  getBuilderBackgrounds,
   getBuilderClasses,
   getBuilderSpecies,
 } from "@/src/services/ruleService";
@@ -165,20 +166,30 @@ function toDashboardCharacter(character: CharacterBuild): Character {
   const species = getBuilderSpecies().find(
     (entry) => entry.id === character.choices.selectedSpeciesId,
   );
+  const background = getBuilderBackgrounds().find(
+    (entry) => entry.id === character.choices.selectedBackgroundId,
+  );
+  const sheet = character.derivedSheet;
 
   return {
     id: character.exportMetadata.saveId,
-    nome: character.draft.description.nome || "Personagem sem nome",
-    classe: characterClass?.name ?? "Classe nao definida",
-    species: species?.name ?? "Especie nao definida",
+    nome: character.draft.description.nome || "Unnamed Character",
+    classe: sheet.className || characterClass?.name || "Class pending",
+    species: sheet.speciesName || species?.name || "Species pending",
+    background: sheet.backgroundName || background?.name || "Background pending",
     level: character.progression.level,
+    hitPoints: sheet.maxHp || sheet.hitPoints,
+    armorClass: sheet.armorClass,
+    updatedAt: character.exportMetadata.updatedAt,
+    validationMessages: sheet.validationMessages,
+    pendencies: sheet.pendencies,
     currentStepHref: getStepHref(character.draft.currentStepSlug),
     atributos: character.derivedSheet.finalAttributes,
   };
 }
 
 function createDuplicateName(name: string): string {
-  return `${name || "Personagem sem nome"} (Copia)`;
+  return `${name || "Unnamed Character"} (Copy)`;
 }
 
 function getStorageItem(key: string): string | null {

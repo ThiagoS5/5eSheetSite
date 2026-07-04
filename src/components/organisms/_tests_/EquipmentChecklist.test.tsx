@@ -64,7 +64,7 @@ describe("EquipmentChecklist", () => {
       />,
     );
 
-    expect(screen.getByText("EQUIPAMENTO DA CLASSE")).toBeInTheDocument();
+    expect(screen.getByText("CLASS EQUIPMENT")).toBeInTheDocument();
     expect(screen.getByText("Studded Leather Armor")).toBeInTheDocument();
     expect(screen.getByText("Dagger")).toBeInTheDocument();
     // Items are rendered as list elements, not clickable buttons
@@ -107,7 +107,7 @@ describe("EquipmentChecklist", () => {
     expect(screen.queryByText("Chain Mail")).toBeNull();
   });
 
-  it("clicking Itens Oferecidos tab calls both onSourceModeChange and onSourceOptionChange with first kit", () => {
+  it("clicking Offered Items tab calls both onSourceModeChange and onSourceOptionChange with first kit", () => {
     const onSourceModeChange = vi.fn();
     const onSourceOptionChange = vi.fn();
     render(
@@ -119,7 +119,7 @@ describe("EquipmentChecklist", () => {
       />,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: /Itens Oferecidos/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Offered Items/i }));
 
     expect(onSourceModeChange).toHaveBeenCalledWith("class", "items");
     expect(onSourceOptionChange).toHaveBeenCalledWith("class", "A");
@@ -176,7 +176,7 @@ describe("EquipmentChecklist", () => {
       />,
     );
 
-    expect(screen.getByText("EQUIPAMENTO DO ANTECEDENTE")).toBeInTheDocument();
+    expect(screen.getByText("BACKGROUND EQUIPMENT")).toBeInTheDocument();
     expect(screen.getByText("Dagger")).toBeInTheDocument();
     // Gold entries are filtered out in items mode
     expect(screen.queryByText("16 GP")).toBeNull();
@@ -282,8 +282,8 @@ describe("EquipmentChecklist", () => {
       />,
     );
 
-    const activeButton = screen.getByRole("button", { name: /Itens Oferecidos/i });
-    const inactiveButton = screen.getByRole("button", { name: /Ouro Inicial/i });
+    const activeButton = screen.getByRole("button", { name: /Offered Items/i });
+    const inactiveButton = screen.getByRole("button", { name: /Starting Gold/i });
 
     // Active button should have the crimson class
     expect(activeButton).toHaveClass("bg-brand-crimson-alt");

@@ -28,9 +28,9 @@ describe("CombatStatsCard", () => {
       />,
     );
 
-    expect(screen.getByText("CA")).toHaveAttribute(
+    expect(screen.getByText("AC")).toHaveAttribute(
       "title",
-      "CA 18 = 16 Chain Mail + 2 Shield",
+      "AC 18 = 16 Chain Mail + 2 Shield",
     );
     expect(screen.getByText("16 Chain Mail + 2 Shield")).toBeInTheDocument();
   });
@@ -46,7 +46,7 @@ describe("CombatStatsCard", () => {
           ],
           hitPoints: 12,
           maxHpBreakdown: [
-            { label: "Nivel 1 (d10)", value: 10 },
+            { label: "Level 1 (d10)", value: 10 },
             { label: "CON (+2 x 1)", value: 2 },
           ],
           finalAttributes: { forca: 10, destreza: 14, constituicao: 10, inteligencia: 10, sabedoria: 10, carisma: 10 },
@@ -55,10 +55,10 @@ describe("CombatStatsCard", () => {
       />,
     );
 
-    expect(screen.getByText("PV")).toHaveAttribute(
+    expect(screen.getByText("HP")).toHaveAttribute(
       "title",
-      "PV 12 = 10 Nivel 1 (d10) + 2 CON (+2 x 1)",
+      "HP 12 = 10 Level 1 (d10) + 2 CON (+2 x 1)",
     );
-    expect(screen.getByText("10 Nivel 1 (d10) + 2 CON (+2 x 1)")).toBeInTheDocument();
+    expect(screen.getByText("10 Level 1 (d10) + 2 CON (+2 x 1)")).toBeInTheDocument();
   });
 });

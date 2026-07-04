@@ -35,10 +35,10 @@ describe("BuilderShell", () => {
     expect(
       screen.getByRole("heading", { name: "FORGE & FATE" }),
     ).toBeInTheDocument();
-    expect(screen.queryByTitle("Alternar barra lateral (Ctrl+B)")).not.toBeInTheDocument();
-    expect(screen.getByTitle("Fechar barra lateral (Ctrl+B)")).toBeInTheDocument();
+    expect(screen.queryByTitle("Toggle sidebar (Ctrl+B)")).not.toBeInTheDocument();
+    expect(screen.getByTitle("Close sidebar (Ctrl+B)")).toBeInTheDocument();
     expect(
-      screen.queryByRole("button", { name: /Recolher sidebar|Expandir sidebar/i }),
+      screen.queryByRole("button", { name: /Collapse sidebar|Expand sidebar/i }),
     ).not.toBeInTheDocument();
 
     const shell = document.querySelector("main");
@@ -51,15 +51,15 @@ describe("BuilderShell", () => {
     expect(builderSection.querySelector(".sticky.top-0")).not.toBeInTheDocument();
 
     const sidebar = screen
-      .getByRole("navigation", { name: "Etapas do Character Builder" })
+      .getByRole("navigation", { name: "Character Builder steps" })
       .closest("aside");
     const preview = screen
-      .getByRole("complementary", { name: /sem nome/i })
+      .getByRole("complementary", { name: /Unnamed Hero/i })
       .closest("aside");
 
     expect(sidebar).toHaveClass("hidden", "xl:flex");
     expect(preview).toHaveClass("hidden", "xl:block");
-    expect(screen.getByRole("status", { name: /Rascunho salvo/i })).toBeInTheDocument();
+    expect(screen.getByRole("status", { name: /Saved/i })).toBeInTheDocument();
   });
 
   it("toggles the sidebar icon state with Ctrl+B", () => {
@@ -96,10 +96,10 @@ describe("BuilderShell", () => {
     );
 
     expect(
-      screen.getByRole("button", { name: /avançar/i }),
+      screen.getByRole("button", { name: /next/i }),
     ).toBeInTheDocument();
     expect(
-      screen.queryByRole("navigation", { name: "Etapas do Character Builder" }),
+      screen.queryByRole("navigation", { name: "Character Builder steps" }),
     ).not.toBeInTheDocument();
   });
 
@@ -114,7 +114,7 @@ describe("BuilderShell", () => {
       </CharacterStoreProvider>,
     );
 
-    const toggle = screen.getByRole("switch", { name: "Modo guiado" });
+    const toggle = screen.getByRole("switch", { name: "Guided mode" });
 
     expect(toggle).toHaveAttribute("aria-checked", "false");
     fireEvent.click(toggle);
@@ -134,16 +134,16 @@ describe("BuilderShell", () => {
       </CharacterStoreProvider>,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: /abrir ficha/i }));
+    fireEvent.click(screen.getByRole("button", { name: /open sheet/i }));
 
     const drawerNav = screen.getByRole("navigation", {
-      name: "Etapas do Character Builder",
+      name: "Character Builder steps",
     });
     const drawerAside = drawerNav.closest("aside");
 
     expect(drawerAside).not.toHaveClass("hidden");
     expect(drawerAside).toHaveClass("flex");
-    expect(screen.getByText("Ficha viva")).toBeInTheDocument();
+    expect(screen.getByText("Live Sheet")).toBeInTheDocument();
     expect(drawerAside).toHaveTextContent("FORGE & FATE");
   });
 
@@ -161,10 +161,10 @@ describe("BuilderShell", () => {
     );
 
     expect(
-      screen.queryByRole("button", { name: /avançar/i }),
+      screen.queryByRole("button", { name: /next/i }),
     ).not.toBeInTheDocument();
     expect(
-      screen.getByRole("navigation", { name: "Etapas do Character Builder" }),
+      screen.getByRole("navigation", { name: "Character Builder steps" }),
     ).toBeInTheDocument();
   });
 });

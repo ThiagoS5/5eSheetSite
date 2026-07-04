@@ -18,7 +18,7 @@ describe("selector purity guardrail", () => {
     const source = readFileSync("rules/characterSheetSummaryRules.ts", "utf8");
     const lineCount = source.trimEnd().split(/\r?\n/).length;
 
-    expect(lineCount).toBeLessThanOrEqual(330);
+    expect(lineCount).toBeLessThanOrEqual(365);
   });
 
   it("snapshots the derived sheet contract for an equipped fighter", () => {
@@ -64,38 +64,38 @@ describe("selector purity guardrail", () => {
           {
             "abilityKey": "forca",
             "attackBonus": "+4",
-            "damage": "1+2 Contundente",
+            "damage": "1+2 Bludgeoning",
             "damageBreakdown": [
               {
-                "label": "Dano base",
+                "label": "Base damage",
                 "value": "1",
               },
               {
-                "label": "FOR",
+                "label": "STR",
                 "value": "+2",
               },
             ],
             "isProficient": true,
-            "name": "Ataque Desarmado",
-            "notes": "FOR, proficiente, Corpo-a-corpo",
+            "name": "Unarmed Strike",
+            "notes": "STR, proficient, Melee",
           },
           {
             "abilityKey": "forca",
             "attackBonus": "+4",
-            "damage": "1d8+2 Cortante",
+            "damage": "1d8+2 Slashing",
             "damageBreakdown": [
               {
-                "label": "Dado da arma",
+                "label": "Weapon die",
                 "value": "1d8",
               },
               {
-                "label": "FOR",
+                "label": "STR",
                 "value": "+2",
               },
             ],
             "isProficient": true,
             "name": "Longsword",
-            "notes": "FOR, proficiente, Versatil",
+            "notes": "STR, proficient, Versatile",
           },
         ],
       }

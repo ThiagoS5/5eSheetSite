@@ -35,13 +35,13 @@ describe("attack rules", () => {
     expect(attacks).toContainEqual({
       name: "Longsword",
       attackBonus: "+5",
-      damage: "1d8+3 Cortante",
-      notes: "FOR, proficiente, Versatil",
+      damage: "1d8+3 Slashing",
+      notes: "STR, proficient, Versatile",
       abilityKey: "forca",
       isProficient: true,
       damageBreakdown: [
-        { label: "Dado da arma", value: "1d8" },
-        { label: "FOR", value: "+3" },
+        { label: "Weapon die", value: "1d8" },
+        { label: "STR", value: "+3" },
       ],
     });
   });
@@ -79,12 +79,12 @@ describe("attack rules", () => {
 
     expect(attacks.find((attack) => attack.name === "Longbow")).toMatchObject({
       attackBonus: "+6",
-      damage: "1d8+4 Perfurante",
+      damage: "1d8+4 Piercing",
       abilityKey: "destreza",
     });
     expect(attacks.find((attack) => attack.name === "Dagger")).toMatchObject({
       attackBonus: "+6",
-      damage: "1d4+4 Perfurante",
+      damage: "1d4+4 Piercing",
       abilityKey: "destreza",
     });
   });

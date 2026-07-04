@@ -5,12 +5,12 @@ interface CharacterCardProps {
 }
 
 const attributeLabels: Record<keyof CharacterAttributes, string> = {
-  forca: "Forca",
-  destreza: "Destreza",
-  constituicao: "Constituicao",
-  inteligencia: "Inteligencia",
-  sabedoria: "Sabedoria",
-  carisma: "Carisma",
+  forca: "Strength",
+  destreza: "Dexterity",
+  constituicao: "Constitution",
+  inteligencia: "Intelligence",
+  sabedoria: "Wisdom",
+  carisma: "Charisma",
 };
 
 export function CharacterCard({ character }: CharacterCardProps) {
@@ -20,18 +20,18 @@ export function CharacterCard({ character }: CharacterCardProps) {
       className="h-full rounded-xl border border-slate-800 bg-slate-950 p-5 shadow-lg shadow-slate-950/30"
     >
       <div className="flex flex-col gap-1">
-        <h3 id={`${character.id}-title`} className="text-xl font-semibold text-foreground">
+        <h3 translate="no" id={`${character.id}-title`} className="notranslate text-xl font-semibold text-foreground">
           {character.nome}
         </h3>
         <p className="text-sm text-slate-300">
-          <span className="font-medium text-cyan-200">{character.classe}</span>
+          <span translate="no" className="notranslate font-medium text-cyan-200">{character.classe}</span>
           {" · "}
-          {character.species}
+          <span translate="no" className="notranslate">{character.species}</span>
         </p>
       </div>
 
       <dl
-        aria-label={`Atributos de ${character.nome}`}
+        aria-label={`Ability scores for ${character.nome}`}
         className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3"
       >
         {Object.entries(attributeLabels).map(([attribute, label]) => {
@@ -45,7 +45,7 @@ export function CharacterCard({ character }: CharacterCardProps) {
               <dt className="text-xs font-medium uppercase tracking-wide text-slate-400">
                 {label}
               </dt>
-              <dd className="mt-1 text-lg font-semibold text-foreground">
+              <dd translate="no" className="notranslate mt-1 text-lg font-semibold text-foreground">
                 {character.atributos[attributeKey]}
               </dd>
             </div>

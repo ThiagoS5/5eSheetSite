@@ -43,7 +43,7 @@ export function BuilderShell({ children }: BuilderShellProps) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [sheetCollapsed, setSheetCollapsed] = useState(false);
   const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
-  // The conclusão step is the full character sheet itself, so the live preview
+  // The summary step is the full character sheet itself, so the live preview
   // aside is redundant there and is hidden.
   const isSummaryStep = pathname?.endsWith("/conclusao") ?? false;
   const showSheetPreview = !isSummaryStep;
@@ -152,8 +152,8 @@ export function BuilderShell({ children }: BuilderShellProps) {
             hasPreviousStep={Boolean(previousStep)}
             hasNextStep={Boolean(nextStep)}
             identity={{
-              name: description.nome || "Herói sem nome",
-              className: className || "Classe",
+              name: description.nome || "Unnamed Hero",
+              className: className || "Class",
               level: summary.level,
               hp: summary.hitPoints,
               ac: summary.armorClass,
@@ -167,7 +167,7 @@ export function BuilderShell({ children }: BuilderShellProps) {
         <Sheet open={mobileSheetOpen} onOpenChange={setMobileSheetOpen}>
           <SheetContent side="bottom" className="h-[85svh] overflow-y-auto">
             <SheetHeader>
-              <SheetTitle>Ficha viva</SheetTitle>
+              <SheetTitle>Live Sheet</SheetTitle>
             </SheetHeader>
             <BuilderSidebar variant="drawer" />
           </SheetContent>
@@ -198,7 +198,7 @@ function AutosaveStatus({ updatedAt }: { updatedAt: string }) {
         type="button"
         role="switch"
         aria-checked={beginnerMode}
-        aria-label="Modo guiado"
+        aria-label="Guided mode"
         onClick={handleBeginnerModeToggle}
         className={`inline-flex h-9 items-center gap-2 rounded-md border px-3 text-[10px] font-bold uppercase tracking-[0.14em] outline-none transition focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70 ${
           beginnerMode
@@ -206,7 +206,7 @@ function AutosaveStatus({ updatedAt }: { updatedAt: string }) {
             : "border-white/[0.08] bg-card text-muted-foreground hover:text-foreground"
         }`}
       >
-        Modo guiado
+        Guided mode
         <span
           aria-hidden="true"
           className={`h-2.5 w-2.5 rounded-full ${
@@ -216,7 +216,7 @@ function AutosaveStatus({ updatedAt }: { updatedAt: string }) {
       </button>
       <button
         type="button"
-        aria-label="Preferências da criação"
+        aria-label="Creation preferences"
         onClick={() => setPreferencesOpen(true)}
         className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-white/[0.08] bg-card text-muted-foreground outline-none transition hover:text-foreground focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70"
       >
@@ -224,11 +224,11 @@ function AutosaveStatus({ updatedAt }: { updatedAt: string }) {
       </button>
       <div
         role="status"
-        aria-label="Rascunho salvo"
+        aria-label="Draft saved"
         className="inline-flex items-center gap-2 rounded-md border border-white/[0.08] bg-card px-3 py-2 text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground"
       >
         <Save aria-hidden="true" className="h-3.5 w-3.5 text-brand-green" />
-        Salvo <span suppressHydrationWarning>{savedAt}</span>
+        Saved <span suppressHydrationWarning>{savedAt}</span>
       </div>
       <CreationPreferencesDialog
         open={preferencesOpen}
@@ -245,7 +245,7 @@ function formatSavedAt(value: string): string {
     return "--:--";
   }
 
-  return new Intl.DateTimeFormat("pt-BR", {
+  return new Intl.DateTimeFormat("en-US", {
     hour: "2-digit",
     minute: "2-digit",
   }).format(date);

@@ -19,9 +19,9 @@ export type DetailItem =
     };
 
 const KIND_LABEL: Record<DetailItem["kind"], string> = {
-  weapon: "Ação",
+  weapon: "Action",
   equipment: "Item",
-  spell: "Magia",
+  spell: "Spell",
 };
 
 function Tile({ label, value }: { label: string; value: string }) {
@@ -30,7 +30,7 @@ function Tile({ label, value }: { label: string; value: string }) {
       <p className="mb-0.5 text-[8.5px] font-bold uppercase leading-none tracking-[0.1em] text-muted-foreground">
         {label}
       </p>
-      <p className="text-[12.5px] text-foreground">{value}</p>
+      <p translate="no" className="notranslate text-[12.5px] text-foreground">{value}</p>
     </div>
   );
 }
@@ -54,7 +54,7 @@ export function ItemDetailModal({ item, onClose }: ItemDetailModalProps) {
                   <div className="flex items-start justify-between gap-[10px]">
                     <div>
                       <Dialog.Title asChild>
-                        <h2 className="m-0 font-serif text-[23px] font-extrabold text-foreground">{item.name}</h2>
+                        <h2 translate="no" className="notranslate m-0 font-serif text-[23px] font-extrabold text-foreground">{item.name}</h2>
                       </Dialog.Title>
                       <p className="mt-1 text-[9.5px] font-bold uppercase leading-none tracking-[0.2em] text-brand-crimson-alt">
                         {KIND_LABEL[item.kind]}
@@ -63,7 +63,7 @@ export function ItemDetailModal({ item, onClose }: ItemDetailModalProps) {
                     <Dialog.Close asChild>
                       <button
                         type="button"
-                        aria-label="Fechar"
+                        aria-label="Close"
                         className="inline-flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-lg border border-border bg-surface-nested text-muted-foreground outline-none transition hover:border-brand-crimson-alt hover:text-foreground focus-visible:ring-3 focus-visible:ring-brand-crimson-alt/70"
                       >
                         <X aria-hidden="true" className="h-[18px] w-[18px]" />
@@ -71,36 +71,36 @@ export function ItemDetailModal({ item, onClose }: ItemDetailModalProps) {
                     </Dialog.Close>
                   </div>
                 </div>
-                <Dialog.Description className="sr-only">Detalhes de {item.name}.</Dialog.Description>
+                <Dialog.Description className="sr-only">Details for {item.name}.</Dialog.Description>
 
                 <div className="flex flex-col gap-4 px-[22px] py-5">
                   {item.kind === "weapon" && (
                     <>
                       <div className="flex flex-wrap gap-[9px]">
-                        <Tile label="Acerto" value={item.attackBonus} />
-                        <Tile label="Dano" value={item.damage} />
-                        {item.notes && <Tile label="Propriedades" value={item.notes} />}
+                        <Tile label="Hit" value={item.attackBonus} />
+                        <Tile label="Damage" value={item.damage} />
+                        {item.notes && <Tile label="Properties" value={item.notes} />}
                       </div>
                     </>
                   )}
 
                   {item.kind === "equipment" && (
                     <div className="flex flex-wrap gap-[9px]">
-                      <Tile label="Quantidade" value={String(item.qty)} />
-                      {item.cost && <Tile label="Custo" value={item.cost} />}
-                      {item.armorClass != null && <Tile label="CA" value={String(item.armorClass)} />}
-                      <Tile label="Origem" value={item.source} />
+                      <Tile label="Quantity" value={String(item.qty)} />
+                      {item.cost && <Tile label="Cost" value={item.cost} />}
+                      {item.armorClass != null && <Tile label="AC" value={String(item.armorClass)} />}
+                      <Tile label="Source" value={item.source} />
                     </div>
                   )}
 
                   {item.kind === "spell" && (
                     <>
                       <div className="grid grid-cols-2 gap-[9px]">
-                        {item.castingTime && <Tile label="Tempo de Conjuração" value={item.castingTime} />}
-                        {item.range && <Tile label="Alcance" value={item.range} />}
-                        {item.target && <Tile label="Alvo" value={item.target} />}
-                        {item.duration && <Tile label="Duração" value={item.duration} />}
-                        {item.components && <Tile label="Componentes" value={item.components} />}
+                        {item.castingTime && <Tile label="Casting Time" value={item.castingTime} />}
+                        {item.range && <Tile label="Range" value={item.range} />}
+                        {item.target && <Tile label="Target" value={item.target} />}
+                        {item.duration && <Tile label="Duration" value={item.duration} />}
+                        {item.components && <Tile label="Components" value={item.components} />}
                         {item.classes && <Tile label="Classes" value={item.classes} />}
                       </div>
                       {item.description && (

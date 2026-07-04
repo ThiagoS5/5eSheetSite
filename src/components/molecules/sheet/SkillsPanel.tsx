@@ -13,8 +13,8 @@ const ATTRIBUTE_ORDER: AttributeKey[] = [
   "forca", "destreza", "constituicao", "inteligencia", "sabedoria", "carisma",
 ];
 const ATTRIBUTE_ABBR: Record<AttributeKey, string> = {
-  forca: "FOR", destreza: "DES", constituicao: "CON",
-  inteligencia: "INT", sabedoria: "SAB", carisma: "CAR",
+  forca: "STR", destreza: "DEX", constituicao: "CON",
+  inteligencia: "INT", sabedoria: "WIS", carisma: "CHA",
 };
 
 const TRAINING_CYCLE: SkillTrainingLevel[] = ["none", "proficient", "expertise"];
@@ -52,13 +52,13 @@ export function SkillsPanel({ skills }: SkillsPanelProps) {
         <div className="flex items-center gap-[7px]">
           <i aria-hidden="true" className="fa-solid fa-list-check text-[11px] text-muted-foreground" />
           <p className="text-[10px] font-bold uppercase leading-none tracking-[0.16em] text-muted-foreground">
-            Perícias
+            Skills
           </p>
         </div>
         <button
           type="button"
           aria-pressed={editMode}
-          aria-label="Configurar perícias"
+          aria-label="Configure skills"
           onClick={() => setEditMode((v) => !v)}
           className={cn(
             "inline-flex h-[22px] w-[22px] items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:text-foreground",
@@ -73,7 +73,7 @@ export function SkillsPanel({ skills }: SkillsPanelProps) {
         {groups.map((grp) => (
           <div key={grp.key}>
             <p className="mb-[5px] text-[8.5px] font-bold uppercase leading-none tracking-[0.14em] text-brand-crimson-alt">
-              {grp.abbr}
+              <span translate="no" className="notranslate">{grp.abbr}</span>
             </p>
             <div className="flex flex-col gap-px">
               {grp.skills.map((sk) => {
@@ -82,13 +82,13 @@ export function SkillsPanel({ skills }: SkillsPanelProps) {
                   : sk.isProficient
                     ? "bg-primary border-transparent"
                     : "bg-transparent border-border";
-                const label = sk.isExpert ? "Especialista" : sk.isProficient ? "Proficiente" : "Não proficiente";
+                const label = sk.isExpert ? "Expertise" : sk.isProficient ? "Proficient" : "Not proficient";
                 return (
                   <div key={sk.name} className="flex items-center gap-[9px] rounded-md px-[6px] py-1 hover:bg-surface-nested">
                     {editMode ? (
                       <button
                         type="button"
-                        aria-label={`Treino: ${sk.label}`}
+                        aria-label={`Training: ${sk.label}`}
                         onClick={() => setSkillTraining(sk.name, nextTrainingLevel(currentTrainingLevel(sk)))}
                         className={cn(
                           "h-[7px] w-[7px] shrink-0 rounded-full border",
@@ -100,7 +100,7 @@ export function SkillsPanel({ skills }: SkillsPanelProps) {
                       <span aria-hidden="true" className={`h-[7px] w-[7px] shrink-0 rounded-full border ${dot}`} />
                     )}
                     <span className="sr-only">{label}:</span>
-                    <span className="min-w-[30px] text-right font-serif text-sm font-bold text-foreground">
+                    <span translate="no" className="notranslate min-w-[30px] text-right font-serif text-sm font-bold text-foreground">
                       {sk.modifier >= 0 ? "+" : ""}{sk.modifier}
                     </span>
                     <button
@@ -108,17 +108,17 @@ export function SkillsPanel({ skills }: SkillsPanelProps) {
                       className={cn("text-left text-[12.5px] text-subdued", !editMode && "underline", focusRing)}
                       onClick={() => setOpenSkill({ name: sk.name, label: sk.label })}
                     >
-                      {sk.label}
+                      <span translate="no" className="notranslate">{sk.label}</span>
                     </button>
                     {sk.isOverridden && (
                       <span aria-hidden="true" className="text-[10px] text-brand-crimson-alt">
-                        *<span className="sr-only">valor ajustado</span>
+                        *<span className="sr-only">adjusted value</span>
                       </span>
                     )}
                     {editMode && (
                       <input
                         type="number"
-                        aria-label={`Ajustar ${sk.label}`}
+                        aria-label={`Adjust ${sk.label}`}
                         defaultValue={sk.isOverridden ? sk.modifier : undefined}
                         className={cn(
                           "ml-auto h-[20px] w-[44px] rounded border border-border bg-background px-1 text-right text-[11px] text-foreground",

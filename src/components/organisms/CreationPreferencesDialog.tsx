@@ -67,15 +67,15 @@ export function CreationPreferencesDialog({
         <Dialog.Overlay className="fixed inset-0 z-50 flex items-stretch justify-center overflow-y-auto bg-black/70 p-0 backdrop-blur-md md:items-center md:p-6">
           <Dialog.Content className="relative flex h-[100dvh] w-full min-w-0 flex-col overflow-hidden border border-white/[0.08] bg-surface-nested text-foreground shadow-2xl shadow-black/60 outline-none focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70 md:h-auto md:max-h-[88vh] md:max-w-lg md:rounded-xl">
             <Dialog.Title className="border-b border-white/[0.07] px-5 py-4 text-sm font-bold uppercase tracking-widest text-foreground">
-              Preferências da Criação
+              Creation Preferences
             </Dialog.Title>
             <Dialog.Description className="sr-only">
-              Escolha as fontes ativas e o modo de progressão do personagem.
+              Choose active sources and the character progression mode.
             </Dialog.Description>
             <Dialog.Close asChild>
               <button
                 type="button"
-                aria-label="Fechar"
+                aria-label="Close"
                 className="absolute right-3 top-3 z-40 inline-flex h-9 w-9 items-center justify-center rounded-full border border-border bg-muted/85 text-subdued outline-none transition hover:text-foreground focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70"
               >
                 <X aria-hidden="true" className="h-5 w-5" />
@@ -85,11 +85,11 @@ export function CreationPreferencesDialog({
             <div className="min-h-0 flex-1 space-y-6 overflow-y-auto p-5">
               <fieldset
                 role="group"
-                aria-label="Fontes ativas"
+                aria-label="Active sources"
                 className="space-y-2"
               >
                 <legend className="mb-1 text-xs font-bold uppercase tracking-widest text-subdued">
-                  Fontes ativas
+                  Active Sources
                 </legend>
                 <label className="flex items-center gap-2 text-sm text-muted-foreground">
                   <input
@@ -98,7 +98,7 @@ export function CreationPreferencesDialog({
                     disabled
                     className="h-4 w-4 accent-primary"
                   />
-                  {BASE_SOURCE} (base)
+                  <span translate="no" className="notranslate">{BASE_SOURCE}</span> (base)
                 </label>
                 {otherSources.map((source) => (
                   <label
@@ -111,18 +111,18 @@ export function CreationPreferencesDialog({
                       onChange={(e) => toggleSource(source, e.target.checked)}
                       className="h-4 w-4 accent-primary"
                     />
-                    {source}
+                    <span translate="no" className="notranslate">{source}</span>
                   </label>
                 ))}
               </fieldset>
 
               <fieldset
                 role="radiogroup"
-                aria-label="Progressão"
+                aria-label="Progression"
                 className="space-y-2"
               >
                 <legend className="mb-1 text-xs font-bold uppercase tracking-widest text-subdued">
-                  Progressão
+                  Progression
                 </legend>
                 <label className="flex items-center gap-2 text-sm text-foreground">
                   <input
@@ -142,7 +142,7 @@ export function CreationPreferencesDialog({
                     onChange={() => setProgressionMode("milestone")}
                     className="h-4 w-4 accent-primary"
                   />
-                  Marco
+                  Milestone
                 </label>
               </fieldset>
             </div>
@@ -153,14 +153,14 @@ export function CreationPreferencesDialog({
                 onClick={onClose}
                 className="rounded-md border border-white/[0.12] px-4 py-2 text-sm font-semibold text-subdued outline-none transition hover:text-foreground focus-visible:ring-2 focus-visible:ring-brand-crimson-alt/70"
               >
-                Cancelar
+                Cancel
               </button>
               <button
                 type="button"
                 onClick={handleSave}
                 className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-foreground outline-none transition focus-visible:ring-2 focus-visible:ring-brand-crimson-alt/70"
               >
-                Salvar
+                Save
               </button>
             </div>
           </Dialog.Content>

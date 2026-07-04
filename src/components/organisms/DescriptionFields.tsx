@@ -8,21 +8,21 @@ const fields: ReadonlyArray<{
   rows: number;
   span?: "full";
 }> = [
-  { name: "nome", label: "Nome", rows: 1 },
-  { name: "alinhamento", label: "Alinhamento", rows: 1 },
+  { name: "nome", label: "Name", rows: 1 },
+  { name: "alinhamento", label: "Alignment", rows: 1 },
   { name: "faith", label: "Faith", rows: 1 },
   { name: "lifestyle", label: "Lifestyle", rows: 1 },
-  { name: "age", label: "Idade", rows: 1 },
-  { name: "gender", label: "Genero", rows: 1 },
-  { name: "height", label: "Altura", rows: 1 },
-  { name: "weight", label: "Peso", rows: 1 },
-  { name: "eyes", label: "Olhos", rows: 1 },
-  { name: "skin", label: "Pele", rows: 1 },
-  { name: "hair", label: "Cabelo", rows: 1 },
-  { name: "aparencia", label: "Aparencia", rows: 4, span: "full" },
-  { name: "personalidade", label: "Personalidade", rows: 4, span: "full" },
-  { name: "tracos", label: "Tracos", rows: 3, span: "full" },
-  { name: "notas", label: "Notas", rows: 4, span: "full" },
+  { name: "age", label: "Age", rows: 1 },
+  { name: "gender", label: "Gender", rows: 1 },
+  { name: "height", label: "Height", rows: 1 },
+  { name: "weight", label: "Weight", rows: 1 },
+  { name: "eyes", label: "Eyes", rows: 1 },
+  { name: "skin", label: "Skin", rows: 1 },
+  { name: "hair", label: "Hair", rows: 1 },
+  { name: "aparencia", label: "Appearance", rows: 4, span: "full" },
+  { name: "personalidade", label: "Personality", rows: 4, span: "full" },
+  { name: "tracos", label: "Backstory", rows: 3, span: "full" },
+  { name: "notas", label: "Notes", rows: 4, span: "full" },
 ];
 
 interface DescriptionFieldsProps {
@@ -41,10 +41,10 @@ export function DescriptionFields({
           id="description-title"
           className="font-serif text-xl font-bold tracking-wide text-foreground"
         >
-          Descricao
+          Description
         </h2>
         <p className="mt-2 text-sm leading-6 text-muted-foreground">
-          Dados narrativos ficam separados das escolhas mecanicas e sao exportados ao Foundry.
+          Narrative data stays separate from mechanical choices and is exported to Foundry.
         </p>
       </div>
       <div className="grid gap-4 md:grid-cols-2">

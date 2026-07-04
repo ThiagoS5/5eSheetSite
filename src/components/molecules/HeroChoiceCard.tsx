@@ -222,9 +222,9 @@ export function HeroChoiceCard({
   disabled = false,
   onClickDetails,
   onClickSelect,
-  detailsLabel = "Saiba Mais",
-  selectLabel = "Selecionar",
-  selectedLabel = "Selecionado",
+  detailsLabel = "Learn More",
+  selectLabel = "Select",
+  selectedLabel = "Selected",
   children,
 }: HeroChoiceCardProps) {
   const themeVars = {
@@ -305,7 +305,10 @@ export function HeroChoiceCard({
       {/* Conteúdo */}
       <div className="relative z-[1] flex flex-1 flex-col justify-end px-5 pb-4 pt-[176px]">
         <div className="mb-4 flex flex-col gap-2">
-          <h3 className="font-serif text-[34px] font-extrabold leading-[38px] text-white">
+          <h3
+            translate="no"
+            className="notranslate font-serif text-[34px] font-extrabold leading-[38px] text-white"
+          >
             {title}
           </h3>
 
@@ -314,7 +317,8 @@ export function HeroChoiceCard({
               {badges.map((badge) => (
                 <span
                   key={badge}
-                  className="flex h-8 items-center justify-center overflow-hidden whitespace-nowrap rounded-full border-2 px-4 text-sm uppercase tracking-[0.8px]"
+                  translate="no"
+                  className="notranslate flex h-8 items-center justify-center overflow-hidden whitespace-nowrap rounded-full border-2 px-4 text-sm uppercase tracking-[0.8px]"
                   style={{
                     borderColor: "var(--hero-accent)",
                     backgroundColor:

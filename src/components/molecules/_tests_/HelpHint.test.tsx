@@ -11,7 +11,7 @@ describe("HelpHint", () => {
     render(<HelpHint conceptId="armor-class" beginnerMode />);
 
     const button = screen.getByRole("button", {
-      name: "O que e Classe de Armadura?",
+      name: "What is Armor Class?",
     });
 
     expect(button).toBeInTheDocument();

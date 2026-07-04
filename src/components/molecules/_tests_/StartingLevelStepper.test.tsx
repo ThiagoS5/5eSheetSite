@@ -23,18 +23,18 @@ describe("StartingLevelStepper", () => {
     render(<CharacterStoreProvider><SetClass /><ProbeLevel /><StartingLevelStepper /></CharacterStoreProvider>);
     fireEvent.click(screen.getByRole("button", { name: "setclass" }));
 
-    fireEvent.click(screen.getByRole("button", { name: "Aumentar nível" }));
+    fireEvent.click(screen.getByRole("button", { name: "Increase level" }));
     expect(screen.getByTestId("level")).toHaveTextContent("2");
 
-    fireEvent.click(screen.getByRole("button", { name: "Diminuir nível" }));
+    fireEvent.click(screen.getByRole("button", { name: "Decrease level" }));
     expect(screen.getByTestId("level")).toHaveTextContent("1");
-    expect(screen.getByRole("button", { name: "Diminuir nível" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Decrease level" })).toBeDisabled();
   });
 
   it("shows the configure button only when there are pending level choices", () => {
     render(<CharacterStoreProvider><SetClass /><StartingLevelStepper /></CharacterStoreProvider>);
     fireEvent.click(screen.getByRole("button", { name: "setclass" }));
     // level 1 fighter: weapon mastery is pending (count 3) -> button shows.
-    expect(screen.getByRole("button", { name: /Configurar escolhas/ })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Configure choices/ })).toBeInTheDocument();
   });
 });

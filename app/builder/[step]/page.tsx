@@ -10,40 +10,40 @@ import type { BuilderStepSlug } from "@/types/builder";
 
 const stepContent: Record<BuilderStepSlug, { title: string; description: string }> = {
   classe: {
-    title: "Classe",
-    description: "Escolha a classe de nivel 1 e abra detalhes para ler a progressao completa.",
+    title: "Class",
+    description: "Choose the level 1 class and open details to read the full progression.",
   },
   "recursos-classe": {
-    title: "Recursos de Classe",
-    description: "Escolha pericias e recursos iniciais exigidos pela classe selecionada.",
+    title: "Class Features",
+    description: "Choose starting skills and features required by the selected class.",
   },
   antecedente: {
-    title: "Antecedente",
-    description: "Aplique bonus de atributo 2024, Talento de Origem e dados narrativos.",
+    title: "Background",
+    description: "Apply 2024 ability score bonuses, Origin Feat, and narrative data.",
   },
   especie: {
-    title: "Raca/Especie",
-    description: "Escolha os tracos de especie 2024. Bonus de atributo nao vem daqui.",
+    title: "Species",
+    description: "Choose 2024 species traits. Ability score bonuses do not come from here.",
   },
   "detalhes-especie": {
-    title: "Detalhes da Especie",
-    description: "Configure escolhas internas como ancestral, linhagem e idiomas.",
+    title: "Species Details",
+    description: "Configure internal choices such as ancestry, lineage, and languages.",
   },
   atributos: {
-    title: "Atributos",
-    description: "Distribua valores base e veja os modificadores finais em tempo real.",
+    title: "Ability Scores",
+    description: "Distribute base values and see final modifiers in real time.",
   },
   equipamento: {
-    title: "Equipamento",
-    description: "Selecione um pacote de equipamento inicial ou a alternativa em ouro.",
+    title: "Equipment",
+    description: "Select a starting equipment package or the gold alternative.",
   },
   descricao: {
-    title: "Descricao",
-    description: "Registre identidade, aparencia, personalidade e notas do personagem.",
+    title: "Description",
+    description: "Record identity, appearance, personality, and character notes.",
   },
   conclusao: {
-    title: "Conclusao/Resumo",
-    description: "Revise a ficha consolidada e exporte um ator Foundry VTT localmente.",
+    title: "Summary",
+    description: "Review the consolidated sheet and export a Foundry VTT actor locally.",
   },
 };
 

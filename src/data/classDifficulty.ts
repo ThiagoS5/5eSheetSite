@@ -10,9 +10,9 @@
 export type ClassDifficulty = "facil" | "medio" | "dificil";
 
 export const CLASS_DIFFICULTY_LABELS: Record<ClassDifficulty, string> = {
-  facil: "Fácil",
-  medio: "Médio",
-  dificil: "Difícil",
+  facil: "Easy",
+  medio: "Moderate",
+  dificil: "Advanced",
 };
 
 const CLASS_DIFFICULTY: Record<string, ClassDifficulty> = {

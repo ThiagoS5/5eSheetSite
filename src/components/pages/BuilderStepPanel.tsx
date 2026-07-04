@@ -78,20 +78,20 @@ import { builderStepNavigation } from "@/src/components/templates/builderStepNav
 import { CharacterSheetView } from "@/src/components/pages/CharacterSheetView";
 
 /**
- * Guias do modo iniciante por etapa. A tela de classe já tem seu próprio card
- * (com o quiz guiado) e a conclusão fica de fora — as demais recebem uma
- * explicação do conceito central da etapa quando o modo iniciante está ativo.
+ * Beginner-mode guides by step. The class screen has its own guided quiz card,
+ * and summary is skipped; the other steps receive a central concept explainer
+ * when beginner mode is active.
  */
 const BEGINNER_STEP_GUIDES: Partial<
   Record<BuilderStepSlug, { conceptId: ConceptId; title: string }>
 > = {
-  "recursos-classe": { conceptId: "proficiency", title: "O que são recursos de classe?" },
-  antecedente: { conceptId: "background", title: "O que é um antecedente?" },
-  especie: { conceptId: "species", title: "O que é uma espécie?" },
-  "detalhes-especie": { conceptId: "species", title: "Detalhes da espécie" },
-  atributos: { conceptId: "attribute", title: "O que são atributos?" },
-  equipamento: { conceptId: "starting-equipment", title: "O que é equipamento inicial?" },
-  descricao: { conceptId: "table-use", title: "Dando vida ao personagem" },
+  "recursos-classe": { conceptId: "proficiency", title: "What are class features?" },
+  antecedente: { conceptId: "background", title: "What is a background?" },
+  especie: { conceptId: "species", title: "What is a species?" },
+  "detalhes-especie": { conceptId: "species", title: "Species Details" },
+  atributos: { conceptId: "attribute", title: "What are ability scores?" },
+  equipamento: { conceptId: "starting-equipment", title: "What is starting equipment?" },
+  descricao: { conceptId: "table-use", title: "Bringing the character to life" },
 };
 
 interface BuilderStepPanelProps {
@@ -137,7 +137,7 @@ export function BuilderStepPanel({
   const canAdvance = canUseCurrentStep && messages.length === 0 && Boolean(nextStep);
   const nextBlockerMessage =
     nextStep && !canAdvance
-      ? messages[0] ?? "Conclua as pendencias desta etapa para avancar."
+      ? messages[0] ?? "Complete this step's pending items to continue."
       : "";
   const selectedClass = classes.find(
     (entry) => entry.id === characterState.selectedClassId,
@@ -149,17 +149,17 @@ export function BuilderStepPanel({
     (entry) => entry.id === characterState.selectedSpeciesId,
   );
   const languageLimit = getRequiredLanguageCount(characterState);
-  const stepPositionLabel = `Etapa ${Math.max(currentStepIndex + 1, 1)}/${builderStepNavigation.length}`;
+  const stepPositionLabel = `Step ${Math.max(currentStepIndex + 1, 1)}/${builderStepNavigation.length}`;
 
   if (!canUseCurrentStep) {
     return (
       <div className="grid gap-5">
         <section className="rounded-lg border border-white/[0.06] bg-card p-5">
           <h2 className="font-serif text-xl font-bold text-foreground">
-            Etapa bloqueada
+            Step locked
           </h2>
           <p className="mt-2 text-sm leading-6 text-subdued">
-            Termine as etapas anteriores pelo botao Avancar para liberar este conteudo.
+            Complete the previous steps with the Next button to unlock this content.
           </p>
         </section>
       </div>
@@ -215,9 +215,9 @@ export function BuilderStepPanel({
       changes.length > 0
     ) {
       setPendingReplacement({
-        title: "Alterar especie",
+        title: "Change species",
         description:
-          "Trocar a especie reinicia escolhas internas e idiomas ligados a ela.",
+          "Changing species resets internal choices and languages tied to it.",
         changes,
         onConfirm: () => {
           actions.selectSpecies(speciesId);
@@ -243,9 +243,9 @@ export function BuilderStepPanel({
       changes.length > 0
     ) {
       setPendingReplacement({
-        title: "Alterar antecedente",
+        title: "Change background",
         description:
-          "Trocar o antecedente reinicia escolhas de origem que dependem dele.",
+          "Changing background resets origin choices that depend on it.",
         changes,
         onConfirm: () => {
           actions.selectBackground(backgroundId);
@@ -380,7 +380,7 @@ export function BuilderStepPanel({
                 className="justify-self-start"
                 onClick={() => router.push(previousStep.href)}
               >
-                Voltar
+                Back
               </ActionBtn>
             ) : (
               <span aria-hidden="true" />
@@ -400,7 +400,7 @@ export function BuilderStepPanel({
                   void unlockAndGo(currentStepIndex + 1);
                 }}
               >
-                Avancar
+                Next
               </ActionBtn>
             ) : (
               <span aria-hidden="true" />
@@ -461,7 +461,7 @@ function DependentReplacementDialog({
             ) : null}
             <div className="mt-5 flex justify-end gap-3">
               <Dialog.Close asChild>
-                <ActionBtn intent="secondary">Cancelar</ActionBtn>
+                <ActionBtn intent="secondary">Cancel</ActionBtn>
               </Dialog.Close>
               <ActionBtn
                 onClick={() => {
@@ -469,7 +469,7 @@ function DependentReplacementDialog({
                   onOpenChange(false);
                 }}
               >
-                Confirmar troca
+                Confirm change
               </ActionBtn>
             </div>
           </Dialog.Content>
@@ -530,20 +530,20 @@ function ClassStep({
   };
   const resultCountLabel =
     filteredClasses.length === 1
-      ? "1 classe encontrada"
-      : `${filteredClasses.length} classes encontradas`;
+      ? "1 class found"
+      : `${filteredClasses.length} classes found`;
 
   return (
     <section aria-labelledby="class-options-title" className="grid gap-6">
       <WizardStepHeader
         eyebrow="Level 1"
-        title="Escolha uma Classe"
-        description="Classe define dado de vida, proficiencias, salvaguardas e recursos."
+        title="Choose a Class"
+        description="Class defines Hit Die, proficiencies, saving throws, and features."
         id="class-options-title"
         searchId="class-filter"
-        searchLabel="Filtrar classes"
+        searchLabel="Filter classes"
         searchValue={searchQuery}
-        searchPlaceholder="Nome, fonte ou recurso..."
+        searchPlaceholder="Name, source, or feature..."
         resultCountLabel={resultCountLabel}
         onSearch={setSearchQuery}
       />
@@ -553,7 +553,7 @@ function ClassStep({
           htmlFor="class-difficulty-filter"
           className="text-[10px] font-bold uppercase tracking-[0.14em] text-subdued"
         >
-          Dificuldade
+          Difficulty
         </label>
         <select
           id="class-difficulty-filter"
@@ -563,7 +563,7 @@ function ClassStep({
           }
           className="min-h-9 rounded-md border border-border bg-muted px-3 py-1.5 text-sm text-foreground outline-none transition hover:border-white/20 focus:border-brand-gold-alt focus:ring-2 focus:ring-brand-gold-alt/40"
         >
-          <option value="all">Todas</option>
+          <option value="all">All</option>
           <option value="facil">{CLASS_DIFFICULTY_LABELS.facil}</option>
           <option value="medio">{CLASS_DIFFICULTY_LABELS.medio}</option>
           <option value="dificil">{CLASS_DIFFICULTY_LABELS.dificil}</option>
@@ -574,7 +574,7 @@ function ClassStep({
         <>
           <StepIntroCard
             conceptId="class"
-            title="O que e uma classe?"
+            title="What is a class?"
             beginnerMode={beginnerMode}
           />
           <section
@@ -591,13 +591,12 @@ function ClassStep({
                     aria-hidden="true"
                     className="h-4 w-4 text-brand-gold-alt"
                   />
-                  Não sabe por onde começar?
+                  Not sure where to start?
                 </h3>
                 <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                  Responda 5 perguntas rápidas sobre o herói que você imagina
-                  jogar. No final, destacamos as 2 classes que mais combinam
-                  com você — a decisão continua sendo sua, e as perguntas mudam
-                  a cada tentativa.
+                  Answer 5 quick questions about the hero you want to play.
+                  At the end, we highlight the 2 classes that fit you best.
+                  The choice is still yours, and the questions change each attempt.
                 </p>
               </div>
               <button
@@ -610,7 +609,7 @@ function ClassStep({
                 }}
                 className="shrink-0 rounded-md border border-brand-gold-alt/50 px-4 py-2 text-sm font-bold text-foreground outline-none transition hover:bg-brand-gold-alt/10 focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70"
               >
-                {quizQuestions ? "Fechar guia" : "Me ajude a escolher"}
+                {quizQuestions ? "Close guide" : "Help me choose"}
               </button>
             </div>
 
@@ -674,10 +673,10 @@ function ClassStep({
       ) : (
         <div className="rounded-lg border border-dashed border-border bg-card/70 p-6 text-center">
           <h3 className="font-serif text-lg font-bold text-foreground">
-            Nenhuma classe encontrada
+            No class found
           </h3>
           <p className="mt-2 text-sm leading-6 text-subdued">
-            Tente buscar por nome, fonte ou recurso inicial.
+            Try searching by name, source, or starting feature.
           </p>
         </div>
       )}
@@ -686,8 +685,8 @@ function ClassStep({
 }
 
 /**
- * Flag pendurada na moldura do card de classe indicando a recomendação do
- * quiz guiado: verde para a principal, âmbar para a segunda opção.
+ * Ribbon on the class card frame showing the guided quiz recommendation:
+ * green for the primary pick, amber for the secondary pick.
  */
 function RecommendationFlag({ tier }: { tier: "primary" | "secondary" }) {
   const isPrimary = tier === "primary";
@@ -706,7 +705,7 @@ function RecommendationFlag({ tier }: { tier: "primary" | "secondary" }) {
       ) : (
         <Star aria-hidden="true" className="h-3.5 w-3.5" />
       )}
-      {isPrimary ? "Recomendado" : "2ª opção"}
+      {isPrimary ? "Recommended" : "2nd option"}
     </span>
   );
 }
@@ -738,7 +737,7 @@ function ClassGuideQuiz({
         <fieldset className="grid gap-3">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <span className="text-xs font-bold uppercase tracking-[0.14em] text-brand-gold-alt">
-              Pergunta {answers.length + 1} de {questions.length}
+              Question {answers.length + 1} of {questions.length}
             </span>
             <div aria-hidden="true" className="flex gap-1.5">
               {questions.map((question, index) => (
@@ -785,7 +784,7 @@ function ClassGuideQuiz({
               onClick={onUndo}
               className="justify-self-start text-xs font-semibold text-muted-foreground underline-offset-4 outline-none transition hover:text-foreground hover:underline focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70"
             >
-              Voltar à pergunta anterior
+              Back to previous question
             </button>
           ) : null}
         </fieldset>
@@ -794,9 +793,9 @@ function ClassGuideQuiz({
       {recommendation ? (
         <div aria-live="polite" className="grid gap-3">
           <p className="text-sm leading-6 text-muted-foreground">
-            Prontinho! Estas são as 2 classes que mais combinaram com as suas
-            respostas. Elas ficaram marcadas na lista abaixo — compare os cards
-            e use o &quot;Saiba Mais&quot; antes de decidir.
+            These are the 2 classes that best matched your answers. They are
+            marked in the list below. Compare the cards and use &quot;Learn More&quot;
+            before deciding.
           </p>
           <div className="grid gap-3 md:grid-cols-2">
             <QuizResultCard
@@ -817,7 +816,7 @@ function ClassGuideQuiz({
             onClick={onRestart}
             className="justify-self-start rounded-md border border-brand-gold-alt/50 px-4 py-2 text-sm font-bold text-foreground outline-none transition hover:bg-brand-gold-alt/10 focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70"
           >
-            Refazer com novas perguntas
+            Retake with new questions
           </button>
         </div>
       ) : null}
@@ -858,7 +857,7 @@ function QuizResultCard({
         ) : (
           <Star aria-hidden="true" className="h-4 w-4" />
         )}
-        {isPrimary ? "Recomendado" : "Segunda opção"}
+        {isPrimary ? "Recommended" : "Second option"}
       </p>
       <h4 className="mt-2 font-serif text-2xl font-bold text-foreground">
         {classEntry.name}
@@ -869,7 +868,7 @@ function QuizResultCard({
       {reasons.length ? (
         <p className="mt-3 text-xs leading-5 text-muted-foreground">
           <strong className="font-semibold text-foreground">
-            Combina com suas respostas:
+            Matches your answers:
           </strong>{" "}
           {reasons.map((reason) => `“${reason}”`).join(", ")}
         </p>
@@ -915,9 +914,9 @@ function ClassOptionCard({
         <div className="grid gap-2 rounded-lg bg-black/40 p-3 backdrop-blur-[2px]">
           <div className="flex items-center justify-between gap-3">
             <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/70">
-              Dado de Vida
+              Hit Die
             </span>
-            <span className="flex items-center gap-1.5 font-mono text-sm font-bold text-white">
+            <span translate="no" className="notranslate flex items-center gap-1.5 font-mono text-sm font-bold text-white">
               <FontAwesomeIcon
                 iconClassName={getHitDieIconClass(classEntry.hitDie)}
                 className="text-[var(--hero-accent)]"
@@ -925,19 +924,19 @@ function ClassOptionCard({
               d{classEntry.hitDie}
             </span>
           </div>
-          <HeroCardDetailLine label="Atributo Primario" value={primaryAbility} />
+          <HeroCardDetailLine label="Primary Ability" value={primaryAbility} />
           <HeroCardDetailLine
-            label="Salvaguardas"
+            label="Saving Throws"
             value={formatList(classEntry.savingThrows)}
           />
           <div>
             <h4 className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-white/70">
-              Recursos de Nível 1
+              Level 1 Features
             </h4>
             <FeatureTagList
               features={classEntry.levelOneFeatures}
-              emptyLabel="Nenhum"
-              ariaLabel="Recursos de Nível 1"
+              emptyLabel="None"
+              ariaLabel="Level 1 Features"
             />
           </div>
         </div>
@@ -960,7 +959,7 @@ function HeroCardDetailLine({ label, value }: { label: string; value: string }) 
   return (
     <p className="text-sm leading-5 text-white/90">
       <strong className="font-semibold text-white">{label}:</strong>{" "}
-      {value || "-"}
+      <span translate="no" className="notranslate">{value || "-"}</span>
     </p>
   );
 }
@@ -984,14 +983,14 @@ function matchesClassSearch(classEntry: BuilderClass, query: string): boolean {
 }
 
 function getClassTags(classEntry: BuilderClass): string[] {
-  const combatRole = classEntry.spellcastingAbility ? "Conjurador" : "Marcial";
+  const combatRole = classEntry.spellcastingAbility ? "Spellcaster" : "Martial";
   const armorRole = classEntry.armorProficiencies.some((entry) =>
     normalizeSearchText(entry).includes("heavy"),
   )
-    ? "Linha de frente"
+    ? "Frontline"
     : classEntry.spellcastingAbility
       ? classEntry.spellcastingAbility
-      : "Especialista";
+      : "Specialist";
 
   return [combatRole, armorRole].filter(Boolean).slice(0, 2);
 }
@@ -1205,7 +1204,7 @@ function ClassFeaturesStep({
   if (!selectedClass) {
     return (
       <section className="rounded-lg border border-white/[0.06] bg-card p-4 text-sm text-subdued">
-        Escolha uma classe antes de configurar recursos.
+        Choose a class before configuring features.
       </section>
     );
   }
@@ -1230,18 +1229,18 @@ function ClassFeaturesStep({
     <section aria-labelledby="class-features-title" className="grid gap-5">
       <StepHeader
         eyebrow={selectedClass.name}
-        title="Recursos de Classe"
-        description="Escolha as pericias iniciais da classe. Proficiencia, meia proficiencia e expertise ficam separadas para calculo posterior."
+        title="Class Features"
+        description="Choose the class's starting skills. Proficiency, half proficiency, and expertise stay separate for later calculations."
         id="class-features-title"
       />
       <div className="grid gap-6 md:grid-cols-2">
         <fieldset className="rounded-lg border border-white/[0.06] bg-card p-4">
           <legend className="mb-3 flex flex-wrap items-center justify-between gap-2 text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">
-            <span>Pericias da classe</span>
+            <span>Class skills</span>
             <ChoiceCounter
               selected={selectedSkills.length}
               total={maxSkills}
-              label="pericias escolhidas"
+              label="skills chosen"
             />
           </legend>
           <div className="grid gap-2 sm:grid-cols-2">
@@ -1273,19 +1272,19 @@ function ClassFeaturesStep({
 
         <section className="rounded-lg border border-white/[0.06] bg-card p-4">
           <h3 className="text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">
-            PROFICIÊNCIAS INICIAIS DA CLASSE
+            STARTING CLASS PROFICIENCIES
           </h3>
           <div className="mt-3 grid gap-3 text-sm leading-6 text-subdued">
             <ClassSummaryLine
-              label="Armaduras"
+              label="Armor"
               value={formatList(selectedClass.armorProficiencies)}
             />
             <ClassSummaryLine
-              label="Armas"
+              label="Weapons"
               value={formatList(selectedClass.weaponProficiencies)}
             />
             <ClassSummaryLine
-              label="Ferramentas"
+              label="Tools"
               value={formatList(selectedClass.toolProficiencies)}
             />
           </div>
@@ -1302,12 +1301,12 @@ function ClassFeaturesStep({
       ))}
       <section className="rounded-lg border border-white/[0.06] bg-card p-4">
         <h3 className="text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">
-          Recursos Iniciais de Nível 1:
+          Starting Level 1 Features:
         </h3>
         <div className="mt-4">
           <FeatureTagList
             features={selectedClass.levelOneFeatures}
-            emptyLabel="Recursos Iniciais de Nível 1"
+            emptyLabel="Starting Level 1 Features"
           />
         </div>
       </section>
@@ -1346,7 +1345,7 @@ function ClassFeatureChoiceFieldset({
         <ChoiceCounter
           selected={selectedValues.length}
           total={group.count}
-          label="escolhidos"
+          label="chosen"
         />
       </legend>
       <p className="mb-4 text-sm leading-6 text-subdued">
@@ -1417,20 +1416,20 @@ function BackgroundStep({
   );
   const resultCountLabel =
     filteredBackgrounds.length === 1
-      ? "1 antecedente encontrado"
-      : `${filteredBackgrounds.length} antecedentes encontrados`;
+      ? "1 background found"
+      : `${filteredBackgrounds.length} backgrounds found`;
 
   return (
     <section aria-labelledby="background-options-title" className="grid gap-6">
       <WizardStepHeader
         eyebrow="Origin Rules"
-        title="Escolha seu Antecedente"
-        description="O passado molda o destino. Escolha a origem que definiu sua jornada antes de empunhar armas ou magia."
+        title="Choose Your Background"
+        description="The past shapes fate. Choose the origin that defined your journey before you took up weapons or magic."
         id="background-options-title"
         searchId="background-filter"
-        searchLabel="Filtrar antecedentes"
+        searchLabel="Filter backgrounds"
         searchValue={searchQuery}
-        searchPlaceholder="Nome, talento ou descricao..."
+        searchPlaceholder="Name, feat, or description..."
         resultCountLabel={resultCountLabel}
         onSearch={setSearchQuery}
       />
@@ -1455,10 +1454,10 @@ function BackgroundStep({
       ) : (
         <div className="rounded-lg border border-dashed border-border bg-card/70 p-6 text-center">
           <h3 className="font-serif text-lg font-bold text-foreground">
-            Nenhum antecedente encontrado
+            No background found
           </h3>
           <p className="mt-2 text-sm leading-6 text-subdued">
-            Tente buscar por nome, talento de origem ou descricao.
+            Try searching by name, origin feat, or description.
           </p>
         </div>
       )}
@@ -1530,20 +1529,20 @@ function SpeciesStep({
   );
   const resultCountLabel =
     filteredSpecies.length === 1
-      ? "1 especie encontrada"
-      : `${filteredSpecies.length} especies encontradas`;
+      ? "1 species found"
+      : `${filteredSpecies.length} species found`;
 
   return (
     <section aria-labelledby="species-options-title" className="grid gap-6">
       <WizardStepHeader
         eyebrow="Rules 2024"
-        title="Escolha uma Raca/Especie"
-        description="Especies 2024 fornecem tracos, tamanho, deslocamento, sentidos e resistencias."
+        title="Choose a Species"
+        description="2024 species provide traits, size, speed, senses, and resistances."
         id="species-options-title"
         searchId="species-filter"
-        searchLabel="Filtrar especies"
+        searchLabel="Filter species"
         searchValue={searchQuery}
-        searchPlaceholder="Nome, fonte ou traco..."
+        searchPlaceholder="Name, source, or trait..."
         resultCountLabel={resultCountLabel}
         onSearch={setSearchQuery}
       />
@@ -1563,10 +1562,10 @@ function SpeciesStep({
       ) : (
         <div className="rounded-lg border border-dashed border-border bg-card/70 p-6 text-center">
           <h3 className="font-serif text-lg font-bold text-foreground">
-            Nenhuma especie encontrada
+            No species found
           </h3>
           <p className="mt-2 text-sm leading-6 text-subdued">
-            Tente buscar por nome, fonte ou traco racial.
+            Try searching by name, source, or species trait.
           </p>
         </div>
       )}
@@ -1603,19 +1602,19 @@ function SpeciesOptionCard({
         onClickSelect={onSelect}
       >
         <div className="grid gap-2 rounded-lg bg-black/40 p-3 backdrop-blur-[2px]">
-          <HeroCardDetailLine label="Tamanho" value={species.size} />
+          <HeroCardDetailLine label="Size" value={species.size} />
           <HeroCardDetailLine
-            label="Deslocamento"
+            label="Speed"
             value={`${species.speed} ft.`}
           />
           <div>
             <h4 className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-white/70">
-              Tracos Raciais
+              Species Traits
             </h4>
             <FeatureTagList
               features={species.traits}
-              emptyLabel="Nenhum traco racial"
-              ariaLabel="Tracos Raciais"
+              emptyLabel="No species trait"
+              ariaLabel="Species Traits"
             />
           </div>
         </div>
@@ -1655,12 +1654,12 @@ function SpeciesDetailsDialog({
           <Dialog.Content className="relative flex h-[100svh] w-full min-w-0 flex-col overflow-y-auto border border-white/[0.08] bg-surface-nested text-foreground shadow-2xl shadow-black/60 outline-none focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70 md:h-[min(88vh,920px)] md:max-w-6xl md:flex-row md:overflow-hidden md:rounded-xl">
             <Dialog.Title className="sr-only">{species.name}</Dialog.Title>
             <Dialog.Description className="sr-only">
-              {`Detalhes de ${species.name}: ${species.summary}`}
+              {`Details for ${species.name}: ${species.summary}`}
             </Dialog.Description>
             <Dialog.Close asChild>
               <button
                 type="button"
-                aria-label={`Fechar detalhes de ${species.name}`}
+                aria-label={`Close details for ${species.name}`}
                 className="absolute right-3 top-3 z-40 inline-flex h-10 w-10 items-center justify-center rounded-full border border-border bg-muted/85 text-subdued outline-none backdrop-blur transition hover:border-brand-gold-alt/60 hover:text-foreground focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70"
               >
                 <X aria-hidden="true" className="h-5 w-5" />
@@ -1738,21 +1737,21 @@ function SpeciesDetailsSidebar({
             id={`${species.id}-biology-title`}
             className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground"
           >
-            Biologia da especie
+            Species Biology
           </h3>
           <div className="grid grid-cols-2 gap-3">
             <ClassDetailStat
               icon={<Ruler aria-hidden="true" className="h-4 w-4" />}
-              label="Tamanho"
+              label="Size"
               value={species.size}
-              description="Porte"
+              description="Creature size"
               compact
             />
             <ClassDetailStat
               icon={<Footprints aria-hidden="true" className="h-4 w-4" />}
-              label="Deslocamento"
+              label="Speed"
               value={`${species.speed} ft.`}
-              description="Caminhada"
+              description="Walking"
               compact
             />
           </div>
@@ -1776,7 +1775,7 @@ function SpeciesDetailsSidebar({
           ) : (
             <PlusCircle aria-hidden="true" className="h-5 w-5" />
           )}
-          {selected ? "Espécie Selecionada" : "Selecionar Raça"}
+          {selected ? "Species Selected" : "Select Species"}
         </button>
       </div>
     </aside>
@@ -1792,7 +1791,7 @@ function SpeciesDetailsMain({ species }: { species: BuilderSpecies }) {
             id={`${species.id}-description-title`}
             icon={<BookOpen aria-hidden="true" className="h-5 w-5" />}
           >
-            Descricao
+            Description
           </ClassSectionHeading>
           <ContentBlocks
             blocks={
@@ -1809,7 +1808,7 @@ function SpeciesDetailsMain({ species }: { species: BuilderSpecies }) {
             icon={<ScrollText aria-hidden="true" className="h-5 w-5" />}
             withRule
           >
-            Tracos Raciais
+            Species Traits
           </ClassSectionHeading>
           <div className="grid gap-4">
             {species.traits.map((trait) => (
@@ -1854,7 +1853,7 @@ function SpeciesDetailsStep({
   if (!selectedSpecies) {
     return (
       <section className="rounded-lg border border-white/[0.06] bg-card p-4 text-sm text-subdued">
-        Escolha uma especie antes de configurar detalhes.
+        Choose a species before configuring details.
       </section>
     );
   }
@@ -1876,8 +1875,8 @@ function SpeciesDetailsStep({
     <section aria-labelledby="species-details-title" className="grid gap-5">
       <StepHeader
         eyebrow={selectedSpecies.name}
-        title="Detalhes da Especie"
-        description="Escolha opcoes internas de especie e dois idiomas padrao."
+        title="Species Details"
+        description="Choose internal species options and standard languages."
         id="species-details-title"
       />
 
@@ -1924,16 +1923,16 @@ function SpeciesDetailsStep({
 
         <fieldset className="rounded-lg border border-white/[0.06] bg-card p-4">
           <legend className="mb-3 flex flex-wrap items-center justify-between gap-2 text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">
-            <span>Idiomas</span>
+            <span>Languages</span>
             <ChoiceCounter
               selected={selectedLanguages.length}
               total={languageLimit}
-              label="idiomas escolhidos"
+              label="languages chosen"
             />
           </legend>
           <div className="grid gap-5">
             <LanguageGroup
-              title="Comuns"
+              title="Common"
               languages={languages.filter((language) => language.type === "standard")}
               selectedLanguages={selectedLanguages}
               languageLimit={languageLimit}
@@ -1941,7 +1940,7 @@ function SpeciesDetailsStep({
               onToggleLanguage={toggleLanguage}
             />
             <LanguageGroup
-              title="Raros e Exoticos"
+              title="Rare and Exotic"
               languages={languages.filter((language) =>
                 language.type === "rare" || language.type === "exotic",
               )}
@@ -2036,12 +2035,12 @@ function ClassDetailsDialog({
           <Dialog.Content className="relative flex h-[100svh] w-full min-w-0 flex-col overflow-y-auto border border-white/[0.08] bg-surface-nested text-foreground shadow-2xl shadow-black/60 outline-none focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70 md:h-[min(88vh,920px)] md:max-w-6xl md:flex-row md:overflow-hidden md:rounded-xl">
             <Dialog.Title className="sr-only">{classEntry.name}</Dialog.Title>
             <Dialog.Description className="sr-only">
-              {`Detalhes de ${classEntry.name}: ${classEntry.summary}`}
+              {`${classEntry.name} details: ${classEntry.summary}`}
             </Dialog.Description>
             <Dialog.Close asChild>
               <button
                 type="button"
-                aria-label={`Fechar detalhes de ${classEntry.name}`}
+                aria-label={`Close ${classEntry.name} details`}
                 className="absolute right-3 top-3 z-40 inline-flex h-10 w-10 items-center justify-center rounded-full border border-border bg-muted/85 text-subdued outline-none backdrop-blur transition hover:border-brand-gold-alt/60 hover:text-foreground focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70"
               >
                 <X aria-hidden="true" className="h-5 w-5" />
@@ -2126,13 +2125,13 @@ function ClassDetailsSidebar({
             id={`${classEntry.id}-identity-title`}
             className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground"
           >
-            Identidade da classe
+            Class Identity
           </h3>
           <ClassDetailStat
             icon={<Sparkles aria-hidden="true" className="h-5 w-5" />}
-            label="Atributo Primario"
+            label="Primary Ability"
             value={formatList(classEntry.primaryAbility)}
-            description="Base para as principais mecanicas da classe."
+            description="Basis for the class's main mechanics."
             accentClassName={tone.statAccent}
           />
           <div className="grid grid-cols-2 gap-3">
@@ -2143,16 +2142,16 @@ function ClassDetailsSidebar({
                   className="text-base"
                 />
               }
-              label="Dado de Vida"
+              label="Hit Die"
               value={`d${classEntry.hitDie}`}
-              description="Por nivel"
+              description="Per level"
               compact
             />
             <ClassDetailStat
               icon={<Shield aria-hidden="true" className="h-4 w-4" />}
-              label="Resistencias"
+              label="Saving Throws"
               value={formatList(classEntry.savingThrows)}
-              description="Salvaguardas"
+              description="Save proficiencies"
               compact
             />
           </div>
@@ -2160,19 +2159,19 @@ function ClassDetailsSidebar({
 
         <section>
           <h3 className="border-b border-white/[0.06] pb-2 text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
-            Proficiencias Iniciais
+            Starting Proficiencies
           </h3>
           <dl className="mt-3 grid gap-3 text-sm leading-6">
             <ClassProficiencyLine
-              label="Armaduras"
+              label="Armor"
               value={formatList(classEntry.armorProficiencies)}
             />
             <ClassProficiencyLine
-              label="Armas"
+              label="Weapons"
               value={formatList(classEntry.weaponProficiencies)}
             />
             <ClassProficiencyLine
-              label="Ferramentas"
+              label="Tools"
               value={formatList(classEntry.toolProficiencies)}
             />
           </dl>
@@ -2196,7 +2195,7 @@ function ClassDetailsSidebar({
           ) : (
             <PlusCircle aria-hidden="true" className="h-5 w-5" />
           )}
-          {selected ? "Classe Selecionada" : "Selecionar Classe"}
+          {selected ? "Class Selected" : "Select Class"}
         </button>
       </div>
     </aside>
@@ -2212,7 +2211,7 @@ function ClassDetailsMain({ classEntry }: { classEntry: BuilderClass }) {
             id={`${classEntry.id}-description-title`}
             icon={<BookOpen aria-hidden="true" className="h-5 w-5" />}
           >
-            Descricao
+            Description
           </ClassSectionHeading>
           <ContentBlocks
             blocks={
@@ -2231,20 +2230,20 @@ function ClassDetailsMain({ classEntry }: { classEntry: BuilderClass }) {
               icon={<Sparkles aria-hidden="true" className="h-5 w-5" />}
               toneClassName="text-accent"
             >
-              Conjuracao
+              Spellcasting
             </ClassSectionHeading>
             <div className="mt-3 grid gap-2 text-sm leading-6 text-accent">
               <ClassSummaryLine
-                label="Habilidade de Conjuracao"
+                label="Spellcasting Ability"
                 value={classEntry.spellcastingAbility}
               />
               <ClassSummaryLine
-                label="CD do TR de Magia"
-                value={`8 + Bonus de Proficiencia + Modificador de ${classEntry.spellcastingAbility}`}
+                label="Spell Save DC"
+                value={`8 + Proficiency Bonus + ${classEntry.spellcastingAbility} modifier`}
               />
               <ClassSummaryLine
-                label="Ataque de Magia"
-                value={`Bonus de Proficiencia + Modificador de ${classEntry.spellcastingAbility}`}
+                label="Spell Attack"
+                value={`Proficiency Bonus + ${classEntry.spellcastingAbility} modifier`}
               />
             </div>
           </section>
@@ -2256,7 +2255,7 @@ function ClassDetailsMain({ classEntry }: { classEntry: BuilderClass }) {
             icon={<ScrollText aria-hidden="true" className="h-5 w-5" />}
             withRule
           >
-            Recursos de Classe
+            Class Features
           </ClassSectionHeading>
           <Accordion type="single" collapsible className="rounded-lg border border-white/[0.08] bg-muted px-4">
             {classEntry.allFeatures.map((feature) => (
@@ -2352,16 +2351,16 @@ function ClassProgressionTable({ classEntry }: { classEntry: BuilderClass }) {
   return (
     <section className="min-w-0">
       <h3 className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">
-        Progressão de Classe
+        Class Progression
       </h3>
       <div className="max-w-full overflow-x-auto rounded-lg border border-white/[0.08]">
         <table className="w-full min-w-[720px] border-collapse text-left text-sm">
           <thead className="bg-white/[0.04] text-xs uppercase tracking-[0.12em] text-muted-foreground">
             <tr>
-              <th scope="col" className="px-3 py-3">Nível</th>
-              <th scope="col" className="px-3 py-3">Bônus de Proficiência</th>
-              <th scope="col" className="px-3 py-3">Recursos</th>
-              {hasSpellSlots ? <th scope="col" className="px-3 py-3">Espaços de Magia</th> : null}
+              <th scope="col" className="px-3 py-3">Level</th>
+              <th scope="col" className="px-3 py-3">Proficiency Bonus</th>
+              <th scope="col" className="px-3 py-3">Features</th>
+              {hasSpellSlots ? <th scope="col" className="px-3 py-3">Spell Slots</th> : null}
             </tr>
           </thead>
           <tbody className="divide-y divide-white/[0.06]">
@@ -2498,8 +2497,8 @@ function getSpeciesReplacementChanges(state: CharacterBuilderState): string[] {
     changes.push(
       formatCount(
         state.speciesLanguages.length,
-        "idioma de especie",
-        "idiomas de especie",
+        "species language",
+        "species languages",
       ),
     );
   }
@@ -2511,7 +2510,7 @@ function getBackgroundReplacementChanges(state: CharacterBuilderState): string[]
   const bonusCount = Object.keys(state.backgroundAbilityBonuses).length;
 
   return bonusCount > 0
-    ? [formatCount(bonusCount, "bonus de atributo", "bonus de atributo")]
+    ? [formatCount(bonusCount, "ability score bonus", "ability score bonuses")]
     : [];
 }
 

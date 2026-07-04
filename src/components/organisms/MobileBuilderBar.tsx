@@ -34,14 +34,14 @@ export function MobileBuilderBar({
   hasNextStep = true,
 }: MobileBuilderBarProps) {
   const isBlocked = Boolean(nextBlockedReason) || !hasNextStep;
-  const stepPositionLabel = `Etapa ${Math.max(currentStepIndex + 1, 1)}/${totalSteps}`;
-  const nextReason = !hasNextStep ? "Última etapa." : nextBlockedReason;
+  const stepPositionLabel = `Step ${Math.max(currentStepIndex + 1, 1)}/${totalSteps}`;
+  const nextReason = !hasNextStep ? "Last step." : nextBlockedReason;
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-40 border-t border-white/[0.08] bg-surface-nested/95 pb-[env(safe-area-inset-bottom)] backdrop-blur">
       <button
         type="button"
-        aria-label="Abrir ficha"
+        aria-label="Open sheet"
         onClick={onOpenSheet}
         className="flex w-full items-center gap-3 border-b border-white/[0.06] px-4 py-2 text-left outline-none transition hover:bg-white/5 focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70"
       >
@@ -52,17 +52,17 @@ export function MobileBuilderBar({
           {identity.name.trim().charAt(0).toUpperCase() || "?"}
         </span>
         <span className="flex min-w-0 flex-1 items-center gap-1 truncate text-xs text-muted-foreground">
-          <span className="font-semibold text-foreground">
-            {identity.name || "Herói sem nome"}
+          <span translate="no" className="notranslate font-semibold text-foreground">
+            {identity.name || "Unnamed Hero"}
           </span>
           <span aria-hidden="true">·</span>
-          <span>{identity.className || "Classe"}</span>
+          <span translate="no" className="notranslate">{identity.className || "Class"}</span>
           <span aria-hidden="true">·</span>
-          <span>Nível {identity.level}</span>
+          <span>Level <span translate="no" className="notranslate">{identity.level}</span></span>
           <span aria-hidden="true">·</span>
-          <span>PV {identity.hp}</span>
+          <span><span translate="no" className="notranslate">HP</span> <span translate="no" className="notranslate">{identity.hp}</span></span>
           <span aria-hidden="true">·</span>
-          <span>CA {identity.ac}</span>
+          <span><span translate="no" className="notranslate">AC</span> <span translate="no" className="notranslate">{identity.ac}</span></span>
         </span>
         <PanelTop aria-hidden="true" className="h-4 w-4 shrink-0 text-subdued" />
       </button>
@@ -80,7 +80,7 @@ export function MobileBuilderBar({
           }}
           className="inline-flex min-h-11 items-center justify-center rounded-md border border-border bg-white/5 px-4 py-2 text-sm font-bold uppercase tracking-[0.08em] text-foreground outline-none transition hover:border-white/20 hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-accent disabled:cursor-not-allowed aria-disabled:cursor-not-allowed aria-disabled:opacity-50"
         >
-          Voltar
+          Back
         </button>
         <span className="text-center font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
           {stepPositionLabel}
@@ -97,7 +97,7 @@ export function MobileBuilderBar({
           }}
           className="inline-flex min-h-11 items-center justify-center rounded-md border border-brand-crimson-alt bg-brand-crimson-alt px-4 py-2 text-sm font-bold uppercase tracking-[0.08em] text-foreground shadow-lg shadow-brand-crimson-alt/20 outline-none transition hover:bg-destructive focus-visible:ring-2 focus-visible:ring-accent disabled:cursor-not-allowed aria-disabled:cursor-not-allowed aria-disabled:opacity-50"
         >
-          Avançar
+          Next
         </button>
       </div>
 

@@ -8,6 +8,12 @@
 
 O **Forge & Fate** não é um formulário de preenchimento. O objetivo é ser a **referência definitiva em criador de fichas web para D&D 5e (regras 2024)** — robusto a ponto de rivalizar com plataformas oficiais (D&D Beyond), com uma experiência imersiva, rápida e **matematicamente impecável**. Toda decisão de código mira o longo prazo e a escalabilidade.
 
+### 1.1 Idioma canônico: English-only
+
+O **Forge & Fate é um produto em inglês**. A interface final, textos estáticos, `aria-labels`, mensagens de validação, estados vazios, tooltips, testes que travam copy, metadados, commits, PRs e documentação técnica de desenvolvimento devem ser escritos em **inglês nativo**, usando vocabulário canônico de D&D 5e.
+
+Português **não é idioma-alvo do produto nem do desenvolvimento**. Qualquer texto novo em português deve ser tratado como dívida ou legado a migrar, exceto quando for necessário apenas para reconhecer saves antigos, nomes internos históricos ou dados externos imutáveis. Como a base 5etools é estruturalmente em inglês, a UI deve preservar termos brutos da API com `translate="no"` / `notranslate` quando isso evitar que o Google Tradutor do navegador quebre nomes canônicos, siglas ou valores de regra.
+
 ## 2. Escopo Core e Ciclo de Vida do Personagem
 
 O sistema suporta a jornada completa de um personagem — o que exige um estado global (Zustand) extremamente bem estruturado e um modelo de dados versionado.

@@ -48,12 +48,12 @@ const ATTRIBUTE_KEYS: AttributeKey[] = [
 ];
 
 const ATTRIBUTE_ABBR: Record<AttributeKey, string> = {
-  forca: "FOR",
-  destreza: "DES",
+  forca: "STR",
+  destreza: "DEX",
   constituicao: "CON",
   inteligencia: "INT",
-  sabedoria: "SAB",
-  carisma: "CAR",
+  sabedoria: "WIS",
+  carisma: "CHA",
 };
 
 const XP_BY_LEVEL = [

@@ -8,8 +8,8 @@ import { SavingThrowsGrid } from "@/src/components/molecules/sheet/SavingThrowsG
 import type { SheetSavingThrow } from "@/types/builder";
 
 const saves: SheetSavingThrow[] = [
-  { attributeKey: "forca", label: "Força", abbr: "FOR", modifier: -1, isProficient: false },
-  { attributeKey: "inteligencia", label: "Inteligência", abbr: "INT", modifier: 7, isProficient: true },
+  { attributeKey: "forca", label: "Strength", abbr: "STR", modifier: -1, isProficient: false },
+  { attributeKey: "inteligencia", label: "Intelligence", abbr: "INT", modifier: 7, isProficient: true },
 ];
 
 describe("SavingThrowsGrid", () => {
@@ -17,14 +17,13 @@ describe("SavingThrowsGrid", () => {
 
   it("renders one cell per saving throw with signed modifier", () => {
     render(<SavingThrowsGrid savingThrows={saves} />);
-    expect(screen.getByText("FOR")).toBeInTheDocument();
+    expect(screen.getByText("STR")).toBeInTheDocument();
     expect(screen.getByText("-1")).toBeInTheDocument();
     expect(screen.getByText("+7")).toBeInTheDocument();
   });
 
   it("marks proficient saves for assistive tech", () => {
     render(<SavingThrowsGrid savingThrows={saves} />);
-    // Proficient INT cell exposes an accessible "Proficiente" label; FOR does not.
-    expect(screen.getByText("Proficiente")).toBeInTheDocument();
+    expect(screen.getByText("Proficient")).toBeInTheDocument();
   });
 });

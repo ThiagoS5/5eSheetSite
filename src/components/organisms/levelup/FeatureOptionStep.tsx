@@ -20,12 +20,12 @@ export function FeatureOptionStep({
   };
 
   return (
-    <section aria-label={`Nível ${level} · ${featureName}`}>
+    <section aria-label={`Level ${level} · ${featureName}`}>
       <header className="mb-4">
         <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
-          Nível {level} · escolha {count}
+          Level <span translate="no" className="notranslate">{level}</span> · choose <span translate="no" className="notranslate">{count}</span>
         </p>
-        <h2 className="font-serif text-xl font-bold tracking-wide text-foreground">{featureName}</h2>
+        <h2 translate="no" className="notranslate font-serif text-xl font-bold tracking-wide text-foreground">{featureName}</h2>
       </header>
       <div className="grid gap-2 sm:grid-cols-2">
         {options.map((option) => {
@@ -40,7 +40,7 @@ export function FeatureOptionStep({
               aria-pressed={isSelected}
               className="flex items-center justify-between rounded-md border border-white/[0.08] bg-card px-3 py-2 text-left text-sm text-subdued outline-none transition hover:border-white/15 focus-visible:ring-2 focus-visible:ring-brand-crimson-alt/70 disabled:cursor-not-allowed disabled:opacity-40 aria-pressed:border-brand-crimson-alt aria-pressed:bg-brand-crimson-alt/10 aria-pressed:text-foreground"
             >
-              {option.label}
+              <span translate="no" className="notranslate">{option.label}</span>
               {isSelected ? <i aria-hidden="true" className="fa-solid fa-check text-brand-crimson-alt" /> : null}
             </button>
           );

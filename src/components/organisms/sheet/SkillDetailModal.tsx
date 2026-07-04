@@ -30,16 +30,16 @@ export function SkillDetailModal({
                   <div className="flex items-start justify-between gap-[10px]">
                     <div>
                       <Dialog.Title asChild>
-                        <h2 className="m-0 font-serif text-[23px] font-extrabold text-foreground">{label}</h2>
+                        <h2 translate="no" className="notranslate m-0 font-serif text-[23px] font-extrabold text-foreground">{label}</h2>
                       </Dialog.Title>
                       <p className="mt-1 text-[9.5px] font-bold uppercase leading-none tracking-[0.2em] text-brand-crimson-alt">
-                        Perícia · {skillData.ability}
+                        Skill · {skillData.ability}
                       </p>
                     </div>
                     <Dialog.Close asChild>
                       <button
                         type="button"
-                        aria-label="Fechar"
+                        aria-label="Close"
                         className="inline-flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-lg border border-border bg-surface-nested text-muted-foreground outline-none transition hover:border-brand-crimson-alt hover:text-foreground focus-visible:ring-3 focus-visible:ring-brand-crimson-alt/70"
                       >
                         <X aria-hidden="true" className="h-[18px] w-[18px]" />
@@ -47,7 +47,7 @@ export function SkillDetailModal({
                     </Dialog.Close>
                   </div>
                 </div>
-                <Dialog.Description className="sr-only">Detalhes da perícia {label}.</Dialog.Description>
+                <Dialog.Description className="sr-only">Skill details for {label}.</Dialog.Description>
 
                 <div className="flex flex-col gap-4 px-[22px] py-5">
                   <p className="m-0 text-[13px] leading-relaxed text-subdued">{skillData.text}</p>

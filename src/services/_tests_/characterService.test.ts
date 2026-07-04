@@ -97,7 +97,7 @@ describe("characterService", () => {
     const duplicate = await duplicateCharacter("save-original");
 
     expect(duplicate?.exportMetadata.saveId).not.toBe("save-original");
-    expect(duplicate?.draft.description.nome).toBe("Aelar (Copia)");
+    expect(duplicate?.draft.description.nome).toBe("Aelar (Copy)");
     expect(await listCharacters()).toHaveLength(2);
 
     await deleteCharacter("save-original");

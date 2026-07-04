@@ -24,7 +24,7 @@ describe("LevelUpButton", () => {
     fireEvent.click(screen.getByRole("button", { name: "setclass" }));
     expect(screen.getByTestId("level")).toHaveTextContent("1");
 
-    fireEvent.click(screen.getByRole("button", { name: "Subir de Nível" }));
+    fireEvent.click(screen.getByRole("button", { name: "Level Up" }));
     expect(screen.getByTestId("level")).toHaveTextContent("2");
     expect(screen.getByRole("dialog")).toBeInTheDocument();
   });

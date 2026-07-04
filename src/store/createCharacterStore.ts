@@ -365,7 +365,7 @@ export function getAttributeMethodLabel(method: AttributeGenerationMethod): stri
   }
 
   if (method === "roll-4d6") {
-    return "Rolagem 4d6 (descarta o menor)";
+    return "Roll 4d6 (drop lowest)";
   }
 
   return "Manual";

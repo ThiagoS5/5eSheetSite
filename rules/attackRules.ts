@@ -21,19 +21,19 @@ type AttackWeapon = Pick<
 >;
 
 const DAMAGE_TYPE_LABELS: Record<string, string> = {
-  B: "Contundente",
-  P: "Perfurante",
-  S: "Cortante",
+  B: "Bludgeoning",
+  P: "Piercing",
+  S: "Slashing",
 };
 
 const PROPERTY_LABELS: Record<string, string> = {
-  A: "Municao",
-  F: "Acuidade",
-  H: "Pesada",
-  L: "Leve",
-  T: "Arremesso",
-  V: "Versatil",
-  "2H": "Duas maos",
+  A: "Ammunition",
+  F: "Finesse",
+  H: "Heavy",
+  L: "Light",
+  T: "Thrown",
+  V: "Versatile",
+  "2H": "Two-Handed",
 };
 
 export function deriveAttacks(input: {
@@ -57,15 +57,15 @@ function deriveUnarmedAttack(
   const strengthModifier = getAbilityModifier(finalAttributes.forca);
 
   return {
-    name: "Ataque Desarmado",
+    name: "Unarmed Strike",
     attackBonus: formatSigned(strengthModifier + proficiencyBonus),
-    damage: `1${formatSigned(strengthModifier)} Contundente`,
-    notes: "FOR, proficiente, Corpo-a-corpo",
+    damage: `1${formatSigned(strengthModifier)} Bludgeoning`,
+    notes: "STR, proficient, Melee",
     abilityKey: "forca",
     isProficient: true,
     damageBreakdown: [
-      { label: "Dano base", value: "1" },
-      { label: "FOR", value: formatSigned(strengthModifier) },
+      { label: "Base damage", value: "1" },
+      { label: "STR", value: formatSigned(strengthModifier) },
     ],
   };
 }
@@ -93,14 +93,14 @@ function deriveWeaponAttack(
     damage: `${damageDice}${formatSigned(abilityModifier)} ${formatDamageType(weapon.damageType)}`,
     notes: [
       abilityLabel(abilityKey),
-      isProficient ? "proficiente" : "sem proficiencia",
+      isProficient ? "proficient" : "not proficient",
       ...propertyNotes,
-      weapon.range ? `alcance ${weapon.range}` : undefined,
+      weapon.range ? `range ${weapon.range}` : undefined,
     ].filter((note): note is string => Boolean(note)).join(", "),
     abilityKey,
     isProficient,
     damageBreakdown: [
-      { label: "Dado da arma", value: damageDice },
+      { label: "Weapon die", value: damageDice },
       { label: abilityLabel(abilityKey), value: formatSigned(abilityModifier) },
     ],
   };
@@ -137,11 +137,11 @@ function hasWeaponProficiency(
 }
 
 function formatDamageType(damageType: string | undefined): string {
-  return damageType ? DAMAGE_TYPE_LABELS[damageType] ?? damageType : "Dano";
+  return damageType ? DAMAGE_TYPE_LABELS[damageType] ?? damageType : "Damage";
 }
 
 function abilityLabel(abilityKey: AttributeKey): string {
-  return abilityKey === "destreza" ? "DES" : "FOR";
+  return abilityKey === "destreza" ? "DEX" : "STR";
 }
 
 function formatSigned(value: number): string {

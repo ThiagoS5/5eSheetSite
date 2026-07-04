@@ -43,29 +43,29 @@ export interface ClassQuizRecommendation {
  */
 export const classQuizPitches: Record<string, string> = {
   "barbarian-xphb":
-    "Fúria em estado bruto: você entra na frente, aguenta pancada como ninguém e devolve em dobro. Na mesa é direto e visceral — poucas decisões por turno e muito impacto.",
+    "Raw fury: you take the front line, absorb punishment like no one else, and strike back harder. At the table, it is direct and visceral with few turn-by-turn decisions and high impact.",
   "bard-xphb":
-    "Você vence com carisma: inspira aliados, atrapalha inimigos e resolve metade das cenas conversando. Na mesa, é quem transforma qualquer situação social em espetáculo.",
+    "You win with Charisma: inspire allies, disrupt enemies, and solve half the scene through conversation. At the table, you turn social situations into a performance.",
   "cleric-xphb":
-    "Canal direto de um poder divino: cura quem caiu, protege quem luta e ainda castiga o mal de armadura. Na mesa, o grupo respira aliviado quando você está por perto.",
+    "A direct channel to divine power: heal the fallen, protect combatants, and punish evil in armor. At the table, the party breathes easier when you are nearby.",
   "druid-xphb":
-    "A natureza atende ao seu chamado: você conjura tempestades, cura feridas e vira animais selvagens. Na mesa, é versatilidade pura — sempre há uma forma ou magia para o problema.",
+    "Nature answers your call: conjure storms, heal wounds, and become wild animals. At the table, this is pure versatility with a form or spell for almost any problem.",
   "fighter-xphb":
-    "Mestre de armas e armaduras: confiável em qualquer combate e simples de aprender. Na mesa, você sempre sabe o que fazer no seu turno — e faz muito bem feito.",
+    "Master of weapons and armor: reliable in any fight and easy to learn. At the table, you always know what to do on your turn and do it well.",
   "monk-xphb":
-    "Corpo e disciplina como armas: você corre pelas paredes, acerta rajadas de golpes e escapa do que ninguém escaparia. Na mesa, seus turnos são pura coreografia.",
+    "Body and discipline as weapons: run across walls, deliver flurries of strikes, and escape the impossible. At the table, your turns feel like choreography.",
   "paladin-xphb":
-    "Um juramento sagrado guia sua lâmina: você protege os fracos, cura aliados e explode inimigos com golpes divinos. Na mesa, é o herói que todo grupo quer ao lado.",
+    "A sacred oath guides your blade: protect the weak, heal allies, and smite enemies with divine force. At the table, you are the hero every party wants nearby.",
   "ranger-xphb":
-    "Caçador dos ermos: rastreia qualquer presa, atira com precisão letal e conhece cada trilha. Na mesa, você brilha na exploração e nunca deixa o grupo se perder.",
+    "Hunter of the wilds: track any quarry, shoot with lethal precision, and know every trail. At the table, you shine in exploration and keep the party from getting lost.",
   "rogue-xphb":
-    "Sombras, astúcia e o golpe perfeito: você abre fechaduras, some da vista e causa dano absurdo quando ninguém espera. Na mesa, é quem resolve o impossível em silêncio.",
+    "Shadows, cunning, and the perfect strike: open locks, vanish from sight, and deal brutal damage when no one expects it. At the table, you solve the impossible quietly.",
   "sorcerer-xphb":
-    "Magia corre no seu sangue: você molda feitiços por instinto e os turbina como nenhum estudioso consegue. Na mesa, seus momentos de glória são explosivos — literalmente.",
+    "Magic runs in your blood: shape spells by instinct and empower them in ways no scholar can. At the table, your big moments are explosive, sometimes literally.",
   "warlock-xphb":
-    "Um pacto com algo poderoso te deu magia — e um preço: poucos feitiços, todos devastadores, e um patrono cheio de segredos. Na mesa, é combustível infinito para boas histórias.",
+    "A pact with something powerful gave you magic and a price: few spells, devastating impact, and a patron full of secrets. At the table, it fuels strong stories.",
   "wizard-xphb":
-    "O maior grimório do jogo: você estuda a magia como ciência e tem uma resposta para quase tudo. Na mesa, é quem vira o combate com a magia certa no momento certo.",
+    "The deepest spellbook in the game: you study magic like science and have an answer for almost everything. At the table, you turn fights with the right spell at the right time.",
 };
 
 /** Ordem fixa para desempate determinístico entre classes com mesma pontuação. */
@@ -88,14 +88,14 @@ export const classQuizQuestionPool: ClassQuizQuestion[] = [
   {
     id: "instinto-de-combate",
     prompt:
-      "A porta da masmorra range e um ogro avança rugindo. Qual é o seu primeiro instinto?",
+      "The dungeon door groans open and an ogre charges in roaring. What is your first instinct?",
     helper:
-      "Isso define onde seu personagem fica no combate — e quanto perigo ele aguenta de perto.",
+      "This defines where your character stands in combat and how much danger they can handle up close.",
     options: [
       {
         id: "instinto-de-combate-aco",
-        label: "Partir para cima com aço na mão",
-        flavor: "Linha de frente: trocar golpes olhando no olho.",
+        label: "Charge in with steel in hand",
+        flavor: "Front line: trading blows face to face.",
         weights: {
           "barbarian-xphb": 3,
           "fighter-xphb": 3,
@@ -105,8 +105,8 @@ export const classQuizQuestionPool: ClassQuizQuestion[] = [
       },
       {
         id: "instinto-de-combate-mira",
-        label: "Manter distância e mirar num ponto fraco",
-        flavor: "Ataques precisos e seguros, longe das garras.",
+        label: "Keep distance and aim for a weak point",
+        flavor: "Precise, safer attacks away from the claws.",
         weights: {
           "ranger-xphb": 3,
           "rogue-xphb": 2,
@@ -115,8 +115,8 @@ export const classQuizQuestionPool: ClassQuizQuestion[] = [
       },
       {
         id: "instinto-de-combate-magia",
-        label: "Erguer as mãos e deixar a magia falar",
-        flavor: "Poder arcano resolve o que músculos não resolvem.",
+        label: "Raise my hands and let magic speak",
+        flavor: "Arcane power solves what muscle cannot.",
         weights: {
           "wizard-xphb": 3,
           "sorcerer-xphb": 3,
@@ -126,8 +126,8 @@ export const classQuizQuestionPool: ClassQuizQuestion[] = [
       },
       {
         id: "instinto-de-combate-escudo",
-        label: "Me colocar entre o perigo e meus aliados",
-        flavor: "Ninguém cai enquanto você estiver de pé.",
+        label: "Stand between danger and my allies",
+        flavor: "No one falls while you are still standing.",
         weights: {
           "paladin-xphb": 3,
           "cleric-xphb": 3,
@@ -138,14 +138,14 @@ export const classQuizQuestionPool: ClassQuizQuestion[] = [
   },
   {
     id: "papel-no-grupo",
-    prompt: "No fim da sessão, qual papel te daria mais orgulho de ter cumprido?",
+    prompt: "At the end of the session, which role would make you proudest?",
     helper:
-      "Todo grupo precisa de papéis diferentes — o seu favorito diz muito sobre a classe ideal.",
+      "Every party needs different roles. Your favorite says a lot about the ideal class.",
     options: [
       {
         id: "papel-no-grupo-escudo",
-        label: "Fui o escudo que segurou o perigo",
-        flavor: "Tanque: você absorve os golpes para o grupo brilhar.",
+        label: "I was the shield that held back danger",
+        flavor: "Tank: you absorb hits so the party can shine.",
         weights: {
           "paladin-xphb": 3,
           "fighter-xphb": 2,
@@ -155,8 +155,8 @@ export const classQuizQuestionPool: ClassQuizQuestion[] = [
       },
       {
         id: "papel-no-grupo-dano",
-        label: "Fui a maior fonte de dano da mesa",
-        flavor: "Quando você age, a ficha do inimigo chora.",
+        label: "I was the table's biggest damage source",
+        flavor: "When you act, the enemy stat block suffers.",
         weights: {
           "rogue-xphb": 2,
           "sorcerer-xphb": 2,
@@ -166,8 +166,8 @@ export const classQuizQuestionPool: ClassQuizQuestion[] = [
       },
       {
         id: "papel-no-grupo-suporte",
-        label: "Mantive todo mundo vivo",
-        flavor: "Curas e proteções na hora exata mudam o jogo.",
+        label: "I kept everyone alive",
+        flavor: "Healing and protection at the right time change the game.",
         weights: {
           "cleric-xphb": 3,
           "druid-xphb": 2,
@@ -177,8 +177,8 @@ export const classQuizQuestionPool: ClassQuizQuestion[] = [
       },
       {
         id: "papel-no-grupo-controle",
-        label: "Controlei o campo e venci com astúcia",
-        flavor: "Uma magia bem posicionada vale por dez espadas.",
+        label: "I controlled the field and won with cunning",
+        flavor: "A well-placed spell can be worth ten swords.",
         weights: {
           "wizard-xphb": 3,
           "bard-xphb": 2,
@@ -189,14 +189,14 @@ export const classQuizQuestionPool: ClassQuizQuestion[] = [
   },
   {
     id: "estilo-de-turno",
-    prompt: "Chegou o seu turno e a mesa inteira olha para você. O que soa mais divertido?",
+    prompt: "Your turn begins and the whole table looks at you. What sounds most fun?",
     helper:
-      "Classes têm complexidades diferentes: algumas são diretas, outras dão muitas opções por turno.",
+      "Classes have different complexity levels: some are direct, others offer many options each turn.",
     options: [
       {
         id: "estilo-de-turno-direto",
-        label: "Agir rápido: golpe certeiro, sem dilema",
-        flavor: "Simples de jogar e sempre eficiente — ideal para começar.",
+        label: "Act fast: a clean strike, no dilemma",
+        flavor: "Simple to play and consistently effective, ideal for starting out.",
         weights: {
           "fighter-xphb": 3,
           "barbarian-xphb": 2,
@@ -205,8 +205,8 @@ export const classQuizQuestionPool: ClassQuizQuestion[] = [
       },
       {
         id: "estilo-de-turno-truques",
-        label: "Ter um truque na manga para cada situação",
-        flavor: "Muitas escolhas por turno — para quem gosta de planejar.",
+        label: "Have a trick for every situation",
+        flavor: "Many choices each turn, for players who like planning.",
         weights: {
           "wizard-xphb": 3,
           "bard-xphb": 2,
@@ -215,8 +215,8 @@ export const classQuizQuestionPool: ClassQuizQuestion[] = [
       },
       {
         id: "estilo-de-turno-devastador",
-        label: "Poucos poderes, mas devastadores",
-        flavor: "Cada recurso gasto precisa valer a cena.",
+        label: "Few powers, but devastating ones",
+        flavor: "Every spent resource should be worth the scene.",
         weights: {
           "warlock-xphb": 3,
           "sorcerer-xphb": 2,
@@ -225,8 +225,8 @@ export const classQuizQuestionPool: ClassQuizQuestion[] = [
       },
       {
         id: "estilo-de-turno-combo",
-        label: "Encadear movimento e golpes em sequência",
-        flavor: "Turnos ágeis, cheios de deslocamento e estilo.",
+        label: "Chain movement and strikes together",
+        flavor: "Agile turns full of movement and style.",
         weights: {
           "monk-xphb": 3,
           "rogue-xphb": 2,
@@ -237,14 +237,14 @@ export const classQuizQuestionPool: ClassQuizQuestion[] = [
   },
   {
     id: "origem-do-poder",
-    prompt: "De onde vem a força do seu herói?",
+    prompt: "Where does your hero's power come from?",
     helper:
-      "A origem do poder molda a história do personagem — e define se ele usa magia e de que tipo.",
+      "The source of power shapes the character's story and whether they use magic, and what kind.",
     options: [
       {
         id: "origem-do-poder-treino",
-        label: "Anos de treino e disciplina",
-        flavor: "Nada de atalhos: cada habilidade foi conquistada com suor.",
+        label: "Years of training and discipline",
+        flavor: "No shortcuts: every ability was earned through effort.",
         weights: {
           "monk-xphb": 3,
           "fighter-xphb": 2,
@@ -253,8 +253,8 @@ export const classQuizQuestionPool: ClassQuizQuestion[] = [
       },
       {
         id: "origem-do-poder-fe",
-        label: "Fé em algo maior que eu",
-        flavor: "Um deus, um juramento ou a própria natureza respondem ao seu chamado.",
+        label: "Faith in something greater than myself",
+        flavor: "A god, an oath, or nature itself answers your call.",
         weights: {
           "cleric-xphb": 3,
           "paladin-xphb": 2,
@@ -263,8 +263,8 @@ export const classQuizQuestionPool: ClassQuizQuestion[] = [
       },
       {
         id: "origem-do-poder-estudo",
-        label: "Estudo, pesquisa e segredos antigos",
-        flavor: "Conhecimento é poder — literalmente.",
+        label: "Study, research, and ancient secrets",
+        flavor: "Knowledge is power, literally.",
         weights: {
           "wizard-xphb": 3,
           "warlock-xphb": 1,
@@ -272,8 +272,8 @@ export const classQuizQuestionPool: ClassQuizQuestion[] = [
       },
       {
         id: "origem-do-poder-sangue",
-        label: "Um dom que corre no meu sangue",
-        flavor: "Você não aprendeu magia. Você nasceu com ela.",
+        label: "A gift that runs in my blood",
+        flavor: "You did not learn magic. You were born with it.",
         weights: {
           "sorcerer-xphb": 3,
           "warlock-xphb": 2,
@@ -285,14 +285,14 @@ export const classQuizQuestionPool: ClassQuizQuestion[] = [
   {
     id: "cena-na-cidade",
     prompt:
-      "A cidade está em festa e o grupo precisa de informações sobre o vilão. O que você faz?",
+      "The city is celebrating and the party needs information about the villain. What do you do?",
     helper:
-      "Boa parte do jogo acontece fora do combate — pense em como você quer brilhar nessas cenas.",
+      "Much of the game happens outside combat. Think about how you want to shine in those scenes.",
     options: [
       {
         id: "cena-na-cidade-palco",
-        label: "Encanto o salão inteiro com uma história",
-        flavor: "Enquanto todos riem, as línguas se soltam.",
+        label: "Charm the whole hall with a story",
+        flavor: "While everyone laughs, tongues loosen.",
         weights: {
           "bard-xphb": 3,
           "sorcerer-xphb": 1,
@@ -301,8 +301,8 @@ export const classQuizQuestionPool: ClassQuizQuestion[] = [
       },
       {
         id: "cena-na-cidade-sombras",
-        label: "Sumo na multidão e escuto o que não devia",
-        flavor: "Ninguém guarda segredo de quem ninguém vê.",
+        label: "Disappear into the crowd and overhear what I should not",
+        flavor: "No one keeps secrets from someone no one sees.",
         weights: {
           "rogue-xphb": 3,
           "ranger-xphb": 1,
@@ -311,8 +311,8 @@ export const classQuizQuestionPool: ClassQuizQuestion[] = [
       },
       {
         id: "cena-na-cidade-templo",
-        label: "Procuro o templo e os sábios locais",
-        flavor: "Quem conhece o passado, prevê o perigo.",
+        label: "Seek out the temple and local sages",
+        flavor: "Those who know the past can foresee danger.",
         weights: {
           "cleric-xphb": 2,
           "wizard-xphb": 2,
@@ -321,8 +321,8 @@ export const classQuizQuestionPool: ClassQuizQuestion[] = [
       },
       {
         id: "cena-na-cidade-guarda",
-        label: "Fico de olho nas saídas e nos encrenqueiros",
-        flavor: "Festa é onde emboscada acontece — alguém precisa vigiar.",
+        label: "Watch the exits and troublemakers",
+        flavor: "Celebrations are where ambushes happen. Someone has to watch.",
         weights: {
           "fighter-xphb": 2,
           "ranger-xphb": 2,
@@ -333,14 +333,14 @@ export const classQuizQuestionPool: ClassQuizQuestion[] = [
   },
   {
     id: "lar-do-heroi",
-    prompt: "Feche os olhos: onde o seu personagem se sente em casa?",
+    prompt: "Close your eyes: where does your character feel at home?",
     helper:
-      "O ambiente natural do herói ajuda a mestre e jogador a criarem cenas onde a classe brilha.",
+      "The hero's natural environment helps GM and player create scenes where the class shines.",
     options: [
       {
         id: "lar-do-heroi-ermos",
-        label: "Nos ermos selvagens, longe da civilização",
-        flavor: "Trilhas, feras e o céu aberto como teto.",
+        label: "In the wilds, far from civilization",
+        flavor: "Trails, beasts, and the open sky overhead.",
         weights: {
           "ranger-xphb": 3,
           "druid-xphb": 3,
@@ -349,8 +349,8 @@ export const classQuizQuestionPool: ClassQuizQuestion[] = [
       },
       {
         id: "lar-do-heroi-torre",
-        label: "Entre livros, torres e ruínas antigas",
-        flavor: "Cada tomo empoeirado esconde uma resposta.",
+        label: "Among books, towers, and ancient ruins",
+        flavor: "Every dusty tome hides an answer.",
         weights: {
           "wizard-xphb": 3,
           "warlock-xphb": 1,
@@ -359,8 +359,8 @@ export const classQuizQuestionPool: ClassQuizQuestion[] = [
       },
       {
         id: "lar-do-heroi-taverna",
-        label: "Em tavernas, palcos e salões nobres",
-        flavor: "Onde há gente, há plateia — e oportunidade.",
+        label: "In taverns, stages, and noble halls",
+        flavor: "Where there are people, there is an audience and opportunity.",
         weights: {
           "bard-xphb": 3,
           "rogue-xphb": 2,
@@ -369,8 +369,8 @@ export const classQuizQuestionPool: ClassQuizQuestion[] = [
       },
       {
         id: "lar-do-heroi-fortaleza",
-        label: "Em campos de treino e fortalezas",
-        flavor: "Disciplina, aço e o cheiro de batalha no ar.",
+        label: "In training yards and fortresses",
+        flavor: "Discipline, steel, and the smell of battle in the air.",
         weights: {
           "fighter-xphb": 3,
           "paladin-xphb": 2,
@@ -381,14 +381,14 @@ export const classQuizQuestionPool: ClassQuizQuestion[] = [
   },
   {
     id: "dilema-do-vilao",
-    prompt: "O vilão está derrotado aos seus pés e implora por piedade. O que seu herói faz?",
+    prompt: "The villain lies defeated at your feet and begs for mercy. What does your hero do?",
     helper:
-      "Não existe resposta certa — mas o seu instinto moral combina mais com algumas classes.",
+      "There is no right answer, but your moral instinct fits some classes more than others.",
     options: [
       {
         id: "dilema-do-vilao-piedade",
-        label: "Poupo. Todos merecem uma chance de redenção",
-        flavor: "Honra e compaixão acima da vingança.",
+        label: "Spare them. Everyone deserves a chance at redemption",
+        flavor: "Honor and compassion above revenge.",
         weights: {
           "paladin-xphb": 3,
           "cleric-xphb": 2,
@@ -397,8 +397,8 @@ export const classQuizQuestionPool: ClassQuizQuestion[] = [
       },
       {
         id: "dilema-do-vilao-fim",
-        label: "Termino o serviço. Piedade custa caro",
-        flavor: "Pragmatismo frio: vilão vivo é problema adiado.",
+        label: "Finish the job. Mercy is expensive",
+        flavor: "Cold pragmatism: a living villain is a delayed problem.",
         weights: {
           "rogue-xphb": 2,
           "warlock-xphb": 2,
@@ -407,8 +407,8 @@ export const classQuizQuestionPool: ClassQuizQuestion[] = [
       },
       {
         id: "dilema-do-vilao-informacao",
-        label: "Transformo ele numa fonte de informação",
-        flavor: "Um inimigo falando vale mais que um inimigo morto.",
+        label: "Turn them into a source of information",
+        flavor: "A talking enemy is worth more than a dead one.",
         weights: {
           "bard-xphb": 2,
           "wizard-xphb": 2,
@@ -417,8 +417,8 @@ export const classQuizQuestionPool: ClassQuizQuestion[] = [
       },
       {
         id: "dilema-do-vilao-destino",
-        label: "Deixo a natureza — ou o destino — decidir",
-        flavor: "Você é instrumento de algo maior, não juiz.",
+        label: "Let nature, or fate, decide",
+        flavor: "You are an instrument of something greater, not a judge.",
         weights: {
           "druid-xphb": 3,
           "ranger-xphb": 2,
@@ -429,14 +429,14 @@ export const classQuizQuestionPool: ClassQuizQuestion[] = [
   },
   {
     id: "momento-de-gloria",
-    prompt: "Qual cena você sonha em contar para os amigos depois da sessão?",
+    prompt: "Which scene do you dream of telling friends about after the session?",
     helper:
-      "Os grandes momentos que você imagina são a melhor pista da classe que vai te divertir.",
+      "The big moments you imagine are the best clue to the class you will enjoy.",
     options: [
       {
         id: "momento-de-gloria-muralha",
-        label: "Segurei o chefe sozinho enquanto o grupo escapava",
-        flavor: "Resistência heroica: o último a cair.",
+        label: "I held the boss alone while the party escaped",
+        flavor: "Heroic endurance: the last one to fall.",
         weights: {
           "fighter-xphb": 2,
           "paladin-xphb": 2,
@@ -446,8 +446,8 @@ export const classQuizQuestionPool: ClassQuizQuestion[] = [
       },
       {
         id: "momento-de-gloria-magia",
-        label: "Virei o combate com uma única magia no momento certo",
-        flavor: "A mesa inteira gritando com a bola de fogo perfeita.",
+        label: "I turned the fight with one spell at the perfect moment",
+        flavor: "The whole table cheering for the perfect Fireball.",
         weights: {
           "wizard-xphb": 3,
           "sorcerer-xphb": 2,
@@ -456,8 +456,8 @@ export const classQuizQuestionPool: ClassQuizQuestion[] = [
       },
       {
         id: "momento-de-gloria-resgate",
-        label: "Salvei um aliado à beira da morte",
-        flavor: "A cura no último segundo que ninguém esquece.",
+        label: "I saved an ally on the brink of death",
+        flavor: "The last-second heal no one forgets.",
         weights: {
           "cleric-xphb": 3,
           "druid-xphb": 2,
@@ -466,8 +466,8 @@ export const classQuizQuestionPool: ClassQuizQuestion[] = [
       },
       {
         id: "momento-de-gloria-roubo",
-        label: "Roubei a chave do plano inteiro sem ninguém notar",
-        flavor: "O golpe silencioso que resolveu a campanha.",
+        label: "I stole the key to the entire plan without anyone noticing",
+        flavor: "The silent play that solved the campaign.",
         weights: {
           "rogue-xphb": 3,
           "bard-xphb": 1,
@@ -478,14 +478,14 @@ export const classQuizQuestionPool: ClassQuizQuestion[] = [
   },
   {
     id: "forma-da-magia",
-    prompt: "Se a magia atendesse ao seu chamado, como ela seria?",
+    prompt: "If magic answered your call, what would it look like?",
     helper:
-      "Mesmo quem prefere aço pode ter um toque místico — e isso separa bem as classes conjuradoras.",
+      "Even characters who prefer steel can have a mystical edge. This separates spellcasting classes clearly.",
     options: [
       {
         id: "forma-da-magia-pacto",
-        label: "Um pacto misterioso com algo poderoso",
-        flavor: "Poder emprestado tem juros — e histórias incríveis.",
+        label: "A mysterious pact with something powerful",
+        flavor: "Borrowed power has interest, and excellent stories.",
         weights: {
           "warlock-xphb": 3,
           "sorcerer-xphb": 1,
@@ -493,8 +493,8 @@ export const classQuizQuestionPool: ClassQuizQuestion[] = [
       },
       {
         id: "forma-da-magia-bencao",
-        label: "Bênçãos que curam e protegem",
-        flavor: "Sua magia existe para os outros, não para você.",
+        label: "Blessings that heal and protect",
+        flavor: "Your magic exists for others, not only yourself.",
         weights: {
           "cleric-xphb": 3,
           "druid-xphb": 2,
@@ -503,8 +503,8 @@ export const classQuizQuestionPool: ClassQuizQuestion[] = [
       },
       {
         id: "forma-da-magia-formula",
-        label: "Fórmulas estudadas com precisão de relojoeiro",
-        flavor: "Magia é ciência: quem estuda mais, conjura melhor.",
+        label: "Formulae studied with watchmaker precision",
+        flavor: "Magic is science: study more, cast better.",
         weights: {
           "wizard-xphb": 3,
           "bard-xphb": 1,
@@ -512,8 +512,8 @@ export const classQuizQuestionPool: ClassQuizQuestion[] = [
       },
       {
         id: "forma-da-magia-instinto",
-        label: "Energia pura, guiada pelo instinto",
-        flavor: "Você sente a magia antes de entendê-la.",
+        label: "Pure energy guided by instinct",
+        flavor: "You feel magic before you understand it.",
         weights: {
           "sorcerer-xphb": 3,
           "monk-xphb": 1,
@@ -524,14 +524,14 @@ export const classQuizQuestionPool: ClassQuizQuestion[] = [
   },
   {
     id: "mochila-do-heroi",
-    prompt: "O grupo parte amanhã ao amanhecer. O que não pode faltar na sua mochila?",
+    prompt: "The party leaves tomorrow at dawn. What must be in your pack?",
     helper:
-      "O equipamento que você valoriza revela como pretende resolver os problemas da aventura.",
+      "The equipment you value reveals how you plan to solve adventuring problems.",
     options: [
       {
         id: "mochila-do-heroi-arma",
-        label: "Uma arma bem afiada e armadura confiável",
-        flavor: "Preparado para o pior — e o pior sempre chega.",
+        label: "A sharp weapon and reliable armor",
+        flavor: "Prepared for the worst, because the worst always arrives.",
         weights: {
           "fighter-xphb": 3,
           "paladin-xphb": 2,
@@ -540,8 +540,8 @@ export const classQuizQuestionPool: ClassQuizQuestion[] = [
       },
       {
         id: "mochila-do-heroi-livros",
-        label: "Livros, mapas e componentes estranhos",
-        flavor: "Conhecimento pesa pouco e salva vidas.",
+        label: "Books, maps, and strange components",
+        flavor: "Knowledge weighs little and saves lives.",
         weights: {
           "wizard-xphb": 3,
           "cleric-xphb": 1,
@@ -550,8 +550,8 @@ export const classQuizQuestionPool: ClassQuizQuestion[] = [
       },
       {
         id: "mochila-do-heroi-ferramentas",
-        label: "Cordas, gazuas e um bom par de adagas",
-        flavor: "Toda porta trancada é um convite.",
+        label: "Rope, lockpicks, and a good pair of daggers",
+        flavor: "Every locked door is an invitation.",
         weights: {
           "rogue-xphb": 3,
           "ranger-xphb": 2,
@@ -560,8 +560,8 @@ export const classQuizQuestionPool: ClassQuizQuestion[] = [
       },
       {
         id: "mochila-do-heroi-instrumento",
-        label: "Um instrumento e boas histórias",
-        flavor: "Quem anima o acampamento, comanda a jornada.",
+        label: "An instrument and good stories",
+        flavor: "Whoever brightens the camp guides the journey.",
         weights: {
           "bard-xphb": 3,
           "sorcerer-xphb": 1,

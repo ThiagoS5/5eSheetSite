@@ -12,7 +12,7 @@ export function DefensesPanel({ resistances, immunities, vulnerabilities }: Defe
       <div className="mb-2 flex items-center gap-1.5">
         <i aria-hidden="true" className="fa-solid fa-shield-halved text-muted-foreground" />
         <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-          Defesas
+          Defenses
         </p>
       </div>
       {hasContent ? (
@@ -20,24 +20,24 @@ export function DefensesPanel({ resistances, immunities, vulnerabilities }: Defe
           {resistances.map((r) => (
             <li key={r} className="flex items-center gap-1.5 text-xs text-subdued">
               <i aria-hidden="true" className="fa-solid fa-shield-halved text-brand-blue" />
-              Resist. {r}
+              Resist. <span translate="no" className="notranslate">{r}</span>
             </li>
           ))}
           {immunities.map((im) => (
             <li key={im} className="flex items-center gap-1.5 text-xs text-subdued">
               <i aria-hidden="true" className="fa-solid fa-shield text-brand-green" />
-              Imun. {im}
+              Imm. <span translate="no" className="notranslate">{im}</span>
             </li>
           ))}
           {vulnerabilities.map((v) => (
             <li key={v} className="flex items-center gap-1.5 text-xs text-subdued">
               <i aria-hidden="true" className="fa-solid fa-triangle-exclamation text-primary" />
-              Vuln. {v}
+              Vuln. <span translate="no" className="notranslate">{v}</span>
             </li>
           ))}
         </ul>
       ) : (
-        <p className="text-xs text-muted-foreground">Nenhuma resistência especial.</p>
+        <p className="text-xs text-muted-foreground">No special resistance.</p>
       )}
     </section>
   );

@@ -408,7 +408,7 @@ function extractEquipmentSummary(entries: unknown[] | undefined): string {
     }
   }
 
-  return "Equipamento de antecedente 2024.";
+  return "2024 Background equipment.";
 }
 
 export function extractBackgroundGold(
@@ -528,8 +528,8 @@ function normalizeClassFeatureChoiceGroups(
       featureName: "Weapon Mastery",
       label: "Weapon Mastery",
       description: meleeOnly
-        ? "Escolha duas armas melee simples ou marciais para dominar."
-        : `Escolha ${count} armas simples ou marciais para dominar.`,
+        ? "Choose two simple or martial melee weapons to master."
+        : `Choose ${count} simple or martial weapons to master.`,
       count,
       options,
     },

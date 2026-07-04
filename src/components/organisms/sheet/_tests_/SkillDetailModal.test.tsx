@@ -10,7 +10,7 @@ describe("SkillDetailModal", () => {
   afterEach(cleanup);
 
   it("renders nothing when skillName is null", () => {
-    render(<SkillDetailModal skillName={null} label="Arcanismo" onClose={() => {}} />);
+    render(<SkillDetailModal skillName={null} label="Arcana" onClose={() => {}} />);
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 
@@ -18,15 +18,15 @@ describe("SkillDetailModal", () => {
     render(
       <SkillDetailModal
         skillName="Arcana"
-        label="Arcanismo"
+        label="Arcana"
         onClose={() => {}}
       />
     );
     expect(screen.getByRole("dialog")).toBeInTheDocument();
-    expect(screen.getByText("Arcanismo")).toBeInTheDocument();
-    expect(screen.getByText(/Inteligência/)).toBeInTheDocument();
+    expect(screen.getByText("Arcana")).toBeInTheDocument();
+    expect(screen.getByText(/Intelligence/)).toBeInTheDocument();
     expect(
-      screen.getByText("Conhecimento sobre magia, rituais arcanos, entidades mágicas e fenômenos sobrenaturais.")
+      screen.getByText("Knowledge of magic, arcane rituals, magical beings, and supernatural phenomena.")
     ).toBeInTheDocument();
   });
 
@@ -35,11 +35,11 @@ describe("SkillDetailModal", () => {
     render(
       <SkillDetailModal
         skillName="Arcana"
-        label="Arcanismo"
+        label="Arcana"
         onClose={onClose}
       />
     );
-    fireEvent.click(screen.getByLabelText("Fechar"));
+    fireEvent.click(screen.getByLabelText("Close"));
     expect(onClose).toHaveBeenCalled();
   });
 
@@ -47,7 +47,7 @@ describe("SkillDetailModal", () => {
     render(
       <SkillDetailModal
         skillName="UnknownSkill"
-        label="Perícia Desconhecida"
+        label="Unknown Skill"
         onClose={() => {}}
       />
     );

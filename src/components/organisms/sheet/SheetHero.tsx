@@ -28,16 +28,16 @@ export function SheetHero({ summary, onExport }: SheetHeroProps) {
           )}
         >
           <i aria-hidden="true" className="fa-solid fa-file-export" />
-          Exportar
+          Export
         </button>
         <div className="min-w-[200px] flex-1 text-center">
           <p className="mb-1 text-[9px] font-bold uppercase leading-none tracking-[0.24em] text-brand-crimson-alt">
-            ◆ Nível {summary.level} · Regras {summary.ruleset === "2024" ? "2024" : "2014"} ◆
+            ◆ Level <span translate="no" className="notranslate">{summary.level}</span> · Rules <span translate="no" className="notranslate">{summary.ruleset === "2024" ? "2024" : "2014"}</span> ◆
           </p>
-          <h1 className="m-0 font-serif text-[28px] font-extrabold leading-[1.02] text-foreground">
-            {summary.name || "Personagem sem nome"}
+          <h1 translate="no" className="notranslate m-0 font-serif text-[28px] font-extrabold leading-[1.02] text-foreground">
+            {summary.name || "Unnamed Character"}
           </h1>
-          <p className="mt-[5px] text-[12.5px] text-muted-foreground">
+          <p translate="no" className="notranslate mt-[5px] text-[12.5px] text-muted-foreground">
             {summary.speciesName} {summary.className}
             {summary.backgroundName ? ` · ${summary.backgroundName}` : ""}
           </p>
@@ -49,8 +49,8 @@ export function SheetHero({ summary, onExport }: SheetHeroProps) {
       <div className="flex flex-wrap items-center justify-center gap-[22px]">
         <CombatStatFrame variant="square" accentColor="var(--brand-crimson-alt)">
           <i aria-hidden="true" className="fa-solid fa-bolt text-[13px] text-primary" />
-          <span className="text-[8.5px] uppercase tracking-[0.05em] text-muted-foreground">Iniciativa</span>
-          <span className="font-serif text-2xl font-extrabold text-foreground">{fmt(summary.initiative)}</span>
+          <span className="text-[8.5px] uppercase tracking-[0.05em] text-muted-foreground">Initiative</span>
+          <span translate="no" className="notranslate font-serif text-2xl font-extrabold text-foreground">{fmt(summary.initiative)}</span>
         </CombatStatFrame>
 
         <div className="relative flex h-[190px] w-[172px] items-center justify-center">
@@ -60,33 +60,33 @@ export function SheetHero({ summary, onExport }: SheetHeroProps) {
           </svg>
           <div className="relative flex flex-col items-center gap-0.5 pb-4">
             <span className="text-center text-[9.5px] font-semibold uppercase leading-tight tracking-[0.08em] text-brand-crimson-alt">
-              Classe de<br />Armadura
+              Armor<br />Class
             </span>
-            <span className="font-serif text-5xl font-extrabold leading-none text-foreground">{summary.armorClass}</span>
+            <span translate="no" className="notranslate font-serif text-5xl font-extrabold leading-none text-foreground">{summary.armorClass}</span>
           </div>
         </div>
 
         <CombatStatFrame variant="square" accentColor="#8a8fb0">
           <i aria-hidden="true" className="fa-solid fa-shoe-prints text-[13px] text-muted-foreground" />
-          <span className="text-[8.5px] uppercase tracking-[0.05em] text-muted-foreground">Desloc.</span>
-          <span className="font-serif text-[22px] font-extrabold text-foreground">
-            {summary.speedMeters}<span className="text-xs font-semibold text-muted-foreground">m</span>
+          <span className="text-[8.5px] uppercase tracking-[0.05em] text-muted-foreground">Speed</span>
+          <span translate="no" className="notranslate font-serif text-[22px] font-extrabold text-foreground">
+            {summary.speedFeet}<span className="text-xs font-semibold text-muted-foreground">ft.</span>
           </span>
         </CombatStatFrame>
       </div>
 
-      {/* HP / Proficiência pill */}
+      {/* HP / Proficiency pill */}
       <div className="flex w-full max-w-[560px] items-center gap-3">
         <div className="h-px flex-1 bg-gradient-to-r from-transparent to-brand-crimson-alt" />
         <div className="flex items-center gap-[10px] rounded-full border border-border bg-card px-4 py-[7px]">
           <i aria-hidden="true" className="fa-solid fa-heart text-xs text-primary" />
           <span className="font-serif text-xl font-extrabold text-foreground">
-            {summary.currentHp}<span className="text-[13px] font-semibold text-muted-foreground"> / {summary.maxHp} PV</span>
+            <span translate="no" className="notranslate">{summary.currentHp}</span><span translate="no" className="notranslate text-[13px] font-semibold text-muted-foreground"> / {summary.maxHp} HP</span>
           </span>
           <span className="h-[18px] w-px bg-border" />
           <i aria-hidden="true" className="fa-solid fa-star text-[11px] text-primary" />
-          <span className="font-serif text-base font-extrabold text-foreground">+{summary.proficiencyBonus}</span>
-          <span className="text-[9px] uppercase tracking-[0.08em] text-muted-foreground">Profic.</span>
+          <span translate="no" className="notranslate font-serif text-base font-extrabold text-foreground">+{summary.proficiencyBonus}</span>
+          <span className="text-[9px] uppercase tracking-[0.08em] text-muted-foreground">Prof.</span>
         </div>
         <div className="h-px flex-1 bg-gradient-to-r from-brand-crimson-alt to-transparent" />
       </div>

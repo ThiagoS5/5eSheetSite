@@ -58,7 +58,7 @@ export function InventoryManager({
     setAddingId(item.id);
     try {
       onAddItem(item.id);
-      toast.success(`${item.name} adicionado ao seu inventário atual`);
+      toast.success(`${item.name} added to your current inventory`);
       // Brief hold so the disabled/spinner state is visible and rapid repeat
       // clicks are throttled (the store update itself is synchronous).
       await new Promise((resolve) => setTimeout(resolve, 400));
@@ -91,10 +91,10 @@ export function InventoryManager({
       <Accordion type="multiple" defaultValue={[]}>
         {/* ── Inventário Atual ── */}
         <AccordionItem value="inventory">
-          <AccordionTrigger>Inventário Atual</AccordionTrigger>
+          <AccordionTrigger>Current Inventory</AccordionTrigger>
           <AccordionContent>
             {inventory.length === 0 ? (
-              <p className="text-muted-foreground text-sm">Nenhum item no inventário.</p>
+              <p className="text-muted-foreground text-sm">No items in inventory.</p>
             ) : (
               <ul className="space-y-1">
                 {inventory.map((entry) => {
@@ -105,25 +105,25 @@ export function InventoryManager({
                       key={entry.itemId}
                       className="flex items-center justify-between gap-2 rounded bg-card px-3 py-2"
                     >
-                      <span className="flex-1 text-sm text-subdued">{name}</span>
+                      <span translate="no" className="notranslate flex-1 text-sm text-subdued">{name}</span>
                       <div className="flex items-center gap-1">
                         <Button
                           variant="ghost"
                           size="icon"
-                          aria-label={`Diminuir ${name}`}
+                          aria-label={`Decrease ${name}`}
                           onClick={() =>
                             onSetQuantity(entry.itemId, entry.quantity - 1)
                           }
                         >
                           <Minus className="h-3 w-3" />
                         </Button>
-                        <span className="w-6 text-center text-sm font-medium text-foreground">
+                        <span translate="no" className="notranslate w-6 text-center text-sm font-medium text-foreground">
                           {entry.quantity}
                         </span>
                         <Button
                           variant="ghost"
                           size="icon"
-                          aria-label={`Aumentar ${name}`}
+                          aria-label={`Increase ${name}`}
                           onClick={() =>
                             onSetQuantity(entry.itemId, entry.quantity + 1)
                           }
@@ -133,7 +133,7 @@ export function InventoryManager({
                         <Button
                           variant="ghost"
                           size="icon"
-                          aria-label={`Remover ${name}`}
+                          aria-label={`Remove ${name}`}
                           className="text-primary"
                           onClick={() => onRemoveItem(entry.itemId)}
                         >
@@ -150,13 +150,13 @@ export function InventoryManager({
 
         {/* ── Adicionar Itens ── */}
         <AccordionItem value="add">
-          <AccordionTrigger>Adicionar Itens</AccordionTrigger>
+          <AccordionTrigger>Add Items</AccordionTrigger>
           <AccordionContent>
             {/* Search */}
             <div className="mb-3">
               <Input
-                aria-label="Buscar item"
-                placeholder="Buscar itens…"
+                aria-label="Search item"
+                placeholder="Search items..."
                 value={filters.query}
                 onChange={(e) =>
                   setFilters((prev) => ({ ...prev, query: e.target.value }))
@@ -194,7 +194,7 @@ export function InventoryManager({
                 <input
                   type="checkbox"
                   disabled
-                  title="Em breve"
+                  title="Coming soon"
                   className="accent-brand-crimson-alt"
                 />
                 Proficient
@@ -243,8 +243,8 @@ export function InventoryManager({
             {/* Results count */}
             <p className="mb-2 text-xs text-muted-foreground">
               {results.length > 100
-                ? `Mostrando 100 de ${results.length} itens`
-                : `${results.length} itens`}
+                ? `Showing 100 of ${results.length} items`
+                : `${results.length} items`}
             </p>
 
             {/* Results list */}
@@ -255,10 +255,10 @@ export function InventoryManager({
                   className="flex items-center justify-between gap-2 rounded bg-card px-3 py-2"
                 >
                   <div className="flex-1 min-w-0">
-                    <span className="block text-sm text-foreground truncate">
+                    <span translate="no" className="notranslate block text-sm text-foreground truncate">
                       {item.name}
                     </span>
-                    <span className="block text-xs text-muted-foreground">
+                    <span translate="no" className="notranslate block text-xs text-muted-foreground">
                       {item.category} / {item.source}
                     </span>
                   </div>

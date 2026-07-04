@@ -61,15 +61,15 @@ const groupedSlugs = new Set<BuilderStepSlug>([
 const sidebarGroups: SidebarStepGroup[] = [
   {
     id: "class",
-    label: "Classe",
-    shortLabel: "Classe",
+    label: "Class",
+    shortLabel: "Class",
     iconSlug: "classe",
     childSlugs: classGroupSlugs,
   },
   {
     id: "species",
-    label: "Raca/Especie",
-    shortLabel: "Especie",
+    label: "Species",
+    shortLabel: "Species",
     iconSlug: "especie",
     childSlugs: speciesGroupSlugs,
   },
@@ -147,8 +147,8 @@ export function BuilderSidebar({ variant = "desktop" }: BuilderSidebarProps) {
                 type="button"
                 variant="ghost"
                 size="icon"
-                title="Abrir barra lateral (Ctrl+B)"
-                aria-label="Abrir barra lateral"
+                title="Open sidebar (Ctrl+B)"
+                aria-label="Open sidebar"
                 onClick={toggleSidebar}
                 className="h-10 w-10 text-subdued transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)] hover:bg-white/5 hover:text-foreground focus-visible:ring-2 focus-visible:ring-primary/70"
               >
@@ -171,8 +171,8 @@ export function BuilderSidebar({ variant = "desktop" }: BuilderSidebarProps) {
                   type="button"
                   variant="ghost"
                   size="icon"
-                  title="Fechar barra lateral (Ctrl+B)"
-                  aria-label="Fechar barra lateral"
+                  title="Close sidebar (Ctrl+B)"
+                  aria-label="Close sidebar"
                   onClick={toggleSidebar}
                   className="h-10 w-10 shrink-0 text-subdued transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)] hover:bg-white/5 hover:text-foreground focus-visible:ring-2 focus-visible:ring-primary/70"
                 >
@@ -194,16 +194,16 @@ export function BuilderSidebar({ variant = "desktop" }: BuilderSidebarProps) {
           >
             <Progress
               value={progress}
-              aria-label={`Progresso do wizard: etapa ${Math.max(
+              aria-label={`Wizard progress: step ${Math.max(
                 currentIndex + 1,
                 1,
-              )} de ${totalSteps}`}
+              )} of ${totalSteps}`}
               className={cn(
                 "mb-4 h-1 bg-white/5 transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)] [&>div]:bg-primary [&>div]:shadow-[0_0_8px_rgba(230,28,35,0.4)]",
                 collapsed && "xl:hidden",
               )}
             />
-            <nav aria-label="Etapas do Character Builder" className="min-w-0">
+            <nav aria-label="Character Builder steps" className="min-w-0">
               <SidebarMenu className={cn("min-w-0 gap-1", collapsed && "xl:items-center")}>
                 <GroupedStepItem
                   group={sidebarGroups[0]}
@@ -386,7 +386,7 @@ function FlatStepItems({
             {isLocked ? (
               <SidebarMenuButton
                 aria-disabled="true"
-                aria-label={`${step.label} bloqueada`}
+                aria-label={`${step.label} locked`}
                 className={cn(
                   baseStepClass,
                   lockedStepClass,
@@ -667,7 +667,7 @@ function PendencyBadge({ count }: { count: number }) {
         iconClassName="fa-solid fa-triangle-exclamation"
         className="mr-1 inline h-3 w-3"
       />
-      {count} pendencias
+      {count} pending
     </span>
   );
 }

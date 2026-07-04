@@ -14,7 +14,7 @@ interface DetailDialogProps {
 export function DetailDialog({
   title,
   description,
-  triggerLabel = "Detalhes",
+  triggerLabel = "Details",
   triggerClassName,
   children,
 }: DetailDialogProps) {
@@ -44,7 +44,7 @@ export function DetailDialog({
                   : "sr-only"
               }
             >
-              {description ?? `Detalhes de ${title}`}
+              {description ?? `${title} details`}
             </Dialog.Description>
             <div className="mt-5 grid gap-4 text-sm leading-7 text-subdued">
               {children}
@@ -52,7 +52,7 @@ export function DetailDialog({
             <Dialog.Close asChild>
               <button
                 type="button"
-                aria-label={`Fechar detalhes de ${title}`}
+                aria-label={`Close ${title} details`}
                 className="absolute right-4 top-4 rounded-md border border-border bg-white/5 px-2 py-1 text-sm font-bold text-subdued outline-none transition hover:border-brand-crimson-alt/70 hover:text-foreground focus-visible:ring-2 focus-visible:ring-brand-crimson-alt/70"
               >
                 X

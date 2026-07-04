@@ -29,10 +29,10 @@ export function ClassChangeDiffDialog({
         <Dialog.Overlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-md">
           <Dialog.Content className="w-full max-w-md rounded-xl border border-white/[0.08] bg-surface-nested p-5 text-foreground shadow-2xl shadow-black/60 outline-none focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70">
             <Dialog.Title className="font-serif text-xl font-bold text-foreground">
-              Alterar classe
+              Change class
             </Dialog.Title>
             <Dialog.Description className="mt-2 text-sm leading-6 text-subdued">
-              Trocar a classe reinicia escolhas que dependem dela para manter a ficha consistente:
+              Changing class resets choices that depend on it to keep the sheet consistent:
             </Dialog.Description>
             <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-accent">
               {items.map((item) => (
@@ -41,9 +41,9 @@ export function ClassChangeDiffDialog({
             </ul>
             <div className="mt-5 flex justify-end gap-3">
               <ActionBtn intent="secondary" autoFocus onClick={onCancel}>
-                Cancelar
+                Cancel
               </ActionBtn>
-              <ActionBtn onClick={onConfirm}>Trocar de classe</ActionBtn>
+              <ActionBtn onClick={onConfirm}>Change class</ActionBtn>
             </div>
           </Dialog.Content>
         </Dialog.Overlay>

@@ -20,9 +20,9 @@ describe("CharacterSheetPreview", () => {
     );
 
     expect(
-      screen.getByRole("complementary", { name: "Herói sem nome" }),
+      screen.getByRole("complementary", { name: "Unnamed Hero" }),
     ).toBeInTheDocument();
-    expect(screen.getByRole("region", { name: "Atributos" })).toBeInTheDocument();
-    expect(screen.getByRole("region", { name: "Pendências" })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Ability Scores" })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Pending Items" })).toBeInTheDocument();
   });
 });

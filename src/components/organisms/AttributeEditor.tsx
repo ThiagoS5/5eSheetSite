@@ -91,15 +91,15 @@ export function AttributeEditor({
           id="attributes-title"
           className="font-serif text-xl font-bold tracking-wide text-foreground"
         >
-          Defina os Atributos
+          Set Ability Scores
         </h2>
         <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
-          Valores base ficam separados dos bonus do Antecedente 2024.
+          Base values stay separate from 2024 Background bonuses.
         </p>
       </div>
 
       <fieldset>
-        <legend className="sr-only">Metodo de geracao de atributos</legend>
+        <legend className="sr-only">Ability score generation method</legend>
         <div className="flex flex-wrap items-center gap-2">
           {methods.map((entry) => (
             <button
@@ -127,7 +127,7 @@ export function AttributeEditor({
           aria-live="polite"
           className="rounded-md border border-white/[0.08] bg-card px-3 py-2 text-sm font-semibold text-accent"
         >
-          Point Buy: {pointBuySpent} gastos, {pointBuyRemaining} restantes
+          Point Buy: {pointBuySpent} spent, {pointBuyRemaining} remaining
         </p>
       ) : null}
 
@@ -147,22 +147,22 @@ export function AttributeEditor({
           <TableHeader className="sr-only bg-white/5 md:table-header-group">
             <TableRow className="border-white/[0.06] hover:bg-transparent md:table-row">
               <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                Atributo
+                Ability
               </TableHead>
               <TableHead className="text-center text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                Valor Base
+                Base Score
               </TableHead>
               <TableHead className="text-center text-xs font-bold uppercase tracking-wider text-muted-foreground">
                 Bonus
               </TableHead>
               <TableHead className="hidden text-center text-xs font-bold uppercase tracking-wider text-muted-foreground md:table-cell">
-                Outros Modificadores
+                Other Modifiers
               </TableHead>
               <TableHead className="text-center text-xs font-bold uppercase tracking-wider text-muted-foreground">
                 Total
               </TableHead>
               <TableHead className="text-center text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                Modificador
+                Modifier
               </TableHead>
             </TableRow>
           </TableHeader>
@@ -190,7 +190,7 @@ export function AttributeEditor({
                   </TableCell>
                   <TableCell className="p-0 text-left whitespace-normal md:table-cell md:p-3 md:text-center md:whitespace-nowrap">
                     <span className="mb-1 block text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground md:hidden">
-                      Valor Base
+                      Base Score
                     </span>
                     <BaseValueControl
                       method={method}
@@ -209,7 +209,7 @@ export function AttributeEditor({
                   <TableCell className="hidden text-center md:table-cell">
                     <Input
                       type="number"
-                      aria-label={`Outros modificadores de ${label}`}
+                      aria-label={`Other modifiers for ${label}`}
                       value={other}
                       onChange={(event) =>
                         setOtherModifier(
@@ -246,21 +246,20 @@ export function AttributeEditor({
           <Dialog.Overlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-md">
             <Dialog.Content className="w-full max-w-md rounded-xl border border-white/[0.08] bg-surface-nested p-5 text-foreground shadow-2xl shadow-black/60 outline-none focus-visible:ring-2 focus-visible:ring-brand-crimson-alt/70">
               <Dialog.Title className="font-serif text-xl font-bold text-foreground">
-                Resetar atributos?
+                Reset ability scores?
               </Dialog.Title>
               <Dialog.Description className="mt-2 text-sm leading-6 text-subdued">
-                É exatamente isto que você deseja? Isto reinicia a rolagem de
-                dados e zera os valores base distribuídos — a alteração é
-                aplicada diretamente na ficha.
+                Are you sure? This resets rolled dice and clears distributed
+                base scores. The change is applied directly to the sheet.
               </Dialog.Description>
               <div className="mt-5 flex justify-end gap-3">
                 <Dialog.Close asChild>
                   <ActionBtn intent="secondary" size="sm">
-                    Cancelar
+                    Cancel
                   </ActionBtn>
                 </Dialog.Close>
                 <ActionBtn size="sm" onClick={handleConfirmReset}>
-                  Resetar
+                  Reset
                 </ActionBtn>
               </div>
             </Dialog.Content>
@@ -301,7 +300,7 @@ function BaseValueControl({
   if (method === "standard-array") {
     return (
       <select
-        aria-label={`Valor base de ${label}`}
+        aria-label={`Base score for ${label}`}
         value={value}
         onChange={(event) =>
           onAttributeChange(attribute, Number(event.target.value))
@@ -364,7 +363,7 @@ function BaseValueControl({
         type="button"
         variant="ghost"
         size="icon"
-        aria-label={`Diminuir ${label}`}
+        aria-label={`Decrease ${label}`}
         disabled={!canDecrease}
         onClick={handleDecrease}
         className="text-foreground"
@@ -382,7 +381,7 @@ function BaseValueControl({
         type="button"
         variant="ghost"
         size="icon"
-        aria-label={`Aumentar ${label}`}
+        aria-label={`Increase ${label}`}
         disabled={!canIncrease}
         onClick={handleIncrease}
         className="text-foreground"

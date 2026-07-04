@@ -26,7 +26,7 @@ export function AbilityScoresGrid({ summary }: AbilityScoresGridProps) {
         id="ability-scores-title"
         className="font-serif text-lg font-bold tracking-wide text-foreground"
       >
-        Atributos
+        Ability Scores
       </h3>
       <dl className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-3 2xl:grid-cols-6">
         {ATTRIBUTE_ORDER.map((attribute) => (

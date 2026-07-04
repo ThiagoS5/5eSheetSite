@@ -147,9 +147,9 @@ function cloneReference(): FoundryActorExport {
 
 function createFoundryItems(state: CharacterBuilderState, summary: CharacterSheetSummary): FoundryItemExport[] {
   const identityItems = [
-    createFoundryItem(titleFromId(summary.classId), "class", "Classe selecionada."),
-    createFoundryItem(titleFromId(summary.speciesId), "feat", "Espécie selecionada."),
-    createFoundryItem(titleFromId(summary.backgroundId), "background", "Antecedente selecionado."),
+    createFoundryItem(titleFromId(summary.classId), "class", "Selected class."),
+    createFoundryItem(titleFromId(summary.speciesId), "feat", "Selected species."),
+    createFoundryItem(titleFromId(summary.backgroundId), "background", "Selected background."),
   ].filter((item) => item.name !== "");
   const traitItems = summary.selectedTraits.map((trait) =>
     createFoundryItem(trait.name, "feat", trait.description),

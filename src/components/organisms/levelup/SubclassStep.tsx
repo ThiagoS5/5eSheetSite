@@ -5,12 +5,12 @@ import type { SubclassStepProps } from "@/src/components/organisms/levelup/types
 
 export function SubclassStep({ level, subclasses, selectedSubclassId, onSelect }: SubclassStepProps) {
   return (
-    <section aria-label={`Nível ${level} · Subclasse`}>
+    <section aria-label={`Level ${level} · Subclass`}>
       <header className="mb-4">
         <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
-          Nível {level}
+          Level <span translate="no" className="notranslate">{level}</span>
         </p>
-        <h2 className="font-serif text-xl font-bold tracking-wide text-foreground">Subclasse</h2>
+        <h2 className="font-serif text-xl font-bold tracking-wide text-foreground">Subclass</h2>
       </header>
       <div className="grid gap-3 sm:grid-cols-2">
         {subclasses.map((subclass) => (
@@ -20,7 +20,7 @@ export function SubclassStep({ level, subclasses, selectedSubclassId, onSelect }
             selected={subclass.id === selectedSubclassId}
             onSelect={() => onSelect(subclass.id)}
           >
-            {subclass.features[0]?.description || "Subclasse de classe."}
+            {subclass.features[0]?.description || "Class subclass."}
           </ChoiceCard>
         ))}
       </div>

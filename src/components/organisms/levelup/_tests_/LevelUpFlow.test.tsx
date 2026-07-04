@@ -43,16 +43,16 @@ describe("LevelUpFlow", () => {
     sessionStorage.clear();
   });
 
-  it("gates Continuar until the subclass step is resolved", () => {
+  it("gates Continue until the subclass step is resolved", () => {
     render(<CharacterStoreProvider><Harness level={3} /></CharacterStoreProvider>);
     fireEvent.click(screen.getByRole("button", { name: "setup" }));
 
     // With Weapon Mastery pre-resolved, the only pending step is the subclass.
-    expect(screen.getByRole("heading", { name: "Subclasse" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Continuar|Concluir/ })).toBeDisabled();
+    expect(screen.getByRole("heading", { name: "Subclass" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Continue|Finish/ })).toBeDisabled();
 
-    fireEvent.click(screen.getAllByRole("button", { name: /Selecionar/ })[0]);
-    expect(screen.getByRole("button", { name: /Continuar|Concluir/ })).toBeEnabled();
+    fireEvent.click(screen.getAllByRole("button", { name: /Select/ })[0]);
+    expect(screen.getByRole("button", { name: /Continue|Finish/ })).toBeEnabled();
   }, INTEGRATION_TEST_TIMEOUT_MS);
 
   it("re-snapshots pending choices on each reopen (not stale)", () => {
@@ -83,16 +83,16 @@ describe("LevelUpFlow", () => {
 
     // Open at level 3 with everything resolved → no pending steps.
     fireEvent.click(screen.getByRole("button", { name: "open-l3" }));
-    expect(screen.getByText("Nenhuma escolha pendente.")).toBeInTheDocument();
+    expect(screen.getByText("No pending choice.")).toBeInTheDocument();
 
     // Close, raise to level 4 (adds the ASI-or-feat choice), reopen.
-    fireEvent.click(screen.getByRole("button", { name: "Fechar" }));
+    fireEvent.click(screen.getByRole("button", { name: "Close" }));
     fireEvent.click(screen.getByRole("button", { name: "raise-and-reopen" }));
 
     // The reopened flow must show the freshly-pending level-4 ASI/feat step.
-    expect(screen.getByRole("heading", { name: "Aumento de Atributo ou Talento" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Ability Score Improvement or Feat" })).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "Fechar" }));
+    fireEvent.click(screen.getByRole("button", { name: "Close" }));
   }, INTEGRATION_TEST_TIMEOUT_MS);
 
   it("inserts a HitPointsStep first when leveling up past level 1 without a recorded roll", () => {
@@ -119,12 +119,12 @@ describe("LevelUpFlow", () => {
     fireEvent.click(screen.getByRole("button", { name: "open" }));
 
     // With subclass + weapon mastery already resolved, the only pending step is HP.
-    expect(screen.getByRole("heading", { name: "Pontos de Vida" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Continuar|Concluir/ })).toBeDisabled();
+    expect(screen.getByRole("heading", { name: "Hit Points" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Continue|Finish/ })).toBeDisabled();
 
-    fireEvent.click(screen.getByRole("button", { name: /usar média/i }));
+    fireEvent.click(screen.getByRole("button", { name: /use average/i }));
 
     // Choosing média records the roll, resolving the (only) HP step.
-    expect(screen.getByRole("button", { name: /Continuar|Concluir/ })).toBeEnabled();
+    expect(screen.getByRole("button", { name: /Continue|Finish/ })).toBeEnabled();
   }, INTEGRATION_TEST_TIMEOUT_MS);
 });

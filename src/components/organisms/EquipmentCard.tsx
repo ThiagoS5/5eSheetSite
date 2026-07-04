@@ -14,7 +14,7 @@ export function EquipmentCard({ equipment }: EquipmentCardProps) {
         id="equipment-summary-title"
         className="font-serif text-lg font-bold tracking-wide text-foreground"
       >
-        Equipamento
+        Equipment
       </h3>
       {equipment.length > 0 ? (
         <ul className="mt-4 grid gap-2">
@@ -23,8 +23,8 @@ export function EquipmentCard({ equipment }: EquipmentCardProps) {
               key={item.id}
               className="flex items-center justify-between gap-3 rounded-md border border-white/[0.06] bg-white/[0.03] px-3 py-2"
             >
-              <span className="font-medium text-foreground">{item.name}</span>
-              <span className="text-xs uppercase tracking-[0.1em] text-muted-foreground">
+              <span translate="no" className="notranslate font-medium text-foreground">{item.name}</span>
+              <span translate="no" className="notranslate text-xs uppercase tracking-[0.1em] text-muted-foreground">
                 {item.source}
               </span>
             </li>
@@ -32,7 +32,7 @@ export function EquipmentCard({ equipment }: EquipmentCardProps) {
         </ul>
       ) : (
         <p className="mt-4 text-sm leading-6 text-muted-foreground">
-          Nenhum equipamento selecionado.
+          No equipment selected.
         </p>
       )}
     </section>

@@ -74,10 +74,10 @@ describe("BuilderSidebar", () => {
   it("renders the DDB-inspired builder steps as keyboard-accessible links", () => {
     renderSidebar();
 
-    fireEvent.click(screen.getByRole("button", { name: "Raca/Especie" }));
+    fireEvent.click(screen.getByRole("button", { name: "Species" }));
 
     expect(
-      screen.getByRole("navigation", { name: "Etapas do Character Builder" }),
+      screen.getByRole("navigation", { name: "Character Builder steps" }),
     ).toBeInTheDocument();
 
     const links = screen.getAllByRole("link");
@@ -98,11 +98,11 @@ describe("BuilderSidebar", () => {
   it("marks the current step with aria-current", () => {
     renderSidebar();
 
-    expect(screen.getByRole("link", { name: "Recursos de Classe" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Class Features" })).toHaveAttribute(
       "aria-current",
       "step",
     );
-    expect(screen.getByRole("link", { name: "Classe" })).not.toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Class" })).not.toHaveAttribute(
       "aria-current",
     );
   });
@@ -110,15 +110,15 @@ describe("BuilderSidebar", () => {
   it("renders grouped shadcn sidebar sections with progress and guide lines", () => {
     renderSidebar();
 
-    expect(screen.getByTitle("Fechar barra lateral (Ctrl+B)")).toBeInTheDocument();
+    expect(screen.getByTitle("Close sidebar (Ctrl+B)")).toBeInTheDocument();
     expect(
-      screen.getByRole("progressbar", { name: /Progresso do wizard/i }),
+      screen.getByRole("progressbar", { name: /Wizard progress/i }),
     ).toHaveAttribute("aria-valuenow", "22.22222222222222");
-    expect(screen.getByRole("button", { name: "Classe" })).toHaveAttribute(
+    expect(screen.getByRole("button", { name: "Class" })).toHaveAttribute(
       "aria-expanded",
       "true",
     );
-    expect(screen.getByRole("button", { name: "Raca/Especie" })).toHaveAttribute(
+    expect(screen.getByRole("button", { name: "Species" })).toHaveAttribute(
       "aria-expanded",
       "false",
     );
@@ -133,7 +133,7 @@ describe("BuilderSidebar", () => {
   it("uses real store status for completed child items", () => {
     renderSidebar();
 
-    expect(screen.getByRole("link", { name: "Classe" })).toHaveClass(
+    expect(screen.getByRole("link", { name: "Class" })).toHaveClass(
       "text-brand-green",
     );
     expect(document.querySelector(".fa-check")).toBeInTheDocument();
@@ -142,9 +142,9 @@ describe("BuilderSidebar", () => {
   it("marks available steps with typed pendencies as warnings", () => {
     renderSidebar();
 
-    const backgroundLink = screen.getByRole("link", { name: /Antecedente/ });
+    const backgroundLink = screen.getByRole("link", { name: /Background/ });
     expect(backgroundLink).toHaveClass("text-accent");
-    expect(backgroundLink).toHaveTextContent("1 pendencias");
+    expect(backgroundLink).toHaveTextContent("1 pending");
     expect(document.querySelector(".fa-triangle-exclamation")).toBeInTheDocument();
   });
 
@@ -163,13 +163,13 @@ describe("BuilderSidebar", () => {
   it("uses icon collapsible mode without rendering the old internal toggle", () => {
     renderSidebar(true);
 
-    expect(screen.getByTitle("Abrir barra lateral (Ctrl+B)")).toBeInTheDocument();
+    expect(screen.getByTitle("Open sidebar (Ctrl+B)")).toBeInTheDocument();
     expect(document.querySelector('[data-slot="sidebar"]')).toHaveAttribute(
       "data-collapsible",
       "icon",
     );
     expect(
-      screen.queryByRole("button", { name: /Recolher sidebar|Expandir sidebar/i }),
+      screen.queryByRole("button", { name: /Collapse sidebar|Expand sidebar/i }),
     ).not.toBeInTheDocument();
   });
 
@@ -181,7 +181,7 @@ describe("BuilderSidebar", () => {
     );
 
     const asideElement = screen
-      .getByRole("navigation", { name: "Etapas do Character Builder" })
+      .getByRole("navigation", { name: "Character Builder steps" })
       .closest("aside");
 
     expect(asideElement).not.toHaveClass("hidden");
@@ -193,7 +193,7 @@ describe("BuilderSidebar", () => {
     renderSidebar();
 
     const asideElement = screen
-      .getByRole("navigation", { name: "Etapas do Character Builder" })
+      .getByRole("navigation", { name: "Character Builder steps" })
       .closest("aside");
 
     expect(asideElement).toHaveClass("hidden", "xl:flex");
