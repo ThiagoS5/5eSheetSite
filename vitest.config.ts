@@ -10,7 +10,7 @@ export default defineConfig({
   test: {
     environment: "node",
     setupFiles: ["./vitest.setup.ts"],
-    exclude: [...configDefaults.exclude, "**/.claude/**"],
+    exclude: [...configDefaults.exclude, "**/.claude/**", "**/.worktrees/**"],
     coverage: {
       provider: "v8",
       reporter: ["text", "html", "lcov"],

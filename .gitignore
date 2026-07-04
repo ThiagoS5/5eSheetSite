@@ -51,6 +51,7 @@ yarn-error.log*
 .agents/
 .codex/
 .claude/
+.worktrees/
 .mcp.json
 .playwright-mcp/
 ai-prompts/
