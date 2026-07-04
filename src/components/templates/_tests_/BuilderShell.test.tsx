@@ -121,7 +121,7 @@ describe("BuilderShell", () => {
     expect(toggle).toHaveAttribute("aria-checked", "true");
   });
 
-  it("renders the sidebar content visibly inside the mobile sheet once opened", () => {
+  it("opens the live character sheet (not navigation) from the identity strip", () => {
     vi.spyOn(useMobileModule, "useIsMobile").mockReturnValue(true);
 
     render(
@@ -134,17 +134,39 @@ describe("BuilderShell", () => {
       </CharacterStoreProvider>,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: /open sheet/i }));
+    fireEvent.click(screen.getByRole("button", { name: /open the live sheet/i }));
 
+    // The sheet drawer shows the live character sheet, honestly matching its label.
+    expect(screen.getByText("Live Sheet")).toBeInTheDocument();
+    expect(
+      screen.getByRole("complementary", { name: /Unnamed Hero/i }),
+    ).toBeInTheDocument();
+    // ...and NOT the step navigation (that lives behind the "steps" action).
+    expect(
+      screen.queryByRole("navigation", { name: "Character Builder steps" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("opens the builder steps navigation from the step indicator", () => {
+    vi.spyOn(useMobileModule, "useIsMobile").mockReturnValue(true);
+
+    render(
+      <CharacterStoreProvider>
+        <BuilderShell>
+          <div>
+            <h1 id="builder-title">Forge & Fate</h1>
+          </div>
+        </BuilderShell>
+      </CharacterStoreProvider>,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /open builder steps/i }));
+
+    expect(screen.getByText("Builder steps")).toBeInTheDocument();
     const drawerNav = screen.getByRole("navigation", {
       name: "Character Builder steps",
     });
-    const drawerAside = drawerNav.closest("aside");
-
-    expect(drawerAside).not.toHaveClass("hidden");
-    expect(drawerAside).toHaveClass("flex");
-    expect(screen.getByText("Live Sheet")).toBeInTheDocument();
-    expect(drawerAside).toHaveTextContent("FORGE & FATE");
+    expect(drawerNav.closest("aside")).toHaveTextContent("FORGE & FATE");
   });
 
   it("does not render the mobile builder bar on desktop", () => {

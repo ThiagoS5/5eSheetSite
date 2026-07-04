@@ -43,6 +43,7 @@ export function BuilderShell({ children }: BuilderShellProps) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [sheetCollapsed, setSheetCollapsed] = useState(false);
   const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
+  const [mobileStepsOpen, setMobileStepsOpen] = useState(false);
   // The summary step is the full character sheet itself, so the live preview
   // aside is redundant there and is hidden.
   const isSummaryStep = pathname?.endsWith("/conclusao") ?? false;
@@ -159,19 +160,31 @@ export function BuilderShell({ children }: BuilderShellProps) {
               ac: summary.armorClass,
             }}
             onOpenSheet={() => setMobileSheetOpen(true)}
+            onOpenSteps={() => setMobileStepsOpen(true)}
           />
         ) : null}
       </main>
 
       {isMobile ? (
-        <Sheet open={mobileSheetOpen} onOpenChange={setMobileSheetOpen}>
-          <SheetContent side="bottom" className="h-[85svh] overflow-y-auto">
-            <SheetHeader>
-              <SheetTitle>Live Sheet</SheetTitle>
-            </SheetHeader>
-            <BuilderSidebar variant="drawer" />
-          </SheetContent>
-        </Sheet>
+        <>
+          <Sheet open={mobileSheetOpen} onOpenChange={setMobileSheetOpen}>
+            <SheetContent side="bottom" className="h-[85svh] overflow-y-auto">
+              <SheetHeader>
+                <SheetTitle>Live Sheet</SheetTitle>
+              </SheetHeader>
+              <CharacterSheetPreview variant="drawer" />
+            </SheetContent>
+          </Sheet>
+
+          <Sheet open={mobileStepsOpen} onOpenChange={setMobileStepsOpen}>
+            <SheetContent side="bottom" className="h-[85svh] overflow-y-auto">
+              <SheetHeader>
+                <SheetTitle>Builder steps</SheetTitle>
+              </SheetHeader>
+              <BuilderSidebar variant="drawer" />
+            </SheetContent>
+          </Sheet>
+        </>
       ) : null}
     </SidebarProvider>
   );

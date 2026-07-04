@@ -28,6 +28,7 @@ describe("MobileBuilderBar", () => {
         onNext={() => {}}
         identity={baseIdentity}
         onOpenSheet={() => {}}
+        onOpenSteps={() => {}}
       />,
     );
 
@@ -46,6 +47,7 @@ describe("MobileBuilderBar", () => {
         nextBlockedReason="Select a class skill."
         identity={baseIdentity}
         onOpenSheet={() => {}}
+        onOpenSteps={() => {}}
       />,
     );
 
@@ -70,6 +72,7 @@ describe("MobileBuilderBar", () => {
         onNext={onNext}
         identity={baseIdentity}
         onOpenSheet={() => {}}
+        onOpenSteps={() => {}}
       />,
     );
 
@@ -91,6 +94,7 @@ describe("MobileBuilderBar", () => {
         onNext={() => {}}
         identity={baseIdentity}
         onOpenSheet={() => {}}
+        onOpenSteps={() => {}}
       />,
     );
 
@@ -107,6 +111,7 @@ describe("MobileBuilderBar", () => {
         onNext={() => {}}
         identity={baseIdentity}
         onOpenSheet={() => {}}
+        onOpenSteps={() => {}}
       />,
     );
 
@@ -125,13 +130,14 @@ describe("MobileBuilderBar", () => {
         onNext={() => {}}
         identity={baseIdentity}
         onOpenSheet={() => {}}
+        onOpenSteps={() => {}}
       />,
     );
 
     expect(screen.getByRole("button", { name: /back/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /next/i })).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: /open sheet/i }),
+      screen.getByRole("button", { name: /open the live sheet/i }),
     ).toBeInTheDocument();
   });
 
@@ -146,6 +152,7 @@ describe("MobileBuilderBar", () => {
         onNext={onNext}
         identity={baseIdentity}
         onOpenSheet={() => {}}
+        onOpenSteps={() => {}}
         hasNextStep={false}
       />,
     );
@@ -169,6 +176,7 @@ describe("MobileBuilderBar", () => {
         onNext={() => {}}
         identity={baseIdentity}
         onOpenSheet={() => {}}
+        onOpenSteps={() => {}}
         hasPreviousStep={false}
       />,
     );
@@ -191,10 +199,30 @@ describe("MobileBuilderBar", () => {
         onNext={() => {}}
         identity={baseIdentity}
         onOpenSheet={onOpenSheet}
+        onOpenSteps={() => {}}
       />,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: /open sheet/i }));
+    fireEvent.click(screen.getByRole("button", { name: /open the live sheet/i }));
     expect(onOpenSheet).toHaveBeenCalledTimes(1);
+  });
+
+  it("calls onOpenSteps when the step indicator is clicked", () => {
+    const onOpenSteps = vi.fn();
+
+    render(
+      <MobileBuilderBar
+        currentStepIndex={2}
+        totalSteps={9}
+        onBack={() => {}}
+        onNext={() => {}}
+        identity={baseIdentity}
+        onOpenSheet={() => {}}
+        onOpenSteps={onOpenSteps}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /open builder steps/i }));
+    expect(onOpenSteps).toHaveBeenCalledTimes(1);
   });
 });
