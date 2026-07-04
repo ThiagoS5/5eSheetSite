@@ -1,10 +1,17 @@
 "use client";
 
+import { useId, useMemo, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { CircleQuestionMark } from "lucide-react";
 import { useCharacterStore } from "@/src/store/useCharacterStore";
 import { Input } from "@/src/components/ui/input";
 import { cn } from "@/src/lib/utils";
+import {
+  buildPersonalDetailsFieldHelp,
+  getPersonalDetailsRecommendations,
+} from "@/src/data/personalDetailsRecommendations";
+import type { BuilderBackground, BuilderClass, BuilderSpecies } from "@/types/builder";
 import {
   personalDetailsSchema,
   parseWeight,
@@ -49,9 +56,34 @@ const labelCls =
 
 const AGE_MAX = 999999;
 
-export function PersonalDetailsEditor() {
+interface PersonalDetailsEditorProps {
+  beginnerMode?: boolean;
+  selectedSpecies?: BuilderSpecies;
+  selectedBackground?: BuilderBackground;
+  selectedClass?: BuilderClass;
+}
+
+export function PersonalDetailsEditor({
+  beginnerMode = false,
+  selectedSpecies,
+  selectedBackground,
+  selectedClass,
+}: PersonalDetailsEditorProps) {
   const description = useCharacterStore((s) => s.description);
   const setDescriptionField = useCharacterStore((s) => s.setDescriptionField);
+  const recommendations = useMemo(
+    () =>
+      getPersonalDetailsRecommendations({
+        species: selectedSpecies,
+        background: selectedBackground,
+        characterClass: selectedClass,
+      }),
+    [selectedBackground, selectedClass, selectedSpecies],
+  );
+  const guidedFieldHelp = useMemo(
+    () => buildPersonalDetailsFieldHelp(recommendations),
+    [recommendations],
+  );
 
   const { weightValue, weightUnit } = parseWeight(description.weight);
 
@@ -115,7 +147,12 @@ export function PersonalDetailsEditor() {
         </h3>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-5">
           <div>
-            <label className={labelCls} htmlFor="pd-nome">Character Name</label>
+            <FieldLabel
+              htmlFor="pd-nome"
+              label="Character Name"
+              help={guidedFieldHelp.nome}
+              showHelp={beginnerMode}
+            />
             <Input
               id="pd-nome"
               className={inputCls}
@@ -127,7 +164,12 @@ export function PersonalDetailsEditor() {
             )}
           </div>
           <div>
-            <label className={labelCls} htmlFor="pd-alinhamento">Alignment</label>
+            <FieldLabel
+              htmlFor="pd-alinhamento"
+              label="Alignment"
+              help={guidedFieldHelp.alinhamento}
+              showHelp={beginnerMode}
+            />
             <select id="pd-alinhamento" className={selectCls} {...register("alinhamento")}>
               <option value="">Choose...</option>
               {ALIGNMENTS.map((a) => (
@@ -138,7 +180,12 @@ export function PersonalDetailsEditor() {
             </select>
           </div>
           <div>
-            <label className={labelCls} htmlFor="pd-faith">Faith / Deity</label>
+            <FieldLabel
+              htmlFor="pd-faith"
+              label="Faith / Deity"
+              help={guidedFieldHelp.faith}
+              showHelp={beginnerMode}
+            />
             <Input
               id="pd-faith"
               className={inputCls}
@@ -147,7 +194,12 @@ export function PersonalDetailsEditor() {
             />
           </div>
           <div>
-            <label className={labelCls} htmlFor="pd-lifestyle">Lifestyle</label>
+            <FieldLabel
+              htmlFor="pd-lifestyle"
+              label="Lifestyle"
+              help={guidedFieldHelp.lifestyle}
+              showHelp={beginnerMode}
+            />
             <select id="pd-lifestyle" className={selectCls} {...register("lifestyle")}>
               <option value="">Choose...</option>
               {LIFESTYLES.map((l) => (
@@ -168,7 +220,12 @@ export function PersonalDetailsEditor() {
         </h3>
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-5">
           <div>
-            <label className={labelCls} htmlFor="pd-age">Age</label>
+            <FieldLabel
+              htmlFor="pd-age"
+              label="Age"
+              help={guidedFieldHelp.age}
+              showHelp={beginnerMode}
+            />
             <Input
               id="pd-age"
               type="number"
@@ -184,7 +241,12 @@ export function PersonalDetailsEditor() {
             />
           </div>
           <div>
-            <label className={labelCls} htmlFor="pd-gender">Gender</label>
+            <FieldLabel
+              htmlFor="pd-gender"
+              label="Gender"
+              help={guidedFieldHelp.gender}
+              showHelp={beginnerMode}
+            />
             <Input
               id="pd-gender"
               className={inputCls}
@@ -193,7 +255,12 @@ export function PersonalDetailsEditor() {
             />
           </div>
           <div>
-            <label className={labelCls} htmlFor="pd-height">Height</label>
+            <FieldLabel
+              htmlFor="pd-height"
+              label="Height"
+              help={guidedFieldHelp.height}
+              showHelp={beginnerMode}
+            />
             <Input
               id="pd-height"
               className={inputCls}
@@ -202,7 +269,12 @@ export function PersonalDetailsEditor() {
             />
           </div>
           <div>
-            <label className={labelCls} htmlFor="pd-weight">Weight</label>
+            <FieldLabel
+              htmlFor="pd-weight"
+              label="Weight"
+              help={guidedFieldHelp.weight}
+              showHelp={beginnerMode}
+            />
             <div className="flex gap-2">
               <Input
                 id="pd-weight"
@@ -235,15 +307,30 @@ export function PersonalDetailsEditor() {
         </div>
         <div className="mt-4 grid grid-cols-1 gap-4 md:mt-5 md:grid-cols-3 md:gap-5">
           <div>
-            <label className={labelCls} htmlFor="pd-eyes">Eyes</label>
+            <FieldLabel
+              htmlFor="pd-eyes"
+              label="Eyes"
+              help={guidedFieldHelp.eyes}
+              showHelp={beginnerMode}
+            />
             <Input id="pd-eyes" className={inputCls} placeholder="Eye color" {...register("eyes")} />
           </div>
           <div>
-            <label className={labelCls} htmlFor="pd-skin">Skin</label>
+            <FieldLabel
+              htmlFor="pd-skin"
+              label="Skin"
+              help={guidedFieldHelp.skin}
+              showHelp={beginnerMode}
+            />
             <Input id="pd-skin" className={inputCls} placeholder="Skin tone" {...register("skin")} />
           </div>
           <div>
-            <label className={labelCls} htmlFor="pd-hair">Hair</label>
+            <FieldLabel
+              htmlFor="pd-hair"
+              label="Hair"
+              help={guidedFieldHelp.hair}
+              showHelp={beginnerMode}
+            />
             <Input id="pd-hair" className={inputCls} placeholder="Color and style" {...register("hair")} />
           </div>
         </div>
@@ -257,7 +344,12 @@ export function PersonalDetailsEditor() {
         </h3>
         <div className="space-y-4 md:space-y-5">
           <div>
-            <label className={labelCls} htmlFor="pd-aparencia">Physical Appearance</label>
+            <FieldLabel
+              htmlFor="pd-aparencia"
+              label="Physical Appearance"
+              help={guidedFieldHelp.aparencia}
+              showHelp={beginnerMode}
+            />
             <textarea
               id="pd-aparencia"
               className={textareaCls}
@@ -267,7 +359,12 @@ export function PersonalDetailsEditor() {
             />
           </div>
           <div>
-            <label className={labelCls} htmlFor="pd-personalidade">Personality & Mannerisms</label>
+            <FieldLabel
+              htmlFor="pd-personalidade"
+              label="Personality & Mannerisms"
+              help={guidedFieldHelp.personalidade}
+              showHelp={beginnerMode}
+            />
             <textarea
               id="pd-personalidade"
               className={textareaCls}
@@ -277,7 +374,12 @@ export function PersonalDetailsEditor() {
             />
           </div>
           <div>
-            <label className={labelCls} htmlFor="pd-tracos">Backstory</label>
+            <FieldLabel
+              htmlFor="pd-tracos"
+              label="Backstory"
+              help={guidedFieldHelp.tracos}
+              showHelp={beginnerMode}
+            />
             <textarea
               id="pd-tracos"
               className={textareaCls}
@@ -287,7 +389,12 @@ export function PersonalDetailsEditor() {
             />
           </div>
           <div>
-            <label className={labelCls} htmlFor="pd-notas">Additional Notes</label>
+            <FieldLabel
+              htmlFor="pd-notas"
+              label="Additional Notes"
+              help={guidedFieldHelp.notas}
+              showHelp={beginnerMode}
+            />
             <textarea
               id="pd-notas"
               className={textareaCls}
@@ -299,5 +406,56 @@ export function PersonalDetailsEditor() {
         </div>
       </section>
     </form>
+  );
+}
+
+function FieldLabel({
+  htmlFor,
+  label,
+  help,
+  showHelp,
+}: {
+  htmlFor: string;
+  label: string;
+  help: string;
+  showHelp: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const helpId = useId();
+
+  if (!showHelp) {
+    return (
+      <label className={labelCls} htmlFor={htmlFor}>
+        {label}
+      </label>
+    );
+  }
+
+  return (
+    <div className="mb-1.5">
+      <div className="flex items-center justify-between gap-2">
+        <label className={cn(labelCls, "mb-0")} htmlFor={htmlFor}>
+          {label}
+        </label>
+        <button
+          type="button"
+          aria-label={`Help with ${label}`}
+          aria-expanded={open}
+          aria-controls={helpId}
+          onClick={() => setOpen((current) => !current)}
+          className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-border bg-card text-muted-foreground outline-none transition hover:border-brand-gold-alt/60 hover:text-foreground focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70"
+        >
+          <CircleQuestionMark aria-hidden="true" className="h-4 w-4" />
+        </button>
+      </div>
+      {open ? (
+        <p
+          id={helpId}
+          className="mt-2 rounded-md border border-brand-gold-alt/30 bg-brand-gold-alt/10 px-3 py-2 text-xs leading-5 text-subdued"
+        >
+          {help}
+        </p>
+      ) : null}
+    </div>
   );
 }

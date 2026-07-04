@@ -24,6 +24,16 @@ import {
   type ClassQuizRecommendation,
 } from "@/src/data/classQuiz";
 import {
+  backgroundQuizPitches,
+  createBackgroundQuizSession,
+  createSpeciesQuizSession,
+  getBackgroundQuizRecommendation,
+  getSpeciesQuizRecommendation,
+  speciesQuizPitches,
+  type GuidedChoiceQuizQuestion,
+  type GuidedChoiceQuizRecommendation,
+} from "@/src/data/guidedChoiceQuiz";
+import {
   getRequiredLanguageCount,
   validateBuilderStep,
 } from "@/rules/builderValidation";
@@ -91,7 +101,6 @@ const BEGINNER_STEP_GUIDES: Partial<
   "detalhes-especie": { conceptId: "species", title: "Species Details" },
   atributos: { conceptId: "attribute", title: "What are ability scores?" },
   equipamento: { conceptId: "starting-equipment", title: "What is starting equipment?" },
-  descricao: { conceptId: "table-use", title: "Bringing the character to life" },
 };
 
 interface BuilderStepPanelProps {
@@ -298,6 +307,7 @@ export function BuilderStepPanel({
           backgrounds={backgrounds}
           selectedBackgroundId={characterState.selectedBackgroundId}
           selectedBonuses={characterState.backgroundAbilityBonuses}
+          beginnerMode={Boolean(characterState.beginnerMode)}
           disabled={!canUseCurrentStep}
           onSelectBackground={requestBackgroundSelection}
           onSetBonuses={actions.setBackgroundAbilityBonuses}
@@ -311,6 +321,7 @@ export function BuilderStepPanel({
         <SpeciesStep
           species={species}
           selectedSpeciesId={characterState.selectedSpeciesId}
+          beginnerMode={Boolean(characterState.beginnerMode)}
           disabled={!canUseCurrentStep}
           onSelectSpecies={requestSpeciesSelection}
         />
@@ -366,7 +377,14 @@ export function BuilderStepPanel({
         </>
       ) : null}
 
-      {step === "descricao" ? <PersonalDetailsEditor /> : null}
+      {step === "descricao" ? (
+        <PersonalDetailsEditor
+          beginnerMode={Boolean(characterState.beginnerMode)}
+          selectedBackground={selectedBackground}
+          selectedClass={selectedClass}
+          selectedSpecies={selectedSpecies}
+        />
+      ) : null}
 
       {step === "conclusao" ? <CharacterSheetView embedded /> : null}
 
@@ -594,9 +612,10 @@ function ClassStep({
                   Not sure where to start?
                 </h3>
                 <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                  Answer 5 quick questions about the hero you want to play.
-                  At the end, we highlight the 2 classes that fit you best.
-                  The choice is still yours, and the questions change each attempt.
+                  Answer 7 questions as the character you want to build. At
+                  the end, we highlight the 2 classes that fit best and explain
+                  why each one works. The choice is still yours, and the
+                  questions change each attempt.
                 </p>
               </div>
               <button
@@ -649,16 +668,8 @@ function ClassStep({
             const tier = getRecommendationTier(entry.id);
 
             return (
-              <div
-                key={entry.id}
-                className={
-                  tier === "primary"
-                    ? "relative rounded-xl ring-2 ring-emerald-400/90 ring-offset-2 ring-offset-background"
-                    : tier === "secondary"
-                      ? "relative rounded-xl ring-2 ring-amber-400/90 ring-offset-2 ring-offset-background"
-                      : "relative"
-                }
-              >
+              <div key={entry.id} className="relative">
+                {tier ? <ChoiceRecommendationFrame tier={tier} /> : null}
                 {tier ? <RecommendationFlag tier={tier} /> : null}
                 <ClassOptionCard
                   classEntry={entry}
@@ -681,6 +692,30 @@ function ClassStep({
         </div>
       )}
     </section>
+  );
+}
+
+/**
+ * Recommendation outline starts where the visual card starts (top-11), so it
+ * never wraps the card's layout padding or empty desktop offset.
+ */
+function ChoiceRecommendationFrame({
+  tier,
+}: {
+  tier: "primary" | "secondary" | "tertiary";
+}) {
+  const tierClass =
+    tier === "primary"
+      ? "border-emerald-400/95 shadow-[0_0_24px_rgba(52,211,153,0.25)]"
+      : tier === "secondary"
+        ? "border-amber-400/95 shadow-[0_0_24px_rgba(251,191,36,0.22)]"
+        : "border-brand-gold-alt/90 shadow-[0_0_24px_rgba(235,193,98,0.2)]";
+
+  return (
+    <span
+      aria-hidden="true"
+      className={`pointer-events-none absolute inset-x-0 bottom-0 top-11 z-[2] rounded-xl border-4 ${tierClass}`}
+    />
   );
 }
 
@@ -873,6 +908,312 @@ function QuizResultCard({
           {reasons.map((reason) => `“${reason}”`).join(", ")}
         </p>
       ) : null}
+    </article>
+  );
+}
+
+type GuidedChoiceItem = BuilderSpecies | BuilderBackground;
+type RecommendationTier = "primary" | "secondary" | "tertiary";
+
+const recommendationTierLabels: Record<RecommendationTier, string> = {
+  primary: "Recommended",
+  secondary: "Second option",
+  tertiary: "Third option",
+};
+
+function getRecommendationTier(
+  recommendation: GuidedChoiceQuizRecommendation | null,
+  itemId: string,
+): RecommendationTier | null {
+  const index = recommendation?.recommendedIds.indexOf(itemId) ?? -1;
+
+  if (index === 0) {
+    return "primary";
+  }
+
+  if (index === 1) {
+    return "secondary";
+  }
+
+  if (index === 2) {
+    return "tertiary";
+  }
+
+  return null;
+}
+
+function ScopedRecommendationFlag({
+  scope,
+  tier,
+}: {
+  scope: "species" | "background";
+  tier: RecommendationTier;
+}) {
+  const tierClass =
+    tier === "primary"
+      ? "bg-emerald-500 text-emerald-950"
+      : tier === "secondary"
+        ? "bg-amber-400 text-amber-950"
+        : "bg-brand-gold-alt text-background";
+
+  return (
+    <span
+      data-testid={`${scope}-recommendation-flag-${tier}`}
+      className={`absolute right-4 top-[60px] z-[3] flex items-center gap-1.5 px-2.5 pb-3 pt-1.5 text-[10px] font-bold uppercase tracking-[0.14em] shadow-lg [clip-path:polygon(0_0,100%_0,100%_100%,50%_calc(100%-8px),0_100%)] ${tierClass}`}
+    >
+      {tier === "primary" ? (
+        <CheckCircle2 aria-hidden="true" className="h-3.5 w-3.5" />
+      ) : (
+        <Star aria-hidden="true" className="h-3.5 w-3.5" />
+      )}
+      {tier === "primary" ? "Recommended" : tier === "secondary" ? "2nd option" : "3rd option"}
+    </span>
+  );
+}
+
+function GuidedChoiceQuizSection<TItem extends GuidedChoiceItem>({
+  scope,
+  title,
+  description,
+  buttonLabel,
+  closeLabel,
+  resultLabel,
+  resultSummary,
+  questions,
+  answers,
+  recommendation,
+  items,
+  pitches,
+  onStart,
+  onClose,
+  onAnswer,
+  onUndo,
+  onRestart,
+}: {
+  scope: "species" | "background";
+  title: string;
+  description: string;
+  buttonLabel: string;
+  closeLabel: string;
+  resultLabel: string;
+  resultSummary: string;
+  questions: GuidedChoiceQuizQuestion[] | null;
+  answers: string[];
+  recommendation: GuidedChoiceQuizRecommendation | null;
+  items: TItem[];
+  pitches: Record<string, string>;
+  onStart: () => void;
+  onClose: () => void;
+  onAnswer: (optionId: string) => void;
+  onUndo: () => void;
+  onRestart: () => void;
+}) {
+  const findItem = (itemId: string) =>
+    items.find((entry) => entry.id === itemId);
+
+  return (
+    <section
+      aria-labelledby={`${scope}-guided-quiz-title`}
+      className="rounded-lg border border-white/[0.08] bg-card p-4"
+    >
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h3
+            id={`${scope}-guided-quiz-title`}
+            className="flex items-center gap-2 font-serif text-lg font-bold text-foreground"
+          >
+            <Sparkles aria-hidden="true" className="h-4 w-4 text-brand-gold-alt" />
+            {title}
+          </h3>
+          <p className="mt-1 text-sm leading-6 text-muted-foreground">
+            {description}
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={questions ? onClose : onStart}
+          className="shrink-0 rounded-md border border-brand-gold-alt/50 px-4 py-2 text-sm font-bold text-foreground outline-none transition hover:bg-brand-gold-alt/10 focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70"
+        >
+          {questions ? closeLabel : buttonLabel}
+        </button>
+      </div>
+
+      {questions ? (
+        <div className="mt-4 border-t border-white/[0.08] pt-4">
+          <GuidedChoiceQuizBody
+            questions={questions}
+            answers={answers}
+            recommendation={recommendation}
+            onAnswer={onAnswer}
+            onUndo={onUndo}
+          />
+
+          {recommendation ? (
+            <div aria-live="polite" className="mt-4 grid gap-3">
+              <p className="text-sm leading-6 text-muted-foreground">
+                {resultSummary}
+              </p>
+              <div className="grid gap-3 md:grid-cols-3">
+                {recommendation.recommendedIds.map((itemId, index) => {
+                  const item = findItem(itemId);
+                  const tier = (["primary", "secondary", "tertiary"] as const)[index];
+
+                  return item ? (
+                    <GuidedChoiceResultCard
+                      key={item.id}
+                      label={resultLabel}
+                      tier={tier}
+                      item={item}
+                      pitch={pitches[item.id] ?? item.summary}
+                      reasons={recommendation.reasons[item.id] ?? []}
+                    />
+                  ) : null;
+                })}
+              </div>
+              <button
+                type="button"
+                onClick={onRestart}
+                className="justify-self-start rounded-md border border-brand-gold-alt/50 px-4 py-2 text-sm font-bold text-foreground outline-none transition hover:bg-brand-gold-alt/10 focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70"
+              >
+                Retake with new questions
+              </button>
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
+function GuidedChoiceQuizBody({
+  questions,
+  answers,
+  recommendation,
+  onAnswer,
+  onUndo,
+}: {
+  questions: GuidedChoiceQuizQuestion[];
+  answers: string[];
+  recommendation: GuidedChoiceQuizRecommendation | null;
+  onAnswer: (optionId: string) => void;
+  onUndo: () => void;
+}) {
+  const currentQuestion = recommendation ? undefined : questions[answers.length];
+
+  return (
+    <div className="grid gap-3">
+      <p className="text-sm leading-6 text-subdued">
+        Answer 7 questions as the character you want to build. Choose the
+        answer that best matches their beliefs, instincts, and past.
+      </p>
+
+      {currentQuestion ? (
+        <fieldset className="grid gap-3">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <span className="text-xs font-bold uppercase tracking-[0.14em] text-brand-gold-alt">
+              Question {answers.length + 1} of {questions.length}
+            </span>
+            <div aria-hidden="true" className="flex gap-1.5">
+              {questions.map((question, index) => (
+                <span
+                  key={question.id}
+                  className={`h-1.5 w-6 rounded-full transition-colors ${
+                    index < answers.length
+                      ? "bg-brand-gold-alt"
+                      : index === answers.length
+                        ? "bg-brand-gold-alt/50"
+                        : "bg-white/[0.12]"
+                  }`}
+                />
+              ))}
+            </div>
+          </div>
+          <legend className="font-serif text-lg font-bold leading-7 text-foreground">
+            {currentQuestion.prompt}
+          </legend>
+          <p className="text-sm leading-6 text-muted-foreground">
+            {currentQuestion.helper}
+          </p>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {currentQuestion.options.map((option) => (
+              <button
+                key={option.id}
+                type="button"
+                data-testid="guided-quiz-option"
+                onClick={() => onAnswer(option.id)}
+                className="rounded-lg border border-white/[0.08] bg-muted p-3 text-left outline-none transition hover:border-brand-gold-alt/60 hover:bg-brand-gold-alt/5 focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70"
+              >
+                <span className="block text-sm font-semibold text-foreground">
+                  {option.label}
+                </span>
+                <span className="mt-1 block text-xs leading-5 text-muted-foreground">
+                  {option.flavor}
+                </span>
+              </button>
+            ))}
+          </div>
+          {answers.length > 0 ? (
+            <button
+              type="button"
+              onClick={onUndo}
+              className="justify-self-start text-xs font-semibold text-muted-foreground underline-offset-4 outline-none transition hover:text-foreground hover:underline focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70"
+            >
+              Back to previous question
+            </button>
+          ) : null}
+        </fieldset>
+      ) : null}
+    </div>
+  );
+}
+
+function GuidedChoiceResultCard<TItem extends GuidedChoiceItem>({
+  label,
+  tier,
+  item,
+  pitch,
+  reasons,
+}: {
+  label: string;
+  tier: RecommendationTier;
+  item: TItem;
+  pitch: string;
+  reasons: string[];
+}) {
+  const isPrimary = tier === "primary";
+  const toneClass =
+    tier === "primary"
+      ? "border-emerald-500/60 bg-emerald-500/10 text-emerald-400"
+      : tier === "secondary"
+        ? "border-amber-400/60 bg-amber-400/10 text-amber-400"
+        : "border-brand-gold-alt/60 bg-brand-gold-alt/10 text-brand-gold-alt";
+
+  return (
+    <article className={`rounded-lg border p-4 ${toneClass}`}>
+      <p className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.14em]">
+        {isPrimary ? (
+          <CheckCircle2 aria-hidden="true" className="h-4 w-4" />
+        ) : (
+          <Star aria-hidden="true" className="h-4 w-4" />
+        )}
+        {label}
+      </p>
+      <h4
+        translate="no"
+        className="notranslate mt-2 font-serif text-2xl font-bold text-foreground"
+      >
+        {item.name}
+      </h4>
+      <p className="mt-2 text-sm leading-6 text-subdued">{pitch}</p>
+      {reasons.length ? (
+        <p className="mt-3 text-xs leading-5 text-muted-foreground">
+          <strong className="font-semibold text-foreground">
+            Matches your answers:
+          </strong>{" "}
+          {reasons.map((reason) => `"${reason}"`).join(", ")}
+        </p>
+      ) : null}
+      <span className="sr-only">{recommendationTierLabels[tier]}</span>
     </article>
   );
 }
@@ -1393,6 +1734,7 @@ function BackgroundStep({
   backgrounds,
   selectedBackgroundId,
   selectedBonuses,
+  beginnerMode,
   disabled,
   onSelectBackground,
   onSetBonuses,
@@ -1401,18 +1743,30 @@ function BackgroundStep({
   backgrounds: BuilderBackground[];
   selectedBackgroundId: string;
   selectedBonuses: AttributeBonuses;
+  beginnerMode: boolean;
   disabled: boolean;
   onSelectBackground: (backgroundId: string, afterSelect?: () => void) => void;
   onSetBonuses: (bonuses: AttributeBonuses) => void;
   onCommitBackground: () => void;
 }) {
   const [searchQuery, setSearchQuery] = useState("");
+  const [quizQuestions, setQuizQuestions] = useState<
+    GuidedChoiceQuizQuestion[] | null
+  >(null);
+  const [quizAnswers, setQuizAnswers] = useState<string[]>([]);
   const filteredBackgrounds = useMemo(
     () =>
       backgrounds.filter((entry) =>
         matchesBackgroundSearch(entry, searchQuery),
       ),
     [backgrounds, searchQuery],
+  );
+  const quizRecommendation = useMemo(
+    () =>
+      quizQuestions
+        ? getBackgroundQuizRecommendation(quizQuestions, quizAnswers)
+        : null,
+    [quizQuestions, quizAnswers],
   );
   const resultCountLabel =
     filteredBackgrounds.length === 1
@@ -1434,22 +1788,68 @@ function BackgroundStep({
         onSearch={setSearchQuery}
       />
 
+      {beginnerMode ? (
+        <GuidedChoiceQuizSection
+          scope="background"
+          title="Not sure which past fits?"
+          description="Answer 7 questions as the character you want to build. The guide will suggest 3 backgrounds that best match the life they had before adventuring."
+          buttonLabel="Help me choose a background"
+          closeLabel="Close background guide"
+          resultLabel="Recommended Background"
+          resultSummary="These 3 backgrounds matched the character you described. The cards are marked below, but you can still choose any background."
+          questions={quizQuestions}
+          answers={quizAnswers}
+          recommendation={quizRecommendation}
+          items={backgrounds}
+          pitches={backgroundQuizPitches}
+          onStart={() => {
+            setQuizQuestions(createBackgroundQuizSession());
+            setQuizAnswers([]);
+          }}
+          onClose={() => {
+            setQuizQuestions(null);
+            setQuizAnswers([]);
+          }}
+          onAnswer={(optionId) =>
+            setQuizAnswers((current) =>
+              quizQuestions && current.length < quizQuestions.length
+                ? [...current, optionId]
+                : current,
+            )
+          }
+          onUndo={() => setQuizAnswers((current) => current.slice(0, -1))}
+          onRestart={() => {
+            setQuizQuestions(createBackgroundQuizSession());
+            setQuizAnswers([]);
+          }}
+        />
+      ) : null}
+
       {filteredBackgrounds.length ? (
         <div className="grid w-full min-w-0 grid-cols-1 gap-3 md:gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {filteredBackgrounds.map((entry) => (
-            <BackgroundCard
-              key={entry.id}
-              background={entry}
-              selected={selectedBackgroundId === entry.id}
-              selectedBonuses={selectedBackgroundId === entry.id ? selectedBonuses : {}}
-              disabled={disabled}
-              onSelect={() => onSelectBackground(entry.id)}
-              onBonusesChange={(bonuses) => {
-                onSelectBackground(entry.id, () => onSetBonuses(bonuses));
-              }}
-              onCommit={onCommitBackground}
-            />
-          ))}
+          {filteredBackgrounds.map((entry) => {
+            const tier = getRecommendationTier(quizRecommendation, entry.id);
+
+            return (
+              <div key={entry.id} className="relative">
+                {tier ? <ChoiceRecommendationFrame tier={tier} /> : null}
+                {tier ? (
+                  <ScopedRecommendationFlag scope="background" tier={tier} />
+                ) : null}
+                <BackgroundCard
+                  background={entry}
+                  selected={selectedBackgroundId === entry.id}
+                  selectedBonuses={selectedBackgroundId === entry.id ? selectedBonuses : {}}
+                  disabled={disabled}
+                  onSelect={() => onSelectBackground(entry.id)}
+                  onBonusesChange={(bonuses) => {
+                    onSelectBackground(entry.id, () => onSetBonuses(bonuses));
+                  }}
+                  onCommit={onCommitBackground}
+                />
+              </div>
+            );
+          })}
         </div>
       ) : (
         <div className="rounded-lg border border-dashed border-border bg-card/70 p-6 text-center">
@@ -1514,18 +1914,31 @@ function matchesSpeciesSearch(species: BuilderSpecies, query: string): boolean {
 function SpeciesStep({
   species,
   selectedSpeciesId,
+  beginnerMode,
   disabled,
   onSelectSpecies,
 }: {
   species: BuilderSpecies[];
   selectedSpeciesId: string;
+  beginnerMode: boolean;
   disabled: boolean;
   onSelectSpecies: (speciesId: string) => void;
 }) {
   const [searchQuery, setSearchQuery] = useState("");
+  const [quizQuestions, setQuizQuestions] = useState<
+    GuidedChoiceQuizQuestion[] | null
+  >(null);
+  const [quizAnswers, setQuizAnswers] = useState<string[]>([]);
   const filteredSpecies = useMemo(
     () => species.filter((entry) => matchesSpeciesSearch(entry, searchQuery)),
     [species, searchQuery],
+  );
+  const quizRecommendation = useMemo(
+    () =>
+      quizQuestions
+        ? getSpeciesQuizRecommendation(quizQuestions, quizAnswers)
+        : null,
+    [quizQuestions, quizAnswers],
   );
   const resultCountLabel =
     filteredSpecies.length === 1
@@ -1547,17 +1960,63 @@ function SpeciesStep({
         onSearch={setSearchQuery}
       />
 
+      {beginnerMode ? (
+        <GuidedChoiceQuizSection
+          scope="species"
+          title="Not sure which species fits?"
+          description="Answer 7 questions as the character you want to build. The guide will suggest the species that best supports that fantasy."
+          buttonLabel="Help me choose a species"
+          closeLabel="Close species guide"
+          resultLabel="Recommended Species"
+          resultSummary="This species best matched the character you described. Its card is marked below, but you can still choose any species."
+          questions={quizQuestions}
+          answers={quizAnswers}
+          recommendation={quizRecommendation}
+          items={species}
+          pitches={speciesQuizPitches}
+          onStart={() => {
+            setQuizQuestions(createSpeciesQuizSession());
+            setQuizAnswers([]);
+          }}
+          onClose={() => {
+            setQuizQuestions(null);
+            setQuizAnswers([]);
+          }}
+          onAnswer={(optionId) =>
+            setQuizAnswers((current) =>
+              quizQuestions && current.length < quizQuestions.length
+                ? [...current, optionId]
+                : current,
+            )
+          }
+          onUndo={() => setQuizAnswers((current) => current.slice(0, -1))}
+          onRestart={() => {
+            setQuizQuestions(createSpeciesQuizSession());
+            setQuizAnswers([]);
+          }}
+        />
+      ) : null}
+
       {filteredSpecies.length ? (
         <div className="grid min-w-0 grid-cols-1 gap-3 md:gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {filteredSpecies.map((entry) => (
-            <SpeciesOptionCard
-              key={entry.id}
-              species={entry}
-              selected={selectedSpeciesId === entry.id}
-              disabled={disabled}
-              onSelect={() => onSelectSpecies(entry.id)}
-            />
-          ))}
+          {filteredSpecies.map((entry) => {
+            const tier = getRecommendationTier(quizRecommendation, entry.id);
+
+            return (
+              <div key={entry.id} className="relative">
+                {tier ? <ChoiceRecommendationFrame tier={tier} /> : null}
+                {tier ? (
+                  <ScopedRecommendationFlag scope="species" tier={tier} />
+                ) : null}
+                <SpeciesOptionCard
+                  species={entry}
+                  selected={selectedSpeciesId === entry.id}
+                  disabled={disabled}
+                  onSelect={() => onSelectSpecies(entry.id)}
+                />
+              </div>
+            );
+          })}
         </div>
       ) : (
         <div className="rounded-lg border border-dashed border-border bg-card/70 p-6 text-center">

@@ -75,11 +75,15 @@ describe("BuilderStepPanel", () => {
     expect(screen.getByText("Not sure where to start?")).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Help me choose" }));
 
-    // As perguntas e as respostas são sorteadas: responde sempre a primeira
-    // opção de cada uma das 5 perguntas exibidas.
-    for (let questionIndex = 1; questionIndex <= 5; questionIndex += 1) {
+    expect(
+      screen.getAllByText(/Answer 7 questions as the character you want to build/i)
+        .length,
+    ).toBeGreaterThan(0);
+
+    // Answer the first option from each randomized question.
+    for (let questionIndex = 1; questionIndex <= 7; questionIndex += 1) {
       expect(
-        screen.getByText(`Question ${questionIndex} of 5`),
+        screen.getByText(`Question ${questionIndex} of 7`),
       ).toBeInTheDocument();
       fireEvent.click(screen.getAllByTestId("quiz-option")[0]);
     }
@@ -522,6 +526,38 @@ describe("BuilderStepPanel", () => {
     );
   }, 15000);
 
+  it("shows the guided background quiz with three recommendations", () => {
+    render(
+      <CharacterStoreProvider>
+        <GuidedModeInitializer />
+        <SelectedBackgroundInitializer />
+        <BuilderStepPanel step="antecedente" {...builderData} />
+      </CharacterStoreProvider>,
+    );
+
+    expect(screen.getByText("Not sure which past fits?")).toBeInTheDocument();
+    fireEvent.click(
+      screen.getByRole("button", { name: "Help me choose a background" }),
+    );
+
+    expect(
+      screen.getAllByText(/Answer 7 questions as the character you want to build/i)
+        .length,
+    ).toBeGreaterThan(0);
+
+    for (let questionIndex = 1; questionIndex <= 7; questionIndex += 1) {
+      expect(
+        screen.getByText(`Question ${questionIndex} of 7`),
+      ).toBeInTheDocument();
+      fireEvent.click(screen.getAllByTestId("guided-quiz-option")[0]);
+    }
+
+    expect(screen.getAllByText(/Recommended Background/i)).toHaveLength(3);
+    expect(screen.getByTestId("background-recommendation-flag-primary")).toHaveTextContent(
+      "Recommended",
+    );
+  }, 15000);
+
   it("renders species cards with the class card visual system", () => {
     const firstSpecies = builderData.species.find(
       (entry) => entry.image && entry.traits.length > 0,
@@ -539,7 +575,7 @@ describe("BuilderStepPanel", () => {
 
     const speciesHeading = screen.getByRole("heading", { name: firstSpecies.name });
     const speciesCard = speciesHeading.closest("article");
-    const speciesGrid = speciesCard?.parentElement;
+    const speciesGrid = speciesCard?.parentElement?.parentElement;
 
     expect(speciesGrid).toHaveClass(
       "grid-cols-1",
@@ -633,6 +669,38 @@ describe("BuilderStepPanel", () => {
     });
   });
 
+  it("shows the guided species quiz with one recommendation and marks its card", () => {
+    render(
+      <CharacterStoreProvider>
+        <GuidedModeInitializer />
+        <UnlockedSpeciesInitializer />
+        <BuilderStepPanel step="especie" {...builderData} />
+      </CharacterStoreProvider>,
+    );
+
+    expect(screen.getByText("Not sure which species fits?")).toBeInTheDocument();
+    fireEvent.click(
+      screen.getByRole("button", { name: "Help me choose a species" }),
+    );
+
+    expect(
+      screen.getAllByText(/Answer 7 questions as the character you want to build/i)
+        .length,
+    ).toBeGreaterThan(0);
+
+    for (let questionIndex = 1; questionIndex <= 7; questionIndex += 1) {
+      expect(
+        screen.getByText(`Question ${questionIndex} of 7`),
+      ).toBeInTheDocument();
+      fireEvent.click(screen.getAllByTestId("guided-quiz-option")[0]);
+    }
+
+    expect(screen.getByText("Recommended Species")).toBeInTheDocument();
+    expect(screen.getByTestId("species-recommendation-flag-primary")).toHaveTextContent(
+      "Recommended",
+    );
+  }, 15000);
+
   it("lists rare and exotic languages in species details", async () => {
     render(
       <CharacterStoreProvider>
@@ -660,6 +728,28 @@ describe("BuilderStepPanel", () => {
     });
     expect(screen.getByLabelText("Character Name")).toBeInTheDocument();
     expect(screen.queryByText("Step valid.")).not.toBeInTheDocument();
+  });
+
+  it("shows guided help beside description inputs instead of a header explainer", async () => {
+    render(
+      <CharacterStoreProvider>
+        <GuidedModeInitializer />
+        <UnlockedDescriptionInitializer />
+        <BuilderStepPanel step="descricao" {...builderData} />
+      </CharacterStoreProvider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Identity" })).toBeInTheDocument();
+    });
+
+    expect(screen.queryByText("Bringing the character to life")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Help with Character Name" }));
+
+    expect(screen.getByText(/Name ideas/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Think about the character you want to build/i),
+    ).toBeInTheDocument();
   });
 });
 

@@ -34,7 +34,7 @@ describe("classQuiz", () => {
     }
   });
 
-  it("creates sessions with 5 unique questions drawn from a larger pool", () => {
+  it("creates sessions with 7 unique questions drawn from a larger pool", () => {
     const session = createClassQuizSession(seededRandom(42));
 
     expect(classQuizQuestionPool.length).toBeGreaterThan(QUIZ_QUESTION_COUNT);

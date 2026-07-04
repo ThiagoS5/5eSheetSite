@@ -9,7 +9,7 @@
  * segunda opção — sugestão, nunca trava: todas as classes seguem disponíveis.
  */
 
-export const QUIZ_QUESTION_COUNT = 5;
+export const QUIZ_QUESTION_COUNT = 7;
 
 export interface ClassQuizOption {
   id: string;

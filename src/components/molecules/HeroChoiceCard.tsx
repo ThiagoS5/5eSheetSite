@@ -248,7 +248,7 @@ export function HeroChoiceCard({
         aria-hidden="true"
         className={`absolute inset-x-0 bottom-0 top-11 overflow-hidden rounded-xl ${
           isActive
-            ? "shadow-[0_0_0_3px_var(--hero-accent),0_0_28px_rgba(236,207,131,0.25)]"
+            ? "shadow-[0_0_0_4px_var(--hero-accent),0_0_34px_rgba(236,207,131,0.32)]"
             : "shadow-black/40 group-hover:shadow-[0_12px_32px_rgba(0,0,0,0.55)]"
         }`}
         style={{ maskImage: CORNER_MASK, WebkitMaskImage: CORNER_MASK }}
