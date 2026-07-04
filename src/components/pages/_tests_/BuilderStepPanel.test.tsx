@@ -63,6 +63,24 @@ describe("BuilderStepPanel", () => {
     expect(screen.getAllByRole("button", { name: "Select" })[0]).toBeInTheDocument();
   });
 
+  it("turns a locked step into a recoverable checklist with a repair action", () => {
+    render(
+      <CharacterStoreProvider>
+        <BuilderStepPanel step="atributos" {...builderData} />
+      </CharacterStoreProvider>,
+    );
+
+    // A fresh build reaching a later step is sealed, not a dead end.
+    expect(screen.getByText("This step is sealed")).toBeInTheDocument();
+    expect(screen.getByText("Finish these to continue:")).toBeInTheDocument();
+
+    // The primary action repairs by routing to the first pending step (Class).
+    const continueButton = screen.getByRole("button", { name: /Continue from/i });
+    expect(continueButton).toHaveTextContent("Class");
+    fireEvent.click(continueButton);
+    expect(pushMock).toHaveBeenCalledWith("/builder/classe");
+  });
+
   it("shows the beginner class quiz only when guided mode is enabled", () => {
     render(
       <CharacterStoreProvider>

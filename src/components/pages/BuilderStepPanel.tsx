@@ -5,9 +5,11 @@ import * as Dialog from "@radix-ui/react-dialog";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
+  ArrowRight,
   BookOpen,
   CheckCircle2,
   Footprints,
+  Lock,
   PlusCircle,
   Ruler,
   ScrollText,
@@ -85,6 +87,8 @@ import { PersonalDetailsEditor } from "@/src/components/organisms/PersonalDetail
 import { EquipmentChecklist } from "@/src/components/organisms/EquipmentChecklist";
 import { InventoryManager } from "@/src/components/organisms/InventoryManager";
 import { builderStepNavigation } from "@/src/components/templates/builderStepNavigation";
+import { deriveBuilderPendencies } from "@/rules/pendencyRules";
+import type { Pendency } from "@/types/builder";
 import { CharacterSheetView } from "@/src/components/pages/CharacterSheetView";
 
 /**
@@ -161,17 +165,16 @@ export function BuilderStepPanel({
   const stepPositionLabel = `Step ${Math.max(currentStepIndex + 1, 1)}/${builderStepNavigation.length}`;
 
   if (!canUseCurrentStep) {
+    const blockingPendencies = deriveBuilderPendencies({
+      state: characterState,
+      characterClass: selectedClass,
+    }).filter((pendency) => pendency.severity === "blocking");
+
     return (
-      <div className="grid gap-5">
-        <section className="rounded-lg border border-white/[0.06] bg-card p-5">
-          <h2 className="font-serif text-xl font-bold text-foreground">
-            Step locked
-          </h2>
-          <p className="mt-2 text-sm leading-6 text-subdued">
-            Complete the previous steps with the Next button to unlock this content.
-          </p>
-        </section>
-      </div>
+      <LockedStepPanel
+        pendencies={blockingPendencies}
+        onGoToStep={(href) => router.push(href)}
+      />
     );
   }
 
@@ -448,6 +451,124 @@ export function BuilderStepPanel({
         onConfirm={confirmClassChange}
         onCancel={() => setPendingClassChange(null)}
       />
+    </div>
+  );
+}
+
+/**
+ * Painel de etapa bloqueada recuperável: em vez de um beco sem saída, mostra a
+ * moldura ornada com o checklist exato de decisões que faltam (reaproveitando os
+ * pendencies já derivados) e ações de reparo diretas para a primeira etapa pendente.
+ */
+function LockedStepPanel({
+  pendencies,
+  onGoToStep,
+}: {
+  pendencies: Pendency[];
+  onGoToStep: (href: string) => void;
+}) {
+  const groups = builderStepNavigation
+    .map((step) => ({
+      step,
+      items: pendencies.filter((pendency) => pendency.stepSlug === step.slug),
+    }))
+    .filter((group) => group.items.length > 0);
+
+  const firstStep = groups[0]?.step ?? builderStepNavigation[0];
+  const startStep = builderStepNavigation[0];
+
+  return (
+    <div className="grid gap-5">
+      <section
+        aria-labelledby="locked-step-title"
+        className="relative overflow-hidden rounded-xl border border-brand-gold-alt/25 bg-card shadow-[0_0_28px_rgba(0,0,0,0.35)]"
+      >
+        <span
+          aria-hidden="true"
+          className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-transparent via-brand-gold-alt/80 to-transparent"
+        />
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute left-0 top-0 h-8 w-8 border-l-2 border-t-2 border-brand-gold-alt/40"
+        />
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute right-0 top-0 h-8 w-8 border-r-2 border-t-2 border-brand-gold-alt/40"
+        />
+
+        <div className="grid gap-6 p-6 sm:p-8">
+          <div className="flex items-start gap-4">
+            <span
+              aria-hidden="true"
+              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-brand-gold-alt/40 bg-brand-gold-alt/10 text-brand-gold-alt"
+            >
+              <Lock className="h-5 w-5" />
+            </span>
+            <div className="min-w-0">
+              <h2
+                id="locked-step-title"
+                className="font-serif text-2xl font-bold text-foreground"
+              >
+                This step is sealed
+              </h2>
+              <p className="mt-1 text-sm leading-6 text-subdued">
+                It unlocks once you make the earlier decisions it builds on — your
+                progress is safe.
+              </p>
+            </div>
+          </div>
+
+          {groups.length ? (
+            <div className="rounded-lg border border-white/[0.08] bg-surface-nested/60 p-4 sm:p-5">
+              <p className="mb-4 text-sm font-semibold text-foreground">
+                Finish these to continue:
+              </p>
+              <ul className="grid gap-4">
+                {groups.map((group) => (
+                  <li key={group.step.slug} className="grid gap-2">
+                    <button
+                      type="button"
+                      onClick={() => onGoToStep(group.step.href)}
+                      className="inline-flex w-fit items-center gap-1.5 text-xs font-bold uppercase tracking-[0.1em] text-brand-gold-alt outline-none transition hover:text-amber-200 focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70"
+                    >
+                      {group.step.label}
+                      <ArrowRight aria-hidden="true" className="h-3.5 w-3.5" />
+                    </button>
+                    <ul className="grid gap-2">
+                      {group.items.map((item) => (
+                        <li
+                          key={item.id}
+                          className="flex items-start gap-2.5 text-sm leading-6 text-subdued"
+                        >
+                          <span
+                            aria-hidden="true"
+                            className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-accent"
+                          />
+                          <span>{item.label}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
+            <button
+              type="button"
+              onClick={() => onGoToStep(startStep.href)}
+              className="text-sm font-semibold text-muted-foreground underline underline-offset-4 outline-none transition hover:text-foreground focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70"
+            >
+              Back to the start
+            </button>
+            <ActionBtn onClick={() => onGoToStep(firstStep.href)}>
+              Continue from {firstStep.label}
+              <ArrowRight aria-hidden="true" className="ml-2 h-4 w-4" />
+            </ActionBtn>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
