@@ -24,6 +24,7 @@ describe("Dashboard", () => {
     cleanup();
     localStorage.clear();
     sessionStorage.clear();
+    vi.restoreAllMocks();
     push.mockClear();
   });
 
@@ -35,17 +36,19 @@ describe("Dashboard", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Forje Sua Alma" })).toBeInTheDocument();
+      expect(
+        screen.getByRole("heading", { name: "Crie seu primeiro personagem" }),
+      ).toBeInTheDocument();
     });
     expect(
       screen.getByText(
-        "Nenhum heroi forjado ainda. Inicie sua jornada criando um novo personagem.",
+        /O Vault guarda rascunhos, fichas vivas e personagens prontos para exportação./,
       ),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: /Criar Novo Personagem/i }),
+      screen.getByRole("button", { name: /Criar personagem/i }),
     ).toBeInTheDocument();
-    expect(screen.queryByText("Bem-vindo, Arquiteto")).not.toBeInTheDocument();
+    expect(screen.queryByText("Vault de personagens")).not.toBeInTheDocument();
     expect(screen.queryByText("Aelarion Sunweaver")).not.toBeInTheDocument();
   });
 
@@ -59,12 +62,15 @@ describe("Dashboard", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: "Bem-vindo, Arquiteto" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Vault de personagens" })).toBeInTheDocument();
     });
     expect(screen.getByText("Brienne")).toBeInTheDocument();
-    expect(screen.getByText("Human / Fighter")).toBeInTheDocument();
-    expect(screen.getByText("Level 4")).toBeInTheDocument();
-    expect(screen.getByText("Novo Heroi")).toBeInTheDocument();
+    expect(screen.getByText("Fighter / Human / Antecedente pendente")).toBeInTheDocument();
+    expect(screen.getByText("Em criação")).toBeInTheDocument();
+    expect(screen.getByText("Exportação pendente")).toBeInTheDocument();
+    expect(screen.getByText("HP")).toBeInTheDocument();
+    expect(screen.getByText("AC")).toBeInTheDocument();
+    expect(screen.getAllByText("Criar personagem")).not.toHaveLength(0);
     expect(screen.queryByText("Shadow on the Wall")).not.toBeInTheDocument();
   });
 
@@ -88,14 +94,42 @@ describe("Dashboard", () => {
       expect(screen.getByText("Brienne")).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByText("Novo Heroi"));
+    fireEvent.click(screen.getAllByRole("button", { name: /Criar personagem/i })[0]);
     expect(push).toHaveBeenCalledWith("/builder/classe");
     expect(JSON.parse(localStorage.getItem("forge-fate-character-saves:v1") ?? "{}")).toBeTruthy();
 
-    const continueButtons = screen.getAllByRole("button", { name: "Continuar" });
+    const continueButtons = screen.getAllByRole("button", { name: "Continuar criação" });
 
     fireEvent.click(continueButtons[continueButtons.length - 1]);
     expect(push).toHaveBeenCalledWith("/builder/equipamento");
+  });
+
+  it("supports quick vault actions for saved characters", async () => {
+    vi.spyOn(window, "confirm").mockReturnValue(true);
+    await saveCharacter(createDashboardBuild());
+
+    render(
+      <CharacterStoreProvider>
+        <Dashboard />
+      </CharacterStoreProvider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("Brienne")).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Duplicar Brienne" }));
+
+    await waitFor(() => {
+      expect(screen.getByText("Brienne (Cópia)")).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Excluir Brienne" }));
+
+    await waitFor(() => {
+      expect(screen.queryByText("Brienne")).not.toBeInTheDocument();
+    });
+    expect(screen.getByText("Brienne (Cópia)")).toBeInTheDocument();
   });
 
   it("asks for the creation mode before creating a character without saved beginner defaults", async () => {
@@ -105,15 +139,15 @@ describe("Dashboard", () => {
       </CharacterStoreProvider>,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: /Criar Novo Personagem/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Criar personagem/i }));
 
     expect(
       screen.getByRole("dialog", {
-        name: "E sua primeira vez jogando Dungeons & Dragons 5e?",
+        name: "É sua primeira vez jogando Dungeons & Dragons 5e?",
       }),
     ).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "Modo Guiado" }));
+    fireEvent.click(screen.getByRole("button", { name: "Modo guiado" }));
 
     await waitFor(() => {
       expect(push).toHaveBeenCalledWith("/builder/classe");
@@ -139,14 +173,14 @@ describe("Dashboard", () => {
       </CharacterStoreProvider>,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: /Criar Novo Personagem/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Criar personagem/i }));
 
     await waitFor(() => {
       expect(push).toHaveBeenCalledWith("/builder/classe");
     });
     expect(
       screen.queryByRole("dialog", {
-        name: "E sua primeira vez jogando Dungeons & Dragons 5e?",
+        name: "É sua primeira vez jogando Dungeons & Dragons 5e?",
       }),
     ).not.toBeInTheDocument();
   });

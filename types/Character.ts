@@ -7,7 +7,13 @@ export interface Character {
   nome: string;
   classe: string;
   species: string;
+  background?: string;
   level?: number;
+  hitPoints?: number;
+  armorClass?: number;
+  updatedAt?: string;
+  validationMessages?: readonly string[];
+  pendencies?: readonly { severity: "blocking" | "warning" }[];
   portraitUrl?: string;
   currentStepHref?: string;
   atributos: CharacterAttributes;
