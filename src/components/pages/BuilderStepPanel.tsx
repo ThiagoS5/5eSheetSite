@@ -13,8 +13,16 @@ import {
   ScrollText,
   Shield,
   Sparkles,
+  Star,
   X,
 } from "lucide-react";
+import {
+  classQuizPitches,
+  createClassQuizSession,
+  getClassQuizRecommendation,
+  type ClassQuizQuestion,
+  type ClassQuizRecommendation,
+} from "@/src/data/classQuiz";
 import {
   getRequiredLanguageCount,
   validateBuilderStep,
@@ -484,19 +492,32 @@ function ClassStep({
   onSelectClass: (classId: string) => void;
 }) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [quizOpen, setQuizOpen] = useState(false);
+  const [quizQuestions, setQuizQuestions] = useState<ClassQuizQuestion[] | null>(
+    null,
+  );
   const [quizAnswers, setQuizAnswers] = useState<string[]>([]);
   const filteredClasses = useMemo(
     () => classes.filter((entry) => matchesClassSearch(entry, searchQuery)),
     [classes, searchQuery],
   );
-  const suggestedClassIds = useMemo(
-    () => getSuggestedClassIds(quizAnswers),
-    [quizAnswers],
+  const quizRecommendation = useMemo(
+    () =>
+      quizQuestions
+        ? getClassQuizRecommendation(quizQuestions, quizAnswers)
+        : null,
+    [quizQuestions, quizAnswers],
   );
-  const suggestedClasses = classes.filter((entry) =>
-    suggestedClassIds.includes(entry.id),
-  );
+  const getRecommendationTier = (
+    classId: string,
+  ): "primary" | "secondary" | null => {
+    if (!beginnerMode || !quizRecommendation) {
+      return null;
+    }
+    if (quizRecommendation.primaryClassId === classId) {
+      return "primary";
+    }
+    return quizRecommendation.secondaryClassId === classId ? "secondary" : null;
+  };
   const resultCountLabel =
     filteredClasses.length === 1
       ? "1 classe encontrada"
@@ -532,36 +553,55 @@ function ClassStep({
               <div>
                 <h3
                   id="class-quiz-title"
-                  className="font-serif text-lg font-bold text-foreground"
+                  className="flex items-center gap-2 font-serif text-lg font-bold text-foreground"
                 >
-                  Me ajude a escolher
+                  <Sparkles
+                    aria-hidden="true"
+                    className="h-4 w-4 text-brand-gold-alt"
+                  />
+                  Não sabe por onde começar?
                 </h3>
                 <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                  Responda tres preferencias para destacar algumas classes. As
-                  outras continuam disponiveis.
+                  Responda 5 perguntas rápidas sobre o herói que você imagina
+                  jogar. No final, destacamos as 2 classes que mais combinam
+                  com você — a decisão continua sendo sua, e as perguntas mudam
+                  a cada tentativa.
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => {
-                  setQuizOpen((value) => !value);
+                  setQuizQuestions((current) =>
+                    current ? null : createClassQuizSession(),
+                  );
                   setQuizAnswers([]);
                 }}
-                className="rounded-md border border-brand-gold-alt/50 px-4 py-2 text-sm font-bold text-foreground outline-none transition hover:bg-brand-gold-alt/10 focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70"
+                className="shrink-0 rounded-md border border-brand-gold-alt/50 px-4 py-2 text-sm font-bold text-foreground outline-none transition hover:bg-brand-gold-alt/10 focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70"
               >
-                Me ajude a escolher
+                {quizQuestions ? "Fechar guia" : "Me ajude a escolher"}
               </button>
             </div>
 
-            {quizOpen ? (
-              <ClassSuggestionQuiz
+            {quizQuestions ? (
+              <ClassGuideQuiz
+                questions={quizQuestions}
                 answers={quizAnswers}
-                suggestedClasses={suggestedClasses}
-                onAnswer={(answer) =>
+                recommendation={quizRecommendation}
+                classes={classes}
+                onAnswer={(optionId) =>
                   setQuizAnswers((current) =>
-                    current.length >= 3 ? current : [...current, answer],
+                    current.length >= quizQuestions.length
+                      ? current
+                      : [...current, optionId],
                   )
                 }
+                onUndo={() =>
+                  setQuizAnswers((current) => current.slice(0, -1))
+                }
+                onRestart={() => {
+                  setQuizQuestions(createClassQuizSession());
+                  setQuizAnswers([]);
+                }}
               />
             ) : null}
           </section>
@@ -574,23 +614,30 @@ function ClassStep({
 
       {filteredClasses.length ? (
         <div className="grid min-w-0 grid-cols-1 gap-3 md:gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {filteredClasses.map((entry) => (
-            <div
-              key={entry.id}
-              className={
-                beginnerMode && suggestedClassIds.includes(entry.id)
-                  ? "rounded-xl ring-2 ring-brand-gold-alt/80 ring-offset-2 ring-offset-background"
-                  : ""
-              }
-            >
-              <ClassOptionCard
-                classEntry={entry}
-                selected={selectedClassId === entry.id}
-                disabled={disabled}
-                onSelect={() => onSelectClass(entry.id)}
-              />
-            </div>
-          ))}
+          {filteredClasses.map((entry) => {
+            const tier = getRecommendationTier(entry.id);
+
+            return (
+              <div
+                key={entry.id}
+                className={
+                  tier === "primary"
+                    ? "relative rounded-xl ring-2 ring-emerald-400/90 ring-offset-2 ring-offset-background"
+                    : tier === "secondary"
+                      ? "relative rounded-xl ring-2 ring-amber-400/90 ring-offset-2 ring-offset-background"
+                      : "relative"
+                }
+              >
+                {tier ? <RecommendationFlag tier={tier} /> : null}
+                <ClassOptionCard
+                  classEntry={entry}
+                  selected={selectedClassId === entry.id}
+                  disabled={disabled}
+                  onSelect={() => onSelectClass(entry.id)}
+                />
+              </div>
+            );
+          })}
         </div>
       ) : (
         <div className="rounded-lg border border-dashed border-border bg-card/70 p-6 text-center">
@@ -606,64 +653,196 @@ function ClassStep({
   );
 }
 
-function ClassSuggestionQuiz({
+/**
+ * Flag pendurada na moldura do card de classe indicando a recomendação do
+ * quiz guiado: verde para a principal, âmbar para a segunda opção.
+ */
+function RecommendationFlag({ tier }: { tier: "primary" | "secondary" }) {
+  const isPrimary = tier === "primary";
+
+  return (
+    <span
+      data-testid={`recommendation-flag-${tier}`}
+      className={`absolute right-4 top-11 z-[3] flex items-center gap-1.5 px-2.5 pb-3 pt-1.5 text-[10px] font-bold uppercase tracking-[0.14em] shadow-lg [clip-path:polygon(0_0,100%_0,100%_100%,50%_calc(100%-8px),0_100%)] ${
+        isPrimary
+          ? "bg-emerald-500 text-emerald-950"
+          : "bg-amber-400 text-amber-950"
+      }`}
+    >
+      {isPrimary ? (
+        <CheckCircle2 aria-hidden="true" className="h-3.5 w-3.5" />
+      ) : (
+        <Star aria-hidden="true" className="h-3.5 w-3.5" />
+      )}
+      {isPrimary ? "Recomendado" : "2ª opção"}
+    </span>
+  );
+}
+
+function ClassGuideQuiz({
+  questions,
   answers,
-  suggestedClasses,
+  recommendation,
+  classes,
   onAnswer,
+  onUndo,
+  onRestart,
 }: {
+  questions: ClassQuizQuestion[];
   answers: string[];
-  suggestedClasses: BuilderClass[];
-  onAnswer: (answer: string) => void;
+  recommendation: ClassQuizRecommendation | null;
+  classes: BuilderClass[];
+  onAnswer: (optionId: string) => void;
+  onUndo: () => void;
+  onRestart: () => void;
 }) {
-  const questionIndex = answers.length;
-  const questions = [
-    {
-      label: "Prefere lutar de perto, a distancia ou com magia?",
-      options: ["Perto", "Distancia", "Magia"],
-    },
-    {
-      label: "Quer causar dano, proteger ou apoiar aliados?",
-      options: ["Causar dano", "Proteger", "Apoiar aliados"],
-    },
-    {
-      label: "Prefere uma classe simples ou cheia de escolhas?",
-      options: ["Simples", "Muitas escolhas", "Equilibrada"],
-    },
-  ];
-  const currentQuestion = questions[questionIndex];
+  const currentQuestion = recommendation ? undefined : questions[answers.length];
+  const findClass = (classId: string) =>
+    classes.find((entry) => entry.id === classId);
 
   return (
     <div className="mt-4 border-t border-white/[0.08] pt-4">
       {currentQuestion ? (
         <fieldset className="grid gap-3">
-          <legend className="text-sm font-semibold text-foreground">
-            {currentQuestion.label}
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <span className="text-xs font-bold uppercase tracking-[0.14em] text-brand-gold-alt">
+              Pergunta {answers.length + 1} de {questions.length}
+            </span>
+            <div aria-hidden="true" className="flex gap-1.5">
+              {questions.map((question, index) => (
+                <span
+                  key={question.id}
+                  className={`h-1.5 w-6 rounded-full transition-colors ${
+                    index < answers.length
+                      ? "bg-brand-gold-alt"
+                      : index === answers.length
+                        ? "bg-brand-gold-alt/50"
+                        : "bg-white/[0.12]"
+                  }`}
+                />
+              ))}
+            </div>
+          </div>
+          <legend className="font-serif text-lg font-bold leading-7 text-foreground">
+            {currentQuestion.prompt}
           </legend>
-          <div className="flex flex-wrap gap-2">
+          <p className="text-sm leading-6 text-muted-foreground">
+            {currentQuestion.helper}
+          </p>
+          <div className="grid gap-2 sm:grid-cols-2">
             {currentQuestion.options.map((option) => (
               <button
-                key={option}
+                key={option.id}
                 type="button"
-                onClick={() => onAnswer(option)}
-                className="rounded-md border border-white/[0.08] bg-muted px-3 py-2 text-sm font-semibold text-foreground outline-none transition hover:border-brand-gold-alt/60 focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70"
+                data-testid="quiz-option"
+                onClick={() => onAnswer(option.id)}
+                className="rounded-lg border border-white/[0.08] bg-muted p-3 text-left outline-none transition hover:border-brand-gold-alt/60 hover:bg-brand-gold-alt/5 focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70"
               >
-                {option}
+                <span className="block text-sm font-semibold text-foreground">
+                  {option.label}
+                </span>
+                <span className="mt-1 block text-xs leading-5 text-muted-foreground">
+                  {option.flavor}
+                </span>
               </button>
             ))}
           </div>
+          {answers.length > 0 ? (
+            <button
+              type="button"
+              onClick={onUndo}
+              className="justify-self-start text-xs font-semibold text-muted-foreground underline-offset-4 outline-none transition hover:text-foreground hover:underline focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70"
+            >
+              Voltar à pergunta anterior
+            </button>
+          ) : null}
         </fieldset>
-      ) : (
-        <div aria-live="polite">
-          <p className="text-sm font-bold text-brand-gold-alt">
-            Sugestoes destacadas:{" "}
-            {suggestedClasses.map((entry) => entry.name).join(", ") || "Guerreiro"}
+      ) : null}
+
+      {recommendation ? (
+        <div aria-live="polite" className="grid gap-3">
+          <p className="text-sm leading-6 text-muted-foreground">
+            Prontinho! Estas são as 2 classes que mais combinaram com as suas
+            respostas. Elas ficaram marcadas na lista abaixo — compare os cards
+            e use o &quot;Saiba Mais&quot; antes de decidir.
           </p>
-          <p className="mt-1 text-sm leading-6 text-muted-foreground">
-            Use as sugestoes como ponto de partida, nao como trava.
-          </p>
+          <div className="grid gap-3 md:grid-cols-2">
+            <QuizResultCard
+              tier="primary"
+              classEntry={findClass(recommendation.primaryClassId)}
+              reasons={recommendation.reasons[recommendation.primaryClassId] ?? []}
+            />
+            <QuizResultCard
+              tier="secondary"
+              classEntry={findClass(recommendation.secondaryClassId)}
+              reasons={
+                recommendation.reasons[recommendation.secondaryClassId] ?? []
+              }
+            />
+          </div>
+          <button
+            type="button"
+            onClick={onRestart}
+            className="justify-self-start rounded-md border border-brand-gold-alt/50 px-4 py-2 text-sm font-bold text-foreground outline-none transition hover:bg-brand-gold-alt/10 focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70"
+          >
+            Refazer com novas perguntas
+          </button>
         </div>
-      )}
+      ) : null}
     </div>
+  );
+}
+
+function QuizResultCard({
+  tier,
+  classEntry,
+  reasons,
+}: {
+  tier: "primary" | "secondary";
+  classEntry?: BuilderClass;
+  reasons: string[];
+}) {
+  if (!classEntry) {
+    return null;
+  }
+
+  const isPrimary = tier === "primary";
+
+  return (
+    <article
+      className={`rounded-lg border p-4 ${
+        isPrimary
+          ? "border-emerald-500/60 bg-emerald-500/10"
+          : "border-amber-400/60 bg-amber-400/10"
+      }`}
+    >
+      <p
+        className={`flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.14em] ${
+          isPrimary ? "text-emerald-400" : "text-amber-400"
+        }`}
+      >
+        {isPrimary ? (
+          <CheckCircle2 aria-hidden="true" className="h-4 w-4" />
+        ) : (
+          <Star aria-hidden="true" className="h-4 w-4" />
+        )}
+        {isPrimary ? "Recomendado" : "Segunda opção"}
+      </p>
+      <h4 className="mt-2 font-serif text-2xl font-bold text-foreground">
+        {classEntry.name}
+      </h4>
+      <p className="mt-2 text-sm leading-6 text-subdued">
+        {classQuizPitches[classEntry.id] ?? classEntry.summary}
+      </p>
+      {reasons.length ? (
+        <p className="mt-3 text-xs leading-5 text-muted-foreground">
+          <strong className="font-semibold text-foreground">
+            Combina com suas respostas:
+          </strong>{" "}
+          {reasons.map((reason) => `“${reason}”`).join(", ")}
+        </p>
+      ) : null}
+    </article>
   );
 }
 
@@ -781,62 +960,6 @@ function getClassTags(classEntry: BuilderClass): string[] {
       : "Especialista";
 
   return [combatRole, armorRole].filter(Boolean).slice(0, 2);
-}
-
-function getSuggestedClassIds(answers: readonly string[]): string[] {
-  if (answers.length < 3) {
-    return [];
-  }
-
-  const scores = new Map<string, number>();
-  const add = (classId: string, score = 1) => {
-    scores.set(classId, (scores.get(classId) ?? 0) + score);
-  };
-
-  for (const answer of answers) {
-    if (answer === "Magia") {
-      add("wizard-xphb", 2);
-      add("sorcerer-xphb", 2);
-      add("cleric-xphb", 1);
-    } else if (answer === "Perto") {
-      add("fighter-xphb", 2);
-      add("barbarian-xphb", 2);
-      add("paladin-xphb", 1);
-    } else if (answer === "Distancia") {
-      add("ranger-xphb", 2);
-      add("rogue-xphb", 1);
-      add("fighter-xphb", 1);
-    } else if (answer === "Apoiar aliados") {
-      add("cleric-xphb", 2);
-      add("bard-xphb", 2);
-      add("paladin-xphb", 1);
-    } else if (answer === "Proteger") {
-      add("paladin-xphb", 2);
-      add("fighter-xphb", 1);
-      add("cleric-xphb", 1);
-    } else if (answer === "Causar dano") {
-      add("rogue-xphb", 2);
-      add("barbarian-xphb", 1);
-      add("sorcerer-xphb", 1);
-    } else if (answer === "Simples") {
-      add("fighter-xphb", 2);
-      add("rogue-xphb", 1);
-      add("cleric-xphb", 1);
-    } else if (answer === "Muitas escolhas") {
-      add("wizard-xphb", 2);
-      add("druid-xphb", 1);
-      add("bard-xphb", 1);
-    } else {
-      add("ranger-xphb", 1);
-      add("paladin-xphb", 1);
-      add("warlock-xphb", 1);
-    }
-  }
-
-  return [...scores.entries()]
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 3)
-    .map(([classId]) => classId);
 }
 
 /**

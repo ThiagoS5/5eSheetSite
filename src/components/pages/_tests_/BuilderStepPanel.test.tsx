@@ -72,12 +72,31 @@ describe("BuilderStepPanel", () => {
     );
 
     expect(screen.getByText("O que e uma classe?")).toBeInTheDocument();
+    expect(screen.getByText("Não sabe por onde começar?")).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Me ajude a escolher" }));
-    fireEvent.click(screen.getByRole("button", { name: "Magia" }));
-    fireEvent.click(screen.getByRole("button", { name: "Apoiar aliados" }));
-    fireEvent.click(screen.getByRole("button", { name: "Simples" }));
 
-    expect(screen.getByText(/Sugestoes destacadas/i)).toBeInTheDocument();
+    // As perguntas e as respostas são sorteadas: responde sempre a primeira
+    // opção de cada uma das 5 perguntas exibidas.
+    for (let questionIndex = 1; questionIndex <= 5; questionIndex += 1) {
+      expect(
+        screen.getByText(`Pergunta ${questionIndex} de 5`),
+      ).toBeInTheDocument();
+      fireEvent.click(screen.getAllByTestId("quiz-option")[0]);
+    }
+
+    // Resultado: exatamente 2 classes — principal (verde) e segunda opção
+    // (âmbar) — com flags sobre os cards correspondentes da lista.
+    expect(screen.getAllByText("Recomendado")).toHaveLength(2);
+    expect(screen.getByText("Segunda opção")).toBeInTheDocument();
+    expect(
+      screen.getByTestId("recommendation-flag-primary"),
+    ).toHaveTextContent("Recomendado");
+    expect(
+      screen.getByTestId("recommendation-flag-secondary"),
+    ).toHaveTextContent("2ª opção");
+    expect(
+      screen.getByRole("button", { name: "Refazer com novas perguntas" }),
+    ).toBeInTheDocument();
   }, 15000);
 
   it("opens a full sheet preview dialog from the step toolbar", () => {
