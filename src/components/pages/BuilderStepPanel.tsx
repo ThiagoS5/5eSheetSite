@@ -52,6 +52,12 @@ import { ChoiceCounter } from "@/src/components/molecules/ChoiceCounter";
 import { FeatureTagList } from "@/src/components/molecules/FeatureTagList";
 import { StartingLevelStepper } from "@/src/components/molecules/StartingLevelStepper";
 import { StepIntroCard } from "@/src/components/molecules/StepIntroCard";
+import type { ConceptId } from "@/src/data/conceptGlossary";
+import {
+  CLASS_DIFFICULTY_LABELS,
+  getClassDifficulty,
+  type ClassDifficulty,
+} from "@/src/data/classDifficulty";
 import {
   HeroChoiceCard,
   defaultHeroChoiceTheme,
@@ -70,6 +76,23 @@ import { EquipmentChecklist } from "@/src/components/organisms/EquipmentChecklis
 import { InventoryManager } from "@/src/components/organisms/InventoryManager";
 import { builderStepNavigation } from "@/src/components/templates/builderStepNavigation";
 import { CharacterSheetView } from "@/src/components/pages/CharacterSheetView";
+
+/**
+ * Guias do modo iniciante por etapa. A tela de classe já tem seu próprio card
+ * (com o quiz guiado) e a conclusão fica de fora — as demais recebem uma
+ * explicação do conceito central da etapa quando o modo iniciante está ativo.
+ */
+const BEGINNER_STEP_GUIDES: Partial<
+  Record<BuilderStepSlug, { conceptId: ConceptId; title: string }>
+> = {
+  "recursos-classe": { conceptId: "proficiency", title: "O que são recursos de classe?" },
+  antecedente: { conceptId: "background", title: "O que é um antecedente?" },
+  especie: { conceptId: "species", title: "O que é uma espécie?" },
+  "detalhes-especie": { conceptId: "species", title: "Detalhes da espécie" },
+  atributos: { conceptId: "attribute", title: "O que são atributos?" },
+  equipamento: { conceptId: "starting-equipment", title: "O que é equipamento inicial?" },
+  descricao: { conceptId: "table-use", title: "Dando vida ao personagem" },
+};
 
 interface BuilderStepPanelProps {
   step: BuilderStepSlug;
@@ -236,9 +259,17 @@ export function BuilderStepPanel({
     afterSelect?.();
   }
 
+  const stepGuide = step !== "classe" ? BEGINNER_STEP_GUIDES[step] : undefined;
+
   return (
     <div className="grid gap-5">
-      <BuilderStepToolbar />
+      {Boolean(characterState.beginnerMode) && stepGuide ? (
+        <StepIntroCard
+          conceptId={stepGuide.conceptId}
+          title={stepGuide.title}
+          beginnerMode={Boolean(characterState.beginnerMode)}
+        />
+      ) : null}
 
       {step === "classe" ? (
         <ClassStep
@@ -343,7 +374,12 @@ export function BuilderStepPanel({
         <div className="sticky bottom-0 z-10 border-t border-white/[0.06] bg-surface-nested/95 py-4 backdrop-blur">
           <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
             {previousStep ? (
-              <ActionBtn intent="secondary" onClick={() => router.push(previousStep.href)}>
+              <ActionBtn
+                intent="secondary"
+                size="sm"
+                className="justify-self-start"
+                onClick={() => router.push(previousStep.href)}
+              >
                 Voltar
               </ActionBtn>
             ) : (
@@ -354,6 +390,8 @@ export function BuilderStepPanel({
             </span>
             {nextStep ? (
               <ActionBtn
+                size="sm"
+                className="justify-self-end"
                 aria-describedby={
                   nextBlockerMessage ? "builder-next-blocker" : undefined
                 }
@@ -441,43 +479,6 @@ function DependentReplacementDialog({
   );
 }
 
-function BuilderStepToolbar() {
-  return (
-    <div className="flex justify-end">
-      <Dialog.Root>
-        <Dialog.Trigger asChild>
-          <ActionBtn intent="secondary">Ver ficha</ActionBtn>
-        </Dialog.Trigger>
-        <Dialog.Portal>
-          <Dialog.Overlay className="fixed inset-0 z-50 flex items-stretch justify-center overflow-y-auto bg-black/70 p-0 backdrop-blur-md md:items-center md:p-6">
-            <Dialog.Content className="relative flex h-[100svh] w-full min-w-0 flex-col overflow-y-auto border border-white/[0.08] bg-surface-nested text-foreground shadow-2xl shadow-black/60 outline-none focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70 md:h-[min(88vh,920px)] md:max-w-6xl md:rounded-xl">
-              <div className="sticky top-0 z-20 flex items-center justify-between gap-4 border-b border-white/[0.08] bg-surface-nested/95 px-4 py-3 backdrop-blur md:px-6">
-                <Dialog.Title asChild>
-                  <h2 className="font-serif text-xl font-bold text-foreground">
-                    Preview da ficha
-                  </h2>
-                </Dialog.Title>
-                <Dialog.Close asChild>
-                  <button
-                    type="button"
-                    aria-label="Fechar preview da ficha"
-                    className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-border bg-muted/85 text-subdued outline-none transition hover:border-brand-gold-alt/60 hover:text-foreground focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70"
-                  >
-                    <X aria-hidden="true" className="h-5 w-5" />
-                  </button>
-                </Dialog.Close>
-              </div>
-              <div className="p-4 md:p-6">
-                <CharacterSheetView embedded />
-              </div>
-            </Dialog.Content>
-          </Dialog.Overlay>
-        </Dialog.Portal>
-      </Dialog.Root>
-    </div>
-  );
-}
-
 function ClassStep({
   classes,
   selectedClassId,
@@ -492,13 +493,22 @@ function ClassStep({
   onSelectClass: (classId: string) => void;
 }) {
   const [searchQuery, setSearchQuery] = useState("");
+  const [difficultyFilter, setDifficultyFilter] = useState<
+    ClassDifficulty | "all"
+  >("all");
   const [quizQuestions, setQuizQuestions] = useState<ClassQuizQuestion[] | null>(
     null,
   );
   const [quizAnswers, setQuizAnswers] = useState<string[]>([]);
   const filteredClasses = useMemo(
-    () => classes.filter((entry) => matchesClassSearch(entry, searchQuery)),
-    [classes, searchQuery],
+    () =>
+      classes.filter(
+        (entry) =>
+          matchesClassSearch(entry, searchQuery) &&
+          (difficultyFilter === "all" ||
+            getClassDifficulty(entry.id) === difficultyFilter),
+      ),
+    [classes, searchQuery, difficultyFilter],
   );
   const quizRecommendation = useMemo(
     () =>
@@ -537,6 +547,28 @@ function ClassStep({
         resultCountLabel={resultCountLabel}
         onSearch={setSearchQuery}
       />
+
+      <div className="flex flex-wrap items-center gap-3">
+        <label
+          htmlFor="class-difficulty-filter"
+          className="text-[10px] font-bold uppercase tracking-[0.14em] text-subdued"
+        >
+          Dificuldade
+        </label>
+        <select
+          id="class-difficulty-filter"
+          value={difficultyFilter}
+          onChange={(event) =>
+            setDifficultyFilter(event.target.value as ClassDifficulty | "all")
+          }
+          className="min-h-9 rounded-md border border-border bg-muted px-3 py-1.5 text-sm text-foreground outline-none transition hover:border-white/20 focus:border-brand-gold-alt focus:ring-2 focus:ring-brand-gold-alt/40"
+        >
+          <option value="all">Todas</option>
+          <option value="facil">{CLASS_DIFFICULTY_LABELS.facil}</option>
+          <option value="medio">{CLASS_DIFFICULTY_LABELS.medio}</option>
+          <option value="dificil">{CLASS_DIFFICULTY_LABELS.dificil}</option>
+        </select>
+      </div>
 
       {beginnerMode ? (
         <>

@@ -14,14 +14,6 @@ interface AbilityRollPanelProps {
 
 type Assignments = Partial<Record<AttributeKey, number>>;
 
-function countDuplicateTotals(rolls: AbilityRoll[]): Map<number, number> {
-  const counts = new Map<number, number>();
-  for (const roll of rolls) {
-    counts.set(roll.total, (counts.get(roll.total) ?? 0) + 1);
-  }
-  return counts;
-}
-
 export function AbilityRollPanel({
   onApply,
   rollFn = () => rollAbilityScoreSet(),
@@ -126,46 +118,40 @@ export function AbilityRollPanel({
 
       {rolls ? (
         <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3">
-          {(() => {
-            const duplicateTotals = countDuplicateTotals(rolls);
+          {attributes.map((attribute) => {
+            const label = ATTRIBUTE_LABELS[attribute];
+            const currentValue = assignments[attribute];
 
-            return attributes.map((attribute) => {
-              const label = ATTRIBUTE_LABELS[attribute];
-              const currentValue = assignments[attribute];
+            return (
+              <label key={attribute} className="grid gap-1 text-sm text-foreground">
+                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  {label}
+                </span>
+                <select
+                  aria-label={`Valor para ${label}`}
+                  value={currentValue ?? ""}
+                  onChange={(event) => handleAssign(attribute, event.target.value)}
+                  className="rounded-md border border-border bg-surface-nested px-2 py-1.5 text-foreground outline-none focus:border-brand-crimson-alt focus:ring-2 focus:ring-brand-crimson-alt/50"
+                >
+                  <option value="">—</option>
+                  {rolls.map((roll, index) => {
+                    const isUsedByAnother =
+                      assignedRollIndexes.has(index) && currentValue !== index;
 
-              return (
-                <label key={attribute} className="grid gap-1 text-sm text-foreground">
-                  <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                    {label}
-                  </span>
-                  <select
-                    aria-label={`Valor para ${label}`}
-                    value={currentValue ?? ""}
-                    onChange={(event) => handleAssign(attribute, event.target.value)}
-                    className="rounded-md border border-border bg-surface-nested px-2 py-1.5 text-foreground outline-none focus:border-brand-crimson-alt focus:ring-2 focus:ring-brand-crimson-alt/50"
-                  >
-                    <option value="">—</option>
-                    {rolls.map((roll, index) => {
-                      const isUsedByAnother =
-                        assignedRollIndexes.has(index) && currentValue !== index;
+                    if (isUsedByAnother) {
+                      return null;
+                    }
 
-                      if (isUsedByAnother) {
-                        return null;
-                      }
-
-                      const isTied = (duplicateTotals.get(roll.total) ?? 0) > 1;
-
-                      return (
-                        <option key={index} value={index}>
-                          {isTied ? `${roll.total} (rolagem ${index + 1})` : roll.total}
-                        </option>
-                      );
-                    })}
-                  </select>
-                </label>
-              );
-            });
-          })()}
+                    return (
+                      <option key={index} value={index}>
+                        {roll.total}
+                      </option>
+                    );
+                  })}
+                </select>
+              </label>
+            );
+          })}
         </div>
       ) : null}
 

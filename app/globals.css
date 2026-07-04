@@ -21,7 +21,10 @@
   html,
   body {
     background: var(--surface-nested);
-    overflow-x: hidden;
+    /* `clip` corta o transbordo horizontal sem forçar overflow-y: auto — assim
+       html/body não viram scroll containers e o `position: sticky` do rodapé de
+       navegação do builder gruda na viewport, não no fim do conteúdo. */
+    overflow-x: clip;
   }
 
   ::-webkit-scrollbar {

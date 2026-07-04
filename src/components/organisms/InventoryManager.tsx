@@ -88,7 +88,7 @@ export function InventoryManager({
 
   return (
     <section className="bg-muted rounded-lg border border-border p-4">
-      <Accordion type="multiple" defaultValue={["inventory", "add"]}>
+      <Accordion type="multiple" defaultValue={[]}>
         {/* ── Inventário Atual ── */}
         <AccordionItem value="inventory">
           <AccordionTrigger>Inventário Atual</AccordionTrigger>

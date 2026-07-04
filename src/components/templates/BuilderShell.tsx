@@ -115,7 +115,7 @@ export function BuilderShell({ children }: BuilderShellProps) {
         } as React.CSSProperties
       }
     >
-      <main className="min-h-screen overflow-x-hidden bg-surface-nested pt-16 text-foreground">
+      <main className="min-h-screen overflow-x-clip bg-surface-nested pt-16 text-foreground">
         <Header />
         <div className={`grid min-h-[calc(100dvh-4rem)] w-full min-w-0 ${gridClass}`}>
           {isMobile ? null : <BuilderSidebar />}

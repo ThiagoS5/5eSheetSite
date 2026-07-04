@@ -135,7 +135,10 @@ export function EquipmentChecklist({
 
       {sources.map((source) => {
         const choice = choicesBySource[source.key];
-        const mode: EquipmentAcquisitionMode = choice?.mode ?? "items";
+        // Só destaca um botão depois que o usuário escolhe explicitamente; até
+        // lá ambos ficam neutros, embora a lista mostre os itens por padrão.
+        const selectedMode = choice?.mode;
+        const mode: EquipmentAcquisitionMode = selectedMode ?? "items";
 
         return (
           <Card key={source.key} className="bg-muted ring-white/10">
@@ -147,7 +150,7 @@ export function EquipmentChecklist({
             <CardContent className="grid gap-4">
               <div className="grid grid-cols-2 gap-2">
                 <ModeButton
-                  active={mode === "items"}
+                  active={selectedMode === "items"}
                   label="Itens Oferecidos"
                   onClick={() => {
                     onSourceModeChange(source.key, "items");
@@ -155,7 +158,7 @@ export function EquipmentChecklist({
                   }}
                 />
                 <ModeButton
-                  active={mode === "gold"}
+                  active={selectedMode === "gold"}
                   label="Ouro Inicial"
                   onClick={() => onSourceModeChange(source.key, "gold")}
                 />

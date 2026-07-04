@@ -1,7 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import * as Dialog from "@radix-ui/react-dialog";
 import { Minus, Plus } from "lucide-react";
+import { defaultCharacterAttributes } from "@/src/store/characterBuildModel";
+import { ActionBtn } from "@/src/components/atoms/ActionBtn";
 import {
   canDecreasePointBuyAttribute,
   canIncreasePointBuyAttribute,
@@ -62,11 +65,23 @@ export function AttributeEditor({
   onAttributeChange,
 }: AttributeEditorProps) {
   const [otherModifiers, setOtherModifiers] = useState<AttributeBonuses>({});
+  const [confirmResetOpen, setConfirmResetOpen] = useState(false);
+  // Muda a cada reset para remontar o AbilityRollPanel e limpar a rolagem/atribuições.
+  const [rollResetNonce, setRollResetNonce] = useState(0);
   const pointBuySpent = getPointBuySpent(baseAttributes);
   const pointBuyRemaining = getPointBuyRemaining(baseAttributes);
 
   function setOtherModifier(attribute: AttributeKey, value: number) {
     setOtherModifiers((previous) => ({ ...previous, [attribute]: value }));
+  }
+
+  function handleConfirmReset() {
+    attributes.forEach((attribute) => {
+      onAttributeChange(attribute, defaultCharacterAttributes[attribute]);
+    });
+    setOtherModifiers({});
+    setRollResetNonce((value) => value + 1);
+    setConfirmResetOpen(false);
   }
 
   return (
@@ -85,7 +100,7 @@ export function AttributeEditor({
 
       <fieldset>
         <legend className="sr-only">Metodo de geracao de atributos</legend>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {methods.map((entry) => (
             <button
               key={entry}
@@ -97,6 +112,13 @@ export function AttributeEditor({
               {getAttributeMethodLabel(entry)}
             </button>
           ))}
+          <button
+            type="button"
+            onClick={() => setConfirmResetOpen(true)}
+            className="ml-auto text-xs font-bold uppercase tracking-[0.08em] text-muted-foreground underline underline-offset-4 outline-none transition hover:text-foreground focus-visible:ring-2 focus-visible:ring-brand-crimson-alt/70"
+          >
+            Reset
+          </button>
         </div>
       </fieldset>
 
@@ -111,6 +133,7 @@ export function AttributeEditor({
 
       {method === "roll-4d6" ? (
         <AbilityRollPanel
+          key={rollResetNonce}
           onApply={(scores) => {
             attributes.forEach((attribute) => {
               onAttributeChange(attribute, scores[attribute]);
@@ -217,6 +240,33 @@ export function AttributeEditor({
           </TableBody>
         </Table>
       </div>
+
+      <Dialog.Root open={confirmResetOpen} onOpenChange={setConfirmResetOpen}>
+        <Dialog.Portal>
+          <Dialog.Overlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-md">
+            <Dialog.Content className="w-full max-w-md rounded-xl border border-white/[0.08] bg-surface-nested p-5 text-foreground shadow-2xl shadow-black/60 outline-none focus-visible:ring-2 focus-visible:ring-brand-crimson-alt/70">
+              <Dialog.Title className="font-serif text-xl font-bold text-foreground">
+                Resetar atributos?
+              </Dialog.Title>
+              <Dialog.Description className="mt-2 text-sm leading-6 text-subdued">
+                É exatamente isto que você deseja? Isto reinicia a rolagem de
+                dados e zera os valores base distribuídos — a alteração é
+                aplicada diretamente na ficha.
+              </Dialog.Description>
+              <div className="mt-5 flex justify-end gap-3">
+                <Dialog.Close asChild>
+                  <ActionBtn intent="secondary" size="sm">
+                    Cancelar
+                  </ActionBtn>
+                </Dialog.Close>
+                <ActionBtn size="sm" onClick={handleConfirmReset}>
+                  Resetar
+                </ActionBtn>
+              </div>
+            </Dialog.Content>
+          </Dialog.Overlay>
+        </Dialog.Portal>
+      </Dialog.Root>
     </section>
   );
 }

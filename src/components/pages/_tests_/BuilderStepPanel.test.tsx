@@ -99,19 +99,6 @@ describe("BuilderStepPanel", () => {
     ).toBeInTheDocument();
   }, 15000);
 
-  it("opens a full sheet preview dialog from the step toolbar", () => {
-    render(
-      <CharacterStoreProvider>
-        <BuilderStepPanel step="classe" {...builderData} />
-      </CharacterStoreProvider>,
-    );
-
-    fireEvent.click(screen.getByRole("button", { name: "Ver ficha" }));
-
-    expect(screen.getByRole("dialog", { name: "Preview da ficha" })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Preview da ficha" })).toBeInTheDocument();
-  });
-
   it("shows an inline choice counter for class skills", () => {
     render(
       <CharacterStoreProvider>

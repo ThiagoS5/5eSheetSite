@@ -62,25 +62,9 @@ export function generateStaticParams() {
 export default async function BuilderStepPage({ params }: BuilderStepPageProps) {
   const { step } = await params;
   const currentStep = isBuilderStep(step) ? step : "classe";
-  const content = stepContent[currentStep];
 
   return (
-    <article aria-labelledby="step-title" className="grid gap-5">
-      <header className="max-w-4xl border-b border-white/[0.06] pb-5">
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-          Builder 2024
-        </p>
-        <h2
-          id="step-title"
-          className="mt-1 font-serif text-2xl font-bold tracking-wide text-foreground"
-        >
-          {content.title}
-        </h2>
-        <p className="mt-2 text-sm leading-6 text-subdued">
-          {content.description}
-        </p>
-      </header>
-
+    <article className="grid gap-5">
       <BuilderStepPanel
         step={currentStep}
         species={getBuilderSpecies()}
