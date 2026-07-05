@@ -15,10 +15,16 @@ import { SubclassStep } from "@/src/components/organisms/levelup/SubclassStep";
 import { FeatureOptionStep } from "@/src/components/organisms/levelup/FeatureOptionStep";
 import { AsiOrFeatStep } from "@/src/components/organisms/levelup/AsiOrFeatStep";
 import { HitPointsStep } from "@/src/components/organisms/levelup/HitPointsStep";
+import { SpellCatalogPicker } from "@/src/components/organisms/spells/SpellCatalogPicker";
 import { getAbilityModifier } from "@/src/adapters/characterDerivedAdapter";
+import {
+  getHighestSpellLevelAvailable,
+  isSpellcastingSelectionComplete,
+} from "@/rules/spellcastingRules";
 import type { AsiAttribute } from "@/src/components/organisms/levelup/types";
 
 const HP_STEP_PREFIX = "hp:";
+const SPELL_STEP_PREFIX = "spells:";
 
 const ATTRIBUTE_KEYS: AttributeKey[] = ["forca", "destreza", "constituicao", "inteligencia", "sabedoria", "carisma"];
 
@@ -56,7 +62,12 @@ export function LevelUpFlow({ open, onClose }: LevelUpFlowProps) {
     setSnapshotTaken(true);
     const pendingIdsSnapshot = getPendingRequirements(state, characterClass).map((r) => r.id);
     const needsHpStep = state.level > 1 && state.hpRollByLevel[String(state.level)] === undefined;
-    setStepIds(needsHpStep ? [`${HP_STEP_PREFIX}${state.level}`, ...pendingIdsSnapshot] : pendingIdsSnapshot);
+    const spellStep = characterClass.spellcastingAbility ? [`${SPELL_STEP_PREFIX}${state.level}`] : [];
+    setStepIds([
+      ...(needsHpStep ? [`${HP_STEP_PREFIX}${state.level}`] : []),
+      ...pendingIdsSnapshot,
+      ...spellStep,
+    ]);
     setActiveIndex(0);
   } else if (!open && snapshotTaken) {
     setSnapshotTaken(false);
@@ -79,16 +90,40 @@ export function LevelUpFlow({ open, onClose }: LevelUpFlowProps) {
     return Number.isFinite(level) ? level : null;
   }
 
+  function isSpellStepId(id: string): boolean {
+    return id.startsWith(SPELL_STEP_PREFIX);
+  }
+
+  function getSpellStepLimits() {
+    const levelIndex = Math.max(0, Math.min(19, state.level - 1));
+    const cantripLimit = characterClass!.spellcastingProgression?.cantripsKnown[levelIndex] ?? 0;
+    const preparedLimit = characterClass!.spellcastingProgression?.preparedSpells[levelIndex] ?? 0;
+    const knownLimit = characterClass!.spellcastingProgression?.knownSpells[levelIndex] ?? 0;
+    const spellMode: "prepared" | "known" = preparedLimit > 0 ? "prepared" : "known";
+    return {
+      cantripLimit,
+      spellLimit: spellMode === "prepared" ? preparedLimit : knownLimit,
+      spellMode,
+    };
+  }
+
   function isStepResolved(id: string): boolean {
     const hpLevel = isHpStepId(id);
     if (hpLevel !== null) return state.hpRollByLevel[String(hpLevel)] !== undefined;
+    if (isSpellStepId(id)) {
+      return isSpellcastingSelectionComplete({
+        ...getSpellStepLimits(),
+        choices: state.spellcasting,
+      });
+    }
     return !pendingIds.has(id);
   }
 
-  const steps = stepIds.filter((id) => isHpStepId(id) !== null || allRequirements.has(id));
+  const steps = stepIds.filter((id) => isHpStepId(id) !== null || isSpellStepId(id) || allRequirements.has(id));
   const activeId = steps[activeIndex];
   const activeHpLevel = activeId !== undefined ? isHpStepId(activeId) : null;
-  const activeReq = activeId !== undefined && activeHpLevel === null ? allRequirements.get(activeId) : undefined;
+  const activeIsSpellStep = activeId !== undefined ? isSpellStepId(activeId) : false;
+  const activeReq = activeId !== undefined && activeHpLevel === null && !activeIsSpellStep ? allRequirements.get(activeId) : undefined;
   const activeResolved = activeId !== undefined ? isStepResolved(activeId) : true;
   const isLast = activeIndex >= steps.length - 1;
   const allResolved = steps.every((id) => isStepResolved(id));
@@ -107,6 +142,21 @@ export function LevelUpFlow({ open, onClose }: LevelUpFlowProps) {
             state.setLevelHpRoll(activeHpLevel, choice);
             setActiveIndex((i) => Math.min(steps.length - 1, i + 1));
           }}
+        />
+      );
+    }
+    if (activeIsSpellStep) {
+      const { cantripLimit, spellLimit, spellMode } = getSpellStepLimits();
+      return (
+        <SpellCatalogPicker
+          className={characterClass!.name}
+          activeSources={state.creationPreferences?.activeSources ?? ["XPHB"]}
+          value={state.spellcasting}
+          cantripLimit={cantripLimit}
+          spellLimit={spellLimit}
+          spellMode={spellMode}
+          maxSpellLevel={getHighestSpellLevelAvailable(characterClass, state.level)}
+          onChange={state.setSpellcastingChoices}
         />
       );
     }

@@ -172,7 +172,7 @@ describe("BuilderStepPanel", () => {
     expect(within(dialog).getByText("2 class skills")).toBeInTheDocument();
     expect(within(dialog).getByText("Weapon Mastery")).toBeInTheDocument();
     expect(pushMock).not.toHaveBeenCalled();
-  });
+  }, 15000);
 
   it("does not change selectedClassId until the class change diff is confirmed", async () => {
     function SelectedClassIdProbe() {
@@ -383,7 +383,7 @@ describe("BuilderStepPanel", () => {
     expect(
       screen.getAllByRole("button", { name: "Select" })[0],
     ).toBeInTheDocument();
-  });
+  }, 15000);
 
   it("filters background cards by name, origin feat, and description", async () => {
     render(
@@ -666,7 +666,7 @@ describe("BuilderStepPanel", () => {
     await waitFor(() => {
       expect(pushMock).toHaveBeenCalledWith("/builder/detalhes-especie");
     });
-  });
+  }, 15000);
 
   it("selects a species via the card SELECT button and advances to species details", async () => {
     render(

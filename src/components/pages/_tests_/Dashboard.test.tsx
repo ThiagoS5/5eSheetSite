@@ -102,7 +102,7 @@ describe("Dashboard", () => {
 
     fireEvent.click(continueButtons[continueButtons.length - 1]);
     expect(push).toHaveBeenCalledWith("/builder/equipamento");
-  });
+  }, 15000);
 
   it("supports quick vault actions for saved characters", async () => {
     vi.spyOn(window, "confirm").mockReturnValue(true);

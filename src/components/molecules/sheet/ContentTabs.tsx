@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { CharacterSheetSummary, ItemCategory } from "@/types/builder";
+import type { BuilderSpell } from "@/types/spells";
 import { useCharacterStore } from "@/src/store/useCharacterStore";
 import { cn } from "@/src/lib/utils";
 import { focusRing } from "@/src/lib/styles";
@@ -61,6 +62,7 @@ export function ContentTabs({ summary }: ContentTabsProps) {
   const setDescriptionField = useCharacterStore((s) => s.setDescriptionField);
   const adjustCoin = useCharacterStore((s) => s.adjustCoin);
   const setCarriedLoadKg = useCharacterStore((s) => s.setCarriedLoadKg);
+  const spendSlot = useCharacterStore((s) => s.spendSlot);
 
   const realWeapons = summary.weapons.filter((w) => w.name.trim() !== "");
   const features =
@@ -223,9 +225,59 @@ export function ContentTabs({ summary }: ContentTabsProps) {
 
         {/* MAGIAS — selector computes no spells today; intentional empty state */}
         {activeTab === "spells" && (
-          <EmptyState
-            label={summary.isSpellcaster ? "No spell from this origin." : "This character has no spells."}
-          />
+          summary.spellcasting ? (
+            <div className="grid gap-4">
+              <section className="rounded-lg border border-border bg-surface-nested p-3">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
+                      Spellcasting
+                    </p>
+                    <p className="text-sm text-subdued">
+                      DC {summary.spellcasting.spellSaveDc} · attack +{summary.spellcasting.spellAttackBonus} · {summary.spellcasting.abilityLabel}
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-2 text-[11px] font-semibold text-muted-foreground">
+                    <span>{summary.spellcasting.selectedCantripCount} of {summary.spellcasting.cantripsKnownLimit} cantrips</span>
+                    <span>{summary.spellcasting.selectedPreparedCount || summary.spellcasting.selectedKnownCount} of {summary.spellcasting.preparedSpellLimit || summary.spellcasting.knownSpellLimit} spells</span>
+                  </div>
+                </div>
+                <div className="grid grid-cols-[repeat(auto-fit,minmax(92px,1fr))] gap-2">
+                  {summary.spellcasting.slots.map((slot) => (
+                    <button
+                      key={slot.level}
+                      type="button"
+                      onClick={() => spendSlot(slot.level)}
+                      disabled={slot.remaining <= 0}
+                      className={cn(
+                        "rounded-lg border border-border bg-card p-3 text-left transition-colors disabled:opacity-45",
+                        focusRing,
+                      )}
+                    >
+                      <span className="block text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground">
+                        Level {slot.level}
+                      </span>
+                      <span translate="no" className="notranslate font-serif text-xl font-bold text-foreground">
+                        {slot.remaining}/{slot.total}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </section>
+              <SpellList title="Cantrips" spells={summary.spellcasting.cantrips} />
+              <SpellList
+                title="Spells"
+                spells={[
+                  ...summary.spellcasting.knownSpells,
+                  ...summary.spellcasting.preparedSpells,
+                ]}
+              />
+            </div>
+          ) : (
+            <EmptyState
+              label={summary.isSpellcaster ? "No spell from this origin." : "This character has no spells."}
+            />
+          )
         )}
 
         {/* INVENTÁRIO */}
@@ -354,6 +406,45 @@ function EmptyState({ label }: { label: string }) {
       <i aria-hidden="true" className="fa-solid fa-circle-info" />
       {label}
     </div>
+  );
+}
+
+function SpellList({ title, spells }: { title: string; spells: BuilderSpell[] }) {
+  if (spells.length === 0) {
+    return <EmptyState label={`No ${title.toLowerCase()} selected.`} />;
+  }
+
+  return (
+    <section className="grid gap-2">
+      <h3 className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
+        {title}
+      </h3>
+      <div className="grid gap-2">
+        {spells.map((spell) => (
+          <article
+            key={spell.id}
+            className="rounded-lg border border-border bg-surface-nested p-3"
+          >
+            <div className="flex flex-wrap items-start justify-between gap-2">
+              <div>
+                <h4 translate="no" className="notranslate font-serif text-base font-bold text-foreground">
+                  {spell.name}
+                </h4>
+                <p className="text-xs text-muted-foreground">
+                  {spell.level === 0 ? "Cantrip" : `Level ${spell.level}`} · {spell.school} · {spell.castingTime}
+                </p>
+              </div>
+              <span className="rounded border border-border bg-background px-2 py-0.5 text-[10px] font-bold uppercase text-muted-foreground">
+                {spell.source}
+              </span>
+            </div>
+            <p className="mt-2 line-clamp-3 text-xs leading-5 text-subdued">
+              {spell.description}
+            </p>
+          </article>
+        ))}
+      </div>
+    </section>
   );
 }
 

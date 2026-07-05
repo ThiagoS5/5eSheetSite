@@ -8,8 +8,9 @@ import type {
   CharacterAttributes,
   Ruleset,
 } from "@/types/dnd";
+import type { CharacterSpellcastingChoices } from "@/types/spells";
 
-export const CHARACTER_BUILD_SCHEMA_VERSION = 8;
+export const CHARACTER_BUILD_SCHEMA_VERSION = 9;
 
 export interface CoinPouch {
   pc: number;
@@ -105,11 +106,28 @@ export interface CharacterBuildChoices {
   moneyTouched: boolean;
   carriedLoadKg: number;
   skillModifierOverrides: Record<string, number>;
+  spellcasting?: CharacterSpellcastingChoices;
   creationPreferences?: CreationPreferences; // NOVO v6 — ausente = defaults
   beginnerMode: boolean; // NOVO v7 — modo didatico por personagem
 }
 
 export type CharacterBuildDerivedSheet = CharacterSheetSummary;
+
+export interface CharacterBuildPlayState {
+  currentHp: number;
+  tempHp: number;
+  hitDiceSpent: number;
+  usedSpellSlots: Record<number, number>;
+  resourceUses: Record<string, number>;
+  resourceRecoveries: Record<string, "shortRest" | "longRest">;
+  deathSaves: { successes: number; failures: number };
+  inspiration: boolean;
+  conditions: string[];
+  overrides: {
+    maxHp?: number;
+    armorClass?: number;
+  };
+}
 
 export interface CharacterBuildExportMetadata {
   schemaVersion: typeof CHARACTER_BUILD_SCHEMA_VERSION;
@@ -122,6 +140,7 @@ export interface CharacterBuild {
   draft: CharacterBuildDraft;
   progression: CharacterBuildProgression;
   choices: CharacterBuildChoices;
+  playState: CharacterBuildPlayState;
   derivedSheet: CharacterBuildDerivedSheet;
   exportMetadata: CharacterBuildExportMetadata;
 }

@@ -39,6 +39,8 @@ export function useCharacterBuilderState(): CharacterBuilderState {
   const carriedLoadKg = useCharacterStore((s) => s.carriedLoadKg);
   const skillModifierOverrides = useCharacterStore((s) => s.skillModifierOverrides);
   const hpRollByLevel = useCharacterStore((s) => s.hpRollByLevel);
+  const spellcasting = useCharacterStore((s) => s.spellcasting);
+  const playState = useCharacterStore((s) => s.playState);
   const creationPreferences = useCharacterStore((s) => s.creationPreferences);
   const beginnerMode = useCharacterStore((s) => s.beginnerMode);
 
@@ -69,6 +71,8 @@ export function useCharacterBuilderState(): CharacterBuilderState {
       carriedLoadKg,
       skillModifierOverrides,
       hpRollByLevel,
+      spellcasting,
+      playState,
       creationPreferences,
       beginnerMode,
     }),
@@ -98,6 +102,8 @@ export function useCharacterBuilderState(): CharacterBuilderState {
       carriedLoadKg,
       skillModifierOverrides,
       hpRollByLevel,
+      spellcasting,
+      playState,
       creationPreferences,
       beginnerMode,
     ],

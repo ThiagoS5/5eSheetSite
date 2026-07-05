@@ -49,6 +49,11 @@ export interface Raw5eClass {
   };
   primaryAbility?: Array<Record<string, boolean>>;
   spellcastingAbility?: string;
+  casterProgression?: string;
+  cantripProgression?: number[];
+  spellsKnownProgression?: number[];
+  spellsKnownProgressionFixed?: number[];
+  preparedSpells?: string;
   proficiency?: string[];
   startingProficiencies?: {
     armor?: string[];

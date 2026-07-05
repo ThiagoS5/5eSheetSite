@@ -1,5 +1,10 @@
 import type { CharacterDescription } from "@/types/builder";
-import type { CharacterBuild, CoinPouch } from "@/src/types/characterBuild";
+import type {
+  CharacterBuild,
+  CharacterBuildPlayState,
+  CoinPouch,
+} from "@/src/types/characterBuild";
+import type { CharacterSpellcastingChoices } from "@/types/spells";
 import type {
   AsiOrFeatChoice,
   AttributeGenerationMethod,
@@ -55,6 +60,8 @@ export interface FlatCharacterBuilderState {
   carriedLoadKg: number;
   skillModifierOverrides: Record<string, number>;
   hpRollByLevel: Record<string, HpRollChoice>;
+  spellcasting?: CharacterSpellcastingChoices;
+  playState?: CharacterBuildPlayState;
   creationPreferences?: CreationPreferences;
   beginnerMode?: boolean;
 }
@@ -89,6 +96,28 @@ export interface CharacterBuilderActions {
   setClassFeatureChoice: (choiceId: string, values: string[]) => void;
   setLevelAsiOrFeat: (level: number, choice: AsiOrFeatChoice | undefined) => void;
   setLevelHpRoll: (level: number, roll: HpRollChoice | undefined) => void;
+  setSpellcastingChoices: (choices: CharacterSpellcastingChoices) => void;
+  applyDamage: (amount: number) => void;
+  heal: (amount: number) => void;
+  setTempHp: (amount: number) => void;
+  spendSlot: (slotLevel: number) => void;
+  useResource: (
+    resourceId: string,
+    maxUses: number,
+    recovery?: CharacterBuildPlayState["resourceRecoveries"][string],
+  ) => void;
+  setResourceUseCount: (
+    resourceId: string,
+    used: number,
+    maxUses: number,
+    recovery?: CharacterBuildPlayState["resourceRecoveries"][string],
+  ) => void;
+  shortRest: (options?: { hitDiceToSpend?: number }) => void;
+  longRest: () => void;
+  toggleInspiration: () => void;
+  setOverride: (kind: "maxHp" | "armorClass", value: number | null) => void;
+  setDeathSaves: (deathSaves: CharacterBuildPlayState["deathSaves"]) => void;
+  toggleCondition: (condition: string) => void;
   setCreationPreferences: (prefs: CreationPreferences) => void;
   setBeginnerMode: (enabled: boolean) => void;
   setSpeciesChoice: (choiceId: string, value: string) => void;

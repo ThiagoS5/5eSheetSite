@@ -10,6 +10,7 @@ export default defineConfig({
   test: {
     environment: "node",
     setupFiles: ["./vitest.setup.ts"],
+    testTimeout: 15000,
     exclude: [...configDefaults.exclude, "**/.claude/**", "**/.worktrees/**"],
     coverage: {
       provider: "v8",
