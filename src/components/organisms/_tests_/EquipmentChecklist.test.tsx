@@ -16,7 +16,12 @@ const selectedClass: BuilderClass = {
   hitDie: 8,
   summary: "Rogue class summary.",
   description: "Rogue class description.",
-  descriptionBlocks: [{ type: "paragraph", text: "Rogue class description." }],
+  descriptionBlocks: [
+    {
+      type: "paragraph",
+      children: [{ type: "text", text: "Rogue class description." }],
+    },
+  ],
   primaryAbility: ["Destreza"],
   savingThrows: ["Destreza", "Inteligencia"],
   armorProficiencies: ["light"],

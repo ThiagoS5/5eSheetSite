@@ -9,7 +9,6 @@ import type {
   BuilderEquipmentPackage,
   BuilderEquipmentPackageItem,
   BuilderFeature,
-  BuilderFeatureBlock,
   BuilderLanguage,
   BuilderSpecies,
   BuilderSubclass,
@@ -20,6 +19,8 @@ import {
   type AttributeKey,
 } from "@/types/dnd";
 import { applyClassCardFraming } from "@/src/data/classCardArt";
+import { astToPlainText, parseRulesText } from "@/src/adapters/rulesTextAst";
+import type { RulesTextNode } from "@/types/rulesText";
 import type {
   Raw5eBackground,
   Raw5eClass,
@@ -308,7 +309,7 @@ function normalizeEntriesToFeatures(entries: unknown[] | undefined): BuilderFeat
       {
         name: entry.name,
         description: stringifyEntries(entry.entries) || "Trait details.",
-        blocks: entriesToBlocks(entry.entries),
+        blocks: parseRulesText(entry.entries),
       },
     ];
   });
@@ -390,8 +391,7 @@ function normalizeBackgroundRewards(entries: unknown[] | undefined): string[] {
     }
 
     return (entry.items ?? [])
-      .map(stringifyEntry)
-      .map(formatTaggedTextAsPlain)
+      .map((item) => stringifyEntries([item]))
       .filter(Boolean);
   });
 }
@@ -558,7 +558,7 @@ function normalizeClassFeature(
     level: Number.isFinite(featureLevel) ? featureLevel : undefined,
     description:
       stringifyEntries(matchedFeature?.entries) || "Class feature details.",
-    blocks: entriesToBlocks(matchedFeature?.entries),
+    blocks: parseRulesText(matchedFeature?.entries),
     grantsSubclass:
       typeof feature === "object" && feature.gainSubclassFeature === true,
   };
@@ -582,7 +582,7 @@ function normalizeSubclassFeature(
     name,
     level: Number.isFinite(featureLevel) ? featureLevel : undefined,
     description: stringifyEntries(matched?.entries) || "Subclass feature details.",
-    blocks: entriesToBlocks(matched?.entries),
+    blocks: parseRulesText(matched?.entries),
   };
 }
 
@@ -800,111 +800,31 @@ function encodePathSegment(value: string): string {
   return encodeURIComponent(value);
 }
 
+/**
+ * Texto plano de entries 5eTools via AST (fonte única de verdade para tags;
+ * o parser inline e a travessia vivem em rulesTextAst).
+ */
 export function stringifyEntries(entries: unknown[] | undefined): string {
-  return (entries ?? [])
-    .map(stringifyEntry)
-    .filter(Boolean)
-    .join(" ");
+  return astToPlainText(parseRulesText(entries));
 }
 
 function normalizeLoreBlocks(
   lore: RawPlayerLoreEntry | undefined,
   fallback: string,
-): BuilderFeatureBlock[] {
-  const blocks = entriesToBlocks(lore?.entries);
+): RulesTextNode[] {
+  const blocks = parseRulesText(lore?.entries);
 
   if (blocks.length) {
     return blocks;
   }
 
-  return fallback ? [{ type: "paragraph", text: fallback }] : [];
+  return fallback
+    ? [{ type: "paragraph", children: [{ type: "text", text: fallback }] }]
+    : [];
 }
 
-function blocksToText(blocks: BuilderFeatureBlock[] | undefined): string {
-  return (blocks ?? [])
-    .flatMap((block) => (block.type === "list" ? block.items : [block.text]))
-    .join(" ")
-    .trim();
-}
-
-function entriesToBlocks(
-  entries: unknown[] | undefined,
-): NonNullable<BuilderFeature["blocks"]> {
-  return (entries ?? []).flatMap((entry) => entryToBlocks(entry));
-}
-
-function entryToBlocks(entry: unknown): NonNullable<BuilderFeature["blocks"]> {
-  if (typeof entry === "string") {
-    const text = formatTaggedTextAsPlain(entry);
-    return text ? [{ type: "paragraph", text }] : [];
-  }
-
-  if (isListEntry(entry)) {
-    const items = (entry.items ?? [])
-      .map(stringifyEntry)
-      .map(formatTaggedTextAsPlain)
-      .filter(Boolean);
-
-    return items.length ? [{ type: "list", items }] : [];
-  }
-
-  // Structural wrappers ("section"/"chapter") carry the title as `name` (e.g. the
-  // class name). They are containers, not inline callouts, so recurse into their
-  // entries instead of prefixing the text with the title.
-  if (isStructuralEntry(entry)) {
-    return entriesToBlocks(entry.entries);
-  }
-
-  if (isNamedEntry(entry)) {
-    const text = stringifyEntries(entry.entries);
-    return text ? [{ type: "paragraph", text: `${entry.name}: ${text}` }] : [];
-  }
-
-  if (isEntryWithEntries(entry)) {
-    return entriesToBlocks(entry.entries);
-  }
-
-  if (isEntryWithEntry(entry)) {
-    const text = formatTaggedTextAsPlain(entry.entry);
-    return text ? [{ type: "paragraph", text }] : [];
-  }
-
-  return [];
-}
-
-function stringifyEntry(entry: unknown): string {
-  if (typeof entry === "string") {
-    return formatTaggedTextAsPlain(entry);
-  }
-
-  if (isStructuralEntry(entry)) {
-    return stringifyEntries(entry.entries);
-  }
-
-  if (isNamedEntry(entry)) {
-    return `${entry.name}: ${stringifyEntries(entry.entries)}`;
-  }
-
-  if (isEntryWithEntries(entry)) {
-    return stringifyEntries(entry.entries);
-  }
-
-  if (isListEntry(entry)) {
-    return (entry.items ?? []).map(stringifyEntry).filter(Boolean).join(" ");
-  }
-
-  if (isEntryWithEntry(entry)) {
-    return formatTaggedTextAsPlain(entry.entry);
-  }
-
-  if (isTableEntry(entry)) {
-    const header = entry.caption ? `${entry.caption}: ` : "";
-    return `${header}${entry.rows
-      .map((row) => row.map((cell) => formatTaggedTextAsPlain(String(cell))).join(" - "))
-      .join("; ")}`;
-  }
-
-  return "";
+function blocksToText(blocks: RulesTextNode[] | undefined): string {
+  return astToPlainText(blocks ?? []);
 }
 
 export function formatTaggedTextAsPlain(value: string): string {
@@ -957,17 +877,6 @@ function isListEntry(entry: unknown): entry is { items?: unknown[] } {
   return typeof entry === "object" && entry !== null && "items" in entry;
 }
 
-function isStructuralEntry(
-  entry: unknown,
-): entry is { type: string; entries?: unknown[] } {
-  if (typeof entry !== "object" || entry === null || !("type" in entry)) {
-    return false;
-  }
-
-  const { type } = entry as { type?: unknown };
-  return type === "section" || type === "chapter";
-}
-
 function isTableEntry(entry: unknown): entry is {
   caption?: string;
   rows: unknown[][];
@@ -991,20 +900,3 @@ function isEquipmentItem(item: unknown): item is { name: string; entry: string }
   );
 }
 
-function isEntryWithEntry(entry: unknown): entry is { entry: string } {
-  return (
-    typeof entry === "object" &&
-    entry !== null &&
-    "entry" in entry &&
-    typeof entry.entry === "string"
-  );
-}
-
-function isEntryWithEntries(entry: unknown): entry is { entries: unknown[] } {
-  return (
-    typeof entry === "object" &&
-    entry !== null &&
-    "entries" in entry &&
-    Array.isArray(entry.entries)
-  );
-}

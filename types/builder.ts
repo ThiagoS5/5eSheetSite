@@ -5,6 +5,7 @@ import type {
   Ruleset,
 } from "@/types/dnd";
 import type { CoinPouch } from "@/src/types/characterBuild";
+import type { RulesTextNode } from "@/types/rulesText";
 import type { CharacterSpellcastingSummary } from "@/types/spells";
 
 export type BuilderStepSlug =
@@ -22,7 +23,7 @@ export interface BuilderFeature {
   name: string;
   description: string;
   level?: number;
-  blocks?: BuilderFeatureBlock[];
+  blocks?: RulesTextNode[];
   grantsSubclass?: boolean;
 }
 
@@ -34,15 +35,6 @@ export interface BuilderSubclass {
   features: BuilderFeature[];
 }
 
-export type BuilderFeatureBlock =
-  | {
-      type: "paragraph";
-      text: string;
-    }
-  | {
-      type: "list";
-      items: string[];
-    };
 
 export interface BuilderClassImage {
   src: string;
@@ -104,7 +96,7 @@ export interface BuilderSpecies {
   ruleset: Ruleset;
   summary: string;
   description: string;
-  descriptionBlocks: BuilderFeatureBlock[];
+  descriptionBlocks: RulesTextNode[];
   image?: BuilderClassImage;
   size: string;
   speed: number;
@@ -127,7 +119,7 @@ export interface BuilderBackground {
   ruleset: Ruleset;
   summary: string;
   description: string;
-  descriptionBlocks: BuilderFeatureBlock[];
+  descriptionBlocks: RulesTextNode[];
   image?: BuilderClassImage;
   abilityOptions: BuilderAbilityOption[];
   originFeat: string;
@@ -165,7 +157,7 @@ export interface BuilderClass {
   hitDie: number;
   summary: string;
   description: string;
-  descriptionBlocks: BuilderFeatureBlock[];
+  descriptionBlocks: RulesTextNode[];
   primaryAbility: string[];
   savingThrows: string[];
   armorProficiencies: string[];

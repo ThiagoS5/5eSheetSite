@@ -639,8 +639,10 @@ describe("BuilderStepPanel", () => {
     expect(
       within(detailsDialog).getByRole("heading", { name: "Species Traits" }),
     ).toBeInTheDocument();
-    expect(within(detailsDialog).getByText("Size")).toBeInTheDocument();
-    expect(within(detailsDialog).getByText("Speed")).toBeInTheDocument();
+    // A descrição rica (AST) pode repetir "Size"/"Speed" em tabelas de lore,
+    // então os stats da sidebar são assertados por presença, não unicidade.
+    expect(within(detailsDialog).getAllByText("Size").length).toBeGreaterThan(0);
+    expect(within(detailsDialog).getAllByText("Speed").length).toBeGreaterThan(0);
     if (firstSpecies.image) {
       expect(within(detailsDialog).getByRole("img", { name: firstSpecies.image.alt })).toHaveClass(
         "object-cover",
