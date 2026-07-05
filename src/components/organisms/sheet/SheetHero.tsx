@@ -31,15 +31,21 @@ export function SheetHero({ summary, onExport }: SheetHeroProps) {
           Export
         </button>
         <div className="min-w-[200px] flex-1 text-center">
-          <p className="mb-1 text-[9px] font-bold uppercase leading-none tracking-[0.24em] text-brand-crimson-alt">
-            ◆ Level <span translate="no" className="notranslate">{summary.level}</span> · Rules <span translate="no" className="notranslate">{summary.ruleset === "2024" ? "2024" : "2014"}</span> ◆
-          </p>
           <h1 translate="no" className="notranslate m-0 font-serif text-[28px] font-extrabold leading-[1.02] text-foreground">
             {summary.name || "Unnamed Character"}
           </h1>
-          <p translate="no" className="notranslate mt-[5px] text-[12.5px] text-muted-foreground">
-            {summary.speciesName} {summary.className}
-            {summary.backgroundName ? ` · ${summary.backgroundName}` : ""}
+          <p translate="no" className="notranslate mt-[5px] text-[13px] text-muted-foreground">
+            <span className="font-semibold text-brand-crimson-alt">
+              Level <span className="notranslate">{summary.level}</span>
+            </span>
+            {[
+              [summary.speciesName, summary.className].filter(Boolean).join(" "),
+              summary.backgroundName,
+              `${summary.ruleset === "2024" ? "2024" : "2014"} rules`,
+            ]
+              .filter(Boolean)
+              .map((part) => ` · ${part}`)
+              .join("")}
           </p>
         </div>
         <LevelUpButton />

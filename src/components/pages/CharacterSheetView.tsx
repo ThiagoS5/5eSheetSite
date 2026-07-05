@@ -48,10 +48,10 @@ export function CharacterSheetView({ embedded = false }: CharacterSheetViewProps
           <SavingThrowsGrid savingThrows={summary.savingThrows} />
           <SkillsPanel skills={summary.skills} />
         </div>
-        <div className="min-w-[320px] flex-[2_1_400px]">
+        <div className="min-w-0 flex-[2_1_400px]">
           <ContentTabs summary={summary} />
         </div>
-        <div className="min-w-[230px] flex-1 basis-[250px]">
+        <div className="min-w-0 flex-1 basis-[250px]">
           <CodexColumn summary={summary} description={description} />
         </div>
       </div>

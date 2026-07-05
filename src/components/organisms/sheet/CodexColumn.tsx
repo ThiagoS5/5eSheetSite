@@ -97,16 +97,16 @@ export function CodexColumn({ description, className }: CodexColumnProps) {
         </h2>
       </div>
 
-      {/* Aparência: avatar + descrição fiel */}
-      <div className="flex flex-col gap-3 rounded-lg border border-border/50 bg-surface-nested p-3">
+      {/* Aparência: avatar + descrição fiel (seção plana, não card aninhado) */}
+      <div className="flex flex-col gap-3">
         <div className="flex aspect-[3/4] w-full items-center justify-center rounded-lg border border-border/50 bg-muted">
           <i aria-hidden="true" className="fa-solid fa-user text-5xl text-muted-foreground" />
         </div>
         <NarrativeField label="True Appearance" value={description.aparencia} limit={150} />
       </div>
 
-      {/* Dados pessoais */}
-      <div className="flex flex-col gap-3 rounded-lg border border-border/50 bg-surface-nested p-3">
+      {/* Dados pessoais — separado por divisória em vez de card interno */}
+      <div className="flex flex-col gap-3 border-t border-border/50 pt-3">
         <CodexField label="Alignment" value={description.alinhamento} limit={25} />
         <CodexField label="Faith" value={description.faith} limit={40} />
         <CodexField label="Lifestyle" value={description.lifestyle} limit={40} />
@@ -121,8 +121,8 @@ export function CodexColumn({ description, className }: CodexColumnProps) {
       </div>
 
       {/* Traços de Personalidade — campos narrativos */}
-      <section className="flex flex-col gap-4 rounded-lg border border-border/50 bg-surface-nested p-3">
-        <h3 className="border-b border-border/50 pb-2 text-base font-semibold text-foreground">
+      <section className="flex flex-col gap-4 border-t border-border/50 pt-3">
+        <h3 className="text-base font-semibold text-foreground">
           Personality Traits
         </h3>
         <NarrativeField label="Personality & Mannerisms" value={description.personalidade} limit={100} />
