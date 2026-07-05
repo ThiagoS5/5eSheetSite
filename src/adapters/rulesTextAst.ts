@@ -79,6 +79,12 @@ function entryToBlocks(entry: unknown): RulesTextNode[] {
 }
 
 function prependTitle(name: string, blocks: RulesTextNode[]): RulesTextNode[] {
+  // Entrada nomeada sem conteúdo aproveitável (ex.: só imagens) não vira
+  // um título órfão em negrito.
+  if (!blocks.length) {
+    return [];
+  }
+
   const title: RulesTextInlineNode = {
     type: "bold",
     children: [{ type: "text", text: `${name}. ` }],
@@ -252,7 +258,7 @@ function tagToNodes(tag: string, content: string): RulesTextInlineNode[] {
   }
 
   if (DICE_TAGS.has(tag)) {
-    return [{ type: "dice", label: getDisplayLabel(content) }];
+    return [{ type: "dice", label: getDiceLabel(tag, content) }];
   }
 
   if (REF_TAGS.has(tag)) {
@@ -273,6 +279,21 @@ function tagToNodes(tag: string, content: string): RulesTextInlineNode[] {
 function getDisplayLabel(rawContent: string): string {
   const [label] = rawContent.split("|");
   return label.trim();
+}
+
+/** Rótulos fiéis ao 5eTools: {@hit 5} → "+5"; {@chance 50} → "50 percent". */
+function getDiceLabel(tag: string, rawContent: string): string {
+  const label = getDisplayLabel(rawContent);
+
+  if (tag === "hit" && /^\d/.test(label)) {
+    return `+${label}`;
+  }
+
+  if (tag === "chance") {
+    return `${label} percent`;
+  }
+
+  return label;
 }
 
 /**

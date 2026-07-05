@@ -391,8 +391,7 @@ function normalizeBackgroundRewards(entries: unknown[] | undefined): string[] {
     }
 
     return (entry.items ?? [])
-      .map(stringifyEntry)
-      .map(formatTaggedTextAsPlain)
+      .map((item) => stringifyEntries([item]))
       .filter(Boolean);
   });
 }
@@ -801,11 +800,12 @@ function encodePathSegment(value: string): string {
   return encodeURIComponent(value);
 }
 
+/**
+ * Texto plano de entries 5eTools via AST (fonte única de verdade para tags;
+ * o parser inline e a travessia vivem em rulesTextAst).
+ */
 export function stringifyEntries(entries: unknown[] | undefined): string {
-  return (entries ?? [])
-    .map(stringifyEntry)
-    .filter(Boolean)
-    .join(" ");
+  return astToPlainText(parseRulesText(entries));
 }
 
 function normalizeLoreBlocks(
@@ -825,41 +825,6 @@ function normalizeLoreBlocks(
 
 function blocksToText(blocks: RulesTextNode[] | undefined): string {
   return astToPlainText(blocks ?? []);
-}
-
-function stringifyEntry(entry: unknown): string {
-  if (typeof entry === "string") {
-    return formatTaggedTextAsPlain(entry);
-  }
-
-  if (isStructuralEntry(entry)) {
-    return stringifyEntries(entry.entries);
-  }
-
-  if (isNamedEntry(entry)) {
-    return `${entry.name}: ${stringifyEntries(entry.entries)}`;
-  }
-
-  if (isEntryWithEntries(entry)) {
-    return stringifyEntries(entry.entries);
-  }
-
-  if (isListEntry(entry)) {
-    return (entry.items ?? []).map(stringifyEntry).filter(Boolean).join(" ");
-  }
-
-  if (isEntryWithEntry(entry)) {
-    return formatTaggedTextAsPlain(entry.entry);
-  }
-
-  if (isTableEntry(entry)) {
-    const header = entry.caption ? `${entry.caption}: ` : "";
-    return `${header}${entry.rows
-      .map((row) => row.map((cell) => formatTaggedTextAsPlain(String(cell))).join(" - "))
-      .join("; ")}`;
-  }
-
-  return "";
 }
 
 export function formatTaggedTextAsPlain(value: string): string {
@@ -912,17 +877,6 @@ function isListEntry(entry: unknown): entry is { items?: unknown[] } {
   return typeof entry === "object" && entry !== null && "items" in entry;
 }
 
-function isStructuralEntry(
-  entry: unknown,
-): entry is { type: string; entries?: unknown[] } {
-  if (typeof entry !== "object" || entry === null || !("type" in entry)) {
-    return false;
-  }
-
-  const { type } = entry as { type?: unknown };
-  return type === "section" || type === "chapter";
-}
-
 function isTableEntry(entry: unknown): entry is {
   caption?: string;
   rows: unknown[][];
@@ -946,20 +900,3 @@ function isEquipmentItem(item: unknown): item is { name: string; entry: string }
   );
 }
 
-function isEntryWithEntry(entry: unknown): entry is { entry: string } {
-  return (
-    typeof entry === "object" &&
-    entry !== null &&
-    "entry" in entry &&
-    typeof entry.entry === "string"
-  );
-}
-
-function isEntryWithEntries(entry: unknown): entry is { entries: unknown[] } {
-  return (
-    typeof entry === "object" &&
-    entry !== null &&
-    "entries" in entry &&
-    Array.isArray(entry.entries)
-  );
-}

@@ -71,6 +71,33 @@ describe("parseRulesText", () => {
     });
   });
 
+  it("renders hit bonuses with sign and chance as percent, like 5etools", () => {
+    const [paragraph] = parseRulesText([
+      "Attack {@hit 5} with {@chance 50} odds, or {@hit -1}.",
+    ]);
+
+    expect(paragraph).toEqual({
+      type: "paragraph",
+      children: [
+        { type: "text", text: "Attack " },
+        { type: "dice", label: "+5" },
+        { type: "text", text: " with " },
+        { type: "dice", label: "50 percent" },
+        { type: "text", text: " odds, or " },
+        { type: "dice", label: "-1" },
+        { type: "text", text: "." },
+      ],
+    });
+  });
+
+  it("suppresses named entries whose content degrades to nothing", () => {
+    expect(
+      parseRulesText([
+        { type: "entries", name: "Só Imagem", entries: [{ type: "image", href: {} }] },
+      ]),
+    ).toEqual([]);
+  });
+
   it("parses bold/italic tags with nested content", () => {
     const [paragraph] = parseRulesText(["{@b Rage} lasts while {@i you {@dice 1d4} focus}."]);
 

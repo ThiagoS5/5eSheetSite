@@ -1,5 +1,14 @@
 import type { ReactNode } from "react";
 import { parseInlineText } from "@/src/adapters/rulesTextAst";
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/src/components/ui/table";
 import type { RulesTextInlineNode, RulesTextNode } from "@/types/rulesText";
 
 interface RulesTextViewProps {
@@ -55,40 +64,39 @@ function BlockNode({ node }: { node: RulesTextNode }) {
   }
 
   return (
-    <div className="mt-2 overflow-x-auto first:mt-0">
-      <table className="w-full border-collapse text-sm text-muted-foreground">
+    <div className="mt-2 first:mt-0">
+      <Table className="text-muted-foreground">
         {node.caption ? (
-          <caption className="mb-1 text-left font-serif text-sm font-bold text-foreground">
+          <TableCaption className="mt-2 text-left font-serif font-bold text-foreground">
             {node.caption}
-          </caption>
+          </TableCaption>
         ) : null}
         {node.headers.length > 0 ? (
-          <thead>
-            <tr>
+          <TableHeader>
+            <TableRow className="border-white/[0.12]">
               {node.headers.map((header, index) => (
-                <th
-                  key={index}
-                  scope="col"
-                  className="border-b border-white/[0.12] px-2 py-1 text-left font-medium text-foreground"
-                >
+                <TableHead key={index} scope="col" className="text-foreground">
                   {renderInline(header)}
-                </th>
+                </TableHead>
               ))}
-            </tr>
-          </thead>
+            </TableRow>
+          </TableHeader>
         ) : null}
-        <tbody>
+        <TableBody>
           {node.rows.map((row, rowIndex) => (
-            <tr key={rowIndex} className="border-b border-white/[0.06] last:border-b-0">
+            <TableRow key={rowIndex} className="border-white/[0.06]">
               {row.map((cell, cellIndex) => (
-                <td key={cellIndex} className="px-2 py-1 align-top">
+                <TableCell
+                  key={cellIndex}
+                  className="whitespace-normal p-2 align-top"
+                >
                   {renderInline(cell)}
-                </td>
+                </TableCell>
               ))}
-            </tr>
+            </TableRow>
           ))}
-        </tbody>
-      </table>
+        </TableBody>
+      </Table>
     </div>
   );
 }
@@ -112,12 +120,12 @@ function renderInline(nodes: RulesTextInlineNode[]): ReactNode[] {
     }
 
     if (node.type === "dice") {
+      // Sem tabIndex: elemento informativo, não interativo — evita paradas
+      // de tabulação falsas (achado de a11y do code review).
       return (
         <abbr
           key={index}
-          aria-label={`dice: ${node.label}`}
-          tabIndex={0}
-          className="cursor-help rounded-sm text-foreground no-underline outline-none focus-visible:ring-2 focus-visible:ring-brand-crimson-alt/70"
+          className="cursor-help rounded-sm text-foreground no-underline"
           title={`dice: ${node.label}`}
         >
           {node.label}
@@ -125,15 +133,17 @@ function renderInline(nodes: RulesTextInlineNode[]): ReactNode[] {
       );
     }
 
+    // Refs viram <span> até o glossário de conceitos existir (Fase 3/9.4):
+    // um <button> focável sem onClick é uma promessa quebrada para teclado
+    // e leitores de tela.
     return (
-      <button
+      <span
         key={index}
-        type="button"
-        aria-label={`${node.refType}: ${node.label}`}
-        className="rounded-sm text-accent underline decoration-accent/40 underline-offset-4 outline-none transition hover:text-foreground focus-visible:ring-2 focus-visible:ring-brand-crimson-alt/70"
+        title={`${node.refType}: ${node.label}`}
+        className="rounded-sm text-accent underline decoration-accent/40 underline-offset-4"
       >
         {node.label}
-      </button>
+      </span>
     );
   });
 }

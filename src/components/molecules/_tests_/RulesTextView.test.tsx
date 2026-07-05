@@ -8,16 +8,19 @@ import { parseRulesText } from "@/src/adapters/rulesTextAst";
 import { RulesInlineText, RulesTextView } from "@/src/components/molecules/RulesTextView";
 
 describe("RulesTextView", () => {
-  it("renders paragraphs with interactive refs and accessible dice", () => {
-    render(
+  it("renders paragraphs with highlighted refs and accessible dice", () => {
+    const { container } = render(
       <RulesTextView
         nodes={parseRulesText(["Cast {@spell Fireball|XPHB} for {@damage 8d6} damage."])}
       />,
     );
 
     expect(screen.getByText(/Cast/)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "spell: Fireball" })).toBeInTheDocument();
-    expect(screen.getByLabelText("dice: 8d6")).toBeInTheDocument();
+    expect(screen.getByTitle("spell: Fireball")).toHaveTextContent("Fireball");
+    expect(screen.getByTitle("dice: 8d6")).toHaveTextContent("8d6");
+    // Refs e dados são informativos, não interativos: nenhum tab stop falso.
+    expect(container.querySelector("button")).toBeNull();
+    expect(container.querySelector("[tabindex]")).toBeNull();
   });
 
   it("renders 5etools lists as real <ul> lists", () => {
@@ -66,8 +69,8 @@ describe("RulesInlineText", () => {
       </p>,
     );
 
-    expect(screen.getByRole("button", { name: "condition: Prone" })).toBeInTheDocument();
-    expect(screen.getByLabelText("dice: 1d4")).toBeInTheDocument();
+    expect(screen.getByTitle("condition: Prone")).toHaveTextContent("Prone");
+    expect(screen.getByTitle("dice: 1d4")).toHaveTextContent("1d4");
   });
 
   it("degrades unknown tags to plain text", () => {
