@@ -628,7 +628,7 @@ function PendencyBadge({ count }: { count: number }) {
   }
 
   return (
-    <span className="ml-auto rounded border border-accent/40 px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-normal text-accent">
+    <span className="ml-auto rounded border border-accent/40 px-1.5 py-0.5 font-mono text-[11px] font-bold uppercase tracking-normal text-accent">
       <FontAwesomeIcon
         iconClassName="fa-solid fa-triangle-exclamation"
         className="mr-1 inline h-3 w-3"

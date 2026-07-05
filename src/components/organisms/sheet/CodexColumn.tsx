@@ -15,7 +15,7 @@ function isFilled(value: string | undefined | null): boolean {
 }
 
 const labelClass =
-  "text-[10px] font-semibold uppercase tracking-widest text-muted-foreground";
+  "text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground";
 
 function CodexField({
   label,
