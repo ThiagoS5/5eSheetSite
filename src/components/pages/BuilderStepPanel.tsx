@@ -376,15 +376,19 @@ export function BuilderStepPanel({
             selectedBackground={selectedBackground}
             selectedSpecies={selectedSpecies}
             choicesBySource={characterState.equipmentChoicesBySource}
+            equippedItemIds={characterState.equippedItemIds}
+            onToggleEquipped={actions.toggleEquippedItem}
             onSourceModeChange={actions.setEquipmentSourceMode}
             onSourceOptionChange={actions.setEquipmentSourceOption}
           />
           <InventoryManager
             catalog={itemCatalog}
             inventory={characterState.inventory}
+            equippedItemIds={characterState.equippedItemIds}
             onAddItem={actions.addInventoryItem}
             onSetQuantity={actions.setInventoryQuantity}
             onRemoveItem={actions.removeInventoryItem}
+            onToggleEquipped={actions.toggleEquippedItem}
           />
         </>
       ) : null}
@@ -3144,6 +3148,9 @@ function useCharacterBuilderState(): CharacterBuilderState {
   const inventory = useCharacterStore(
     (state) => state.inventory,
   );
+  const equippedItemIds = useCharacterStore(
+    (state) => state.equippedItemIds,
+  );
   const equipmentChoicesBySource = useCharacterStore(
     (state) => state.equipmentChoicesBySource,
   );
@@ -3194,6 +3201,7 @@ function useCharacterBuilderState(): CharacterBuilderState {
       selectedSubclassId,
       selectedBackgroundId,
       inventory,
+      equippedItemIds,
       equipmentChoicesBySource,
       maxUnlockedStepIndex,
       pendingChoiceIds,
@@ -3225,6 +3233,7 @@ function useCharacterBuilderState(): CharacterBuilderState {
       selectedSubclassId,
       selectedBackgroundId,
       inventory,
+      equippedItemIds,
       equipmentChoicesBySource,
       maxUnlockedStepIndex,
       pendingChoiceIds,
@@ -3259,6 +3268,7 @@ function useCharacterBuilderActions() {
     addInventoryItem: useCharacterStore((state) => state.addInventoryItem),
     setInventoryQuantity: useCharacterStore((state) => state.setInventoryQuantity),
     removeInventoryItem: useCharacterStore((state) => state.removeInventoryItem),
+    toggleEquippedItem: useCharacterStore((state) => state.toggleEquippedItem),
     setEquipmentSourceMode: useCharacterStore(
       (state) => state.setEquipmentSourceMode,
     ),

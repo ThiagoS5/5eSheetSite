@@ -21,6 +21,7 @@ export function useCharacterBuilderState(): CharacterBuilderState {
   const selectedSubclassId = useCharacterStore((s) => s.selectedSubclassId);
   const selectedBackgroundId = useCharacterStore((s) => s.selectedBackgroundId);
   const inventory = useCharacterStore((s) => s.inventory);
+  const equippedItemIds = useCharacterStore((s) => s.equippedItemIds);
   const equipmentChoicesBySource = useCharacterStore((s) => s.equipmentChoicesBySource);
   const maxUnlockedStepIndex = useCharacterStore((s) => s.maxUnlockedStepIndex);
   const pendingChoiceIds = useCharacterStore((s) => s.pendingChoiceIds);
@@ -53,6 +54,7 @@ export function useCharacterBuilderState(): CharacterBuilderState {
       selectedSubclassId,
       selectedBackgroundId,
       inventory,
+      equippedItemIds,
       equipmentChoicesBySource,
       maxUnlockedStepIndex,
       pendingChoiceIds,
@@ -84,6 +86,7 @@ export function useCharacterBuilderState(): CharacterBuilderState {
       selectedSubclassId,
       selectedBackgroundId,
       inventory,
+      equippedItemIds,
       equipmentChoicesBySource,
       maxUnlockedStepIndex,
       pendingChoiceIds,

@@ -22,6 +22,7 @@ vi.mock("@/src/store/useCharacterStore", () => ({
       selectedSubclassId: "",
       selectedBackgroundId: "",
       inventory: [],
+      equippedItemIds: [],
       equipmentChoicesBySource: {},
       maxUnlockedStepIndex: 8,
       pendingChoiceIds: [],

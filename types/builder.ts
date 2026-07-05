@@ -188,17 +188,37 @@ export type ItemCategory =
 
 export type ArmorType = "light" | "medium" | "heavy" | "shield";
 export type WeaponRangeType = "melee" | "ranged";
+export type InventoryItemType =
+  | "weapon"
+  | "armor"
+  | "shield"
+  | "tool"
+  | "pack"
+  | "gear"
+  | "consumable";
+
+export interface InventoryArmorProfile {
+  baseAC: number;
+  category: Exclude<ArmorType, "shield">;
+  maxDexBonus?: number;
+  strengthMin?: number;
+  stealthDisadvantage?: boolean;
+}
 
 export interface CatalogItem {
   id: string;
   name: string;
   source: string;
   category: ItemCategory;
+  type?: InventoryItemType;
   isMagical: boolean;
   isCommon: boolean;
   isContainer: boolean;
+  weightKg?: number;
   armorClass?: number;
   armorType?: ArmorType;
+  armor?: InventoryArmorProfile;
+  shieldBonus?: number;
   weaponCategory?: string;
   weaponRangeType?: WeaponRangeType;
   weaponProperties?: string[];
@@ -214,8 +234,12 @@ export interface BuilderEquipmentOption {
   source: string;
   sourceType: "class" | "background" | "manual";
   category: ItemCategory;
+  type?: InventoryItemType;
+  weightKg?: number;
   armorClass?: number;
   armorType?: ArmorType;
+  armor?: InventoryArmorProfile;
+  shieldBonus?: number;
   weaponCategory?: string;
   weaponRangeType?: WeaponRangeType;
   weaponProperties?: string[];

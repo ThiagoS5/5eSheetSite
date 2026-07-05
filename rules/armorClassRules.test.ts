@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { calculateArmorClass, deriveArmorClass } from "@/rules/armorClassRules";
+import {
+  calculateArmorClass,
+  deriveArmorClass,
+  deriveArmorEquipmentPendencies,
+} from "@/rules/armorClassRules";
 
 describe("armor class rules", () => {
   it("uses unarmored AC when no armor is equipped", () => {
@@ -43,5 +47,22 @@ describe("armor class rules", () => {
         { id: "shield-xphb", armorClass: 2, armorType: "shield" },
       ]),
     ).toBe(18);
+  });
+
+  it("reports a pendency when multiple body armors are equipped", () => {
+    expect(
+      deriveArmorEquipmentPendencies([
+        { id: "leather-armor-xphb", name: "Leather Armor", armorClass: 11, armorType: "light" },
+        { id: "chain-mail-xphb", name: "Chain Mail", armorClass: 16, armorType: "heavy" },
+        { id: "shield-xphb", name: "Shield", armorClass: 2, armorType: "shield" },
+      ]),
+    ).toEqual([
+      {
+        id: "equipment-armor-conflict",
+        stepSlug: "equipamento",
+        label: "Choose only one worn body armor: Leather Armor, Chain Mail.",
+        severity: "blocking",
+      },
+    ]);
   });
 });

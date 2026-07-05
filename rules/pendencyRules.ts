@@ -1,4 +1,9 @@
 import { validateBuilderStep } from "@/rules/builderValidation";
+import { deriveArmorEquipmentPendencies } from "@/rules/armorClassRules";
+import {
+  deriveCarriedEquipment,
+  deriveSelectedEquipment,
+} from "@/rules/inventoryRules";
 import { getUnresolvedLevelChoices } from "@/src/store/levelChoiceResolver";
 import type { CharacterBuilderState } from "@/src/store/characterStore.types";
 import type { BuilderClass, BuilderStepSlug, Pendency } from "@/types/builder";
@@ -40,7 +45,14 @@ export function deriveBuilderPendencies(input: {
           severity: "blocking" as const,
         }));
 
-  return [...stepPendencies, ...levelPendencies];
+  const equipmentPendencies = deriveArmorEquipmentPendencies(
+    deriveSelectedEquipment({
+      state,
+      carriedEquipment: deriveCarriedEquipment({ state, characterClass }),
+    }),
+  );
+
+  return [...stepPendencies, ...levelPendencies, ...equipmentPendencies];
 }
 
 function normalizeLevelChoiceLabel(label: string): string {

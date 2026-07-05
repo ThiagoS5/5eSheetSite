@@ -12,6 +12,7 @@ const state: CharacterBuilderState = {
   asiOrFeatByLevel: {},
   selectedBackgroundId: "guard-xphb",
   inventory: [{ itemId: "chain-mail-xphb", quantity: 1 }],
+  equippedItemIds: ["chain-mail-xphb"],
   equipmentChoicesBySource: {},
   maxUnlockedStepIndex: 7,
   pendingChoiceIds: [],

@@ -30,7 +30,7 @@ describe("character selectors", () => {
     expect(summary.senses[0]?.rangeFeet).toBeGreaterThanOrEqual(60);
   });
 
-  it("includes the chosen class package items in selectedEquipment", () => {
+  it("includes the chosen class package items in carried load without auto-equipping", () => {
     const store = createCharacterStore();
     const fighter = getBuilderClasses().find((c) => c.id === "fighter-xphb");
     if (!fighter || fighter.startingEquipmentPackages.length === 0) {
@@ -40,7 +40,31 @@ describe("character selectors", () => {
     store.getState().setEquipmentSourceOption("class", fighter.startingEquipmentPackages[0].id);
 
     const summary = selectCharacterSheetSummary(store.getState());
-    expect(summary.selectedEquipment.length).toBeGreaterThan(0);
+    expect(summary.selectedEquipment).toHaveLength(0);
+    expect(summary.carry.currentKg).toBeGreaterThan(0);
+  });
+
+  it("equips items from the chosen class package without duplicating them in manual inventory", () => {
+    const store = createCharacterStore();
+    const fighter = getBuilderClasses().find((c) => c.id === "fighter-xphb");
+    const packageWithChainMail = fighter?.startingEquipmentPackages.find((entry) =>
+      entry.items.some((item) => item.id === "chain-mail-xphb"),
+    );
+    if (!packageWithChainMail) {
+      throw new Error("expected fighter to have a chain mail starting package");
+    }
+
+    store.getState().selectClass("fighter-xphb");
+    store.getState().setEquipmentSourceOption("class", packageWithChainMail.id);
+    store.getState().toggleEquippedItem("chain-mail-xphb");
+
+    const summary = selectCharacterSheetSummary(store.getState());
+
+    expect(store.getState().inventory).toEqual([]);
+    expect(summary.selectedEquipment).toContainEqual(
+      expect.objectContaining({ id: "chain-mail-xphb", sourceType: "class" }),
+    );
+    expect(summary.armorClass).toBe(16);
   });
 
   it("scales max HP with character level", () => {
@@ -89,26 +113,41 @@ describe("character selectors", () => {
     ).toBe(true);
   });
 
-  it("includes inventory items in selectedEquipment", () => {
+  it("keeps carried inventory separate from equipped items", () => {
     const store = createCharacterStore();
     store.getState().addInventoryItem("chain-mail-xphb");
     const summary = selectCharacterSheetSummary(store.getState());
-    expect(summary.selectedEquipment.some((e) => e.id === "chain-mail-xphb")).toBe(true);
+    expect(summary.selectedEquipment.some((e) => e.id === "chain-mail-xphb")).toBe(false);
+    expect(summary.carry.currentKg).toBeGreaterThan(0);
   });
 
-  it("derives real weapon attack bonuses and damage from inventory", () => {
+  it("derives armor class and attacks only from equipped inventory", () => {
     const store = createCharacterStore();
     store.getState().selectClass("fighter-xphb");
+    store.getState().setDestreza(18);
     store.getState().setForca(14);
+    store.getState().addInventoryItem("chain-mail-xphb");
+    store.getState().addInventoryItem("shield-xphb");
     store.getState().addInventoryItem("longsword-xphb");
 
-    const summary = selectCharacterSheetSummary(store.getState());
+    const carriedOnly = selectCharacterSheetSummary(store.getState());
+    expect(carriedOnly.armorClass).toBe(14);
+    expect(carriedOnly.weapons.some((weapon) => weapon.name === "Longsword")).toBe(false);
 
-    expect(summary.weapons.find((weapon) => weapon.name === "Longsword")).toMatchObject({
+    store.getState().toggleEquippedItem("chain-mail-xphb");
+    store.getState().toggleEquippedItem("shield-xphb");
+    store.getState().toggleEquippedItem("longsword-xphb");
+
+    const equipped = selectCharacterSheetSummary(store.getState());
+    expect(equipped.armorClass).toBe(18);
+    expect(equipped.weapons.find((weapon) => weapon.name === "Longsword")).toMatchObject({
       attackBonus: "+4",
       damage: "1d8+2 Slashing",
       notes: expect.stringContaining("proficient"),
     });
+
+    store.getState().toggleEquippedItem("shield-xphb");
+    expect(selectCharacterSheetSummary(store.getState()).armorClass).toBe(16);
   });
 
   it("applies ASI bonuses to final attributes and recomputes HP", () => {

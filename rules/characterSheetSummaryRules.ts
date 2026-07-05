@@ -4,9 +4,13 @@ import {
   getFeats,
   getBuilderSpecies,
 } from "@/src/services/ruleService";
-import { getItemCatalog } from "@/src/services/itemCatalogService";
 import { deriveAttacks } from "@/rules/attackRules";
 import { deriveArmorClass } from "@/rules/armorClassRules";
+import {
+  deriveCarriedEquipment,
+  deriveCarriedLoadKg,
+  deriveSelectedEquipment,
+} from "@/rules/inventoryRules";
 import { deriveBuilderPendencies } from "@/rules/pendencyRules";
 import { computePassives, computeSkills } from "@/rules/skillRules";
 import {
@@ -71,7 +75,8 @@ export function selectCharacterSheetSummary(
     (entry) => entry.id === state.selectedBackgroundId,
   );
   const featEffects = deriveFeatEffects(state, background);
-  const selectedEquipment = deriveSelectedEquipment(state, characterClass);
+  const carriedEquipment = deriveCarriedEquipment({ state, characterClass, background });
+  const selectedEquipment = deriveSelectedEquipment({ state, carriedEquipment });
   const finalAttributes = deriveFinalAttributes(state, featEffects.abilityBonuses);
   const proficiencyBonus = getProficiencyBonus(state.level);
   const classAndFeatSkillProficiencies = [
@@ -183,47 +188,12 @@ export function selectCharacterSheetSummary(
       ? state.money
       : { ...EMPTY_COIN_POUCH, po: deriveStartingGoldPo(state) },
     carry: {
-      currentKg: state.carriedLoadKg,
+      currentKg: state.carriedLoadKg > 0
+        ? state.carriedLoadKg
+        : deriveCarriedLoadKg(carriedEquipment),
       maxKg: Math.round(finalAttributes.forca * 7.5),
     },
   };
-}
-
-function deriveSelectedEquipment(
-  state: CharacterBuilderState,
-  characterClass: ReturnType<typeof getBuilderClasses>[number] | undefined,
-): CharacterSheetSummary["selectedEquipment"] {
-  const classChoice = state.equipmentChoicesBySource.class;
-  const classKitItemIds =
-    classChoice?.mode === "items" && classChoice.selectedOptionId
-      ? (characterClass?.startingEquipmentPackages.find(
-          (entry) => entry.id === classChoice.selectedOptionId,
-        )?.items ?? []).map((item) => item.id)
-      : [];
-  const classKitItemIdSet = new Set(classKitItemIds);
-  const equipmentIds = new Set([
-    ...state.inventory.map((entry) => entry.itemId),
-    ...classKitItemIds,
-  ]);
-
-  return getItemCatalog()
-    .filter((item) => equipmentIds.has(item.id))
-    .map((item) => ({
-      id: item.id,
-      name: item.name,
-      source: item.source,
-      sourceType: classKitItemIdSet.has(item.id) ? "class" : "manual",
-      category: item.category,
-      armorClass: item.armorClass,
-      armorType: item.armorType,
-      weaponCategory: item.weaponCategory,
-      weaponRangeType: item.weaponRangeType,
-      weaponProperties: item.weaponProperties,
-      damageDice: item.damageDice,
-      damageType: item.damageType,
-      range: item.range,
-      value: item.value,
-    }));
 }
 
 function deriveFinalAttributes(

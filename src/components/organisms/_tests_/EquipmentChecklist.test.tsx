@@ -76,6 +76,38 @@ describe("EquipmentChecklist", () => {
     expect(screen.queryByRole("button", { name: /Option A/i })).toBeNull();
   });
 
+  it("lets offered class items be equipped without adding them manually", () => {
+    const onToggleEquipped = vi.fn();
+    render(
+      <EquipmentChecklist
+        selectedClass={selectedClass}
+        choicesBySource={{ class: { mode: "items", selectedOptionId: "A" } }}
+        equippedItemIds={[]}
+        onToggleEquipped={onToggleEquipped}
+        onSourceModeChange={vi.fn()}
+        onSourceOptionChange={vi.fn()}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Equip Dagger" }));
+    expect(onToggleEquipped).toHaveBeenCalledWith("dagger-xphb");
+  });
+
+  it("shows unequip state for equipped offered items", () => {
+    render(
+      <EquipmentChecklist
+        selectedClass={selectedClass}
+        choicesBySource={{ class: { mode: "items", selectedOptionId: "A" } }}
+        equippedItemIds={["dagger-xphb"]}
+        onToggleEquipped={vi.fn()}
+        onSourceModeChange={vi.fn()}
+        onSourceOptionChange={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByRole("button", { name: "Unequip Dagger" })).toBeInTheDocument();
+  });
+
   it("only renders items from the selected kit when selectedOptionId is set", () => {
     const classWithTwoKits: BuilderClass = {
       ...selectedClass,

@@ -42,6 +42,7 @@ export interface FlatCharacterBuilderState {
   selectedSubclassId: string;
   selectedBackgroundId: string;
   inventory: InventoryEntry[];
+  equippedItemIds: string[];
   equipmentChoicesBySource: EquipmentChoicesBySource;
   maxUnlockedStepIndex: number;
   pendingChoiceIds: string[];
@@ -80,6 +81,7 @@ export interface CharacterBuilderActions {
   addInventoryItem: (itemId: string) => void;
   setInventoryQuantity: (itemId: string, quantity: number) => void;
   removeInventoryItem: (itemId: string) => void;
+  toggleEquippedItem: (itemId: string) => void;
   setEquipmentSourceMode: (
     source: EquipmentSourceKey,
     mode: EquipmentAcquisitionMode,

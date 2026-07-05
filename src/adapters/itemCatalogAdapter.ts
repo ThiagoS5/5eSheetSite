@@ -1,5 +1,11 @@
 import { toSlug } from "@/src/adapters/fiveEToolsAdapter";
-import type { ArmorType, CatalogItem, ItemCategory } from "@/types/builder";
+import type {
+  ArmorType,
+  CatalogItem,
+  InventoryArmorProfile,
+  InventoryItemType,
+  ItemCategory,
+} from "@/types/builder";
 import type { Raw5eItem } from "@/types/fiveETools";
 
 const TYPE_TO_CATEGORY: Record<string, ItemCategory> = {
@@ -31,10 +37,60 @@ function resolveArmorType(rawItem: Raw5eItem): ArmorType | undefined {
   return undefined;
 }
 
+function resolveInventoryType(rawItem: Raw5eItem): InventoryItemType {
+  const code = (rawItem.type ?? "").split("|")[0];
+  if (code === "M" || code === "R") return "weapon";
+  if (code === "S") return "shield";
+  if (code === "LA" || code === "MA" || code === "HA") return "armor";
+  if (code === "P") return "consumable";
+  if (code === "T" || code === "INS" || code === "AT") return "tool";
+  if (code === "PACK") return "pack";
+  return "gear";
+}
+
+function resolveArmorProfile(rawItem: Raw5eItem): InventoryArmorProfile | undefined {
+  const armorType = resolveArmorType(rawItem);
+  if (!armorType || armorType === "shield" || rawItem.ac === undefined) {
+    return undefined;
+  }
+
+  return {
+    baseAC: rawItem.ac,
+    category: armorType,
+    ...(armorType === "medium" ? { maxDexBonus: 2 } : {}),
+    ...(parseStrengthMinimum(rawItem.strength) !== undefined
+      ? { strengthMin: parseStrengthMinimum(rawItem.strength) }
+      : {}),
+    ...(rawItem.stealth ? { stealthDisadvantage: true } : {}),
+  };
+}
+
 function normalizeWeaponProperties(properties: Raw5eItem["property"]): string[] {
   return (properties ?? [])
     .filter((property): property is string => typeof property === "string")
     .map((property) => property.split("|")[0]);
+}
+
+function poundsToKg(weight: number | undefined): number | undefined {
+  if (typeof weight !== "number" || !Number.isFinite(weight)) {
+    return undefined;
+  }
+  return Math.round(weight * 0.45359237 * 100) / 100;
+}
+
+function parseStrengthMinimum(value: Raw5eItem["strength"]): number | undefined {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value;
+  }
+  if (typeof value !== "string") {
+    return undefined;
+  }
+  const match = value.match(/\d+/);
+  if (!match) {
+    return undefined;
+  }
+  const parsed = Number(match[0]);
+  return Number.isFinite(parsed) ? parsed : undefined;
 }
 
 export function normalizeCatalogItem(rawItem: Raw5eItem): CatalogItem {
@@ -46,11 +102,15 @@ export function normalizeCatalogItem(rawItem: Raw5eItem): CatalogItem {
     name: rawItem.name,
     source: rawItem.source,
     category: resolveCategory(rawItem),
+    type: resolveInventoryType(rawItem),
     isMagical: Boolean(rarity) && rarity !== "none",
     isCommon: rarity === "common",
     isContainer: rawItem.containerCapacity != null,
+    weightKg: poundsToKg(rawItem.weight),
     armorClass: rawItem.ac,
     armorType: resolveArmorType(rawItem),
+    armor: resolveArmorProfile(rawItem),
+    shieldBonus: resolveArmorType(rawItem) === "shield" ? rawItem.ac : undefined,
     weaponCategory: rawItem.weaponCategory,
     weaponRangeType: code === "R" ? "ranged" : code === "M" ? "melee" : undefined,
     weaponProperties: normalizeWeaponProperties(rawItem.property),

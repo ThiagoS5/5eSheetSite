@@ -29,6 +29,9 @@ describe("selector purity guardrail", () => {
     store.getState().addInventoryItem("chain-mail-xphb");
     store.getState().addInventoryItem("shield-xphb");
     store.getState().addInventoryItem("longsword-xphb");
+    store.getState().toggleEquippedItem("chain-mail-xphb");
+    store.getState().toggleEquippedItem("shield-xphb");
+    store.getState().toggleEquippedItem("longsword-xphb");
 
     const summary = selectCharacterSheetSummary(store.getState());
 

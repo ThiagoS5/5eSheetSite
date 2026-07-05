@@ -1,6 +1,8 @@
 "use client";
 
+import { ShieldCheck, ShieldOff } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/src/components/ui/card";
+import { Button } from "@/src/components/ui/button";
 import type {
   EquipmentAcquisitionMode,
   EquipmentChoicesBySource,
@@ -60,6 +62,8 @@ interface EquipmentChecklistProps {
   selectedBackground?: BuilderBackground;
   selectedSpecies?: BuilderSpecies; // reserved for future species equipment source
   choicesBySource: EquipmentChoicesBySource;
+  equippedItemIds?: readonly string[];
+  onToggleEquipped?: (itemId: string) => void;
   onSourceModeChange: (source: EquipmentSourceKey, mode: EquipmentAcquisitionMode) => void;
   onSourceOptionChange: (source: EquipmentSourceKey, optionId: string) => void;
 }
@@ -111,6 +115,8 @@ export function EquipmentChecklist({
   selectedClass,
   selectedBackground,
   choicesBySource,
+  equippedItemIds = [],
+  onToggleEquipped,
   onSourceModeChange,
   onSourceOptionChange,
 }: EquipmentChecklistProps) {
@@ -175,10 +181,12 @@ export function EquipmentChecklist({
                           {kit.items
                             .filter((item) => item.value === undefined)
                             .map((item, index) => (
-                              <li key={`${kit.id}-${item.id}-${index}`} className="flex gap-2">
-                                <span translate="no" className="notranslate font-semibold text-foreground">{item.quantity}×</span>
-                                <span translate="no" className="notranslate">{item.label}</span>
-                              </li>
+                              <EquipmentItemRow
+                                key={`${kit.id}-${item.id}-${index}`}
+                                item={item}
+                                isEquipped={equippedItemIds.includes(item.id)}
+                                onToggleEquipped={onToggleEquipped}
+                              />
                             ))}
                         </ul>
                       ) : (
@@ -211,6 +219,42 @@ export function EquipmentChecklist({
       })}
 
     </section>
+  );
+}
+
+function EquipmentItemRow({
+  item,
+  isEquipped,
+  onToggleEquipped,
+}: {
+  item: BuilderEquipmentPackageItem;
+  isEquipped: boolean;
+  onToggleEquipped?: (itemId: string) => void;
+}) {
+  return (
+    <li className="flex items-center gap-2">
+      <span translate="no" className="notranslate font-semibold text-foreground">
+        {item.quantity}×
+      </span>
+      <span translate="no" className="notranslate min-w-0 flex-1">
+        {item.label}
+      </span>
+      {onToggleEquipped ? (
+        <Button
+          type="button"
+          variant={isEquipped ? "secondary" : "ghost"}
+          size="icon"
+          aria-label={`${isEquipped ? "Unequip" : "Equip"} ${item.label}`}
+          onClick={() => onToggleEquipped(item.id)}
+        >
+          {isEquipped ? (
+            <ShieldOff className="h-3 w-3" />
+          ) : (
+            <ShieldCheck className="h-3 w-3" />
+          )}
+        </Button>
+      ) : null}
+    </li>
   );
 }
 

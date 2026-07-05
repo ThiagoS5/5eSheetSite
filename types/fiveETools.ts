@@ -151,6 +151,9 @@ export interface Raw5eItem {
   dmg1?: string;
   dmgType?: string;
   range?: string;
+  weight?: number;
+  strength?: string | number;
+  stealth?: boolean;
   value?: number;
   entries?: unknown[];
   builderSourceType?: "class" | "background" | "manual";

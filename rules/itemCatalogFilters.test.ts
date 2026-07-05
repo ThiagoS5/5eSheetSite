@@ -11,11 +11,12 @@ const sword = item({ name: "Longsword", category: "Weapon" });
 const ring = item({ name: "Ring of Protection", category: "Ring", isMagical: true });
 const potion = item({ name: "Common Potion", category: "Potion", isMagical: true, isCommon: true });
 const bag = item({ name: "Bag of Holding", category: "Wondrous", isMagical: true, isContainer: true });
-const all = [sword, ring, potion, bag];
+const xphbShield = item({ name: "Shield", source: "XPHB", category: "Armor" });
+const all = [sword, ring, potion, bag, xphbShield];
 
 describe("filterCatalog", () => {
   it("returns all items with default filters", () => {
-    expect(filterCatalog(all, DEFAULT_CATALOG_FILTERS)).toHaveLength(4);
+    expect(filterCatalog(all, DEFAULT_CATALOG_FILTERS)).toHaveLength(5);
   });
   it("matches the search query case-insensitively by name", () => {
     expect(filterCatalog(all, { ...DEFAULT_CATALOG_FILTERS, query: "ring" })).toEqual([ring]);
@@ -28,5 +29,9 @@ describe("filterCatalog", () => {
     expect(filterCatalog(all, { ...DEFAULT_CATALOG_FILTERS, magical: true })).toEqual([ring, potion, bag]);
     expect(filterCatalog(all, { ...DEFAULT_CATALOG_FILTERS, common: true })).toEqual([potion]);
     expect(filterCatalog(all, { ...DEFAULT_CATALOG_FILTERS, container: true })).toEqual([bag]);
+  });
+  it("filters by source badges", () => {
+    expect(filterCatalog(all, { ...DEFAULT_CATALOG_FILTERS, sources: ["XPHB"] }))
+      .toEqual([xphbShield]);
   });
 });

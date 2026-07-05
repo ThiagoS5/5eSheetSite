@@ -118,7 +118,7 @@ describe("createCharacterStore persistence", () => {
           },
         },
         exportMetadata: {
-          schemaVersion: 9,
+          schemaVersion: 10,
           saveId: expect.any(String),
         },
       },
@@ -171,7 +171,7 @@ describe("createCharacterStore persistence", () => {
     const store = createCharacterStore();
     const build = store.getState().characterBuild;
 
-    expect(build.exportMetadata.schemaVersion).toBe(9);
+    expect(build.exportMetadata.schemaVersion).toBe(10);
     expect(build.choices.selectedSubclassId).toBe("");
     expect(build.progression.levelChoices["1"].classFeatureChoices).toEqual({
       "weapon-mastery": ["Longsword"],
@@ -228,7 +228,7 @@ describe("createCharacterStore persistence", () => {
 
     const store = createCharacterStore();
 
-    expect(store.getState().characterBuild.exportMetadata.schemaVersion).toBe(9);
+    expect(store.getState().characterBuild.exportMetadata.schemaVersion).toBe(10);
     expect(store.getState().beginnerMode).toBe(false);
     expect(store.getState().characterBuild.choices.beginnerMode).toBe(false);
   });
@@ -291,7 +291,7 @@ describe("createCharacterStore persistence", () => {
 
     const store = createCharacterStore();
 
-    expect(store.getState().characterBuild.exportMetadata.schemaVersion).toBe(9);
+    expect(store.getState().characterBuild.exportMetadata.schemaVersion).toBe(10);
     expect(store.getState().asiOrFeatByLevel["4"]).toEqual({
       mode: "feat",
       featId: "grappler-xphb",
@@ -353,7 +353,7 @@ describe("createCharacterStore persistence", () => {
 
     const store = createCharacterStore();
 
-    expect(store.getState().characterBuild.exportMetadata.schemaVersion).toBe(9);
+    expect(store.getState().characterBuild.exportMetadata.schemaVersion).toBe(10);
     expect(store.getState().spellcasting?.preparedSpellIds).toEqual(["fireball-xphb"]);
     const migrated = store.getState().characterBuild;
     expect(migrated.playState).toMatchObject({

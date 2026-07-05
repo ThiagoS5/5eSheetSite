@@ -3,6 +3,7 @@ import { createJSONStorage, persist } from "zustand/middleware";
 import type { StateCreator } from "zustand/vanilla";
 import { saveCharacter } from "@/src/services/characterService";
 import { getBuilderClasses } from "@/src/services/ruleService";
+import { deriveCarriedEquipment } from "@/rules/inventoryRules";
 import {
   createCharacterBuildFromLegacyState,
   createEmptyCharacterBuild,
@@ -296,14 +297,36 @@ export function createCharacterStore(
               : state.inventory.map((entry) =>
                   entry.itemId === itemId ? { ...entry, quantity } : entry,
                 ),
+          equippedItemIds:
+            quantity <= 0
+              ? state.equippedItemIds.filter((id) => id !== itemId)
+              : state.equippedItemIds,
         }),
       ),
     removeInventoryItem: (itemId) =>
       set((state) =>
         patchCharacterState(state, {
           inventory: state.inventory.filter((entry) => entry.itemId !== itemId),
+          equippedItemIds: state.equippedItemIds.filter((id) => id !== itemId),
         }),
       ),
+    toggleEquippedItem: (itemId) =>
+      set((state) => {
+        const isCarried = deriveCarriedEquipment({
+          state,
+          characterClass: getClassForState(state),
+        }).some((entry) => entry.item.id === itemId);
+        if (!isCarried) {
+          return patchCharacterState(state, { equippedItemIds: state.equippedItemIds });
+        }
+        const equipped = new Set(state.equippedItemIds);
+        if (equipped.has(itemId)) {
+          equipped.delete(itemId);
+        } else {
+          equipped.add(itemId);
+        }
+        return patchCharacterState(state, { equippedItemIds: [...equipped] });
+      }),
     setEquipmentSourceMode: (source, mode) =>
       set((state) =>
         patchCharacterState(state, {
@@ -633,6 +656,7 @@ function extractFlatState(state: FlatCharacterBuilderState): FlatCharacterBuilde
     selectedSubclassId: state.selectedSubclassId,
     selectedBackgroundId: state.selectedBackgroundId,
     inventory: state.inventory.map((entry) => ({ ...entry })),
+    equippedItemIds: [...state.equippedItemIds],
     equipmentChoicesBySource: { ...state.equipmentChoicesBySource },
     maxUnlockedStepIndex: state.maxUnlockedStepIndex,
     pendingChoiceIds: [...state.pendingChoiceIds],

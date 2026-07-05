@@ -10,7 +10,7 @@ import type {
 } from "@/types/dnd";
 import type { CharacterSpellcastingChoices } from "@/types/spells";
 
-export const CHARACTER_BUILD_SCHEMA_VERSION = 9;
+export const CHARACTER_BUILD_SCHEMA_VERSION = 10;
 
 export interface CoinPouch {
   pc: number;
@@ -59,6 +59,7 @@ export interface CharacterBuildDraft {
   maxUnlockedStepIndex: number;
   pendingChoiceIds: string[];
   inventory: InventoryEntry[];
+  equippedItemIds: string[];
   equipmentChoicesBySource: EquipmentChoicesBySource;
   description: CharacterDescription;
 }

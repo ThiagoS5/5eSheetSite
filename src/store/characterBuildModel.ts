@@ -1,4 +1,8 @@
 import { builderStepNavigation } from "@/src/components/templates/builderStepNavigation";
+import {
+  getBuilderBackgrounds,
+  getBuilderClasses,
+} from "@/src/services/ruleService";
 import { selectCharacterSheetSummary } from "@/src/store/characterSelectors";
 import type {
   FlatCharacterBuilderState,
@@ -177,6 +181,7 @@ export function flattenCharacterBuild(
     selectedSubclassId: build.choices?.selectedSubclassId,
     selectedBackgroundId: build.choices?.selectedBackgroundId,
     inventory: build.draft?.inventory ?? legacyInventory(build.draft),
+    equippedItemIds: build.draft?.equippedItemIds,
     equipmentChoicesBySource:
       build.draft?.equipmentChoicesBySource ?? legacyEquipmentChoices(build.draft),
     maxUnlockedStepIndex: build.draft?.maxUnlockedStepIndex,
@@ -250,6 +255,7 @@ export function getDefaultFlatState(): FlatCharacterBuilderState {
     selectedSubclassId: "",
     selectedBackgroundId: "",
     inventory: [],
+    equippedItemIds: [],
     equipmentChoicesBySource: {},
     maxUnlockedStepIndex: 0,
     pendingChoiceIds: [],
@@ -351,6 +357,7 @@ function createBuildFromFlatState(
       maxUnlockedStepIndex: normalizedState.maxUnlockedStepIndex,
       pendingChoiceIds: normalizedState.pendingChoiceIds,
       inventory: normalizedState.inventory,
+      equippedItemIds: normalizedState.equippedItemIds,
       equipmentChoicesBySource: normalizedState.equipmentChoicesBySource,
       description: normalizedState.description,
     },
@@ -407,6 +414,7 @@ function normalizeFlatState(
   state: Partial<FlatCharacterBuilderState>,
 ): FlatCharacterBuilderState {
   const defaults = getDefaultFlatState();
+  const inventory = normalizeInventory(state.inventory ?? defaults.inventory);
 
   return {
     ruleset: state.ruleset ?? defaults.ruleset,
@@ -416,7 +424,17 @@ function normalizeFlatState(
     selectedSubclassId: state.selectedSubclassId ?? defaults.selectedSubclassId,
     selectedBackgroundId:
       state.selectedBackgroundId ?? defaults.selectedBackgroundId,
-    inventory: state.inventory ?? defaults.inventory,
+    inventory,
+    equippedItemIds: normalizeEquippedItemIds(
+      state.equippedItemIds ?? defaults.equippedItemIds,
+      {
+        inventory,
+        selectedClassId: state.selectedClassId ?? defaults.selectedClassId,
+        selectedBackgroundId: state.selectedBackgroundId ?? defaults.selectedBackgroundId,
+        equipmentChoicesBySource:
+          state.equipmentChoicesBySource ?? defaults.equipmentChoicesBySource,
+      },
+    ),
     equipmentChoicesBySource:
       state.equipmentChoicesBySource ?? defaults.equipmentChoicesBySource,
     maxUnlockedStepIndex:
@@ -466,6 +484,64 @@ function normalizeSpellcastingChoices(
     knownSpellIds: [...(choices.knownSpellIds ?? [])],
     preparedSpellIds: [...(choices.preparedSpellIds ?? [])],
   };
+}
+
+function normalizeInventory(inventory: InventoryEntry[]): InventoryEntry[] {
+  return inventory
+    .filter((entry) => entry.itemId && entry.quantity > 0)
+    .map((entry) => ({
+      itemId: entry.itemId,
+      quantity: Math.max(1, Math.floor(entry.quantity)),
+    }));
+}
+
+function normalizeEquippedItemIds(
+  equippedItemIds: string[],
+  state: Pick<
+    FlatCharacterBuilderState,
+    | "inventory"
+    | "selectedClassId"
+    | "selectedBackgroundId"
+    | "equipmentChoicesBySource"
+  >,
+): string[] {
+  const carriedIds = collectCarriedItemIds(state);
+  return [...new Set(equippedItemIds)].filter((itemId) => carriedIds.has(itemId));
+}
+
+function collectCarriedItemIds(
+  state: Pick<
+    FlatCharacterBuilderState,
+    | "inventory"
+    | "selectedClassId"
+    | "selectedBackgroundId"
+    | "equipmentChoicesBySource"
+  >,
+): Set<string> {
+  const carriedIds = new Set(state.inventory.map((entry) => entry.itemId));
+  const classChoice = state.equipmentChoicesBySource.class;
+  if (classChoice?.mode === "items" && classChoice.selectedOptionId) {
+    const classKit = getBuilderClasses()
+      .find((entry) => entry.id === state.selectedClassId)
+      ?.startingEquipmentPackages.find(
+        (entry) => entry.id === classChoice.selectedOptionId,
+      );
+    for (const item of classKit?.items ?? []) {
+      carriedIds.add(item.id);
+    }
+  }
+
+  const backgroundChoice = state.equipmentChoicesBySource.background;
+  if (backgroundChoice?.mode === "items" && backgroundChoice.selectedOptionId) {
+    const background = getBuilderBackgrounds().find(
+      (entry) => entry.id === state.selectedBackgroundId,
+    );
+    for (const item of background?.equipmentItemsA ?? []) {
+      carriedIds.add(item.id);
+    }
+  }
+
+  return carriedIds;
 }
 
 function normalizeLegacyPlayState(

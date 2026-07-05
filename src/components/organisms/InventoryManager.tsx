@@ -9,6 +9,7 @@ import {
 } from "@/src/components/ui/accordion";
 import { Button } from "@/src/components/ui/button";
 import { Input } from "@/src/components/ui/input";
+import { Skeleton } from "@/src/components/ui/skeleton";
 import {
   DEFAULT_CATALOG_FILTERS,
   filterCatalog,
@@ -16,7 +17,7 @@ import {
 } from "@/rules/itemCatalogFilters";
 import type { CatalogItem, ItemCategory } from "@/types/builder";
 import type { InventoryEntry } from "@/src/types/characterBuild";
-import { Minus, Plus, Trash2 } from "lucide-react";
+import { Minus, Plus, ShieldCheck, ShieldOff, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/src/lib/utils";
 
@@ -36,22 +37,32 @@ const ALL_CATEGORIES: ItemCategory[] = [
 interface InventoryManagerProps {
   catalog: CatalogItem[];
   inventory: readonly InventoryEntry[];
+  equippedItemIds: readonly string[];
+  isCatalogLoading?: boolean;
   onAddItem: (itemId: string) => void;
   onSetQuantity: (itemId: string, quantity: number) => void;
   onRemoveItem: (itemId: string) => void;
+  onToggleEquipped: (itemId: string) => void;
 }
 
 export function InventoryManager({
   catalog,
   inventory,
+  equippedItemIds,
+  isCatalogLoading = false,
   onAddItem,
   onSetQuantity,
   onRemoveItem,
+  onToggleEquipped,
 }: InventoryManagerProps) {
   const [filters, setFilters] = useState<CatalogFilterCriteria>(DEFAULT_CATALOG_FILTERS);
   const [addingId, setAddingId] = useState<string | null>(null);
 
   const results = useMemo(() => filterCatalog(catalog, filters), [catalog, filters]);
+  const availableSources = useMemo(
+    () => [...new Set(catalog.map((item) => item.source))].sort(),
+    [catalog],
+  );
 
   async function handleAddItem(item: CatalogItem) {
     if (addingId) return; // ignore clicks while an add is in flight
@@ -84,6 +95,18 @@ export function InventoryManager({
     });
   }
 
+  function toggleSource(source: string) {
+    setFilters((prev) => {
+      const has = prev.sources.includes(source);
+      return {
+        ...prev,
+        sources: has
+          ? prev.sources.filter((entry) => entry !== source)
+          : [...prev.sources, source],
+      };
+    });
+  }
+
   const visibleResults = results.slice(0, 100);
 
   return (
@@ -100,6 +123,7 @@ export function InventoryManager({
                 {inventory.map((entry) => {
                   const name =
                     itemMap.get(entry.itemId)?.name ?? entry.itemId;
+                  const isEquipped = equippedItemIds.includes(entry.itemId);
                   return (
                     <li
                       key={entry.itemId}
@@ -107,6 +131,18 @@ export function InventoryManager({
                     >
                       <span translate="no" className="notranslate flex-1 text-sm text-subdued">{name}</span>
                       <div className="flex items-center gap-1">
+                        <Button
+                          variant={isEquipped ? "secondary" : "ghost"}
+                          size="icon"
+                          aria-label={`${isEquipped ? "Unequip" : "Equip"} ${name}`}
+                          onClick={() => onToggleEquipped(entry.itemId)}
+                        >
+                          {isEquipped ? (
+                            <ShieldOff className="h-3 w-3" />
+                          ) : (
+                            <ShieldCheck className="h-3 w-3" />
+                          )}
+                        </Button>
                         <Button
                           variant="ghost"
                           size="icon"
@@ -188,6 +224,30 @@ export function InventoryManager({
               })}
             </div>
 
+            {/* Source badges */}
+            <div className="mb-3 flex flex-wrap gap-1.5" aria-label="Filter by source">
+              {availableSources.map((source) => {
+                const active = filters.sources.includes(source);
+                return (
+                  <button
+                    key={source}
+                    type="button"
+                    aria-label={source}
+                    aria-pressed={active}
+                    onClick={() => toggleSource(source)}
+                    className={cn(
+                      "cursor-pointer rounded-md border px-2.5 py-1 text-xs font-bold uppercase tracking-[0.08em] transition-colors",
+                      active
+                        ? "border-accent bg-accent text-background"
+                        : "border-border bg-surface-base text-muted-foreground hover:border-border/80 hover:bg-surface-raised hover:text-foreground",
+                    )}
+                  >
+                    Source {source}
+                  </button>
+                );
+              })}
+            </div>
+
             {/* Property checkboxes */}
             <div className="mb-3 flex flex-wrap gap-4">
               <label className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-not-allowed">
@@ -240,48 +300,71 @@ export function InventoryManager({
               </label>
             </div>
 
-            {/* Results count */}
-            <p className="mb-2 text-xs text-muted-foreground">
-              {results.length > 100
-                ? `Showing 100 of ${results.length} items`
-                : `${results.length} items`}
-            </p>
-
-            {/* Results list */}
-            <ul className="space-y-1">
-              {visibleResults.map((item) => (
-                <li
-                  key={item.id}
-                  className="flex items-center justify-between gap-2 rounded bg-card px-3 py-2"
-                >
-                  <div className="flex-1 min-w-0">
-                    <span translate="no" className="notranslate block text-sm text-foreground truncate">
-                      {item.name}
-                    </span>
-                    <span translate="no" className="notranslate block text-xs text-muted-foreground">
-                      {item.category} / {item.source}
-                    </span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => handleAddItem(item)}
-                    disabled={addingId === item.id}
-                    className={cn(
-                      "shrink-0 rounded px-2 py-1 text-xs font-bold transition-colors",
-                      addingId === item.id
-                        ? "cursor-progress bg-muted text-muted-foreground opacity-60"
-                        : "cursor-pointer bg-primary text-foreground hover:bg-primary/90",
-                    )}
+            {isCatalogLoading ? (
+              <ul className="space-y-1" aria-label="Loading item catalog">
+                {Array.from({ length: 6 }).map((_, index) => (
+                  <li
+                    key={index}
+                    data-testid="item-catalog-skeleton"
+                    className="rounded bg-card px-3 py-2"
                   >
-                    {addingId === item.id ? (
-                      <i aria-hidden="true" className="fa-solid fa-spinner fa-spin" />
-                    ) : (
-                      "ADD"
-                    )}
-                  </button>
-                </li>
-              ))}
-            </ul>
+                    <Skeleton className="h-4 w-2/3 bg-surface-raised" />
+                    <Skeleton className="mt-2 h-3 w-1/3 bg-surface-raised" />
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <>
+                {/* Results count */}
+                <p className="mb-2 text-xs text-muted-foreground">
+                  {results.length > 100
+                    ? `Showing 100 of ${results.length} items`
+                    : `${results.length} items`}
+                </p>
+
+                {/* Results list */}
+                <ul className="space-y-1">
+                  {visibleResults.map((item) => (
+                    <li
+                      key={item.id}
+                      className="flex items-center justify-between gap-2 rounded bg-card px-3 py-2"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <span translate="no" className="notranslate block truncate text-sm text-foreground">
+                          {item.name}
+                        </span>
+                        <span translate="no" className="notranslate block text-xs text-muted-foreground">
+                          {item.category}
+                        </span>
+                      </div>
+                      <span
+                        translate="no"
+                        className="notranslate shrink-0 rounded border border-border bg-surface-base px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em] text-muted-foreground"
+                      >
+                        {item.source}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handleAddItem(item)}
+                        disabled={addingId === item.id}
+                        className={cn(
+                          "shrink-0 rounded px-2 py-1 text-xs font-bold transition-colors",
+                          addingId === item.id
+                            ? "cursor-progress bg-muted text-muted-foreground opacity-60"
+                            : "cursor-pointer bg-primary text-foreground hover:bg-primary/90",
+                        )}
+                      >
+                        {addingId === item.id ? (
+                          <i aria-hidden="true" className="fa-solid fa-spinner fa-spin" />
+                        ) : (
+                          "ADD"
+                        )}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
           </AccordionContent>
         </AccordionItem>
       </Accordion>

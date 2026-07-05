@@ -92,6 +92,7 @@ describe("character selectors — money, carry, category, skill overrides", () =
   it("populates category on selectedEquipment entries", () => {
     const store = createCharacterStore();
     store.getState().addInventoryItem("chain-mail-xphb");
+    store.getState().toggleEquippedItem("chain-mail-xphb");
 
     const summary = selectCharacterSheetSummary(store.getState());
     const entry = summary.selectedEquipment.find((e) => e.id === "chain-mail-xphb");
