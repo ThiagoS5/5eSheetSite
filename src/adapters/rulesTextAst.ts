@@ -260,7 +260,7 @@ function tagToNodes(tag: string, content: string): RulesTextInlineNode[] {
       {
         type: "internalRef",
         refType: tag as RulesTextRefType,
-        label: getDisplayLabel(content),
+        label: getRefDisplayLabel(content),
         ref: content,
       },
     ];
@@ -273,6 +273,16 @@ function tagToNodes(tag: string, content: string): RulesTextInlineNode[] {
 function getDisplayLabel(rawContent: string): string {
   const [label] = rawContent.split("|");
   return label.trim();
+}
+
+/**
+ * Refs 5eTools usam `nome|fonte|texto de exibição`: o 3º segmento, quando
+ * presente, é o rótulo a mostrar (mesma convenção de getTaggedDisplayText
+ * no fiveEToolsAdapter).
+ */
+function getRefDisplayLabel(rawContent: string): string {
+  const parts = rawContent.split("|").map((part) => part.trim());
+  return parts[2] || parts[0];
 }
 
 function pushText(nodes: RulesTextInlineNode[], text: string): void {

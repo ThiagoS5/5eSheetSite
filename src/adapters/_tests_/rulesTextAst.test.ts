@@ -29,6 +29,33 @@ describe("parseRulesText", () => {
     });
   });
 
+  it("prefers the 5etools display text (3rd pipe segment) for ref labels", () => {
+    const [paragraph] = parseRulesText([
+      "Cast {@spell animate objects|xphb|Animate Objects} or {@item longsword|xphb}.",
+    ]);
+
+    expect(paragraph).toEqual({
+      type: "paragraph",
+      children: [
+        { type: "text", text: "Cast " },
+        {
+          type: "internalRef",
+          refType: "spell",
+          label: "Animate Objects",
+          ref: "animate objects|xphb|Animate Objects",
+        },
+        { type: "text", text: " or " },
+        {
+          type: "internalRef",
+          refType: "item",
+          label: "longsword",
+          ref: "longsword|xphb",
+        },
+        { type: "text", text: "." },
+      ],
+    });
+  });
+
   it("parses dice and damage tags into dice nodes", () => {
     const [paragraph] = parseRulesText(["Take {@damage 8d6} or roll {@dice 1d20+5}."]);
 
