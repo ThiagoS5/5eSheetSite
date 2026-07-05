@@ -48,7 +48,6 @@ import type {
   BuilderClass,
   BuilderClassFeatureChoiceGroup,
   CatalogItem,
-  BuilderFeatureBlock,
   BuilderLanguage,
   BuilderSpecies,
   BuilderStepSlug,
@@ -62,6 +61,9 @@ import {
 import { BackgroundCard } from "@/src/components/molecules/BackgroundCard";
 import { ChoiceCounter } from "@/src/components/molecules/ChoiceCounter";
 import { FeatureTagList } from "@/src/components/molecules/FeatureTagList";
+import { RulesTextView } from "@/src/components/molecules/RulesTextView";
+import { parseRulesText } from "@/src/adapters/rulesTextAst";
+import type { RulesTextNode } from "@/types/rulesText";
 import { StartingLevelStepper } from "@/src/components/molecules/StartingLevelStepper";
 import { StepIntroCard } from "@/src/components/molecules/StepIntroCard";
 import type { ConceptId } from "@/src/data/conceptGlossary";
@@ -2377,7 +2379,7 @@ function SpeciesDetailsMain({ species }: { species: BuilderSpecies }) {
             blocks={
               species.descriptionBlocks.length
                 ? species.descriptionBlocks
-                : [{ type: "paragraph", text: species.description }]
+                : parseRulesText(species.description)
             }
           />
         </section>
@@ -2797,7 +2799,7 @@ function ClassDetailsMain({ classEntry }: { classEntry: BuilderClass }) {
             blocks={
               classEntry.descriptionBlocks.length
                 ? classEntry.descriptionBlocks
-                : [{ type: "paragraph", text: classEntry.description }]
+                : parseRulesText(classEntry.description)
             }
           />
         </section>
@@ -2968,37 +2970,13 @@ function ClassProgressionTable({ classEntry }: { classEntry: BuilderClass }) {
 function FeatureBlocks({ feature }: { feature: BuilderClass["allFeatures"][number] | BuilderSpecies["traits"][number] }) {
   const blocks = feature.blocks?.length
     ? feature.blocks
-    : [{ type: "paragraph" as const, text: feature.description }];
+    : parseRulesText(feature.description);
 
-  return (
-    <ContentBlocks blocks={blocks} keyPrefix={feature.name} />
-  );
+  return <ContentBlocks blocks={blocks} />;
 }
 
-function ContentBlocks({
-  blocks,
-  keyPrefix = "content",
-}: {
-  blocks: BuilderFeatureBlock[];
-  keyPrefix?: string;
-}) {
-  return (
-    <div className="grid gap-3 text-sm leading-6 text-subdued">
-      {blocks.map((block, index) => {
-        if (block.type === "list") {
-          return (
-            <ul key={`${keyPrefix}-${index}`} className="list-disc space-y-2 pl-5">
-              {block.items.map((item) => (
-                <li key={item}>{item}</li>
-              ))}
-            </ul>
-          );
-        }
-
-        return <p key={`${keyPrefix}-${index}`}>{block.text}</p>;
-      })}
-    </div>
-  );
+function ContentBlocks({ blocks }: { blocks: RulesTextNode[] }) {
+  return <RulesTextView nodes={blocks} className="grid gap-1" />;
 }
 
 function ClassSummaryLine({

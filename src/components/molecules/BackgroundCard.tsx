@@ -7,7 +7,10 @@ import {
   HeroChoiceCard,
   type HeroChoiceTheme,
 } from "@/src/components/molecules/HeroChoiceCard";
-import type { BuilderBackground, BuilderFeatureBlock } from "@/types/builder";
+import type { BuilderBackground } from "@/types/builder";
+import type { RulesTextNode } from "@/types/rulesText";
+import { parseRulesText } from "@/src/adapters/rulesTextAst";
+import { RulesTextView } from "@/src/components/molecules/RulesTextView";
 import {
   ATTRIBUTE_LABELS,
   type AttributeBonuses,
@@ -238,7 +241,7 @@ function BackgroundDetailsModal({
                     blocks={
                       background.descriptionBlocks.length
                         ? background.descriptionBlocks
-                        : [{ type: "paragraph", text: background.description }]
+                        : parseRulesText(background.description)
                     }
                   />
                 </section>
@@ -547,27 +550,8 @@ function RewardList({ title, items }: { title: string; items: string[] }) {
   );
 }
 
-function BackgroundContentBlocks({ blocks }: { blocks: BuilderFeatureBlock[] }) {
-  return (
-    <div className="grid gap-3 text-sm leading-6 text-foreground">
-      {blocks.map((block, index) => {
-        if (block.type === "list") {
-          return (
-            <ul
-              key={index}
-              className="list-disc space-y-2 pl-5 marker:text-primary"
-            >
-              {block.items.map((item) => (
-                <li key={item}>{item}</li>
-              ))}
-            </ul>
-          );
-        }
-
-        return <p key={index}>{block.text}</p>;
-      })}
-    </div>
-  );
+function BackgroundContentBlocks({ blocks }: { blocks: RulesTextNode[] }) {
+  return <RulesTextView nodes={blocks} className="grid gap-1" />;
 }
 
 function isBackgroundAbilitySelectionComplete(

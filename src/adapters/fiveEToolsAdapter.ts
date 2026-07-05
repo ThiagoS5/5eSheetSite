@@ -9,7 +9,6 @@ import type {
   BuilderEquipmentPackage,
   BuilderEquipmentPackageItem,
   BuilderFeature,
-  BuilderFeatureBlock,
   BuilderLanguage,
   BuilderSpecies,
   BuilderSubclass,
@@ -20,6 +19,8 @@ import {
   type AttributeKey,
 } from "@/types/dnd";
 import { applyClassCardFraming } from "@/src/data/classCardArt";
+import { astToPlainText, parseRulesText } from "@/src/adapters/rulesTextAst";
+import type { RulesTextNode } from "@/types/rulesText";
 import type {
   Raw5eBackground,
   Raw5eClass,
@@ -307,7 +308,7 @@ function normalizeEntriesToFeatures(entries: unknown[] | undefined): BuilderFeat
       {
         name: entry.name,
         description: stringifyEntries(entry.entries) || "Trait details.",
-        blocks: entriesToBlocks(entry.entries),
+        blocks: parseRulesText(entry.entries),
       },
     ];
   });
@@ -557,7 +558,7 @@ function normalizeClassFeature(
     level: Number.isFinite(featureLevel) ? featureLevel : undefined,
     description:
       stringifyEntries(matchedFeature?.entries) || "Class feature details.",
-    blocks: entriesToBlocks(matchedFeature?.entries),
+    blocks: parseRulesText(matchedFeature?.entries),
     grantsSubclass:
       typeof feature === "object" && feature.gainSubclassFeature === true,
   };
@@ -581,7 +582,7 @@ function normalizeSubclassFeature(
     name,
     level: Number.isFinite(featureLevel) ? featureLevel : undefined,
     description: stringifyEntries(matched?.entries) || "Subclass feature details.",
-    blocks: entriesToBlocks(matched?.entries),
+    blocks: parseRulesText(matched?.entries),
   };
 }
 
@@ -773,66 +774,20 @@ export function stringifyEntries(entries: unknown[] | undefined): string {
 function normalizeLoreBlocks(
   lore: RawPlayerLoreEntry | undefined,
   fallback: string,
-): BuilderFeatureBlock[] {
-  const blocks = entriesToBlocks(lore?.entries);
+): RulesTextNode[] {
+  const blocks = parseRulesText(lore?.entries);
 
   if (blocks.length) {
     return blocks;
   }
 
-  return fallback ? [{ type: "paragraph", text: fallback }] : [];
+  return fallback
+    ? [{ type: "paragraph", children: [{ type: "text", text: fallback }] }]
+    : [];
 }
 
-function blocksToText(blocks: BuilderFeatureBlock[] | undefined): string {
-  return (blocks ?? [])
-    .flatMap((block) => (block.type === "list" ? block.items : [block.text]))
-    .join(" ")
-    .trim();
-}
-
-function entriesToBlocks(
-  entries: unknown[] | undefined,
-): NonNullable<BuilderFeature["blocks"]> {
-  return (entries ?? []).flatMap((entry) => entryToBlocks(entry));
-}
-
-function entryToBlocks(entry: unknown): NonNullable<BuilderFeature["blocks"]> {
-  if (typeof entry === "string") {
-    const text = formatTaggedTextAsPlain(entry);
-    return text ? [{ type: "paragraph", text }] : [];
-  }
-
-  if (isListEntry(entry)) {
-    const items = (entry.items ?? [])
-      .map(stringifyEntry)
-      .map(formatTaggedTextAsPlain)
-      .filter(Boolean);
-
-    return items.length ? [{ type: "list", items }] : [];
-  }
-
-  // Structural wrappers ("section"/"chapter") carry the title as `name` (e.g. the
-  // class name). They are containers, not inline callouts, so recurse into their
-  // entries instead of prefixing the text with the title.
-  if (isStructuralEntry(entry)) {
-    return entriesToBlocks(entry.entries);
-  }
-
-  if (isNamedEntry(entry)) {
-    const text = stringifyEntries(entry.entries);
-    return text ? [{ type: "paragraph", text: `${entry.name}: ${text}` }] : [];
-  }
-
-  if (isEntryWithEntries(entry)) {
-    return entriesToBlocks(entry.entries);
-  }
-
-  if (isEntryWithEntry(entry)) {
-    const text = formatTaggedTextAsPlain(entry.entry);
-    return text ? [{ type: "paragraph", text }] : [];
-  }
-
-  return [];
+function blocksToText(blocks: RulesTextNode[] | undefined): string {
+  return astToPlainText(blocks ?? []);
 }
 
 function stringifyEntry(entry: unknown): string {
