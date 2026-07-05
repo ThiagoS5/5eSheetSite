@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { parseTaggedText } from "@/src/utils/textParser";
+import { RulesInlineText } from "@/src/components/molecules/RulesTextView";
 import { cn } from "@/src/lib/utils";
 import type { BuilderFeature } from "@/types/builder";
 
@@ -64,7 +64,7 @@ function FeatureRow({ feature }: { feature: BuilderFeature }) {
       </button>
       {isOpen && (
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-          {parseTaggedText(feature.description)}
+          <RulesInlineText text={feature.description} />
         </p>
       )}
     </li>
