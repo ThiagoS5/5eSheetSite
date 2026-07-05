@@ -6,6 +6,7 @@ import type {
 } from "@/types/dnd";
 import type { CoinPouch } from "@/src/types/characterBuild";
 import type { RulesTextNode } from "@/types/rulesText";
+import type { CharacterSpellcastingSummary } from "@/types/spells";
 
 export type BuilderStepSlug =
   | "classe"
@@ -55,6 +56,15 @@ export interface BuilderClassProgressionRow {
   proficiencyBonus: string;
   features: string[];
   spellSlots: string[];
+}
+
+export interface BuilderSpellcastingProgression {
+  casterProgression?: string;
+  cantripsKnown: number[];
+  knownSpells: number[];
+  preparedSpells: number[];
+  pactMagicSlots?: number[];
+  pactMagicSlotLevels?: number[];
 }
 
 export interface BuilderChoiceOption {
@@ -154,6 +164,7 @@ export interface BuilderClass {
   weaponProficiencies: string[];
   toolProficiencies: string[];
   spellcastingAbility?: string;
+  spellcastingProgression?: BuilderSpellcastingProgression;
   image?: BuilderClassImage;
   progressionRows: BuilderClassProgressionRow[];
   skillChoices: {
@@ -389,6 +400,7 @@ export interface CharacterSheetSummary {
   xpThreshold: number;
   progressionMode?: "xp" | "milestone";
   isSpellcaster: boolean;
+  spellcasting?: CharacterSpellcastingSummary;
   attributes: SheetAttribute[];
   skills: SheetSkill[];
   savingThrows: SheetSavingThrow[];

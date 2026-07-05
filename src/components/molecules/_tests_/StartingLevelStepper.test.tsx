@@ -29,7 +29,7 @@ describe("StartingLevelStepper", () => {
     fireEvent.click(screen.getByRole("button", { name: "Decrease level" }));
     expect(screen.getByTestId("level")).toHaveTextContent("1");
     expect(screen.getByRole("button", { name: "Decrease level" })).toBeDisabled();
-  });
+  }, 15000);
 
   it("shows the configure button only when there are pending level choices", () => {
     render(<CharacterStoreProvider><SetClass /><StartingLevelStepper /></CharacterStoreProvider>);

@@ -2,6 +2,7 @@ import { createStore } from "zustand/vanilla";
 import { createJSONStorage, persist } from "zustand/middleware";
 import type { StateCreator } from "zustand/vanilla";
 import { saveCharacter } from "@/src/services/characterService";
+import { getBuilderClasses } from "@/src/services/ruleService";
 import {
   createCharacterBuildFromLegacyState,
   createEmptyCharacterBuild,
@@ -9,7 +10,22 @@ import {
   getDefaultFlatState,
   normalizeCharacterBuild,
 } from "@/src/store/characterBuildModel";
-import { deriveStartingGoldPo } from "@/src/store/characterSelectors";
+import {
+  deriveStartingGoldPo,
+  selectCharacterSheetSummary,
+} from "@/src/store/characterSelectors";
+import {
+  applyDamageToPlayState,
+  applyHealingToPlayState,
+  applyLongRestToPlayState,
+  applyShortRestToPlayState,
+  createDefaultPlayState,
+  setTemporaryHitPointsInPlayState,
+  spendSpellSlotInPlayState,
+  toggleConditionInPlayState,
+} from "@/rules/restRules";
+import { getSpellSlots } from "@/rules/spellcastingRules";
+import { getAbilityModifier } from "@/src/adapters/characterDerivedAdapter";
 import type {
   AttributeGenerationMethod,
   CharacterBuilderState,
@@ -40,10 +56,12 @@ export function createCharacterStore(
   const storeCreator: StateCreator<CharacterBuilderStore> = (set, get) => ({
     ...normalizedInitialState,
     setLevel: (level) =>
-      set((state) => patchCharacterState(state, { level })),
+      set((state) => resetPlayStateToMaxHp(patchCharacterState(state, { level }))),
     levelUp: () =>
       set((state) =>
-        patchCharacterState(state, { level: Math.min(20, state.level + 1) }),
+        resetPlayStateToMaxHp(
+          patchCharacterState(state, { level: Math.min(20, state.level + 1) }),
+        ),
       ),
     selectSpecies: (selectedSpeciesId) =>
       set((state) =>
@@ -59,7 +77,8 @@ export function createCharacterStore(
       ),
     selectClass: (selectedClassId) =>
       set((state) =>
-        patchCharacterState(state, {
+        resetPlayStateToMaxHp(
+          patchCharacterState(state, {
           selectedClassId,
           classSkillProficiencies:
             state.selectedClassId === selectedClassId
@@ -77,7 +96,10 @@ export function createCharacterStore(
             state.selectedClassId === selectedClassId
               ? state.equipmentChoicesBySource
               : omitEquipmentSource(state.equipmentChoicesBySource, "class"),
-        }),
+          spellcasting:
+            state.selectedClassId === selectedClassId ? state.spellcasting : undefined,
+          }),
+        ),
       ),
     selectSubclass: (selectedSubclassId) =>
       set((state) => patchCharacterState(state, { selectedSubclassId })),
@@ -101,6 +123,146 @@ export function createCharacterStore(
         }
         return patchCharacterState(state, { hpRollByLevel: next });
       }),
+    setSpellcastingChoices: (spellcasting) =>
+      set((state) => patchCharacterState(state, { spellcasting })),
+    applyDamage: (amount) =>
+      set((state) => {
+        const summary = selectCharacterSheetSummary(state);
+        return patchCharacterState(state, {
+          playState: applyDamageToPlayState(getPlayState(state), {
+            amount,
+            maxHp: summary.maxHp,
+          }),
+        });
+      }),
+    heal: (amount) =>
+      set((state) => {
+        const summary = selectCharacterSheetSummary(state);
+        return patchCharacterState(state, {
+          playState: applyHealingToPlayState(getPlayState(state), {
+            amount,
+            maxHp: summary.maxHp,
+          }),
+        });
+      }),
+    setTempHp: (amount) =>
+      set((state) => {
+        const summary = selectCharacterSheetSummary(state);
+        return patchCharacterState(state, {
+          playState: setTemporaryHitPointsInPlayState(getPlayState(state), {
+            amount,
+            maxHp: summary.maxHp,
+          }),
+        });
+      }),
+    spendSlot: (slotLevel) =>
+      set((state) => {
+        const availableSlots = Object.fromEntries(
+          getSpellSlots(
+            getClassForState(state),
+            state.level,
+            {},
+          ).map((slot) => [slot.level, slot.total]),
+        );
+        return patchCharacterState(state, {
+          playState: spendSpellSlotInPlayState(getPlayState(state), {
+            slotLevel,
+            availableSlots,
+          }),
+        });
+      }),
+    useResource: (resourceId, maxUses, recovery = "longRest") =>
+      set((state) => {
+        const playState = getPlayState(state);
+        const current = playState.resourceUses[resourceId] ?? 0;
+        return patchCharacterState(state, {
+          playState: {
+            ...playState,
+            resourceUses: {
+              ...playState.resourceUses,
+              [resourceId]: Math.min(Math.max(0, maxUses), current + 1),
+            },
+            resourceRecoveries: {
+              ...playState.resourceRecoveries,
+              [resourceId]: recovery,
+            },
+          },
+        });
+      }),
+    setResourceUseCount: (resourceId, used, maxUses, recovery = "longRest") =>
+      set((state) => {
+        const playState = getPlayState(state);
+        const nextUses = { ...playState.resourceUses };
+        const nextUsed = Math.min(Math.max(0, maxUses), Math.max(0, used));
+        if (nextUsed === 0) delete nextUses[resourceId];
+        else nextUses[resourceId] = nextUsed;
+
+        return patchCharacterState(state, {
+          playState: {
+            ...playState,
+            resourceUses: nextUses,
+            resourceRecoveries: {
+              ...playState.resourceRecoveries,
+              [resourceId]: recovery,
+            },
+          },
+        });
+      }),
+    shortRest: (options) =>
+      set((state) => {
+        const summary = selectCharacterSheetSummary(state);
+        return patchCharacterState(state, {
+          playState: applyShortRestToPlayState(getPlayState(state), {
+            maxHp: summary.maxHp,
+            hitDieValue: getClassForState(state)?.hitDie ?? 6,
+            constitutionModifier: getAbilityModifier(summary.finalAttributes.constituicao),
+            hitDiceToSpend: options?.hitDiceToSpend ?? 0,
+            totalHitDice: state.level,
+            recoverSpellSlots:
+              getClassForState(state)?.spellcastingProgression?.casterProgression === "pact",
+          }),
+        });
+      }),
+    longRest: () =>
+      set((state) => {
+        const summary = selectCharacterSheetSummary(state);
+        return patchCharacterState(state, {
+          playState: applyLongRestToPlayState(getPlayState(state), {
+            maxHp: summary.maxHp,
+          }),
+        });
+      }),
+    toggleInspiration: () =>
+      set((state) =>
+        patchCharacterState(state, {
+          playState: {
+            ...getPlayState(state),
+            inspiration: !getPlayState(state).inspiration,
+          },
+        }),
+      ),
+    setOverride: (kind, value) =>
+      set((state) => {
+        const playState = getPlayState(state);
+        const overrides = { ...playState.overrides };
+        if (value === null) delete overrides[kind];
+        else overrides[kind] = value;
+        return patchCharacterState(state, {
+          playState: { ...playState, overrides },
+        });
+      }),
+    setDeathSaves: (deathSaves) =>
+      set((state) =>
+        patchCharacterState(state, {
+          playState: { ...getPlayState(state), deathSaves },
+        }),
+      ),
+    toggleCondition: (condition) =>
+      set((state) =>
+        patchCharacterState(state, {
+          playState: toggleConditionInPlayState(getPlayState(state), condition),
+        }),
+      ),
     setCreationPreferences: (prefs: CreationPreferences) =>
       set((state) => patchCharacterState(state, { creationPreferences: prefs })),
     setBeginnerMode: (enabled: boolean) =>
@@ -489,11 +651,44 @@ function extractFlatState(state: FlatCharacterBuilderState): FlatCharacterBuilde
     carriedLoadKg: state.carriedLoadKg,
     skillModifierOverrides: { ...state.skillModifierOverrides },
     hpRollByLevel: { ...state.hpRollByLevel },
+    spellcasting: state.spellcasting
+      ? {
+          cantripIds: [...state.spellcasting.cantripIds],
+          knownSpellIds: [...state.spellcasting.knownSpellIds],
+          preparedSpellIds: [...state.spellcasting.preparedSpellIds],
+        }
+      : undefined,
+    playState: {
+      ...getPlayState(state),
+      usedSpellSlots: { ...getPlayState(state).usedSpellSlots },
+      resourceUses: { ...getPlayState(state).resourceUses },
+      resourceRecoveries: { ...getPlayState(state).resourceRecoveries },
+      deathSaves: { ...getPlayState(state).deathSaves },
+      conditions: [...getPlayState(state).conditions],
+      overrides: { ...getPlayState(state).overrides },
+    },
     creationPreferences: state.creationPreferences
       ? { ...state.creationPreferences }
       : undefined,
     beginnerMode: state.beginnerMode ?? false,
   };
+}
+
+function resetPlayStateToMaxHp(
+  state: CharacterBuilderState & { characterBuild: CharacterBuild },
+): CharacterBuilderState & { characterBuild: CharacterBuild } {
+  const summary = selectCharacterSheetSummary(state);
+  return patchCharacterState(state as CharacterBuilderStore, {
+    playState: createDefaultPlayState(summary.maxHp),
+  });
+}
+
+function getClassForState(state: Pick<FlatCharacterBuilderState, "selectedClassId">) {
+  return getBuilderClasses().find((entry) => entry.id === state.selectedClassId);
+}
+
+function getPlayState(state: Pick<FlatCharacterBuilderState, "playState">) {
+  return state.playState ?? createDefaultPlayState(0);
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

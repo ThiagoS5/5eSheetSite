@@ -118,7 +118,7 @@ describe("createCharacterStore persistence", () => {
           },
         },
         exportMetadata: {
-          schemaVersion: 8,
+          schemaVersion: 9,
           saveId: expect.any(String),
         },
       },
@@ -171,7 +171,7 @@ describe("createCharacterStore persistence", () => {
     const store = createCharacterStore();
     const build = store.getState().characterBuild;
 
-    expect(build.exportMetadata.schemaVersion).toBe(8);
+    expect(build.exportMetadata.schemaVersion).toBe(9);
     expect(build.choices.selectedSubclassId).toBe("");
     expect(build.progression.levelChoices["1"].classFeatureChoices).toEqual({
       "weapon-mastery": ["Longsword"],
@@ -228,7 +228,7 @@ describe("createCharacterStore persistence", () => {
 
     const store = createCharacterStore();
 
-    expect(store.getState().characterBuild.exportMetadata.schemaVersion).toBe(8);
+    expect(store.getState().characterBuild.exportMetadata.schemaVersion).toBe(9);
     expect(store.getState().beginnerMode).toBe(false);
     expect(store.getState().characterBuild.choices.beginnerMode).toBe(false);
   });
@@ -291,12 +291,78 @@ describe("createCharacterStore persistence", () => {
 
     const store = createCharacterStore();
 
-    expect(store.getState().characterBuild.exportMetadata.schemaVersion).toBe(8);
+    expect(store.getState().characterBuild.exportMetadata.schemaVersion).toBe(9);
     expect(store.getState().asiOrFeatByLevel["4"]).toEqual({
       mode: "feat",
       featId: "grappler-xphb",
       asi: { forca: 1 },
     });
+  });
+
+  it("migrates a v8 save to v9 with a separate playState block", () => {
+    const v8Build = {
+      draft: {
+        currentStepSlug: "recursos-classe",
+        maxUnlockedStepIndex: 1,
+        pendingChoiceIds: [],
+        inventory: [],
+        equipmentChoicesBySource: {},
+        description: {},
+      },
+      progression: { level: 5, levelChoices: {} },
+      choices: {
+        ruleset: "2024",
+        selectedSpeciesId: "",
+        selectedClassId: "wizard-xphb",
+        selectedSubclassId: "",
+        selectedBackgroundId: "",
+        classSkillProficiencies: [],
+        skillTraining: {},
+        classFeatureChoices: {},
+        speciesChoices: {},
+        speciesLanguages: [],
+        attributeGenerationMethod: "standard-array",
+        baseAttributes: {
+          forca: 8,
+          destreza: 8,
+          constituicao: 8,
+          inteligencia: 16,
+          sabedoria: 8,
+          carisma: 8,
+        },
+        backgroundAbilityBonuses: {},
+        money: { pc: 0, pp: 0, pe: 0, po: 0, pl: 0 },
+        moneyTouched: false,
+        carriedLoadKg: 0,
+        skillModifierOverrides: {},
+        spellcasting: {
+          cantripIds: ["acid-splash-xphb"],
+          knownSpellIds: [],
+          preparedSpellIds: ["fireball-xphb"],
+        },
+        beginnerMode: false,
+      },
+      derivedSheet: {},
+      exportMetadata: { schemaVersion: 8, saveId: "legacy-v8", createdAt: "x", updatedAt: "x" },
+    };
+
+    sessionStorage.setItem(
+      "ficha-5e-builder",
+      JSON.stringify({ state: { characterBuild: v8Build }, version: 8 }),
+    );
+
+    const store = createCharacterStore();
+
+    expect(store.getState().characterBuild.exportMetadata.schemaVersion).toBe(9);
+    expect(store.getState().spellcasting?.preparedSpellIds).toEqual(["fireball-xphb"]);
+    const migrated = store.getState().characterBuild;
+    expect(migrated.playState).toMatchObject({
+      currentHp: migrated.derivedSheet.maxHp,
+      tempHp: 0,
+      usedSpellSlots: {},
+      inspiration: false,
+    });
+    expect(migrated.playState.currentHp).toBeGreaterThan(0);
   });
 
   it("commits the active build into the local repository when advancing", async () => {

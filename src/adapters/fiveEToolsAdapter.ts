@@ -174,6 +174,7 @@ export function normalizeClass(
       formatTaggedTextAsPlain,
     ),
     spellcastingAbility,
+    spellcastingProgression: normalizeSpellcastingProgression(rawClass),
     image: applyClassCardFraming(
       toSlug(rawClass.name, rawClass.source),
       lore?.image ?? normalizeClassImage(rawClass, classFluff),
@@ -687,6 +688,42 @@ function normalizeClassProgressionRows(
         .map((feature) => feature.name),
       spellSlots: (spellSlots?.[index] ?? []).map((slot) => String(slot)),
     };
+  });
+}
+
+function normalizeSpellcastingProgression(
+  rawClass: Raw5eClass,
+): BuilderClass["spellcastingProgression"] {
+  if (!rawClass.spellcastingAbility) return undefined;
+
+  const classTable = rawClass.classTableGroups?.find((group) =>
+    (group.colLabels ?? []).some((label) => /cantrips|prepared spells|spells known/i.test(label)),
+  );
+  const cantripIndex = classTable?.colLabels?.findIndex((label) => /cantrips/i.test(label)) ?? -1;
+  const preparedIndex = classTable?.colLabels?.findIndex((label) => /prepared spells/i.test(label)) ?? -1;
+  const knownIndex = classTable?.colLabels?.findIndex((label) => /spells known/i.test(label)) ?? -1;
+  const pactSlotsIndex = classTable?.colLabels?.findIndex((label) => /^Spell Slots$/i.test(label)) ?? -1;
+  const pactSlotLevelIndex = classTable?.colLabels?.findIndex((label) => /slot level/i.test(label)) ?? -1;
+
+  return {
+    casterProgression: rawClass.casterProgression,
+    cantripsKnown:
+      rawClass.cantripProgression ?? extractNumericColumn(classTable?.rows, cantripIndex),
+    knownSpells:
+      rawClass.spellsKnownProgression ??
+      rawClass.spellsKnownProgressionFixed ??
+      extractNumericColumn(classTable?.rows, knownIndex),
+    preparedSpells: extractNumericColumn(classTable?.rows, preparedIndex),
+    pactMagicSlots: extractNumericColumn(classTable?.rows, pactSlotsIndex),
+    pactMagicSlotLevels: extractNumericColumn(classTable?.rows, pactSlotLevelIndex),
+  };
+}
+
+function extractNumericColumn(rows: unknown[][] | undefined, index: number): number[] {
+  if (!rows || index < 0) return [];
+  return rows.map((row) => {
+    const value = row[index];
+    return typeof value === "number" ? value : Number(value) || 0;
   });
 }
 

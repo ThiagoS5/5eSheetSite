@@ -53,6 +53,7 @@ import type {
   BuilderStepSlug,
 } from "@/types/builder";
 import type { AttributeBonuses, AttributeKey } from "@/types/dnd";
+import type { CharacterSpellcastingChoices } from "@/types/spells";
 import { ActionBtn } from "@/src/components/atoms/ActionBtn";
 import {
   FontAwesomeIcon,
@@ -66,6 +67,8 @@ import { parseRulesText } from "@/src/adapters/rulesTextAst";
 import type { RulesTextNode } from "@/types/rulesText";
 import { StartingLevelStepper } from "@/src/components/molecules/StartingLevelStepper";
 import { StepIntroCard } from "@/src/components/molecules/StepIntroCard";
+import { SpellCatalogPicker } from "@/src/components/organisms/spells/SpellCatalogPicker";
+import { getHighestSpellLevelAvailable } from "@/rules/spellcastingRules";
 import type { ConceptId } from "@/src/data/conceptGlossary";
 import {
   CLASS_DIFFICULTY_LABELS,
@@ -298,12 +301,16 @@ export function BuilderStepPanel({
       {step === "recursos-classe" ? (
         <ClassFeaturesStep
           selectedClass={selectedClass}
+          characterLevel={characterState.level}
           selectedSkills={characterState.classSkillProficiencies}
           selectedFeatureChoices={characterState.classFeatureChoices}
+          spellcastingChoices={characterState.spellcasting}
+          activeSources={characterState.creationPreferences?.activeSources ?? ["XPHB"]}
           disabled={!canUseCurrentStep}
           onSelectedSkillsChange={actions.setClassSkillProficiencies}
           onSkillTrainingChange={actions.setSkillTraining}
           onClassFeatureChoiceChange={actions.setClassFeatureChoice}
+          onSpellcastingChoicesChange={actions.setSpellcastingChoices}
         />
       ) : null}
 
@@ -1650,20 +1657,28 @@ const classToneByName = {
 
 function ClassFeaturesStep({
   selectedClass,
+  characterLevel,
   selectedSkills,
   selectedFeatureChoices,
+  spellcastingChoices,
+  activeSources,
   disabled,
   onSelectedSkillsChange,
   onSkillTrainingChange,
   onClassFeatureChoiceChange,
+  onSpellcastingChoicesChange,
 }: {
   selectedClass?: BuilderClass;
+  characterLevel: number;
   selectedSkills: string[];
   selectedFeatureChoices: Record<string, string[]>;
+  spellcastingChoices?: CharacterSpellcastingChoices;
+  activeSources: string[];
   disabled: boolean;
   onSelectedSkillsChange: (skills: string[]) => void;
   onSkillTrainingChange: (skill: string, level: SkillTrainingLevel) => void;
   onClassFeatureChoiceChange: (choiceId: string, values: string[]) => void;
+  onSpellcastingChoicesChange: (choices: CharacterSpellcastingChoices) => void;
 }) {
   if (!selectedClass) {
     return (
@@ -1674,6 +1689,16 @@ function ClassFeaturesStep({
   }
 
   const maxSkills = selectedClass.skillChoices.count;
+  const levelIndex = Math.max(0, Math.min(19, characterLevel - 1));
+  const cantripLimit =
+    selectedClass.spellcastingProgression?.cantripsKnown[levelIndex] ?? 0;
+  const preparedLimit =
+    selectedClass.spellcastingProgression?.preparedSpells[levelIndex] ?? 0;
+  const knownLimit =
+    selectedClass.spellcastingProgression?.knownSpells[levelIndex] ?? 0;
+  const spellMode = preparedLimit > 0 ? "prepared" : "known";
+  const spellLimit = spellMode === "prepared" ? preparedLimit : knownLimit;
+  const maxSpellLevel = getHighestSpellLevelAvailable(selectedClass, characterLevel);
 
   function toggleSkill(skill: string) {
     if (selectedSkills.includes(skill)) {
@@ -1763,6 +1788,19 @@ function ClassFeaturesStep({
           onChange={(values) => onClassFeatureChoiceChange(group.id, values)}
         />
       ))}
+      {selectedClass.spellcastingAbility ? (
+        <SpellCatalogPicker
+          className={selectedClass.name}
+          activeSources={activeSources}
+          value={spellcastingChoices}
+          cantripLimit={cantripLimit}
+          spellLimit={spellLimit}
+          spellMode={spellMode}
+          maxSpellLevel={maxSpellLevel}
+          disabled={disabled}
+          onChange={onSpellcastingChoicesChange}
+        />
+      ) : null}
       <section className="rounded-lg border border-white/[0.06] bg-card p-4">
         <h3 className="text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">
           Starting Level 1 Features:
@@ -3140,6 +3178,8 @@ function useCharacterBuilderState(): CharacterBuilderState {
     (state) => state.skillModifierOverrides,
   );
   const hpRollByLevel = useCharacterStore((state) => state.hpRollByLevel);
+  const spellcasting = useCharacterStore((state) => state.spellcasting);
+  const playState = useCharacterStore((state) => state.playState);
   const creationPreferences = useCharacterStore(
     (state) => state.creationPreferences,
   );
@@ -3172,6 +3212,8 @@ function useCharacterBuilderState(): CharacterBuilderState {
       carriedLoadKg,
       skillModifierOverrides,
       hpRollByLevel,
+      spellcasting,
+      playState,
       creationPreferences,
       beginnerMode,
     }),
@@ -3201,6 +3243,8 @@ function useCharacterBuilderState(): CharacterBuilderState {
       carriedLoadKg,
       skillModifierOverrides,
       hpRollByLevel,
+      spellcasting,
+      playState,
       creationPreferences,
       beginnerMode,
     ],
@@ -3230,6 +3274,9 @@ function useCharacterBuilderActions() {
     setSkillTraining: useCharacterStore((state) => state.setSkillTraining),
     setClassFeatureChoice: useCharacterStore(
       (state) => state.setClassFeatureChoice,
+    ),
+    setSpellcastingChoices: useCharacterStore(
+      (state) => state.setSpellcastingChoices,
     ),
     setSpeciesChoice: useCharacterStore((state) => state.setSpeciesChoice),
     setSpeciesLanguages: useCharacterStore((state) => state.setSpeciesLanguages),
