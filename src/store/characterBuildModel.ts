@@ -9,11 +9,13 @@ import {
   EMPTY_COIN_POUCH,
   type AsiOrFeatChoice,
   type CharacterBuild,
+  type CharacterBuildPlayState,
   type EquipmentAcquisitionMode,
   type EquipmentChoicesBySource,
   type HpRollChoice,
   type InventoryEntry,
 } from "@/src/types/characterBuild";
+import { createDefaultPlayState, normalizePlayState } from "@/rules/restRules";
 import type {
   BuilderStepSlug,
   CharacterDescription,
@@ -193,6 +195,8 @@ export function flattenCharacterBuild(
     moneyTouched: build.choices?.moneyTouched,
     carriedLoadKg: build.choices?.carriedLoadKg,
     skillModifierOverrides: build.choices?.skillModifierOverrides,
+    spellcasting: build.choices?.spellcasting,
+    playState: build.playState,
     hpRollByLevel: extractHpRollByLevel(build.progression?.levelChoices),
     creationPreferences: build.choices?.creationPreferences,
     beginnerMode: build.choices?.beginnerMode,
@@ -263,6 +267,8 @@ export function getDefaultFlatState(): FlatCharacterBuilderState {
     moneyTouched: false,
     carriedLoadKg: 0,
     skillModifierOverrides: {},
+    spellcasting: undefined,
+    playState: createDefaultPlayState(0),
     hpRollByLevel: {},
     creationPreferences: undefined,
     beginnerMode: false,
@@ -293,7 +299,7 @@ export function createSaveId(): string {
 }
 
 function createBuildFromFlatState(
-  state: FlatCharacterBuilderState,
+  state: Partial<FlatCharacterBuilderState>,
   metadata: {
     createdAt: string;
     currentStepSlug: BuilderStepSlug;
@@ -302,7 +308,10 @@ function createBuildFromFlatState(
   },
   previousBuild?: Partial<CharacterBuild>,
 ): CharacterBuild {
+  const shouldInitializePlayState =
+    previousBuild?.playState === undefined && isEmptyInitialPlayState(state.playState);
   const normalizedState = normalizeFlatState(state);
+  const normalizedPlayState = normalizedState.playState ?? createDefaultPlayState(0);
   const previousLevelChoices = previousBuild?.progression?.levelChoices ?? {};
   const rawHpRollByLevel: Record<string, HpRollChoice> = {};
   for (const [level, choice] of Object.entries(previousLevelChoices)) {
@@ -367,9 +376,11 @@ function createBuildFromFlatState(
       moneyTouched: normalizedState.moneyTouched,
       carriedLoadKg: normalizedState.carriedLoadKg,
       skillModifierOverrides: normalizedState.skillModifierOverrides,
+      spellcasting: normalizedState.spellcasting,
       creationPreferences: normalizedState.creationPreferences,
       beginnerMode: normalizedState.beginnerMode ?? false,
     },
+    playState: normalizedPlayState,
     derivedSheet: createEmptyDerivedSheet(normalizedState),
     exportMetadata: {
       schemaVersion: CHARACTER_BUILD_SCHEMA_VERSION,
@@ -379,9 +390,16 @@ function createBuildFromFlatState(
     },
   } satisfies CharacterBuild;
 
+  const firstDerived = deriveSheet(buildWithoutDerived);
+  const playState =
+    shouldInitializePlayState
+      ? createDefaultPlayState(firstDerived.maxHp)
+      : normalizePlayState(normalizedPlayState, firstDerived.maxHp);
+  const buildWithPlayState = { ...buildWithoutDerived, playState };
+
   return {
-    ...buildWithoutDerived,
-    derivedSheet: deriveSheet(buildWithoutDerived),
+    ...buildWithPlayState,
+    derivedSheet: deriveSheet(buildWithPlayState),
   };
 }
 
@@ -429,6 +447,8 @@ function normalizeFlatState(
     carriedLoadKg: state.carriedLoadKg ?? defaults.carriedLoadKg,
     skillModifierOverrides:
       state.skillModifierOverrides ?? defaults.skillModifierOverrides,
+    spellcasting: normalizeSpellcastingChoices(state.spellcasting),
+    playState: normalizeLegacyPlayState(state.playState),
     hpRollByLevel: sanitizeHpRollByLevel(
       state.hpRollByLevel ?? defaults.hpRollByLevel,
     ),
@@ -436,6 +456,59 @@ function normalizeFlatState(
     beginnerMode: state.beginnerMode ?? defaults.beginnerMode,
   };
 }
+
+function normalizeSpellcastingChoices(
+  choices: FlatCharacterBuilderState["spellcasting"] | undefined,
+): FlatCharacterBuilderState["spellcasting"] {
+  if (!choices) return undefined;
+  return {
+    cantripIds: [...(choices.cantripIds ?? [])],
+    knownSpellIds: [...(choices.knownSpellIds ?? [])],
+    preparedSpellIds: [...(choices.preparedSpellIds ?? [])],
+  };
+}
+
+function normalizeLegacyPlayState(
+  playState: Partial<CharacterBuildPlayState> | undefined,
+): CharacterBuildPlayState {
+  const defaults = createDefaultPlayState(0);
+  return {
+    currentHp: playState?.currentHp ?? defaults.currentHp,
+    tempHp: playState?.tempHp ?? defaults.tempHp,
+    hitDiceSpent: playState?.hitDiceSpent ?? defaults.hitDiceSpent,
+    usedSpellSlots: { ...(playState?.usedSpellSlots ?? defaults.usedSpellSlots) },
+    resourceUses: { ...(playState?.resourceUses ?? defaults.resourceUses) },
+    resourceRecoveries: {
+      ...(playState?.resourceRecoveries ?? defaults.resourceRecoveries),
+    },
+    deathSaves: {
+      successes: playState?.deathSaves?.successes ?? defaults.deathSaves.successes,
+      failures: playState?.deathSaves?.failures ?? defaults.deathSaves.failures,
+    },
+    inspiration: playState?.inspiration ?? defaults.inspiration,
+    conditions: [...(playState?.conditions ?? defaults.conditions)],
+    overrides: { ...(playState?.overrides ?? defaults.overrides) },
+  };
+}
+
+function isEmptyInitialPlayState(
+  playState: Partial<CharacterBuildPlayState> | undefined,
+): boolean {
+  if (!playState) return true;
+  return (
+    (playState.currentHp ?? 0) === 0 &&
+    (playState.tempHp ?? 0) === 0 &&
+    (playState.hitDiceSpent ?? 0) === 0 &&
+    Object.keys(playState.usedSpellSlots ?? {}).length === 0 &&
+    Object.keys(playState.resourceUses ?? {}).length === 0 &&
+    (playState.deathSaves?.successes ?? 0) === 0 &&
+    (playState.deathSaves?.failures ?? 0) === 0 &&
+    playState.inspiration !== true &&
+    (playState.conditions ?? []).length === 0 &&
+    Object.keys(playState.overrides ?? {}).length === 0
+  );
+}
+
 
 function sanitizeHpRollByLevel(
   hpRollByLevel: Record<string, HpRollChoice>,

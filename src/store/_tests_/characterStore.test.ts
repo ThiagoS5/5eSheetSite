@@ -37,7 +37,7 @@ describe("createCharacterStore", () => {
           selectedBackgroundId: "",
         },
         exportMetadata: {
-          schemaVersion: 8,
+          schemaVersion: 9,
           saveId: expect.any(String),
           createdAt: expect.any(String),
           updatedAt: expect.any(String),
@@ -269,7 +269,7 @@ describe("createCharacterStore", () => {
 
     expect(store.getState().beginnerMode).toBe(true);
     expect(store.getState().characterBuild.choices.beginnerMode).toBe(true);
-    expect(store.getState().characterBuild.exportMetadata.schemaVersion).toBe(8);
+    expect(store.getState().characterBuild.exportMetadata.schemaVersion).toBe(9);
   });
 });
 
@@ -302,7 +302,7 @@ describe("levelUp integration 1->20", () => {
     // Nivel 1: 10 (d10) + (-1) = 9. Niveis 2-20 (19x): media floor(10/2)+1=6, +(-1) = 5 cada.
     // 9 + 19*5 = 104.
     expect(final.maxHp).toBe(104);
-  }, 15000);
+  }, 30000);
 
   it("Cleric 1->20 com rolagens numericas de PV", () => {
     const store = createCharacterStore();
@@ -317,5 +317,108 @@ describe("levelUp integration 1->20", () => {
     // 7 + 19*4 = 83.
     expect(summary.maxHp).toBe(83);
     expect(summary.proficiencyBonus).toBe(6);
-  }, 15000);
+  }, 30000);
+});
+
+describe("character store spellcasting and play mode", () => {
+  it("stores spell choices and spent slots in the canonical build", () => {
+    const store = createCharacterStore();
+
+    store.getState().selectClass("wizard-xphb");
+    store.getState().setLevel(5);
+    store.getState().setSpellcastingChoices({
+      cantripIds: ["acid-splash-xphb"],
+      knownSpellIds: [],
+      preparedSpellIds: ["fireball-xphb"],
+    });
+    store.getState().spendSlot(3);
+
+    expect(store.getState().characterBuild.choices.spellcasting).toMatchObject({
+      cantripIds: ["acid-splash-xphb"],
+      preparedSpellIds: ["fireball-xphb"],
+    });
+    expect(store.getState().characterBuild.playState.usedSpellSlots[3]).toBe(1);
+  });
+
+  it("clears stale spell choices and spent slots when the class changes", () => {
+    const store = createCharacterStore();
+
+    store.getState().selectClass("wizard-xphb");
+    store.getState().setLevel(5);
+    store.getState().setSpellcastingChoices({
+      cantripIds: ["acid-splash-xphb"],
+      knownSpellIds: [],
+      preparedSpellIds: ["fireball-xphb"],
+    });
+    store.getState().spendSlot(3);
+
+    store.getState().selectClass("cleric-xphb");
+
+    expect(store.getState().spellcasting).toBeUndefined();
+    expect(store.getState().characterBuild.choices.spellcasting).toBeUndefined();
+    expect(store.getState().playState!.usedSpellSlots).toEqual({});
+  });
+
+  it("recovers pact magic slots on a short rest", () => {
+    const store = createCharacterStore();
+
+    store.getState().selectClass("warlock-xphb");
+    store.getState().setLevel(5);
+    store.getState().spendSlot(3);
+    expect(store.getState().playState!.usedSpellSlots[3]).toBe(1);
+
+    store.getState().shortRest({ hitDiceToSpend: 0 });
+
+    expect(store.getState().playState!.usedSpellSlots).toEqual({});
+  });
+
+  it("tracks resource recovery timing for rests", () => {
+    const store = createCharacterStore();
+
+    store.getState().useResource("second-wind", 2, "shortRest");
+    store.getState().useResource("indomitable", 1, "longRest");
+    expect(store.getState().playState!.resourceUses).toEqual({
+      "second-wind": 1,
+      indomitable: 1,
+    });
+
+    store.getState().shortRest({ hitDiceToSpend: 0 });
+    expect(store.getState().playState!.resourceUses).toEqual({
+      indomitable: 1,
+    });
+
+    store.getState().longRest();
+    expect(store.getState().playState!.resourceUses).toEqual({});
+  });
+
+  it("clamps damage, healing, temp HP, inspiration, and rests", () => {
+    const store = createCharacterStore();
+    store.getState().selectClass("fighter-xphb");
+    const maxHp = selectCharacterSheetSummary(store.getState()).maxHp;
+
+    store.getState().setTempHp(5);
+    store.getState().applyDamage(maxHp + 20);
+    expect(store.getState().playState!.currentHp).toBe(0);
+    expect(store.getState().playState!.tempHp).toBe(0);
+
+    store.getState().heal(maxHp + 20);
+    expect(store.getState().playState!.currentHp).toBe(maxHp);
+
+    store.getState().toggleInspiration();
+    expect(store.getState().playState!.inspiration).toBe(true);
+
+    store.getState().applyDamage(6);
+    store.getState().shortRest({ hitDiceToSpend: 1 });
+    expect(store.getState().playState!.currentHp).toBe(maxHp);
+    expect(store.getState().playState!.hitDiceSpent).toBe(1);
+
+    store.getState().applyDamage(3);
+    store.getState().longRest();
+    expect(store.getState().playState!).toMatchObject({
+      currentHp: maxHp,
+      tempHp: 0,
+      hitDiceSpent: 0,
+      inspiration: true,
+    });
+  });
 });

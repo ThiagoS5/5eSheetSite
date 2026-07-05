@@ -18,6 +18,9 @@ import {
   getAbilityModifier,
   getProficiencyBonus,
 } from "@/src/adapters/characterDerivedAdapter";
+import { deriveSpellcastingSummary } from "@/rules/spellcastingRules";
+import { deriveEffectivePlayState } from "@/rules/playStateSummaryRules";
+import { deriveSheetAttributes } from "@/rules/attributeSummaryRules";
 import {
   calculateMaxHitPointsWithRolls,
   getHitPointsBreakdown,
@@ -32,29 +35,9 @@ import { EMPTY_COIN_POUCH } from "@/src/types/characterBuild";
 import type {
   BuilderFeature,
   CharacterSheetSummary,
-  SheetAttribute,
   SheetFeature,
 } from "@/types/builder";
-import { ATTRIBUTE_LABELS } from "@/types/dnd";
 import type { AttributeKey } from "@/types/dnd";
-
-const ATTRIBUTE_KEYS: AttributeKey[] = [
-  "forca",
-  "destreza",
-  "constituicao",
-  "inteligencia",
-  "sabedoria",
-  "carisma",
-];
-
-const ATTRIBUTE_ABBR: Record<AttributeKey, string> = {
-  forca: "STR",
-  destreza: "DEX",
-  constituicao: "CON",
-  inteligencia: "INT",
-  sabedoria: "WIS",
-  carisma: "CHA",
-};
 
 const XP_BY_LEVEL = [
   0, 300, 900, 2700, 6500, 14000, 23000, 34000, 48000, 64000,
@@ -115,6 +98,19 @@ export function selectCharacterSheetSummary(
     dexterityScore: finalAttributes.destreza,
     selectedEquipment,
   });
+  const effectivePlay = deriveEffectivePlayState({
+    state,
+    maxHitPoints,
+    armorClass: armorClassResult.armorClass,
+  });
+  const spellcasting = deriveSpellcastingSummary({
+    characterClass,
+    level: state.level,
+    finalAttributes,
+    proficiencyBonus,
+    choices: state.spellcasting,
+    usedSpellSlots: effectivePlay.playState.usedSpellSlots,
+  });
   const pendencies = deriveBuilderPendencies({ state, characterClass });
 
   return {
@@ -128,8 +124,8 @@ export function selectCharacterSheetSummary(
     backgroundAbilityBonuses: state.backgroundAbilityBonuses,
     finalAttributes,
     proficiencyBonus,
-    hitPoints: maxHitPoints,
-    armorClass: armorClassResult.armorClass,
+    hitPoints: effectivePlay.maxHitPoints,
+    armorClass: effectivePlay.armorClass,
     armorClassBreakdown: armorClassResult.breakdown,
     selectedEquipment,
     selectedTraits: species?.traits ?? [],
@@ -145,15 +141,15 @@ export function selectCharacterSheetSummary(
     className: characterClass?.name ?? "",
     speciesName: species?.name ?? "",
     backgroundName: background?.name ?? "",
-    currentHp: maxHitPoints,
-    maxHp: maxHitPoints,
+    currentHp: effectivePlay.playState.currentHp,
+    maxHp: effectivePlay.maxHitPoints,
     maxHpBreakdown: getHitPointsBreakdown({
       hitDie: characterClass?.hitDie ?? 6,
       constitutionScore: finalAttributes.constituicao,
       level: state.level,
       hpRollByLevel: state.hpRollByLevel ?? {},
     }),
-    tempHp: 0,
+    tempHp: effectivePlay.playState.tempHp,
     hitDice: `${state.level}d${characterClass?.hitDie ?? 6}`,
     initiative: getAbilityModifier(finalAttributes.destreza) + featEffects.initiativeBonus,
     speedFeet: (species?.speed ?? 30) + featEffects.speedBonusFeet,
@@ -162,6 +158,7 @@ export function selectCharacterSheetSummary(
     xpThreshold: xpThresholdForNextLevel(state.level),
     progressionMode: state.creationPreferences?.progressionMode ?? "xp",
     isSpellcaster: Boolean(characterClass?.spellcastingAbility),
+    spellcasting,
     attributes: deriveSheetAttributes(finalAttributes),
     skills,
     savingThrows: computeSavingThrows({
@@ -292,18 +289,6 @@ function deriveFeatEffects(
   }
 
   return effects;
-}
-
-function deriveSheetAttributes(
-  finalAttributes: Record<AttributeKey, number>,
-): SheetAttribute[] {
-  return ATTRIBUTE_KEYS.map((key) => ({
-    key,
-    label: ATTRIBUTE_LABELS[key],
-    abbr: ATTRIBUTE_ABBR[key],
-    score: finalAttributes[key],
-    modifier: getAbilityModifier(finalAttributes[key]),
-  }));
 }
 
 function deriveFeatures(input: {

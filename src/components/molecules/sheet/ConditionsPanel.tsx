@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { cn } from "@/src/lib/utils";
+import { useCharacterStore } from "@/src/store/useCharacterStore";
+import { createDefaultPlayState } from "@/rules/restRules";
 
 const CONDITION_LIST = [
   "Blinded", "Charmed", "Confused", "Deafened", "Exhausted",
@@ -10,17 +12,12 @@ const CONDITION_LIST = [
 ];
 
 export function ConditionsPanel() {
-  const [active, setActive] = useState<Set<string>>(new Set());
+  const activeConditions = useCharacterStore(
+    (state) => (state.playState ?? createDefaultPlayState(0)).conditions,
+  );
+  const toggleCondition = useCharacterStore((state) => state.toggleCondition);
   const [expanded, setExpanded] = useState(false);
-
-  function toggle(name: string) {
-    setActive((prev) => {
-      const next = new Set(prev);
-      if (next.has(name)) next.delete(name);
-      else next.add(name);
-      return next;
-    });
-  }
+  const active = new Set(activeConditions);
 
   return (
     <section className="rounded-lg border border-white/[0.08] bg-card p-3">
@@ -47,7 +44,7 @@ export function ConditionsPanel() {
             <button
               key={name}
               type="button"
-              onClick={() => toggle(name)}
+              onClick={() => toggleCondition(name)}
               className="flex items-center gap-1 rounded border border-primary/40 bg-primary/10 px-1.5 py-0.5 text-xs text-foreground"
             >
               {name}
@@ -66,9 +63,9 @@ export function ConditionsPanel() {
         <div className="flex flex-wrap gap-1">
           {CONDITION_LIST.map((name) => (
             <button
-              key={name}
-              type="button"
-              onClick={() => toggle(name)}
+          key={name}
+          type="button"
+          onClick={() => toggleCondition(name)}
               className={cn(
                 "rounded border px-1.5 py-0.5 text-xs transition-colors",
                 active.has(name)

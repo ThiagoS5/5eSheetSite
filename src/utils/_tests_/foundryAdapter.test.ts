@@ -156,4 +156,77 @@ describe("foundryAdapter", () => {
       ]),
     );
   });
+
+  it("exports selected spells as Foundry spell items", () => {
+    const actor = createFoundryCharacterExport(
+      {
+        ...state,
+        selectedClassId: "wizard-xphb",
+        spellcasting: {
+          cantripIds: ["acid-splash-xphb"],
+          knownSpellIds: [],
+          preparedSpellIds: ["fireball-xphb"],
+        },
+      },
+      {
+        ...summary,
+        classId: "wizard-xphb",
+        className: "Wizard",
+        isSpellcaster: true,
+        spellcasting: {
+          ability: "inteligencia",
+          abilityLabel: "Intelligence",
+          spellSaveDc: 13,
+          spellAttackBonus: 5,
+          cantripsKnownLimit: 3,
+          knownSpellLimit: 0,
+          preparedSpellLimit: 4,
+          selectedCantripCount: 1,
+          selectedKnownCount: 0,
+          selectedPreparedCount: 1,
+          slots: [{ level: 1, total: 2, used: 0, remaining: 2 }],
+          cantrips: [
+            {
+              id: "acid-splash-xphb",
+              name: "Acid Splash",
+              source: "XPHB",
+              level: 0,
+              school: "Evocation",
+              schoolCode: "V",
+              classNames: ["Wizard"],
+              castingTime: "1 action",
+              range: "60 feet",
+              duration: "Instantaneous",
+              components: "V, S",
+              description: "Acid cantrip.",
+            },
+          ],
+          knownSpells: [],
+          preparedSpells: [
+            {
+              id: "fireball-xphb",
+              name: "Fireball",
+              source: "XPHB",
+              level: 3,
+              school: "Evocation",
+              schoolCode: "V",
+              classNames: ["Wizard"],
+              castingTime: "1 action",
+              range: "150 feet",
+              duration: "Instantaneous",
+              components: "V, S, M",
+              description: "A bright streak flashes.",
+            },
+          ],
+        },
+      },
+    );
+
+    expect(actor.items).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ name: "Acid Splash", type: "spell" }),
+        expect.objectContaining({ name: "Fireball", type: "spell" }),
+      ]),
+    );
+  });
 });

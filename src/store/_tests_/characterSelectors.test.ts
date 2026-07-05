@@ -195,4 +195,32 @@ describe("character selectors", () => {
     expect(resolved.features.some((f) => f.source === "class")).toBe(true);
     expect(resolved.validationMessages.some((m) => /subclass/i.test(m))).toBe(false);
   });
+
+  it("derives spellcasting from selected class and spell choices", () => {
+    const store = createCharacterStore();
+    store.getState().selectClass("wizard-xphb");
+    store.getState().setLevel(5);
+    store.getState().setInteligencia(16);
+    store.getState().setSpellcastingChoices({
+      cantripIds: ["acid-splash-xphb", "mage-hand-xphb"],
+      knownSpellIds: [],
+      preparedSpellIds: ["fireball-xphb"],
+    });
+
+    const summary = selectCharacterSheetSummary(store.getState());
+
+    expect(summary.isSpellcaster).toBe(true);
+    expect(summary.spellcasting).toMatchObject({
+      ability: "inteligencia",
+      spellSaveDc: 14,
+      spellAttackBonus: 6,
+      cantripsKnownLimit: 4,
+      preparedSpellLimit: 9,
+      selectedCantripCount: 2,
+      selectedPreparedCount: 1,
+    });
+    expect(summary.spellcasting?.preparedSpells.map((spell) => spell.name)).toEqual([
+      "Fireball",
+    ]);
+  });
 });

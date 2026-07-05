@@ -166,6 +166,22 @@ function createFoundryItems(state: CharacterBuilderState, summary: CharacterShee
     const item = createFoundryItem(equipment.name, "equipment", `Fonte: ${equipment.source}`);
     return { ...item, system: { ...item.system, quantity } };
   });
+  const spellItems = [
+    ...(summary.spellcasting?.cantrips ?? []),
+    ...(summary.spellcasting?.knownSpells ?? []),
+    ...(summary.spellcasting?.preparedSpells ?? []),
+  ].map((spell) =>
+    createFoundryItem(
+      spell.name,
+      "spell",
+      [
+        spell.description,
+        `Source: ${spell.source}`,
+        `Level: ${spell.level === 0 ? "Cantrip" : spell.level}`,
+        `School: ${spell.school}`,
+      ].join("\n\n"),
+    ),
+  );
 
   return [
     ...identityItems,
@@ -173,6 +189,7 @@ function createFoundryItems(state: CharacterBuilderState, summary: CharacterShee
     ...classFeatureItems,
     ...classChoiceItems,
     ...equipmentItems,
+    ...spellItems,
   ].map((item, index) => ({
     ...item,
     sort: index * 100000,

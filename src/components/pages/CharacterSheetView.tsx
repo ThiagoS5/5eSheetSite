@@ -16,6 +16,7 @@ import { DefensesPanel } from "@/src/components/molecules/sheet/DefensesPanel";
 import { PassivesPanel } from "@/src/components/molecules/sheet/PassivesPanel";
 import { SensesPanel } from "@/src/components/molecules/sheet/SensesPanel";
 import { ConditionsPanel } from "@/src/components/molecules/sheet/ConditionsPanel";
+import { PlayStatePanel } from "@/src/components/organisms/sheet/PlayStatePanel";
 
 interface CharacterSheetViewProps {
   /** Embedded mode (builder conclusão) drops the full-screen chrome. */
@@ -69,6 +70,7 @@ export function CharacterSheetView({ embedded = false }: CharacterSheetViewProps
           insight={summary.passives.insight}
         />
         <SensesPanel senses={summary.senses} languages={summary.languages} />
+        <PlayStatePanel summary={summary} />
         <ConditionsPanel />
       </div>
     </div>
