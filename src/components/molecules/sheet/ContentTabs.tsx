@@ -193,7 +193,7 @@ export function ContentTabs({ summary }: ContentTabsProps) {
                       type="button"
                       onClick={() => setDetail({ kind: "weapon", name: w.name, attackBonus: w.attackBonus, damage: w.damage, notes: w.notes })}
                       className={cn(
-                        "flex items-center gap-3 rounded-[9px] border border-border border-l-[3px] border-l-brand-crimson-alt bg-surface-nested px-[13px] py-[11px] text-left transition-colors hover:bg-card",
+                        "flex items-center gap-3 rounded-[9px] border border-border bg-surface-nested px-[13px] py-[11px] text-left transition-colors hover:bg-card",
                         focusRing,
                       )}
                     >
@@ -305,7 +305,7 @@ export function ContentTabs({ summary }: ContentTabsProps) {
                 return (
                   <div
                     key={`${f.source}-${f.name}`}
-                    className="rounded-[9px] border border-border border-l-[3px] bg-surface-nested px-[14px] py-3"
+                    className="rounded-[9px] border border-border bg-surface-nested px-[14px] py-3"
                     style={{ borderLeftColor: v.color }}
                   >
                     <div className="mb-[5px] flex items-center justify-between gap-2">

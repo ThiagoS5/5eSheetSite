@@ -43,6 +43,7 @@ export function BuilderShell({ children }: BuilderShellProps) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [sheetCollapsed, setSheetCollapsed] = useState(false);
   const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
+  const [mobileStepsOpen, setMobileStepsOpen] = useState(false);
   // The summary step is the full character sheet itself, so the live preview
   // aside is redundant there and is hidden.
   const isSummaryStep = pathname?.endsWith("/conclusao") ?? false;
@@ -84,7 +85,7 @@ export function BuilderShell({ children }: BuilderShellProps) {
     nextStep && (stepMessages.length > 0 || currentStepPendencies.length > 0)
       ? stepMessages[0] ??
         currentStepPendencies[0]?.label ??
-        "Conclua as pendencias desta etapa para avancar."
+        "Complete this step's pending items to continue."
       : undefined;
 
   function handleBack() {
@@ -159,19 +160,31 @@ export function BuilderShell({ children }: BuilderShellProps) {
               ac: summary.armorClass,
             }}
             onOpenSheet={() => setMobileSheetOpen(true)}
+            onOpenSteps={() => setMobileStepsOpen(true)}
           />
         ) : null}
       </main>
 
       {isMobile ? (
-        <Sheet open={mobileSheetOpen} onOpenChange={setMobileSheetOpen}>
-          <SheetContent side="bottom" className="h-[85svh] overflow-y-auto">
-            <SheetHeader>
-              <SheetTitle>Live Sheet</SheetTitle>
-            </SheetHeader>
-            <BuilderSidebar variant="drawer" />
-          </SheetContent>
-        </Sheet>
+        <>
+          <Sheet open={mobileSheetOpen} onOpenChange={setMobileSheetOpen}>
+            <SheetContent side="bottom" className="h-[85svh] overflow-y-auto">
+              <SheetHeader>
+                <SheetTitle>Live Sheet</SheetTitle>
+              </SheetHeader>
+              <CharacterSheetPreview variant="drawer" />
+            </SheetContent>
+          </Sheet>
+
+          <Sheet open={mobileStepsOpen} onOpenChange={setMobileStepsOpen}>
+            <SheetContent side="bottom" className="h-[85svh] overflow-y-auto">
+              <SheetHeader>
+                <SheetTitle>Builder steps</SheetTitle>
+              </SheetHeader>
+              <BuilderSidebar variant="drawer" />
+            </SheetContent>
+          </Sheet>
+        </>
       ) : null}
     </SidebarProvider>
   );
@@ -200,7 +213,7 @@ function AutosaveStatus({ updatedAt }: { updatedAt: string }) {
         aria-checked={beginnerMode}
         aria-label="Guided mode"
         onClick={handleBeginnerModeToggle}
-        className={`inline-flex h-9 items-center gap-2 rounded-md border px-3 text-[10px] font-bold uppercase tracking-[0.14em] outline-none transition focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70 ${
+        className={`inline-flex h-9 items-center gap-2 rounded-md border px-3 text-[11px] font-bold uppercase tracking-[0.12em] outline-none transition focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70 ${
           beginnerMode
             ? "border-brand-gold-alt/60 bg-brand-gold-alt/15 text-foreground"
             : "border-white/[0.08] bg-card text-muted-foreground hover:text-foreground"
@@ -225,7 +238,7 @@ function AutosaveStatus({ updatedAt }: { updatedAt: string }) {
       <div
         role="status"
         aria-label="Draft saved"
-        className="inline-flex items-center gap-2 rounded-md border border-white/[0.08] bg-card px-3 py-2 text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground"
+        className="inline-flex items-center gap-2 rounded-md border border-white/[0.08] bg-card px-3 py-2 text-[11px] font-bold uppercase tracking-[0.12em] text-muted-foreground"
       >
         <Save aria-hidden="true" className="h-3.5 w-3.5 text-brand-green" />
         Saved <span suppressHydrationWarning>{savedAt}</span>

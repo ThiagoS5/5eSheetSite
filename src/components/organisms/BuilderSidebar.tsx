@@ -3,11 +3,8 @@
 import { useMemo, useState } from "react";
 import {
   ChevronDown,
-  HelpCircle,
-  MessageCircle,
   PanelLeftClose,
   PanelLeftOpen,
-  Save,
   Swords,
 } from "lucide-react";
 import Link from "next/link";
@@ -22,7 +19,6 @@ import { Button } from "@/src/components/ui/button";
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -240,36 +236,6 @@ export function BuilderSidebar({ variant = "desktop" }: BuilderSidebarProps) {
               </SidebarMenu>
             </nav>
           </SidebarContent>
-
-          <SidebarFooter
-            className={`mt-auto border-t border-border/50 px-4 pt-4 ${
-              collapsed ? "xl:hidden" : ""
-            }`}
-          >
-            <button
-              type="button"
-              className="flex w-full items-center justify-center gap-2 rounded border border-border px-4 py-2 font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground outline-none transition-colors hover:bg-white/5 hover:text-foreground focus-visible:ring-2 focus-visible:ring-primary/70"
-            >
-              <Save className="h-4 w-4" />
-              SAVE DRAFT
-            </button>
-            <div className="flex justify-between gap-4 pb-4 pt-4">
-              <button
-                type="button"
-                className="flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-primary/70"
-              >
-                <HelpCircle className="h-4 w-4" />
-                Help
-              </button>
-              <button
-                type="button"
-                className="flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-primary/70"
-              >
-                <MessageCircle className="h-4 w-4" />
-                Feedback
-              </button>
-            </div>
-          </SidebarFooter>
         </Sidebar>
     </aside>
   );
@@ -495,14 +461,14 @@ function SubStepItem({
 }
 
 const baseStepClass =
-  "min-h-12 gap-3 rounded-none border-l-4 px-4 py-3 text-left text-sm outline-none transition-all hover:bg-white/5 focus-visible:ring-2 focus-visible:ring-primary/70 data-[active=true]:bg-primary/15 data-[active=true]:text-foreground";
+  "min-h-12 gap-3 rounded-md px-4 py-3 text-left text-sm outline-none transition-all hover:bg-white/5 focus-visible:ring-2 focus-visible:ring-primary/70 data-[active=true]:bg-primary/15 data-[active=true]:text-foreground";
 
-const activeStepClass = "border-primary bg-primary/15 text-foreground";
-const completeStepClass = "border-transparent text-brand-green hover:text-brand-green";
-const warningStepClass = "border-accent text-accent hover:text-accent";
-const availableStepClass = "border-transparent text-muted-foreground hover:text-subdued";
+const activeStepClass = "bg-primary/15 text-foreground";
+const completeStepClass = "text-brand-green hover:text-brand-green";
+const warningStepClass = "text-accent hover:text-accent";
+const availableStepClass = "text-muted-foreground hover:text-subdued";
 const lockedStepClass =
-  "cursor-not-allowed border-transparent text-faint opacity-70 hover:bg-transparent hover:text-faint";
+  "cursor-not-allowed text-faint opacity-70 hover:bg-transparent hover:text-faint";
 const subStepClass =
   "h-9 rounded-md px-2 font-sans text-sm outline-none focus-visible:ring-2 focus-visible:ring-primary/70";
 
@@ -662,7 +628,7 @@ function PendencyBadge({ count }: { count: number }) {
   }
 
   return (
-    <span className="ml-auto rounded border border-accent/40 px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-normal text-accent">
+    <span className="ml-auto rounded border border-accent/40 px-1.5 py-0.5 font-mono text-[11px] font-bold uppercase tracking-normal text-accent">
       <FontAwesomeIcon
         iconClassName="fa-solid fa-triangle-exclamation"
         className="mr-1 inline h-3 w-3"

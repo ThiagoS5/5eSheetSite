@@ -19,12 +19,20 @@ const attributes = Object.keys(ATTRIBUTE_LABELS) as AttributeKey[];
 interface CharacterSheetPreviewProps {
   collapsed?: boolean;
   onToggleCollapsed?: () => void;
+  /**
+   * "aside" (default): a coluna fixa do desktop. "drawer": conteúdo puro para o
+   * cockpit mobile (sem `hidden`, sem sticky/altura xl, sempre expandido).
+   */
+  variant?: "aside" | "drawer";
 }
 
 export function CharacterSheetPreview({
   collapsed = false,
   onToggleCollapsed,
+  variant = "aside",
 }: CharacterSheetPreviewProps) {
+  const isDrawer = variant === "drawer";
+  const isCollapsed = collapsed && !isDrawer;
   const characterState = useCharacterBuilderState();
   const summary = useMemo(
     () => selectCharacterSheetSummary(characterState),
@@ -41,16 +49,16 @@ export function CharacterSheetPreview({
     (entry) => entry.id === summary.backgroundId,
   )?.name;
 
-  const toggleButton = (
+  const toggleButton = isDrawer ? null : (
     <button
       type="button"
-      aria-expanded={!collapsed}
-      aria-label={collapsed ? "Expand hero information" : "Collapse hero information"}
-      title={collapsed ? "Expand panel" : "Collapse panel"}
+      aria-expanded={!isCollapsed}
+      aria-label={isCollapsed ? "Expand hero information" : "Collapse hero information"}
+      title={isCollapsed ? "Expand panel" : "Collapse panel"}
       onClick={onToggleCollapsed}
       className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-transparent text-subdued outline-none transition hover:bg-white/5 hover:text-foreground focus-visible:ring-2 focus-visible:ring-primary/70"
     >
-      {collapsed ? (
+      {isCollapsed ? (
         <PanelRightOpen aria-hidden="true" className="h-5 w-5" />
       ) : (
         <PanelRightClose aria-hidden="true" className="h-5 w-5" />
@@ -61,10 +69,20 @@ export function CharacterSheetPreview({
   return (
     <aside
       aria-labelledby="sheet-preview-title"
-      className="hidden border-t border-white/[0.06] bg-muted xl:block xl:min-h-[calc(100dvh-4rem)] xl:border-l xl:border-t-0"
+      className={
+        isDrawer
+          ? "block min-w-0 bg-muted"
+          : "hidden border-t border-white/[0.06] bg-muted xl:block xl:min-h-[calc(100dvh-4rem)] xl:border-l xl:border-t-0"
+      }
     >
-      <div className="sticky top-0 max-h-[calc(100dvh-4rem)] overflow-y-auto px-4 py-5">
-        {collapsed ? (
+      <div
+        className={
+          isDrawer
+            ? "min-w-0 px-1 py-1"
+            : "sticky top-0 max-h-[calc(100dvh-4rem)] overflow-y-auto px-4 py-5"
+        }
+      >
+        {isCollapsed ? (
           <div className="hidden xl:grid xl:place-items-center xl:gap-3">
             {toggleButton}
             <span
