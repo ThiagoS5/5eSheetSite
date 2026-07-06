@@ -52,6 +52,7 @@ export const emptyCharacterDescription: CharacterDescription = {
   personalidade: "",
   tracos: "",
   notas: "",
+  portraitId: "",
 };
 
 export interface CreateCharacterBuildOptions {

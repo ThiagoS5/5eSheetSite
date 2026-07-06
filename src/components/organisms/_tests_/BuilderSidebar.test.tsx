@@ -58,6 +58,7 @@ vi.mock("@/src/store/useCharacterStore", () => ({
         personalidade: "",
         tracos: "",
         notas: "",
+        portraitId: "",
       },
       money: { pc: 0, pp: 0, pe: 0, po: 0, pl: 0 },
       moneyTouched: false,

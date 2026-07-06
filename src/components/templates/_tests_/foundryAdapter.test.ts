@@ -52,6 +52,7 @@ const state: CharacterBuilderState = {
     personalidade: "Protective and direct.",
     tracos: "Never backs down.",
     notas: "Export test.",
+    portraitId: "",
   },
   money: { pc: 0, pp: 0, pe: 0, po: 0, pl: 0 },
   moneyTouched: false,
