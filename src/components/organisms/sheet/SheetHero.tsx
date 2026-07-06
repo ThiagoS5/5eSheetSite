@@ -8,13 +8,14 @@ import { LevelUpButton } from "@/src/components/molecules/LevelUpButton";
 interface SheetHeroProps {
   summary: CharacterSheetSummary;
   onExport: () => void;
+  onExportCanonical: () => void;
 }
 
 function fmt(n: number): string {
   return n >= 0 ? `+${n}` : `${n}`;
 }
 
-export function SheetHero({ summary, onExport }: SheetHeroProps) {
+export function SheetHero({ summary, onExport, onExportCanonical }: SheetHeroProps) {
   return (
     <div className="flex flex-col items-center gap-[18px] rounded-2xl border border-border bg-surface-nested px-5 py-[22px] [background:radial-gradient(120%_90%_at_50%_0%,color-mix(in_oklab,var(--primary)_9%,transparent),transparent_60%),var(--surface-nested)]">
 
@@ -29,6 +30,17 @@ export function SheetHero({ summary, onExport }: SheetHeroProps) {
         >
           <i aria-hidden="true" className="fa-solid fa-file-export" />
           Export
+        </button>
+        <button
+          type="button"
+          onClick={onExportCanonical}
+          className={cn(
+            "inline-flex items-center gap-[7px] rounded-[9px] border border-border bg-card px-[14px] py-[9px] text-[10.5px] font-bold uppercase tracking-[0.05em] text-muted-foreground transition-colors hover:border-brand-crimson-alt hover:text-foreground",
+            focusRing,
+          )}
+        >
+          <i aria-hidden="true" className="fa-solid fa-file-export" />
+          Export JSON
         </button>
         <div className="min-w-[200px] flex-1 text-center">
           <h1 translate="no" className="notranslate m-0 font-serif text-[28px] font-extrabold leading-[1.02] text-foreground">

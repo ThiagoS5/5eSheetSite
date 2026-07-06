@@ -5,6 +5,7 @@ import { useCharacterStore } from "@/src/store/useCharacterStore";
 import { useCharacterBuilderState } from "@/src/store/useCharacterBuilderState";
 import { cn } from "@/src/lib/utils";
 import { createFoundryCharacterExport } from "@/src/utils/foundryAdapter";
+import { serializeCharacterExport } from "@/src/utils/canonicalExport";
 import { SHEET_THEME_VARS } from "@/src/components/organisms/sheet/sheetTheme";
 import { SheetHero } from "@/src/components/organisms/sheet/SheetHero";
 import { SavingThrowsGrid } from "@/src/components/molecules/sheet/SavingThrowsGrid";
@@ -26,21 +27,21 @@ export function CharacterSheetView({ embedded = false }: CharacterSheetViewProps
   const state = useCharacterBuilderState();
   const description = useCharacterStore((s) => s.description);
   const summary = useCharacterStore(selectDerivedSheet);
+  const characterBuild = useCharacterStore((s) => s.characterBuild);
 
   function handleExport() {
     const exportData = createFoundryCharacterExport(state, summary);
-    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement("a");
-    anchor.href = url;
-    anchor.download = `${sanitizeFileName(summary.name)}-foundry-vtt.json`;
-    anchor.click();
-    URL.revokeObjectURL(url);
+    downloadJson(`${sanitizeFileName(summary.name)}-foundry-vtt.json`, JSON.stringify(exportData, null, 2));
+  }
+
+  function handleExportCanonical() {
+    const json = serializeCharacterExport(characterBuild);
+    downloadJson(`${sanitizeFileName(summary.name)}-forge-fate.json`, json);
   }
 
   const content = (
     <div className="flex flex-col gap-[14px]" style={SHEET_THEME_VARS}>
-      <SheetHero summary={summary} onExport={handleExport} />
+      <SheetHero summary={summary} onExport={handleExport} onExportCanonical={handleExportCanonical} />
 
       {/* Middle region */}
       <div className="flex flex-wrap items-start gap-[14px]">
@@ -92,4 +93,14 @@ function sanitizeFileName(value: string): string {
   return (
     value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "character"
   );
+}
+
+function downloadJson(fileName: string, json: string): void {
+  const blob = new Blob([json], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = fileName;
+  anchor.click();
+  URL.revokeObjectURL(url);
 }
