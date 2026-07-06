@@ -23,6 +23,7 @@ import { useRouter } from "next/navigation";
 import { useState, useSyncExternalStore, type ReactNode } from "react";
 import { Button } from "@/src/components/ui/button";
 import { Card, CardContent } from "@/src/components/ui/card";
+import { ImportCharacterButton } from "@/src/components/molecules/ImportCharacterButton";
 import {
   CHARACTER_SAVES_CHANGED_EVENT,
   deleteCharacter,
@@ -633,14 +634,17 @@ function PopulatedState({
             Continue drafts, organize saved sheets, and prepare characters for the table.
           </p>
         </div>
-        <Button
-          type="button"
-          onClick={onCreate}
-          className="h-auto w-full gap-2 px-5 py-3 font-sans font-bold active:scale-95 sm:w-auto"
-        >
-          <Plus className="h-5 w-5" />
-          Create Character
-        </Button>
+        <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-start">
+          <ImportCharacterButton />
+          <Button
+            type="button"
+            onClick={onCreate}
+            className="h-auto w-full gap-2 px-5 py-3 font-sans font-bold active:scale-95 sm:w-auto"
+          >
+            <Plus className="h-5 w-5" />
+            Create Character
+          </Button>
+        </div>
       </header>
 
       <div className="mb-6 grid gap-3 sm:grid-cols-3">
