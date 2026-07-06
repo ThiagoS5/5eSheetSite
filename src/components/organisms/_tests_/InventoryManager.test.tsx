@@ -12,7 +12,7 @@ const catalog: CatalogItem[] = [
 
 afterEach(cleanup);
 
-/** Ambas as seções iniciam recolhidas; abre a seção pedida pelo trigger. */
+
 function openSection(name: RegExp) {
   fireEvent.click(screen.getByRole("button", { name }));
 }
@@ -22,7 +22,7 @@ describe("InventoryManager", () => {
     render(<InventoryManager catalog={catalog} inventory={[]} equippedItemIds={[]} onAddItem={vi.fn()} onSetQuantity={vi.fn()} onRemoveItem={vi.fn()} onToggleEquipped={vi.fn()} />);
     expect(screen.getByRole("button", { name: /Current Inventory/ })).toHaveAttribute("aria-expanded", "false");
     expect(screen.getByRole("button", { name: /Add Items/ })).toHaveAttribute("aria-expanded", "false");
-    // Conteúdo só aparece após expandir.
+
     expect(screen.queryByText("No items in inventory.")).not.toBeInTheDocument();
     openSection(/Current Inventory/);
     expect(screen.getByText("No items in inventory.")).toBeInTheDocument();
@@ -52,6 +52,22 @@ describe("InventoryManager", () => {
     openSection(/Add Items/);
     fireEvent.click(screen.getAllByText("ADD")[0]);
     expect(onAddItem).toHaveBeenCalledWith("longsword-xphb");
+  });
+
+  it("keeps the add action immediately available after adding an item", () => {
+    const onAddItem = vi.fn();
+    render(<InventoryManager catalog={catalog} inventory={[]} equippedItemIds={[]} onAddItem={onAddItem} onSetQuantity={vi.fn()} onRemoveItem={vi.fn()} onToggleEquipped={vi.fn()} />);
+    openSection(/Add Items/);
+    const addButton = screen.getAllByRole("button", { name: "ADD" })[0];
+
+    fireEvent.click(addButton);
+    fireEvent.click(addButton);
+
+    expect(addButton).not.toBeDisabled();
+    expect(addButton).toHaveTextContent("ADD");
+    expect(onAddItem).toHaveBeenCalledTimes(2);
+    expect(onAddItem).toHaveBeenNthCalledWith(1, "longsword-xphb");
+    expect(onAddItem).toHaveBeenNthCalledWith(2, "longsword-xphb");
   });
 
   it("manages quantity and removal for inventory entries", () => {

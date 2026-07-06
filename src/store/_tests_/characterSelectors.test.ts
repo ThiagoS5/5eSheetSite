@@ -99,15 +99,15 @@ describe("character selectors", () => {
     store.getState().setLevel(5);
     const atLevelFive = selectCharacterSheetSummary(store.getState());
 
-    // Extra Attack is gained at level 5.
+
     expect(atLevelFive.classFeatures.some((f) => f.name === "Extra Attack")).toBe(
       true,
     );
-    // Level-1 features remain present.
+
     expect(
       atLevelFive.classFeatures.some((f) => f.name === "Second Wind"),
     ).toBe(true);
-    // Nothing above the current level leaks in.
+
     expect(
       atLevelFive.classFeatures.every((f) => (f.level ?? 1) <= 5),
     ).toBe(true);
@@ -152,7 +152,7 @@ describe("character selectors", () => {
 
   it("applies ASI bonuses to final attributes and recomputes HP", () => {
     const store = createCharacterStore();
-    store.getState().selectClass("fighter-xphb"); // d10
+    store.getState().selectClass("fighter-xphb");
     store.getState().setLevel(4);
     const before = selectCharacterSheetSummary(store.getState());
 
@@ -160,7 +160,7 @@ describe("character selectors", () => {
     const after = selectCharacterSheetSummary(store.getState());
 
     expect(after.finalAttributes.constituicao).toBe(before.finalAttributes.constituicao + 2);
-    // +2 CON at level 4 = +1 modifier across 4 levels = +4 HP.
+
     expect(after.maxHp).toBe(before.maxHp + 4);
   });
 

@@ -37,8 +37,8 @@ describe("createCharacterStore persistence", () => {
   });
 
   it("migrates legacy flat sessionStorage state into the canonical build", () => {
-    // Seed a v2-era save: a characterBuild whose draft has the old `selectedEquipmentIds`
-    // array and NO `inventory` field. The migration must map each id to { itemId, quantity: 1 }.
+
+
     sessionStorage.setItem(
       "ficha-5e-builder",
       JSON.stringify({
@@ -111,7 +111,7 @@ describe("createCharacterStore persistence", () => {
           currentStepSlug: "detalhes-especie",
           maxUnlockedStepIndex: 4,
           description: expect.objectContaining({ nome: "Migrated Hero" }),
-          // v2→v3 migration: legacy selectedEquipmentIds must be mapped to inventory
+
           inventory: [{ itemId: "chain-mail-xphb", quantity: 1 }],
           equipmentChoicesBySource: {
             class: { mode: "gold", selectedOptionId: null },

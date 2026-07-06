@@ -41,6 +41,7 @@ import {
 } from "@/rules/builderValidation";
 import { getClassChangeImpact } from "@/rules/classChangeImpact";
 import { ClassChangeDiffDialog } from "@/src/components/organisms/ClassChangeDiffDialog";
+import { useCharacterBuilderState } from "@/src/store/useCharacterBuilderState";
 import { useCharacterStore } from "@/src/store/useCharacterStore";
 import type { CharacterBuilderState, SkillTrainingLevel } from "@/src/store/characterStore.types";
 import type {
@@ -96,11 +97,6 @@ import { deriveBuilderPendencies } from "@/rules/pendencyRules";
 import type { Pendency } from "@/types/builder";
 import { CharacterSheetView } from "@/src/components/pages/CharacterSheetView";
 
-/**
- * Beginner-mode guides by step. The class screen has its own guided quiz card,
- * and summary is skipped; the other steps receive a central concept explainer
- * when beginner mode is active.
- */
 const BEGINNER_STEP_GUIDES: Partial<
   Record<BuilderStepSlug, { conceptId: ConceptId; title: string }>
 > = {
@@ -3131,132 +3127,6 @@ function arePreviousStepsValid(
 
   return previousSteps.every(
     (entry) => validateBuilderStep(entry.slug, state).length === 0,
-  );
-}
-
-function useCharacterBuilderState(): CharacterBuilderState {
-  const ruleset = useCharacterStore((state) => state.ruleset);
-  const level = useCharacterStore((state) => state.level);
-  const selectedSpeciesId = useCharacterStore((state) => state.selectedSpeciesId);
-  const selectedClassId = useCharacterStore((state) => state.selectedClassId);
-  const selectedSubclassId = useCharacterStore(
-    (state) => state.selectedSubclassId,
-  );
-  const selectedBackgroundId = useCharacterStore(
-    (state) => state.selectedBackgroundId,
-  );
-  const inventory = useCharacterStore(
-    (state) => state.inventory,
-  );
-  const equippedItemIds = useCharacterStore(
-    (state) => state.equippedItemIds,
-  );
-  const equipmentChoicesBySource = useCharacterStore(
-    (state) => state.equipmentChoicesBySource,
-  );
-  const maxUnlockedStepIndex = useCharacterStore(
-    (state) => state.maxUnlockedStepIndex,
-  );
-  const pendingChoiceIds = useCharacterStore((state) => state.pendingChoiceIds);
-  const classSkillProficiencies = useCharacterStore(
-    (state) => state.classSkillProficiencies,
-  );
-  const skillTraining = useCharacterStore((state) => state.skillTraining);
-  const classFeatureChoices = useCharacterStore(
-    (state) => state.classFeatureChoices,
-  );
-  const asiOrFeatByLevel = useCharacterStore(
-    (state) => state.asiOrFeatByLevel,
-  );
-  const speciesChoices = useCharacterStore((state) => state.speciesChoices);
-  const speciesLanguages = useCharacterStore((state) => state.speciesLanguages);
-  const attributeGenerationMethod = useCharacterStore(
-    (state) => state.attributeGenerationMethod,
-  );
-  const baseAttributes = useCharacterStore((state) => state.baseAttributes);
-  const backgroundAbilityBonuses = useCharacterStore(
-    (state) => state.backgroundAbilityBonuses,
-  );
-  const description = useCharacterStore((state) => state.description);
-  const money = useCharacterStore((state) => state.money);
-  const moneyTouched = useCharacterStore((state) => state.moneyTouched);
-  const carriedLoadKg = useCharacterStore((state) => state.carriedLoadKg);
-  const skillModifierOverrides = useCharacterStore(
-    (state) => state.skillModifierOverrides,
-  );
-  const hpRollByLevel = useCharacterStore((state) => state.hpRollByLevel);
-  const spellcasting = useCharacterStore((state) => state.spellcasting);
-  const playState = useCharacterStore((state) => state.playState);
-  const creationPreferences = useCharacterStore(
-    (state) => state.creationPreferences,
-  );
-  const beginnerMode = useCharacterStore((state) => state.beginnerMode);
-
-  return useMemo(
-    () => ({
-      ruleset,
-      level,
-      selectedSpeciesId,
-      selectedClassId,
-      selectedSubclassId,
-      selectedBackgroundId,
-      inventory,
-      equippedItemIds,
-      equipmentChoicesBySource,
-      maxUnlockedStepIndex,
-      pendingChoiceIds,
-      classSkillProficiencies,
-      skillTraining,
-      classFeatureChoices,
-      asiOrFeatByLevel,
-      speciesChoices,
-      speciesLanguages,
-      attributeGenerationMethod,
-      baseAttributes,
-      backgroundAbilityBonuses,
-      description,
-      money,
-      moneyTouched,
-      carriedLoadKg,
-      skillModifierOverrides,
-      hpRollByLevel,
-      spellcasting,
-      playState,
-      creationPreferences,
-      beginnerMode,
-    }),
-    [
-      ruleset,
-      level,
-      selectedSpeciesId,
-      selectedClassId,
-      selectedSubclassId,
-      selectedBackgroundId,
-      inventory,
-      equippedItemIds,
-      equipmentChoicesBySource,
-      maxUnlockedStepIndex,
-      pendingChoiceIds,
-      classSkillProficiencies,
-      skillTraining,
-      classFeatureChoices,
-      asiOrFeatByLevel,
-      speciesChoices,
-      speciesLanguages,
-      attributeGenerationMethod,
-      baseAttributes,
-      backgroundAbilityBonuses,
-      description,
-      money,
-      moneyTouched,
-      carriedLoadKg,
-      skillModifierOverrides,
-      hpRollByLevel,
-      spellcasting,
-      playState,
-      creationPreferences,
-      beginnerMode,
-    ],
   );
 }
 

@@ -14,7 +14,7 @@ vi.mock("@/src/components/molecules/LevelUpButton", () => ({
   LevelUpButton: () => <button type="button">Level Up</button>,
 }));
 
-// Minimal store/selector fakes so the view renders in isolation.
+
 vi.mock("@/src/store/useCharacterBuilderState", () => ({ useCharacterBuilderState: () => ({}) }));
 vi.mock("@/src/store/useCharacterStore", () => ({
   useCharacterStore: (selector: (s: unknown) => unknown) =>

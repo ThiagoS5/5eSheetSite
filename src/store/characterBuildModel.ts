@@ -147,8 +147,8 @@ export function createStoreStateFromBuild(
 function legacyEquipmentChoices(
   draft?: Partial<CharacterBuild["draft"]>,
 ): EquipmentChoicesBySource | undefined {
-  // Backward-compat: schema v1 stored a single global `equipmentAcquisitionMode`.
-  // Map it onto the class source so an in-progress save keeps its gold/items choice.
+
+
   const legacyMode = (draft as { equipmentAcquisitionMode?: EquipmentAcquisitionMode } | undefined)
     ?.equipmentAcquisitionMode;
 

@@ -37,7 +37,7 @@ export function ConditionsPanel() {
         </button>
       </div>
 
-      {/* Active conditions */}
+
       {active.size > 0 && (
         <div className="mb-2 flex flex-wrap gap-1">
           {[...active].map((name) => (
@@ -58,7 +58,7 @@ export function ConditionsPanel() {
         <p className="text-xs text-muted-foreground">No active condition.</p>
       )}
 
-      {/* Condition picker */}
+
       {expanded && (
         <div className="flex flex-wrap gap-1">
           {CONDITION_LIST.map((name) => (

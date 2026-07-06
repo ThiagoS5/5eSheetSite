@@ -34,8 +34,8 @@ interface LevelUpFlowProps {
 }
 
 function getAllRequirementsById(characterClass: BuilderClass) {
-  // Stable id→requirement map across the full 1..20 range so snapshot ids always
-  // resolve even after a choice removes them from the pending list.
+
+
   const map = new Map<string, LevelChoiceRequirement>();
   for (const req of getLevelRequirements(characterClass, 0, 20)) map.set(req.id, req);
   return map;
@@ -51,12 +51,12 @@ export function LevelUpFlow({ open, onClose }: LevelUpFlowProps) {
   const [stepIds, setStepIds] = useState<string[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
 
-  // Snapshot the pending requirement ids once per "open" transition (so a fresh
-  // open — e.g. the next "Subir de Nível" — always re-captures the current
-  // pendings). Computed during render via React's "adjust state while rendering"
-  // pattern: this project's eslint (react-hooks/set-state-in-effect) forbids
-  // calling setState synchronously inside a useEffect body, so the snapshot is
-  // taken here instead, guarded by a per-open-transition flag.
+
+
+
+
+
+
   const [snapshotTaken, setSnapshotTaken] = useState(false);
   if (open && characterClass && !snapshotTaken) {
     setSnapshotTaken(true);

@@ -22,6 +22,7 @@ import { validateBuilderStep } from "@/rules/builderValidation";
 import { getBuilderClasses } from "@/src/services/ruleService";
 import { readGlobalPreferences, writeGlobalPreferences } from "@/src/services/preferencesService";
 import { selectCharacterSheetSummary } from "@/src/store/characterSelectors";
+import { useCharacterBuilderState } from "@/src/store/useCharacterBuilderState";
 import { useCharacterStore } from "@/src/store/useCharacterStore";
 
 interface BuilderShellProps {
@@ -35,17 +36,14 @@ export function BuilderShell({ children }: BuilderShellProps) {
   const updatedAt = useCharacterStore(
     (state) => state.characterBuild.exportMetadata.updatedAt,
   );
-  const characterState = useCharacterStore((state) => state);
+  const characterState = useCharacterBuilderState();
   const commitCurrentBuild = useCharacterStore(
     (state) => state.commitCurrentBuild,
   );
-  const description = useCharacterStore((state) => state.description);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [sheetCollapsed, setSheetCollapsed] = useState(false);
   const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
   const [mobileStepsOpen, setMobileStepsOpen] = useState(false);
-  // The summary step is the full character sheet itself, so the live preview
-  // aside is redundant there and is hidden.
   const isSummaryStep = pathname?.endsWith("/conclusao") ?? false;
   const showSheetPreview = !isSummaryStep;
   const gridClass = getGridClass(
@@ -67,17 +65,19 @@ export function BuilderShell({ children }: BuilderShellProps) {
     () => selectCharacterSheetSummary(characterState),
     [characterState],
   );
-  const className = getBuilderClasses().find(
-    (entry) => entry.id === summary.classId,
-  )?.name;
+  const builderClasses = useMemo(() => getBuilderClasses(), []);
+  const className = useMemo(
+    () => builderClasses.find((entry) => entry.id === summary.classId)?.name,
+    [builderClasses, summary.classId],
+  );
 
   const stepMessages = validateBuilderStep(currentStep.slug, characterState);
   const pendencies = useMemo(() => {
-    const characterClass = getBuilderClasses().find(
+    const characterClass = builderClasses.find(
       (entry) => entry.id === characterState.selectedClassId,
     );
     return deriveBuilderPendencies({ state: characterState, characterClass });
-  }, [characterState]);
+  }, [builderClasses, characterState]);
   const currentStepPendencies = pendencies.filter(
     (pendency) => pendency.stepSlug === currentStep.slug,
   );
@@ -153,7 +153,7 @@ export function BuilderShell({ children }: BuilderShellProps) {
             hasPreviousStep={Boolean(previousStep)}
             hasNextStep={Boolean(nextStep)}
             identity={{
-              name: description.nome || "Unnamed Hero",
+              name: characterState.description.nome || "Unnamed Hero",
               className: className || "Class",
               level: summary.level,
               hp: summary.hitPoints,

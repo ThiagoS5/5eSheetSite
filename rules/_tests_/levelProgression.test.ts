@@ -22,7 +22,7 @@ describe("getLevelRequirements", () => {
       .filter((r) => r.kind === "asi-or-feat")
       .map((r) => r.level);
     expect(asiLevels).toContain(4);
-    expect(asiLevels).toContain(6); // Fighter gets a bonus ASI at 6
+    expect(asiLevels).toContain(6);
   });
 
   it("emits nothing for an out-of-range interval", () => {

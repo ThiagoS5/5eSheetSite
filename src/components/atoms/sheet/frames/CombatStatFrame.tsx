@@ -9,11 +9,7 @@ interface CombatStatFrameProps {
   accentColor?: string;
 }
 
-/**
- * Moldura SVG inline para estatísticas de combate (CA, Iniciativa, Velocidade).
- * `shield` desenha um escudo clássico; `square` é consistente com o StatFrame
- * dos atributos. A cor de acento é sempre recebida via prop.
- */
+
 export function CombatStatFrame({
   children,
   variant,

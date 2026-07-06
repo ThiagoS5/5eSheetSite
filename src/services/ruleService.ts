@@ -29,7 +29,15 @@ import {
   toSlug,
 } from "@/src/adapters/fiveEToolsAdapter";
 import { normalizeFeats } from "@/src/adapters/featCatalog";
-import type { DataSourceAuditEntry } from "@/types/builder";
+import type {
+  BuilderBackground,
+  BuilderClass,
+  BuilderEquipmentOption,
+  BuilderFeat,
+  BuilderLanguage,
+  BuilderSpecies,
+  DataSourceAuditEntry,
+} from "@/types/builder";
 import type {
   Raw5eBackgroundFile,
   Raw5eClassFile,
@@ -62,6 +70,27 @@ const classFiles = [
   wizardData,
 ] as Raw5eClassFile[];
 
+let builderSpeciesCache: BuilderSpecies[] | undefined;
+let builderBackgroundsCache: BuilderBackground[] | undefined;
+let builderClassesCache: BuilderClass[] | undefined;
+let builderEquipmentOptionsCache: BuilderEquipmentOption[] | undefined;
+let builderLanguagesCache: BuilderLanguage[] | undefined;
+let featsCache: BuilderFeat[] | undefined;
+
+function deepFreeze<T>(value: T, seen = new WeakSet<object>()): T {
+  if (!value || typeof value !== "object") return value;
+
+  const objectValue = value as object;
+  if (seen.has(objectValue)) return value;
+  seen.add(objectValue);
+
+  for (const child of Object.values(value as Record<string, unknown>)) {
+    deepFreeze(child, seen);
+  }
+
+  return Object.freeze(value);
+}
+
 export function getDataSourceAudit(): DataSourceAuditEntry[] {
   return [
     {
@@ -93,43 +122,57 @@ export function getDataSourceAudit(): DataSourceAuditEntry[] {
 }
 
 export function getBuilderSpecies() {
-  return raceFile.race
-    .filter((race) => is2024Source(race.source, race.edition))
-    .map((race) =>
-      normalizeSpecies(race, playerLore.species?.[toSlug(race.name, race.source)]),
-    );
+  builderSpeciesCache ??= deepFreeze(
+    raceFile.race
+      .filter((race) => is2024Source(race.source, race.edition))
+      .map((race) =>
+        normalizeSpecies(race, playerLore.species?.[toSlug(race.name, race.source)]),
+      ),
+  );
+
+  return builderSpeciesCache;
 }
 
 export function getBuilderBackgrounds() {
-  return backgroundFile.background
-    .filter((background) => is2024Source(background.source, background.edition))
-    .map((background) =>
-      normalizeBackground(
-        background,
-        playerLore.background?.[toSlug(background.name, background.source)],
+  builderBackgroundsCache ??= deepFreeze(
+    backgroundFile.background
+      .filter((background) => is2024Source(background.source, background.edition))
+      .map((background) =>
+        normalizeBackground(
+          background,
+          playerLore.background?.[toSlug(background.name, background.source)],
+        ),
       ),
     );
+
+  return builderBackgroundsCache;
 }
 
 export function getBuilderClasses() {
+  if (builderClassesCache) return builderClassesCache;
+
   const weaponMasteryOptions = getWeaponMasteryOptions();
 
-  return classFiles
-    .flatMap((file) =>
-      file.class
-        .filter((rawClass) => is2024Source(rawClass.source, rawClass.edition))
-        .map((rawClass) =>
-          normalizeClass(
-            rawClass,
-            file.classFeature ?? [],
-            [],
-            playerLore.class?.[toSlug(rawClass.name, rawClass.source)],
-            weaponMasteryOptions,
-            file.subclass ?? [],
-            file.subclassFeature ?? [],
+  builderClassesCache = deepFreeze(
+    classFiles
+      .flatMap((file) =>
+        file.class
+          .filter((rawClass) => is2024Source(rawClass.source, rawClass.edition))
+          .map((rawClass) =>
+            normalizeClass(
+              rawClass,
+              file.classFeature ?? [],
+              [],
+              playerLore.class?.[toSlug(rawClass.name, rawClass.source)],
+              weaponMasteryOptions,
+              file.subclass ?? [],
+              file.subclassFeature ?? [],
+            ),
           ),
-        ),
-    );
+      ),
+  );
+
+  return builderClassesCache;
 }
 
 export function getSubclassesForClass(classId: string) {
@@ -139,23 +182,35 @@ export function getSubclassesForClass(classId: string) {
 }
 
 export function getBuilderEquipmentOptions() {
-  return [...itemFile.item, ...baseItemFile.baseitem]
-    .filter((item) => is2024Source(item.source, item.edition))
-    .map(normalizeEquipmentOption);
+  builderEquipmentOptionsCache ??= deepFreeze(
+    [...itemFile.item, ...baseItemFile.baseitem]
+      .filter((item) => is2024Source(item.source, item.edition))
+      .map(normalizeEquipmentOption),
+  );
+
+  return builderEquipmentOptionsCache;
 }
 
 export function getBuilderLanguages() {
-  return languageFile.language
-    .filter((language) => is2024Source(language.source))
-    .map(normalizeLanguage);
+  builderLanguagesCache ??= deepFreeze(
+    languageFile.language
+      .filter((language) => is2024Source(language.source))
+      .map(normalizeLanguage),
+  );
+
+  return builderLanguagesCache;
 }
 
 export function getFeats() {
-  return normalizeFeats(
-    featsData.feat.filter((feat) => is2024Source(feat.source)) as unknown as Parameters<
-      typeof normalizeFeats
-    >[0],
+  featsCache ??= deepFreeze(
+    normalizeFeats(
+      featsData.feat.filter((feat) => is2024Source(feat.source)) as unknown as Parameters<
+        typeof normalizeFeats
+      >[0],
+    ),
   );
+
+  return featsCache;
 }
 
 function getWeaponMasteryOptions() {

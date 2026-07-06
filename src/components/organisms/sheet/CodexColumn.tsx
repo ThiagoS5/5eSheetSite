@@ -83,13 +83,13 @@ export function CodexColumn({ description, className }: CodexColumnProps) {
         className,
       )}
     >
-      {/* Linha decorativa no topo */}
+
       <div
         aria-hidden="true"
         className="absolute left-0 right-0 top-0 h-[2px] bg-gradient-to-r from-primary/60 via-primary/20 to-transparent"
       />
 
-      {/* Header da seção */}
+
       <div className="flex items-center gap-2 border-b border-border pb-3">
         <i aria-hidden="true" className="fa-solid fa-scroll text-primary" />
         <h2 className="text-sm font-semibold uppercase tracking-widest text-foreground">
@@ -97,7 +97,7 @@ export function CodexColumn({ description, className }: CodexColumnProps) {
         </h2>
       </div>
 
-      {/* Aparência: avatar + descrição fiel (seção plana, não card aninhado) */}
+
       <div className="flex flex-col gap-3">
         <div className="flex aspect-[3/4] w-full items-center justify-center rounded-lg border border-border/50 bg-muted">
           <i aria-hidden="true" className="fa-solid fa-user text-5xl text-muted-foreground" />
@@ -105,7 +105,7 @@ export function CodexColumn({ description, className }: CodexColumnProps) {
         <NarrativeField label="True Appearance" value={description.aparencia} limit={150} />
       </div>
 
-      {/* Dados pessoais — separado por divisória em vez de card interno */}
+
       <div className="flex flex-col gap-3 border-t border-border/50 pt-3">
         <CodexField label="Alignment" value={description.alinhamento} limit={25} />
         <CodexField label="Faith" value={description.faith} limit={40} />
@@ -120,7 +120,7 @@ export function CodexColumn({ description, className }: CodexColumnProps) {
         </div>
       </div>
 
-      {/* Traços de Personalidade — campos narrativos */}
+
       <section className="flex flex-col gap-4 border-t border-border/50 pt-3">
         <h3 className="text-base font-semibold text-foreground">
           Personality Traits

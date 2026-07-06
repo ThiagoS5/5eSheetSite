@@ -72,7 +72,7 @@ describe("EquipmentChecklist", () => {
     expect(screen.getByText("CLASS EQUIPMENT")).toBeInTheDocument();
     expect(screen.getByText("Studded Leather Armor")).toBeInTheDocument();
     expect(screen.getByText("Dagger")).toBeInTheDocument();
-    // Items are rendered as list elements, not clickable buttons
+
     expect(screen.queryByRole("button", { name: /Option A/i })).toBeNull();
   });
 
@@ -172,10 +172,10 @@ describe("EquipmentChecklist", () => {
       />,
     );
 
-    // Gold items with value are filtered out in items mode
+
     expect(screen.queryByText("15 GP")).toBeNull();
     expect(screen.queryByText("Gold")).toBeNull();
-    // Physical items still render
+
     expect(screen.getByText("Studded Leather Armor")).toBeInTheDocument();
     expect(screen.getByText("Dagger")).toBeInTheDocument();
   });
@@ -215,7 +215,7 @@ describe("EquipmentChecklist", () => {
 
     expect(screen.getByText("BACKGROUND EQUIPMENT")).toBeInTheDocument();
     expect(screen.getByText("Dagger")).toBeInTheDocument();
-    // Gold entries are filtered out in items mode
+
     expect(screen.queryByText("16 GP")).toBeNull();
     expect(screen.queryByText(/Choose A or B/)).toBeNull();
   });
@@ -235,15 +235,15 @@ describe("EquipmentChecklist", () => {
       />,
     );
 
-    // Option A is parsed from the "Choose A or B" summary and rendered as a
-    // structured list; the combined "Choose A or B …" string is not shown.
+
+
     expect(screen.getByText("Dagger")).toBeInTheDocument();
     expect(screen.getByText("16 GP")).toBeInTheDocument();
     expect(screen.queryByText(/Choose A or B/)).not.toBeInTheDocument();
   });
 
   it("filters out gold entries from the items list (Change B)", () => {
-    // Kit with both physical items and a gold entry
+
     const classWithGoldEntry: BuilderClass = {
       ...selectedClass,
       startingEquipmentPackages: [
@@ -270,10 +270,10 @@ describe("EquipmentChecklist", () => {
       />,
     );
 
-    // Physical items should render
+
     expect(screen.getByText("Studded Leather Armor")).toBeInTheDocument();
     expect(screen.getByText("Dagger")).toBeInTheDocument();
-    // Gold entry should NOT appear in items list
+
     expect(screen.queryByText("50 GP")).toBeNull();
   });
 
@@ -304,7 +304,7 @@ describe("EquipmentChecklist", () => {
       />,
     );
 
-    // Gold mode should show the gold option (from the "Choose A or B" summary)
+
     expect(screen.getByText("150 GP")).toBeInTheDocument();
   });
 
@@ -322,9 +322,9 @@ describe("EquipmentChecklist", () => {
     const activeButton = screen.getByRole("button", { name: /Offered Items/i });
     const inactiveButton = screen.getByRole("button", { name: /Starting Gold/i });
 
-    // Active button should have the crimson class
+
     expect(activeButton).toHaveClass("bg-brand-crimson-alt");
-    // Inactive button should NOT have the crimson class
+
     expect(inactiveButton).not.toHaveClass("bg-brand-crimson-alt");
   });
 });

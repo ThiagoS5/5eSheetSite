@@ -11,7 +11,12 @@ export default defineConfig({
     environment: "node",
     setupFiles: ["./vitest.setup.ts"],
     testTimeout: 15000,
-    exclude: [...configDefaults.exclude, "**/.claude/**", "**/.worktrees/**"],
+    include: [
+      "app/**/*.{test,spec}.{ts,tsx,js,jsx}",
+      "rules/**/*.{test,spec}.{ts,tsx,js,jsx}",
+      "src/**/*.{test,spec}.{ts,tsx,js,jsx}",
+    ],
+    exclude: configDefaults.exclude,
     coverage: {
       provider: "v8",
       reporter: ["text", "html", "lcov"],

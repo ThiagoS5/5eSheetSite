@@ -1,6 +1,6 @@
 import type { BuilderChoiceOption, BuilderClass } from "@/types/builder";
 
-/** Canonical SRD 2024 feature name for an Ability Score Improvement. */
+
 export const ASI_FEATURE_NAME = "Ability Score Improvement";
 
 export type LevelChoiceRequirement =
@@ -15,10 +15,7 @@ export type LevelChoiceRequirement =
       options: BuilderChoiceOption[];
     };
 
-/**
- * Returns the choices a character must make for levels in the half-open
- * interval `(fromLevel, toLevel]`. Pure: derived only from class data.
- */
+
 export function getLevelRequirements(
   characterClass: BuilderClass,
   fromLevel: number,
@@ -27,7 +24,7 @@ export function getLevelRequirements(
   const inRange = (level: number) => level > fromLevel && level <= toLevel;
   const requirements: LevelChoiceRequirement[] = [];
 
-  // Subclass: dedupe to the lowest level that grants a subclass across ALL levels.
+
   const subclassLevels = characterClass.allFeatures
     .filter((f) => f.grantsSubclass)
     .map((f) => f.level ?? 0)

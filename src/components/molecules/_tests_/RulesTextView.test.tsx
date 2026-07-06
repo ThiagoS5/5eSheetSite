@@ -18,7 +18,7 @@ describe("RulesTextView", () => {
     expect(screen.getByText(/Cast/)).toBeInTheDocument();
     expect(screen.getByTitle("spell: Fireball")).toHaveTextContent("Fireball");
     expect(screen.getByTitle("dice: 8d6")).toHaveTextContent("8d6");
-    // Refs e dados são informativos, não interativos: nenhum tab stop falso.
+
     expect(container.querySelector("button")).toBeNull();
     expect(container.querySelector("[tabindex]")).toBeNull();
   });

@@ -52,6 +52,25 @@ describe("builder data services", () => {
     ]);
   });
 
+  it("reuses normalized builder data across calls", () => {
+    expect(getBuilderClasses()).toBe(getBuilderClasses());
+    expect(getBuilderSpecies()).toBe(getBuilderSpecies());
+    expect(getBuilderBackgrounds()).toBe(getBuilderBackgrounds());
+    expect(getBuilderEquipmentOptions()).toBe(getBuilderEquipmentOptions());
+    expect(getBuilderLanguages()).toBe(getBuilderLanguages());
+  });
+
+  it("keeps cached builder data immutable", () => {
+    const classes = getBuilderClasses();
+    const species = getBuilderSpecies();
+
+    expect(Object.isFrozen(classes)).toBe(true);
+    expect(Object.isFrozen(classes[0])).toBe(true);
+    expect(Object.isFrozen(species)).toBe(true);
+    expect(Object.isFrozen(species[0])).toBe(true);
+    expect(() => classes.push(classes[0])).toThrow(TypeError);
+  });
+
   it("returns only 2024 species and does not expose species ability bonuses", () => {
     const species = getBuilderSpecies();
 
@@ -266,17 +285,17 @@ describe("builder data services", () => {
     const subclasses = getSubclassesForClass("fighter-xphb");
     const names = subclasses.map((s) => s.name);
 
-    // Legacy subclass available to the 2024 Fighter (source XGE, classSource XPHB).
+
     const cavalier = subclasses.find((s) => s.name === "Cavalier");
     expect(cavalier?.id).toBe("cavalier-xge");
 
-    // Reprinted subclass deduped to the 2024 version, present once.
+
     expect(names.filter((n) => n === "Battle Master")).toHaveLength(1);
     expect(subclasses.find((s) => s.name === "Battle Master")?.id).toBe(
       "battle-master-xphb",
     );
 
-    // No duplicate names.
+
     expect(new Set(names).size).toBe(names.length);
   });
 

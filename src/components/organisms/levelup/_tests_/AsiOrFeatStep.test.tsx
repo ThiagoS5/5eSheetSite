@@ -48,7 +48,7 @@ const feats: BuilderFeat[] = [
   },
 ];
 
-// Controlled harness: feeds the emitted value back as the prop, like the real orchestrator.
+
 function Harness({
   onChange,
   initialValue,

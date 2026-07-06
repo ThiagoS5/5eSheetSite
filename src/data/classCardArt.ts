@@ -1,24 +1,6 @@
 import type { BuilderClassImage } from "@/types/builder";
 
-/**
- * Enquadramento curado das artes de classe quando exibidas como fundo do card
- * do builder (`HeroChoiceCard`).
- *
- * As splashes de capítulo do XPHB 2024 (Bardo, Clérigo, Mago, etc.) trazem uma
- * moldura decorativa dourada embutida ~6% para dentro da borda da imagem, além
- * de, em algumas, um painel de arte secundário na base. Renderizadas com
- * `background-size: cover`, essa moldura + margem aparecem como um "fundo
- * colorido atrás da arte", em vez de a arte preencher o card até a borda — ao
- * contrário do Artificer (EFA) e do Barbarian, cujas artes já são full-bleed.
- *
- * Cada override recorta a moldura ampliando a arte (`cardBackgroundSize`) e,
- * quando preciso, reposiciona verticalmente (`cardBackgroundPosition`) para
- * manter o herói centralizado e empurrar o painel inferior para fora. Os valores
- * são relativos (%), então continuam válidos em qualquer largura de card.
- *
- * Classes já full-bleed (Artificer, Barbarian) ficam de fora e usam o `cover`
- * padrão. A chave é o slug `${nome}-${fonte}` (igual ao `toSlug` do adapter).
- */
+
 type CardFraming = Required<
   Pick<BuilderClassImage, "cardBackgroundSize" | "cardBackgroundPosition">
 >;

@@ -21,9 +21,7 @@
   html,
   body {
     background: var(--surface-nested);
-    /* `clip` corta o transbordo horizontal sem forçar overflow-y: auto — assim
-       html/body não viram scroll containers e o `position: sticky` do rodapé de
-       navegação do builder gruda na viewport, não no fim do conteúdo. */
+
     overflow-x: clip;
   }
 
@@ -55,8 +53,7 @@
   html {
     @apply font-sans;
   }
-  /* Tailwind v4 dropped the default pointer cursor on buttons — restore it
-     for every interactive control unless it's disabled. */
+
   button:not(:disabled),
   [role="button"]:not([aria-disabled="true"]),
   label[for],
@@ -141,9 +138,7 @@
   --color-card: var(--card);
   --color-foreground: var(--foreground);
   --color-background: var(--background);
-  /* Elevation ramp — a single 3-step glow set derived from --primary via
-     color-mix, so elevation tracks the active theme/variation instead of the
-     ad-hoc rgba(196,30,30)/rgba(230,28,35) literals scattered per component. */
+
   --shadow-elevation-1: 0 0 15px color-mix(in oklch, var(--primary) 18%, transparent);
   --shadow-elevation-2: 0 0 18px color-mix(in oklch, var(--primary) 28%, transparent);
   --shadow-elevation-3: 0 0 28px color-mix(in oklch, var(--primary) 22%, transparent);
@@ -154,22 +149,22 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
-  /* Surfaces */
+
   --color-surface-raised: var(--surface-raised);
   --color-surface-nested: var(--surface-nested);
   --color-surface-base: var(--surface-base);
   --color-surface-elevated: var(--surface-elevated);
-  /* Text tones — exposed without "text-" prefix so utilities are text-subdued / text-faint */
+
   --color-subdued: var(--text-subdued);
   --color-faint: var(--text-faint);
-  /* Brand */
+
   --color-brand-crimson: var(--brand-crimson);
   --color-brand-crimson-alt: var(--brand-crimson-alt);
   --color-brand-gold: var(--brand-gold);
   --color-brand-gold-alt: var(--brand-gold-alt);
   --color-brand-green: var(--brand-green);
   --color-brand-blue: var(--brand-blue);
-  /* Named tones */
+
   --color-tone-arcane: var(--tone-arcane);
   --color-tone-arcane-deep: var(--tone-arcane-deep);
   --color-tone-arcane-deepest: var(--tone-arcane-deepest);
@@ -181,14 +176,9 @@
   --color-tone-crimson-deepest: var(--tone-crimson-deepest);
 }
 
-/* ── Light (parchment) theme ──
-   Available but NOT the app default: <html> ships the `.dark` class (see
-   app/layout.tsx), so the dark block below always wins in-app. This block is
-   the documented light path for consumers who drop `.dark`. Core surface/text
-   tokens are tuned to clear WCAG AA on parchment; brand/tone accents are
-   darkened from their dark-theme values so they read on a light ground. */
+
 :root {
-  /* ── Core shadcn tokens ── */
+
   --background: oklch(0.95 0.012 85);
   --foreground: oklch(0.26 0.03 50);
   --card: oklch(0.98 0.008 85);
@@ -224,17 +214,17 @@
   --sidebar-border: oklch(0.35 0.02 60 / 16%);
   --sidebar-ring: oklch(0.55 0.22 27);
 
-  /* ── Custom surface tokens ── */
+
   --surface-raised: oklch(0.98 0.008 85);
   --surface-nested: oklch(0.93 0.012 85);
   --surface-base: oklch(0.95 0.01 85);
   --surface-elevated: oklch(0.97 0.009 85);
 
-  /* ── Custom text tokens ── */
+
   --text-subdued: oklch(0.4 0.03 60);
   --text-faint: oklch(0.55 0.025 60);
 
-  /* ── Brand tokens ── */
+
   --brand-crimson: oklch(0.55 0.22 27);
   --brand-crimson-alt: oklch(0.49 0.2 28);
   --brand-gold: oklch(0.7 0.13 84);
@@ -242,7 +232,7 @@
   --brand-green: oklch(0.58 0.14 152);
   --brand-blue: oklch(0.55 0.16 255);
 
-  /* ── Named tone tokens (decorative gradients) ── */
+
   --tone-arcane: oklch(0.55 0.12 258);
   --tone-arcane-deep: oklch(0.49 0.15 255);
   --tone-arcane-deepest: oklch(0.4 0.1 255);
@@ -255,7 +245,7 @@
 }
 
 .dark {
-  /* ── Core shadcn tokens ── */
+
   --background: oklch(0.15 0.01 276);
   --foreground: oklch(0.93 0.006 270);
   --card: oklch(0.24 0.02 277);
@@ -264,32 +254,29 @@
   --popover-foreground: oklch(0.93 0.006 270);
   --primary: oklch(0.59 0.23 27);
   --primary-foreground: oklch(1 0 0);
-  /* Darkened hover for the default Button — keeps white label ≥4.5:1 (5.86:1)
-     regardless of backdrop, unlike fading the fill (bg-primary/80). */
+
   --primary-hover: oklch(0.52 0.23 27);
   --secondary: oklch(0.24 0.02 277);
   --secondary-foreground: oklch(0.777 0.033 276);
   --muted: oklch(0.19 0.01 279);
-  /* Lifted 0.60 → 0.68 so 10px uppercase micro-labels (StatBadge, CardDescription,
-     frame captions) clear 4.5:1 on card/surface tokens, not just on --background. */
+
   --muted-foreground: oklch(0.68 0.04 278);
   --accent: oklch(0.854 0.124 86);
   --accent-foreground: oklch(0.15 0.01 276);
   --destructive: oklch(0.47 0.18 28);
-  /* Distinct from the fill (--destructive): a lighter red for TEXT use on the
-     destructive/10 wash — clears 4.5:1 (5.13:1) where text-destructive (1.96:1) failed. */
+
   --destructive-foreground: oklch(0.70 0.16 25);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(0.19 0.01 279);
   --ring: oklch(0.59 0.23 27);
-  /* chart tokens — hex converted to OKLCH (colors unchanged) */
+
   --chart-1: oklch(0.59 0.23 27);
   --chart-2: oklch(0.854 0.124 86);
   --chart-3: oklch(0.74 0.15 152);
   --chart-4: oklch(0.69 0.16 255);
   --chart-5: oklch(0.781 0.127 58);
   --radius: 0.5rem;
-  /* sidebar tokens — hex converted to OKLCH (colors unchanged) */
+
   --sidebar: oklch(0.19 0.01 279);
   --sidebar-foreground: oklch(0.93 0.006 270);
   --sidebar-primary: oklch(0.59 0.23 27);
@@ -299,17 +286,17 @@
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.59 0.23 27);
 
-  /* ── Custom surface tokens ── */
+
   --surface-raised: oklch(0.24 0.02 277);
   --surface-nested: oklch(0.19 0.01 279);
   --surface-base: oklch(0.2 0.01 278);
   --surface-elevated: oklch(0.21 0.02 277);
 
-  /* ── Custom text tokens ── */
+
   --text-subdued: oklch(0.777 0.033 276);
   --text-faint: oklch(0.47 0.04 275);
 
-  /* ── Brand tokens ── */
+
   --brand-crimson: oklch(0.59 0.23 27);
   --brand-crimson-alt: oklch(0.53 0.2 28);
   --brand-gold: oklch(0.854 0.124 86);
@@ -317,7 +304,7 @@
   --brand-green: oklch(0.74 0.15 152);
   --brand-blue: oklch(0.69 0.16 255);
 
-  /* ── Named tone tokens (decorative gradients) ── */
+
   --tone-arcane: oklch(0.82 0.07 258);
   --tone-arcane-deep: oklch(0.49 0.15 255);
   --tone-arcane-deepest: oklch(0.33 0.07 255);

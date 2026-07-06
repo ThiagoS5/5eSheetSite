@@ -34,7 +34,7 @@ describe("StartingLevelStepper", () => {
   it("shows the configure button only when there are pending level choices", () => {
     render(<CharacterStoreProvider><SetClass /><StartingLevelStepper /></CharacterStoreProvider>);
     fireEvent.click(screen.getByRole("button", { name: "setclass" }));
-    // level 1 fighter: weapon mastery is pending (count 3) -> button shows.
+
     expect(screen.getByRole("button", { name: /Configure choices/ })).toBeInTheDocument();
   });
 });

@@ -122,16 +122,16 @@ describe("AbilityRollPanel", () => {
       "Value for Dexterity",
     ) as HTMLSelectElement;
 
-    // Both rolls (index 0 and 1) with total 13 must be independently offered.
+
     const forcaOptionValues = Array.from(forcaSelect.options).map(
       (option) => option.value,
     );
     expect(forcaOptionValues).toEqual(expect.arrayContaining(["0", "1"]));
 
-    // Assign the first "13" (index 0) to Forca.
+
     fireEvent.change(forcaSelect, { target: { value: "0" } });
 
-    // The second "13" (index 1) must still be assignable to Destreza.
+
     const destrezaOptionValues = Array.from(destrezaSelect.options).map(
       (option) => option.value,
     );

@@ -3,9 +3,9 @@ import {
   type CreationPreferences,
 } from "@/src/types/characterBuild";
 
-// Own, versioned storage key (master plan §26.1-B #4): components must never
-// touch localStorage directly — only this service reads/writes global
-// creation preference defaults.
+
+
+
 const STORAGE_KEY = "forge-fate-preferences:v1";
 
 export interface GlobalPreferences {

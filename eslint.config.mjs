@@ -10,11 +10,9 @@ const eslintConfig = defineConfig([
       "@typescript-eslint/no-explicit-any": "error",
     },
   },
-  // Override default ignores of eslint-config-next.
   globalIgnores([
-    // Default ignores of eslint-config-next:
+    ".*/**",
     ".next/**",
-    ".claude/**",
     "out/**",
     "build/**",
     "next-env.d.ts",

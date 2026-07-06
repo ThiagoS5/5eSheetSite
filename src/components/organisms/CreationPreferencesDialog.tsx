@@ -25,13 +25,13 @@ export function CreationPreferencesDialog({
   const [activeSources, setActiveSources] = useState<string[]>([]);
   const [progressionMode, setProgressionMode] = useState<ProgressionMode>("xp");
 
-  // Snapshot the effective defaults (per-character prefs, falling back to the
-  // saved global defaults) once per "open" transition, so re-opening the
-  // dialog — including for a brand-new character with no per-character prefs
-  // yet — always re-evaluates the seed instead of reusing stale state from a
-  // previous mount. Mirrors LevelUpFlow's "adjust state while rendering"
-  // pattern (this project's eslint forbids calling setState synchronously
-  // inside a useEffect body).
+
+
+
+
+
+
+
   const [snapshotTaken, setSnapshotTaken] = useState(false);
   if (open && !snapshotTaken) {
     setSnapshotTaken(true);

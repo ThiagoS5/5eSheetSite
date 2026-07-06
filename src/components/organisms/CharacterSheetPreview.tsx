@@ -9,7 +9,6 @@ import {
 } from "@/src/services/ruleService";
 import { getAbilityModifier } from "@/src/adapters/characterDerivedAdapter";
 import { selectCharacterSheetSummary } from "@/src/store/characterSelectors";
-import { useCharacterStore } from "@/src/store/useCharacterStore";
 import { useCharacterBuilderState } from "@/src/store/useCharacterBuilderState";
 import { ATTRIBUTE_LABELS, type AttributeKey } from "@/types/dnd";
 import { TagList } from "@/src/components/molecules/TagList";
@@ -19,10 +18,6 @@ const attributes = Object.keys(ATTRIBUTE_LABELS) as AttributeKey[];
 interface CharacterSheetPreviewProps {
   collapsed?: boolean;
   onToggleCollapsed?: () => void;
-  /**
-   * "aside" (default): a coluna fixa do desktop. "drawer": conteúdo puro para o
-   * cockpit mobile (sem `hidden`, sem sticky/altura xl, sempre expandido).
-   */
   variant?: "aside" | "drawer";
 }
 
@@ -38,16 +33,22 @@ export function CharacterSheetPreview({
     () => selectCharacterSheetSummary(characterState),
     [characterState],
   );
-  const description = useCharacterStore((state) => state.description);
-  const speciesName = getBuilderSpecies().find(
-    (entry) => entry.id === summary.speciesId,
-  )?.name;
-  const className = getBuilderClasses().find(
-    (entry) => entry.id === summary.classId,
-  )?.name;
-  const backgroundName = getBuilderBackgrounds().find(
-    (entry) => entry.id === summary.backgroundId,
-  )?.name;
+  const { description } = characterState;
+  const speciesName = useMemo(
+    () => getBuilderSpecies().find((entry) => entry.id === summary.speciesId)?.name,
+    [summary.speciesId],
+  );
+  const className = useMemo(
+    () => getBuilderClasses().find((entry) => entry.id === summary.classId)?.name,
+    [summary.classId],
+  );
+  const backgroundName = useMemo(
+    () =>
+      getBuilderBackgrounds().find(
+        (entry) => entry.id === summary.backgroundId,
+      )?.name,
+    [summary.backgroundId],
+  );
 
   const toggleButton = isDrawer ? null : (
     <button

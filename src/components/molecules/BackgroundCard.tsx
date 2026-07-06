@@ -27,7 +27,7 @@ interface BackgroundCardProps {
   onCommit: () => void;
 }
 
-/** Tema pergaminho para os cards de antecedente. */
+
 const heroBackgroundTheme: HeroChoiceTheme = {
   theme: "#3A2C1A",
   accent: "#C19429",
