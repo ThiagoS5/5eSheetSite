@@ -3,7 +3,7 @@
 import { useId, useMemo, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CircleQuestionMark } from "lucide-react";
+import { CircleQuestionMark, Dices } from "lucide-react";
 import Image from "next/image";
 import { useCharacterStore } from "@/src/store/useCharacterStore";
 import { Input } from "@/src/components/ui/input";
@@ -13,6 +13,7 @@ import {
   buildPersonalDetailsFieldHelp,
   getPersonalDetailsRecommendations,
 } from "@/src/data/personalDetailsRecommendations";
+import { generateRandomName } from "@/src/data/nameGenerator";
 import type { BuilderBackground, BuilderClass, BuilderSpecies } from "@/types/builder";
 import {
   personalDetailsSchema,
@@ -207,12 +208,27 @@ export function PersonalDetailsEditor({
               help={guidedFieldHelp.nome}
               showHelp={beginnerMode}
             />
-            <Input
-              id="pd-nome"
-              className={inputCls}
-              placeholder="Your character's name"
-              {...register("nome")}
-            />
+            <div className="flex gap-2">
+              <Input
+                id="pd-nome"
+                className={cn(inputCls, "flex-1")}
+                placeholder="Your character's name"
+                {...register("nome")}
+              />
+              <button
+                type="button"
+                aria-label="Roll a random name"
+                onClick={() => {
+                  setValue("nome", generateRandomName(recommendations), {
+                    shouldDirty: true,
+                  });
+                  void persist();
+                }}
+                className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-border bg-card text-muted-foreground outline-none transition hover:border-brand-gold-alt/60 hover:text-foreground focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70"
+              >
+                <Dices aria-hidden="true" className="h-4 w-4" />
+              </button>
+            </div>
             {errors.nome && (
               <p className="mt-1 text-xs text-primary">{errors.nome.message}</p>
             )}

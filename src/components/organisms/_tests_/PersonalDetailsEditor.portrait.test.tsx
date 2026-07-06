@@ -52,4 +52,18 @@ describe("PersonalDetailsEditor portrait gallery", () => {
 
     expect(store.getState().description.portraitId).toBe("");
   });
+
+  it("rolls a random name into the name field", async () => {
+    const user = userEvent.setup();
+    render(
+      <CharacterStoreProvider store={createCharacterStore()}>
+        <PersonalDetailsEditor />
+      </CharacterStoreProvider>,
+    );
+
+    await user.click(screen.getByRole("button", { name: /roll a random name/i }));
+
+    const input = screen.getByLabelText(/character name/i) as HTMLInputElement;
+    expect(input.value.length).toBeGreaterThan(0);
+  });
 });
