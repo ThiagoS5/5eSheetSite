@@ -31,10 +31,7 @@ interface EquipmentSourceBlock {
   summary: string;
 }
 
-/**
- * Split a "Choose A or B: (A) …; or (B) …" summary into its two options so
- * option A can live under "Itens Oferecidos" and option B under "Ouro Inicial".
- */
+
 function splitOptions(summary: string): { a: string; b: string } | null {
   const match = summary.match(/\(A\)\s*(.*?)\s*;?\s*or\s*\(B\)\s*(.*)$/i);
   if (!match) return null;
@@ -42,7 +39,7 @@ function splitOptions(summary: string): { a: string; b: string } | null {
   return { a: clean(match[1] ?? ""), b: clean(match[2] ?? "") };
 }
 
-/** Split a comma-separated item phrase into qty/label rows (matches the class kit layout). */
+
 function parseItemList(text: string): { qty?: number; label: string }[] {
   return text
     .split(",")
@@ -60,7 +57,7 @@ function parseItemList(text: string): { qty?: number; label: string }[] {
 interface EquipmentChecklistProps {
   selectedClass?: BuilderClass;
   selectedBackground?: BuilderBackground;
-  selectedSpecies?: BuilderSpecies; // reserved for future species equipment source
+  selectedSpecies?: BuilderSpecies;
   choicesBySource: EquipmentChoicesBySource;
   equippedItemIds?: readonly string[];
   onToggleEquipped?: (itemId: string) => void;
@@ -141,8 +138,8 @@ export function EquipmentChecklist({
 
       {sources.map((source) => {
         const choice = choicesBySource[source.key];
-        // Só destaca um botão depois que o usuário escolhe explicitamente; até
-        // lá ambos ficam neutros, embora a lista mostre os itens por padrão.
+
+
         const selectedMode = choice?.mode;
         const mode: EquipmentAcquisitionMode = selectedMode ?? "items";
 

@@ -136,12 +136,12 @@ describe("BuilderShell", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /open the live sheet/i }));
 
-    // The sheet drawer shows the live character sheet, honestly matching its label.
+
     expect(screen.getByText("Live Sheet")).toBeInTheDocument();
     expect(
       screen.getByRole("complementary", { name: /Unnamed Hero/i }),
     ).toBeInTheDocument();
-    // ...and NOT the step navigation (that lives behind the "steps" action).
+
     expect(
       screen.queryByRole("navigation", { name: "Character Builder steps" }),
     ).not.toBeInTheDocument();

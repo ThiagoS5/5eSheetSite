@@ -56,7 +56,6 @@ export function InventoryManager({
   onToggleEquipped,
 }: InventoryManagerProps) {
   const [filters, setFilters] = useState<CatalogFilterCriteria>(DEFAULT_CATALOG_FILTERS);
-  const [addingId, setAddingId] = useState<string | null>(null);
 
   const results = useMemo(() => filterCatalog(catalog, filters), [catalog, filters]);
   const availableSources = useMemo(
@@ -64,18 +63,9 @@ export function InventoryManager({
     [catalog],
   );
 
-  async function handleAddItem(item: CatalogItem) {
-    if (addingId) return; // ignore clicks while an add is in flight
-    setAddingId(item.id);
-    try {
-      onAddItem(item.id);
-      toast.success(`${item.name} added to your current inventory`);
-      // Brief hold so the disabled/spinner state is visible and rapid repeat
-      // clicks are throttled (the store update itself is synchronous).
-      await new Promise((resolve) => setTimeout(resolve, 400));
-    } finally {
-      setAddingId(null);
-    }
+  function handleAddItem(item: CatalogItem) {
+    onAddItem(item.id);
+    toast.success(`${item.name} added to your current inventory`);
   }
 
   const itemMap = useMemo(
@@ -112,7 +102,6 @@ export function InventoryManager({
   return (
     <section className="bg-muted rounded-lg border border-border p-4">
       <Accordion type="multiple" defaultValue={[]}>
-        {/* ── Inventário Atual ── */}
         <AccordionItem value="inventory">
           <AccordionTrigger>Current Inventory</AccordionTrigger>
           <AccordionContent>
@@ -184,11 +173,9 @@ export function InventoryManager({
           </AccordionContent>
         </AccordionItem>
 
-        {/* ── Adicionar Itens ── */}
         <AccordionItem value="add">
           <AccordionTrigger>Add Items</AccordionTrigger>
           <AccordionContent>
-            {/* Search */}
             <div className="mb-3">
               <Input
                 aria-label="Search item"
@@ -201,7 +188,6 @@ export function InventoryManager({
               />
             </div>
 
-            {/* Category pills */}
             <div className="mb-3 flex flex-wrap gap-1.5">
               {ALL_CATEGORIES.map((cat) => {
                 const active = filters.categories.includes(cat);
@@ -224,7 +210,6 @@ export function InventoryManager({
               })}
             </div>
 
-            {/* Source badges */}
             <div className="mb-3 flex flex-wrap gap-1.5" aria-label="Filter by source">
               {availableSources.map((source) => {
                 const active = filters.sources.includes(source);
@@ -248,7 +233,6 @@ export function InventoryManager({
               })}
             </div>
 
-            {/* Property checkboxes */}
             <div className="mb-3 flex flex-wrap gap-4">
               <label className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-not-allowed">
                 <input
@@ -315,14 +299,12 @@ export function InventoryManager({
               </ul>
             ) : (
               <>
-                {/* Results count */}
                 <p className="mb-2 text-xs text-muted-foreground">
                   {results.length > 100
                     ? `Showing 100 of ${results.length} items`
                     : `${results.length} items`}
                 </p>
 
-                {/* Results list */}
                 <ul className="space-y-1">
                   {visibleResults.map((item) => (
                     <li
@@ -346,19 +328,12 @@ export function InventoryManager({
                       <button
                         type="button"
                         onClick={() => handleAddItem(item)}
-                        disabled={addingId === item.id}
                         className={cn(
                           "shrink-0 rounded px-2 py-1 text-xs font-bold transition-colors",
-                          addingId === item.id
-                            ? "cursor-progress bg-muted text-muted-foreground opacity-60"
-                            : "cursor-pointer bg-primary text-foreground hover:bg-primary/90",
+                          "cursor-pointer bg-primary text-foreground hover:bg-primary/90",
                         )}
                       >
-                        {addingId === item.id ? (
-                          <i aria-hidden="true" className="fa-solid fa-spinner fa-spin" />
-                        ) : (
-                          "ADD"
-                        )}
+                        ADD
                       </button>
                     </li>
                   ))}

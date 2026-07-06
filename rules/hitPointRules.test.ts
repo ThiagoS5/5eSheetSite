@@ -15,7 +15,7 @@ describe("calculateMaxHitPointsWithRolls", () => {
   });
 
   it("uses recorded rolls instead of the average for those levels", () => {
-    // d10, CON 14 (+2): L1=12; L2 rolled 10 → 12; L3 avg 6+2=8; total 32
+
     expect(
       calculateMaxHitPointsWithRolls({
         hitDie: 10, constitutionScore: 14, level: 3,
@@ -30,7 +30,7 @@ describe("calculateMaxHitPointsWithRolls", () => {
         hitDie: 8, constitutionScore: 10, level: 2,
         hpRollByLevel: { "2": 99, "7": 8 },
       }),
-    ).toBe(8 + 8); // roll clampado a 8; nível 7 ignorado
+    ).toBe(8 + 8);
     expect(
       calculateMaxHitPointsWithRolls({
         hitDie: 8, constitutionScore: 10, level: 2,
@@ -48,7 +48,7 @@ describe("calculateMaxHitPointsWithRolls", () => {
     expect(parts.reduce((sum, p) => sum + p.value, 0)).toBe(
       calculateMaxHitPointsWithRolls(input),
     );
-    // rolagens aparecem como parcela separada da média
+
     expect(parts.some((p) => /rolled/i.test(p.label))).toBe(true);
   });
 });

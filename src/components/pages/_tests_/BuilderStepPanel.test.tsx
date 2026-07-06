@@ -70,11 +70,11 @@ describe("BuilderStepPanel", () => {
       </CharacterStoreProvider>,
     );
 
-    // A fresh build reaching a later step is sealed, not a dead end.
+
     expect(screen.getByText("This step is sealed")).toBeInTheDocument();
     expect(screen.getByText("Finish these to continue:")).toBeInTheDocument();
 
-    // The primary action repairs by routing to the first pending step (Class).
+
     const continueButton = screen.getByRole("button", { name: /Continue from/i });
     expect(continueButton).toHaveTextContent("Class");
     fireEvent.click(continueButton);
@@ -98,7 +98,7 @@ describe("BuilderStepPanel", () => {
         .length,
     ).toBeGreaterThan(0);
 
-    // Answer the first option from each randomized question.
+
     for (let questionIndex = 1; questionIndex <= 7; questionIndex += 1) {
       expect(
         screen.getByText(`Question ${questionIndex} of 7`),

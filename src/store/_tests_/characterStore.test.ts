@@ -283,8 +283,8 @@ describe("levelUp integration 1->20", () => {
 
   it("Fighter 1->20: PB, PV e features consistentes em todos os niveis", () => {
     const store = createCharacterStore();
-    // Loop cobre 19 niveis x recalculo de summary; sob carga da suite completa
-    // o timeout padrao de 5s pode ser justo, entao alarga-se explicitamente.
+
+
     store.getState().selectClass("fighter-xphb");
     for (let level = 2; level <= 20; level += 1) {
       store.getState().levelUp();

@@ -21,7 +21,7 @@ function addBonuses(target: AttributeBonuses, source: AttributeBonuses | undefin
   }
 }
 
-/** Sum of ASI + half-feat ability bonuses for all levels <= current level. */
+
 export function collectAsiBonuses(state: CharacterBuilderState): AttributeBonuses {
   const bonuses: AttributeBonuses = {};
   for (const [level, choice] of Object.entries(state.asiOrFeatByLevel)) {
@@ -106,7 +106,7 @@ function isValidFeatChoice(
   return status.met && hasRequiredFeatChoices(choice);
 }
 
-/** Subclass features unlocked up to the current level for the selected subclass. */
+
 export function getActiveSubclassFeatures(
   state: CharacterBuilderState,
   characterClass: BuilderClass,
@@ -137,7 +137,7 @@ function isRequirementResolved(
   return (state.classFeatureChoices[req.id] ?? []).length === req.count;
 }
 
-/** Full unresolved requirement objects for levels 1..currentLevel, in order. */
+
 export function getPendingRequirements(
   state: CharacterBuilderState,
   characterClass: BuilderClass,

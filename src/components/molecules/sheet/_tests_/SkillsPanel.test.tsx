@@ -18,12 +18,12 @@ vi.mock("@/src/store/useCharacterStore", () => ({
     }),
 }));
 
-// jsdom sanitizes <input type="number"> values at the property-setter level,
-// silently coercing invalid intermediate values (e.g. "-", "abc") to "".
-// Real browsers allow these as intermediate typing states (input.value === "-"),
-// which is exactly what triggers the NaN bug this suite guards against.
-// This helper forces the DOM node's `value` to bypass jsdom's sanitizer so the
-// change event delivers the same "invalid" value a real browser would.
+
+
+
+
+
+
 function fireChangeWithRawValue(input: HTMLInputElement, rawValue: string) {
   Object.defineProperty(input, "value", { value: rawValue, configurable: true });
   fireEvent.change(input);

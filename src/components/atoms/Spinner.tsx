@@ -1,21 +1,13 @@
 import { cn } from "@/src/lib/utils";
 
 interface SpinnerProps {
-  /** Tailwind size utility(ies), e.g. "size-4". Defaults to the current text size. */
+
   className?: string;
-  /**
-   * Accessible label. When omitted the spinner is decorative (`aria-hidden`) —
-   * use this when an ancestor already conveys the busy state (e.g. a Button with
-   * `aria-busy`). Provide a label when the spinner stands alone.
-   */
+
   label?: string;
 }
 
-/**
- * Single source-of-truth loading indicator. Inline SVG (no icon dependency) so
- * it ships cleanly in the bundle. Animation is gated behind `motion-safe:` so
- * users with `prefers-reduced-motion: reduce` get a static ring instead of spin.
- */
+
 export function Spinner({ className, label }: SpinnerProps) {
   return (
     <svg

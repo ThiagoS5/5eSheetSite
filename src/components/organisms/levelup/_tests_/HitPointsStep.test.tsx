@@ -17,7 +17,7 @@ describe("HitPointsStep", () => {
     );
     await userEvent.click(screen.getByRole("button", { name: /average/i }));
     expect(onChoose).toHaveBeenCalledWith("average");
-    // média exibida: floor(10/2)+1 = 6 (+2 CON)
+
     expect(screen.getByText(/6/)).toBeInTheDocument();
   });
 

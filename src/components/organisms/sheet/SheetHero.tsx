@@ -17,7 +17,7 @@ function fmt(n: number): string {
 export function SheetHero({ summary, onExport }: SheetHeroProps) {
   return (
     <div className="flex flex-col items-center gap-[18px] rounded-2xl border border-border bg-surface-nested px-5 py-[22px] [background:radial-gradient(120%_90%_at_50%_0%,color-mix(in_oklab,var(--primary)_9%,transparent),transparent_60%),var(--surface-nested)]">
-      {/* Title row */}
+
       <div className="flex w-full flex-wrap items-center justify-between gap-[14px]">
         <button
           type="button"
@@ -51,7 +51,7 @@ export function SheetHero({ summary, onExport }: SheetHeroProps) {
         <LevelUpButton />
       </div>
 
-      {/* Combat row */}
+
       <div className="flex flex-wrap items-center justify-center gap-[22px]">
         <CombatStatFrame variant="square" accentColor="var(--brand-crimson-alt)">
           <i aria-hidden="true" className="fa-solid fa-bolt text-[13px] text-primary" />
@@ -81,7 +81,7 @@ export function SheetHero({ summary, onExport }: SheetHeroProps) {
         </CombatStatFrame>
       </div>
 
-      {/* HP / Proficiency pill */}
+
       <div className="flex w-full max-w-[560px] items-center gap-3">
         <div className="h-px flex-1 bg-gradient-to-r from-transparent to-brand-crimson-alt" />
         <div className="flex items-center gap-[10px] rounded-full border border-border bg-card px-4 py-[7px]">

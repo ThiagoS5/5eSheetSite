@@ -3,10 +3,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { astToPlainText, parseRulesText } from "@/src/adapters/rulesTextAst";
 
-/**
- * Golden tests da Fase 7: o parser deve digerir entries reais do 5eTools
- * (public/data) sem exceção e produzir AST navegável.
- */
+
 
 const DATA_DIR = join(process.cwd(), "public", "data");
 

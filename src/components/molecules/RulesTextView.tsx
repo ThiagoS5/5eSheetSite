@@ -16,10 +16,7 @@ interface RulesTextViewProps {
   className?: string;
 }
 
-/**
- * Renderer React único do AST de texto de regras (MANIFESTO/Fase 7):
- * parágrafos reais, listas <ul>, tabelas semânticas com caption/scope.
- */
+
 export function RulesTextView({ nodes, className }: RulesTextViewProps) {
   if (nodes.length === 0) {
     return null;
@@ -34,10 +31,7 @@ export function RulesTextView({ nodes, className }: RulesTextViewProps) {
   );
 }
 
-/**
- * Variante inline para strings com tags 5eTools em contextos sem blocos
- * (tooltips, resumos de uma linha).
- */
+
 export function RulesInlineText({ text }: { text: string }) {
   return <>{renderInline(parseInlineText(text))}</>;
 }
@@ -120,8 +114,8 @@ function renderInline(nodes: RulesTextInlineNode[]): ReactNode[] {
     }
 
     if (node.type === "dice") {
-      // Sem tabIndex: elemento informativo, não interativo — evita paradas
-      // de tabulação falsas (achado de a11y do code review).
+
+
       return (
         <abbr
           key={index}

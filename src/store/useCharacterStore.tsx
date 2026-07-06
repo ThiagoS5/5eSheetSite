@@ -15,11 +15,6 @@ export type CharacterStoreApi = ReturnType<typeof createCharacterStore>;
 const CharacterStoreContext = createContext<CharacterStoreApi | null>(null);
 
 interface CharacterStoreProviderProps {
-  /**
-   * Inject a pre-built store (Dependency Inversion). Tests and Storybook can
-   * pass a store seeded with fixture state; production omits it and gets a
-   * fresh store. Captured once on mount — a later identity change is ignored.
-   */
   store?: CharacterStoreApi;
 }
 

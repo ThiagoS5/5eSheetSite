@@ -4,15 +4,6 @@ import { useMemo } from "react";
 import { useCharacterStore } from "@/src/store/useCharacterStore";
 import type { CharacterBuilderState } from "@/src/store/characterStore.types";
 
-/**
- * Assembles the full {@link CharacterBuilderState} slice from the store in one
- * canonical place. Both the live sheet (`CharacterSheetView`) and the builder
- * preview (`CharacterSheetPreview`) feed this into `selectCharacterSheetSummary`,
- * so the derived sheet truth stays single-sourced (per the project Manifesto).
- *
- * Previously each consumer reassembled these ~18 selectors itself; this hook
- * removes that duplication without changing the data flow.
- */
 export function useCharacterBuilderState(): CharacterBuilderState {
   const ruleset = useCharacterStore((s) => s.ruleset);
   const level = useCharacterStore((s) => s.level);

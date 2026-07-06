@@ -8,12 +8,7 @@ interface StatFrameProps {
   accentColor?: string;
 }
 
-/**
- * Moldura ornamental (estilo ficha tradicional de D&D) para um bloco de
- * atributo. A moldura SVG vive em {@link StatFrameOrnament}; este componente
- * apenas a posiciona e sobrepõe o slot de conteúdo, sem acoplar o desenho aos
- * paddings do conteúdo. A cor de acento é sempre recebida via prop.
- */
+
 export function StatFrame({
   children,
   width = 96,

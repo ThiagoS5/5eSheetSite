@@ -4,7 +4,7 @@ export interface AbilityRoll {
   total: number;
 }
 
-/** PRNG mulberry32 — determinístico por seed, suficiente para rolagem de dados (decisão §26.2: sem seedrandom). */
+
 export function createSeededRng(seed: number): () => number {
   let state = seed >>> 0;
   return () => {

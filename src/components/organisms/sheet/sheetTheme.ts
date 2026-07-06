@@ -1,8 +1,6 @@
 import type { CSSProperties } from "react";
 
-/** Crimson accent override, scoped to the sheet root (mirrors the mock's
- *  cardThemeVars). Spread onto the root element's `style`; every descendant
- *  using var(--primary)/var(--brand-crimson-alt) recolors via the cascade. */
+
 export const SHEET_THEME_VARS = {
   "--primary": "oklch(0.59 0.23 27)",
   "--brand-crimson-alt": "oklch(0.53 0.2 28)",

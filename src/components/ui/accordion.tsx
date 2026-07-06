@@ -8,9 +8,9 @@ function joinClasses(...classes: Array<string | undefined>): string {
   return classes.filter(Boolean).join(" ");
 }
 
-/** Values currently expanded in the enclosing accordion. */
+
 const OpenValuesContext = createContext<readonly string[]>([]);
-/** Value owned by the nearest accordion item. */
+
 const ItemValueContext = createContext<string | undefined>(undefined);
 
 function toArray(value: string | string[] | undefined): readonly string[] {
@@ -22,11 +22,7 @@ function toArray(value: string | string[] | undefined): readonly string[] {
 
 type AccordionRootProps = ComponentPropsWithoutRef<typeof AccordionPrimitive.Root>;
 
-/**
- * Wraps Radix' Root so the open state is readable from React (not only via CSS
- * `data-state`). We keep Radix as the source of truth, mirroring its value into
- * context so triggers can render their icon with true conditional logic.
- */
+
 const Accordion = forwardRef<ElementRef<typeof AccordionPrimitive.Root>, AccordionRootProps>(
   (props, ref) => {
     const { children, value, defaultValue, onValueChange, ...rest } = props as {

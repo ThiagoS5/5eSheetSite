@@ -40,13 +40,7 @@ export interface BuilderClassImage {
   src: string;
   alt: string;
   credit?: string;
-  /**
-   * Enquadramento da arte quando exibida como fundo do card (`HeroChoiceCard`).
-   * Muitas splashes do XPHB trazem uma moldura decorativa embutida ~6% para
-   * dentro da borda; estes overrides (mapeados para `background-size` /
-   * `background-position`) recortam a moldura para a arte preencher o card.
-   * Ausentes = `cover` / topo (comportamento full-bleed padrão).
-   */
+
   cardBackgroundSize?: string;
   cardBackgroundPosition?: string;
 }
@@ -322,15 +316,15 @@ export interface CharacterDescription {
 
 export interface SheetAttribute {
   key: AttributeKey;
-  label: string;   // "Força"
-  abbr: string;    // "FOR"
+  label: string;
+  abbr: string;
   score: number;
   modifier: number;
 }
 
 export interface SheetSkill {
-  name: string;          // "Acrobatics" (canonical key for lookups)
-  label: string;         // "Acrobacia" (display, Portuguese)
+  name: string;
+  label: string;
   attributeKey: AttributeKey;
   modifier: number;
   isProficient: boolean;
@@ -340,8 +334,8 @@ export interface SheetSkill {
 
 export interface SheetSavingThrow {
   attributeKey: AttributeKey;
-  label: string;         // "Força"
-  abbr: string;          // "FOR"
+  label: string;
+  abbr: string;
   modifier: number;
   isProficient: boolean;
 }
@@ -359,9 +353,9 @@ export interface SheetFeature {
 
 export interface SheetWeapon {
   name: string;
-  attackBonus: string;  // "+5" or "—"
-  damage: string;       // "1d6+3 Cortante"
-  notes: string;        // "Versátil (1d8)"
+  attackBonus: string;
+  damage: string;
+  notes: string;
   abilityKey?: AttributeKey;
   isProficient?: boolean;
   damageBreakdown?: Array<{ label: string; value: string }>;
@@ -382,7 +376,7 @@ export interface BreakdownPart {
 export type ArmorClassBreakdownPart = BreakdownPart;
 
 export interface CharacterSheetSummary {
-  // — existing fields (unchanged) —
+
   ruleset: Ruleset;
   level: number;
   speciesId: string;
@@ -407,7 +401,7 @@ export interface CharacterSheetSummary {
   validationMessages: string[];
   pendencies?: Pendency[];
 
-  // — new fields —
+
   name: string;
   className: string;
   speciesName: string;

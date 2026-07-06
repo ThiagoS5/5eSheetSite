@@ -271,7 +271,7 @@ export function meetsPrerequisite(
 ): boolean {
   if (feat.prerequisites.length === 0) return true;
 
-  // prerequisites is an OR across entries; each entry is an AND of conditions.
+
   return feat.prerequisites.some((entry) => {
     if (entry.level !== undefined && ctx.level < entry.level) return false;
     if (entry.abilities) {

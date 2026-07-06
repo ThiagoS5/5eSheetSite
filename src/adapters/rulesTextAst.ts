@@ -21,10 +21,7 @@ const REF_TAGS: ReadonlySet<string> = new Set<RulesTextRefType>([
 
 const DICE_TAGS: ReadonlySet<string> = new Set(["dice", "damage", "d20", "hit", "chance"]);
 
-/**
- * Converte entries brutos 5eTools em RulesTextNode[].
- * Contrato: nunca lança; entrada desconhecida degrada para texto ou é ignorada.
- */
+
 export function parseRulesText(entries: unknown): RulesTextNode[] {
   try {
     return entriesToBlocks(entries);
@@ -79,8 +76,8 @@ function entryToBlocks(entry: unknown): RulesTextNode[] {
 }
 
 function prependTitle(name: string, blocks: RulesTextNode[]): RulesTextNode[] {
-  // Entrada nomeada sem conteúdo aproveitável (ex.: só imagens) não vira
-  // um título órfão em negrito.
+
+
   if (!blocks.length) {
     return [];
   }

@@ -113,7 +113,7 @@ export function PersonalDetailsEditor({
 
   const currentUnit = useWatch({ control, name: "weightUnit" });
 
-  // Persist to the store only when a field loses focus — never per keystroke.
+
   const persist = handleSubmit((data) => {
     setDescriptionField("nome", data.nome);
     setDescriptionField("alinhamento", data.alinhamento ?? "");
@@ -139,7 +139,7 @@ export function PersonalDetailsEditor({
 
   return (
     <form onBlur={() => void persist()} className="space-y-5">
-      {/* Identidade */}
+
       <section className="glass-card rounded-xl p-4 sm:p-6">
         <h3 className="mb-5 flex items-center gap-2.5 border-b border-border/50 pb-3 text-sm font-semibold uppercase tracking-widest text-foreground">
           <i aria-hidden="true" className="fa-solid fa-fingerprint text-primary" />
@@ -212,7 +212,7 @@ export function PersonalDetailsEditor({
         </div>
       </section>
 
-      {/* Características Físicas */}
+
       <section className="glass-card rounded-xl p-4 sm:p-6">
         <h3 className="mb-5 flex items-center gap-2.5 border-b border-border/50 pb-3 text-sm font-semibold uppercase tracking-widest text-foreground">
           <i aria-hidden="true" className="fa-solid fa-person text-primary" />
@@ -336,7 +336,7 @@ export function PersonalDetailsEditor({
         </div>
       </section>
 
-      {/* Narrativa & Histórico */}
+
       <section className="glass-card rounded-xl p-4 sm:p-6">
         <h3 className="mb-5 flex items-center gap-2.5 border-b border-border/50 pb-3 text-sm font-semibold uppercase tracking-widest text-foreground">
           <i aria-hidden="true" className="fa-solid fa-book-open text-primary" />

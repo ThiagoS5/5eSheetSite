@@ -18,10 +18,10 @@ describe("schema v6 migration", () => {
     const build = normalizeCharacterBuild(v5Fixture);
     expect(build.exportMetadata.schemaVersion).toBe(CHARACTER_BUILD_SCHEMA_VERSION);
     expect(CHARACTER_BUILD_SCHEMA_VERSION).toBe(10);
-    // v5 data preserved
+
     expect(build.choices.selectedClassId).toBe(v5Fixture.choices.selectedClassId);
     expect(build.choices.money).toEqual(v5Fixture.choices.money);
-    // v6 fields defaulted, not invented
+
     expect(build.choices.creationPreferences).toBeUndefined();
     for (const choice of Object.values(build.progression.levelChoices)) {
       expect(choice.hpRoll).toBeUndefined();

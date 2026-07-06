@@ -66,7 +66,7 @@ export function AttributeEditor({
 }: AttributeEditorProps) {
   const [otherModifiers, setOtherModifiers] = useState<AttributeBonuses>({});
   const [confirmResetOpen, setConfirmResetOpen] = useState(false);
-  // Muda a cada reset para remontar o AbilityRollPanel e limpar a rolagem/atribuições.
+
   const [rollResetNonce, setRollResetNonce] = useState(0);
   const pointBuySpent = getPointBuySpent(baseAttributes);
   const pointBuyRemaining = getPointBuyRemaining(baseAttributes);

@@ -98,7 +98,7 @@ export function ContentTabs({ summary }: ContentTabsProps) {
 
   return (
     <div className="relative flex flex-1 flex-col overflow-hidden rounded-xl border border-border bg-card">
-      {/* Tab bar */}
+
       <div
         role="tablist"
         aria-label="Sheet content"
@@ -129,7 +129,7 @@ export function ContentTabs({ summary }: ContentTabsProps) {
         ))}
       </div>
 
-      {/* Filter bar — only where it filters real data */}
+
       {activeTab === "features" && (
         <div className="flex flex-wrap items-center gap-[7px] border-b border-border bg-surface-nested px-4 py-[11px]">
           {ORIGIN_FILTERS.map((f) => (
@@ -180,7 +180,7 @@ export function ContentTabs({ summary }: ContentTabsProps) {
         tabIndex={0}
         className={cn("max-h-[640px] overflow-y-auto p-4", focusRing)}
       >
-        {/* AÇÕES */}
+
         {activeTab === "actions" && (
           <div className="flex flex-col gap-4">
             {realWeapons.length > 0 ? (
@@ -223,7 +223,7 @@ export function ContentTabs({ summary }: ContentTabsProps) {
           </div>
         )}
 
-        {/* MAGIAS — selector computes no spells today; intentional empty state */}
+
         {activeTab === "spells" && (
           summary.spellcasting ? (
             <div className="grid gap-4">
@@ -280,7 +280,7 @@ export function ContentTabs({ summary }: ContentTabsProps) {
           )
         )}
 
-        {/* INVENTÁRIO */}
+
         {activeTab === "inventory" && (
           <div className="flex flex-col gap-[14px]">
             <div className="flex flex-wrap gap-[9px]">
@@ -348,7 +348,7 @@ export function ContentTabs({ summary }: ContentTabsProps) {
           </div>
         )}
 
-        {/* CARACTERÍSTICAS */}
+
         {activeTab === "features" && (
           <div className="flex flex-col gap-[10px]">
             {features.length > 0 ? (
@@ -379,7 +379,7 @@ export function ContentTabs({ summary }: ContentTabsProps) {
           </div>
         )}
 
-        {/* ANOTAÇÕES */}
+
         {activeTab === "notes" && (
           <textarea
             value={notes}

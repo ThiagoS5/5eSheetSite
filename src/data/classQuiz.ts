@@ -1,31 +1,22 @@
-/**
- * Quiz guiado de escolha de classe (modo guiado / novato).
- *
- * Banco com mais perguntas do que o quiz usa por sessão: cada sessão sorteia
- * QUIZ_QUESTION_COUNT perguntas e embaralha a ordem das respostas, para que o
- * jogador sempre se questione algo novo ao refazer o quiz.
- *
- * O resultado destaca exatamente DUAS classes: a principal (recomendada) e a
- * segunda opção — sugestão, nunca trava: todas as classes seguem disponíveis.
- */
+
 
 export const QUIZ_QUESTION_COUNT = 7;
 
 export interface ClassQuizOption {
   id: string;
-  /** Resposta curta, na voz do jogador. */
+
   label: string;
-  /** Uma linha didática ligando a resposta à experiência na mesa. */
+
   flavor: string;
-  /** Pontos que a resposta dá a cada classe (classId -> peso). */
+
   weights: Record<string, number>;
 }
 
 export interface ClassQuizQuestion {
   id: string;
-  /** Pergunta imersiva, que coloca o jogador numa cena de mesa. */
+
   prompt: string;
-  /** Por que essa pergunta importa na hora de escolher a classe. */
+
   helper: string;
   options: ClassQuizOption[];
 }
@@ -33,14 +24,11 @@ export interface ClassQuizQuestion {
 export interface ClassQuizRecommendation {
   primaryClassId: string;
   secondaryClassId: string;
-  /** classId -> respostas escolhidas que apontaram para essa classe. */
+
   reasons: Record<string, string[]>;
 }
 
-/**
- * Resumo didático de cada classe para o card de resultado: o que ela faz e
- * como é jogá-la na mesa.
- */
+
 export const classQuizPitches: Record<string, string> = {
   "barbarian-xphb":
     "Raw fury: you take the front line, absorb punishment like no one else, and strike back harder. At the table, it is direct and visceral with few turn-by-turn decisions and high impact.",
@@ -68,7 +56,7 @@ export const classQuizPitches: Record<string, string> = {
     "The deepest spellbook in the game: you study magic like science and have an answer for almost everything. At the table, you turn fights with the right spell at the right time.",
 };
 
-/** Ordem fixa para desempate determinístico entre classes com mesma pontuação. */
+
 const TIE_BREAK_ORDER = [
   "fighter-xphb",
   "cleric-xphb",
@@ -583,10 +571,7 @@ function shuffle<T>(items: readonly T[], random: () => number): T[] {
   return result;
 }
 
-/**
- * Sorteia as perguntas da sessão do quiz e embaralha a ordem das respostas.
- * Aceita um gerador de aleatoriedade para sessões determinísticas em testes.
- */
+
 export function createClassQuizSession(
   random: () => number = Math.random,
 ): ClassQuizQuestion[] {
@@ -598,11 +583,7 @@ export function createClassQuizSession(
     }));
 }
 
-/**
- * Calcula a recomendação final: exatamente 2 classes (principal + segunda
- * opção), com as respostas que apontaram para cada uma como justificativa.
- * Retorna null enquanto a sessão não estiver completa.
- */
+
 export function getClassQuizRecommendation(
   questions: readonly ClassQuizQuestion[],
   answerOptionIds: readonly string[],

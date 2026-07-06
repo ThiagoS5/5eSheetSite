@@ -33,12 +33,7 @@ export function calculateInitialHitPoints(
   return hitDie + getAbilityModifier(constitutionScore);
 }
 
-/**
- * Pontos de vida máximos usando a regra fixa (média) do 5e 2024:
- * nível 1 recebe o valor cheio do dado; cada nível seguinte soma a média
- * arredondada para cima (`floor(hitDie / 2) + 1`). O modificador de
- * Constituição é somado em todos os níveis.
- */
+
 export function calculateMaxHitPoints(
   hitDie: number,
   constitutionScore: number,
@@ -52,11 +47,7 @@ export function calculateMaxHitPoints(
   return firstLevel + (effectiveLevel - 1) * perAdditionalLevel;
 }
 
-/**
- * Parcelas do PV máximo (mesma regra fixa 2024 de calculateMaxHitPoints).
- * A soma das parcelas é sempre igual ao PV máximo — alimenta o tooltip de
- * fórmula da ficha ("12 = 10 (d10 nível 1) + 2 (CON)").
- */
+
 export function getMaxHitPointsBreakdown(
   hitDie: number,
   constitutionScore: number,

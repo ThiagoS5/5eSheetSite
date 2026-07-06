@@ -69,8 +69,8 @@ export type HpRollChoice = number | "average";
 export type ProgressionMode = "xp" | "milestone";
 
 export interface CreationPreferences {
-  activeSources: string[]; // ex.: ["XPHB"] — default
-  progressionMode: ProgressionMode; // default "xp"
+  activeSources: string[];
+  progressionMode: ProgressionMode;
 }
 
 export const DEFAULT_CREATION_PREFERENCES: CreationPreferences = {
@@ -81,7 +81,7 @@ export const DEFAULT_CREATION_PREFERENCES: CreationPreferences = {
 export interface CharacterBuildLevelChoiceState {
   asiOrFeat?: AsiOrFeatChoice;
   classFeatureChoices: Record<string, string[]>;
-  hpRoll?: HpRollChoice; // NOVO v6 — PV ganho no nível (2..20)
+  hpRoll?: HpRollChoice;
 }
 
 export interface CharacterBuildProgression {
@@ -108,8 +108,8 @@ export interface CharacterBuildChoices {
   carriedLoadKg: number;
   skillModifierOverrides: Record<string, number>;
   spellcasting?: CharacterSpellcastingChoices;
-  creationPreferences?: CreationPreferences; // NOVO v6 — ausente = defaults
-  beginnerMode: boolean; // NOVO v7 — modo didatico por personagem
+  creationPreferences?: CreationPreferences;
+  beginnerMode: boolean;
 }
 
 export type CharacterBuildDerivedSheet = CharacterSheetSummary;
