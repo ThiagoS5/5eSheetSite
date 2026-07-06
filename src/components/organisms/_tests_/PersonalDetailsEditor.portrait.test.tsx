@@ -90,11 +90,10 @@ describe("PersonalDetailsEditor portrait gallery", () => {
     expect(field).not.toHaveAttribute("readonly");
     expect(field).not.toHaveAttribute("disabled");
 
-    // Directly modify to test editability (simulating user edit after suggestion)
-    field.value = expected + " Edited.";
-    field.dispatchEvent(new Event("input", { bubbles: true }));
-    field.dispatchEvent(new Event("change", { bubbles: true }));
-
+    // Test real user interaction by typing into the field
+    await user.click(field);
+    await user.keyboard("End");
+    await user.type(field, " Edited.");
     expect(field.value).toContain("Edited.");
   });
 });
