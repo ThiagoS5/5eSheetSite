@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import v5FixtureRaw from "@/src/store/_tests_/fixtures/characterBuild.v5.json";
 import { normalizeCharacterBuild } from "@/src/store/characterBuildModel";
 import { CHARACTER_BUILD_SCHEMA_VERSION, type CharacterBuild } from "@/src/types/characterBuild";
-import { exportCharacter, serializeCharacterExport } from "@/src/utils/canonicalExport";
+import { exportCharacter, serializeCharacterExport, importCharacter } from "@/src/utils/canonicalExport";
 
 const baseBuild = normalizeCharacterBuild(v5FixtureRaw as unknown as CharacterBuild);
 
@@ -27,5 +27,67 @@ describe("exportCharacter", () => {
       JSON.parse(JSON.stringify(exportCharacter(baseBuild, JSON.parse(json).exportedAt))),
     );
     expect(json).toContain("\n  ");
+  });
+});
+
+describe("importCharacter", () => {
+  it("round-trips a build without loss (except saveId/timestamps)", () => {
+    const result = importCharacter(serializeCharacterExport(baseBuild));
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.build.exportMetadata.saveId).not.toBe(
+      baseBuild.exportMetadata.saveId,
+    );
+    expect({
+      ...result.build,
+      exportMetadata: baseBuild.exportMetadata,
+    }).toEqual(baseBuild);
+  });
+
+  it("migrates a legacy-schema build inside the envelope", () => {
+    const legacyEnvelope = {
+      format: "forge-fate-character",
+      formatVersion: 1,
+      exportedAt: "2026-01-01T00:00:00.000Z",
+      app: { name: "Forge & Fate", schemaVersion: 5 },
+      build: v5FixtureRaw,
+    };
+
+    const result = importCharacter(JSON.stringify(legacyEnvelope));
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.build.exportMetadata.schemaVersion).toBe(
+      CHARACTER_BUILD_SCHEMA_VERSION,
+    );
+    expect(result.build.draft.equippedItemIds).toEqual([]);
+  });
+
+  it("rejects invalid JSON with a readable message", () => {
+    expect(importCharacter("{not json")).toEqual({
+      ok: false,
+      error: "The file is not valid JSON.",
+    });
+  });
+
+  it("rejects JSON that is not a Forge & Fate export", () => {
+    expect(importCharacter(JSON.stringify({ hello: "world" }))).toEqual({
+      ok: false,
+      error: "The file is not a Forge & Fate character export.",
+    });
+  });
+
+  it("rejects envelopes from a newer app version", () => {
+    const future = {
+      ...exportCharacter(baseBuild),
+      formatVersion: 2,
+    };
+
+    const result = importCharacter(JSON.stringify(future));
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.error).toContain("newer version");
   });
 });
