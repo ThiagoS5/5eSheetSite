@@ -35,16 +35,34 @@ interface RawFeat {
 
 export interface AppliedFeatEffects {
   abilityBonuses: Partial<Record<AttributeKey, number>>;
+  /** Bônus de habilidade vindos de Epic Boons — podem elevar o atributo até 30. */
+  epicBoonAbilityBonuses: Partial<Record<AttributeKey, number>>;
   initiativeBonus: number;
+  initiativeAddsProficiencyBonus: boolean;
   speedBonusFeet: number;
   skillProficiencies: string[];
   toolProficiencies: string[];
   languageProficiencies: string[];
 }
 
+export function createEmptyAppliedFeatEffects(): AppliedFeatEffects {
+  return {
+    abilityBonuses: {},
+    epicBoonAbilityBonuses: {},
+    initiativeBonus: 0,
+    initiativeAddsProficiencyBonus: false,
+    speedBonusFeet: 0,
+    skillProficiencies: [],
+    toolProficiencies: [],
+    languageProficiencies: [],
+  };
+}
+
 const CURATED_EFFECTS: Record<string, FeatStructuredEffects> = {
-  "alert-xphb": { initiativeBonus: 5 },
+  // XPHB 2024: Alert soma o bônus de proficiência à iniciativa (não valor fixo).
+  "alert-xphb": { initiativeAddsProficiencyBonus: true },
   "speedy-xphb": { speedBonusFeet: 10 },
+  "boon-of-speed-xphb": { speedBonusFeet: 30 },
 };
 
 export const ASI_FEAT_ID = "ability-score-improvement-xphb";
@@ -367,9 +385,18 @@ function addBonuses(
   }
 }
 
-function mergeEffects(target: AppliedFeatEffects, source: FeatStructuredEffects | undefined): void {
-  addBonuses(target.abilityBonuses, source?.abilityBonuses);
+function mergeEffects(
+  target: AppliedFeatEffects,
+  source: FeatStructuredEffects | undefined,
+  isEpicBoon: boolean,
+): void {
+  addBonuses(
+    isEpicBoon ? target.epicBoonAbilityBonuses : target.abilityBonuses,
+    source?.abilityBonuses,
+  );
   target.initiativeBonus += source?.initiativeBonus ?? 0;
+  target.initiativeAddsProficiencyBonus =
+    target.initiativeAddsProficiencyBonus || Boolean(source?.initiativeAddsProficiencyBonus);
   target.speedBonusFeet += source?.speedBonusFeet ?? 0;
   target.skillProficiencies.push(...(source?.skillProficiencies ?? []));
   target.toolProficiencies.push(...(source?.toolProficiencies ?? []));
@@ -381,18 +408,27 @@ export function applyFeatEffects(
   feat: BuilderFeat,
   choice?: AsiOrFeatChoice,
 ): AppliedFeatEffects {
+  const empty = createEmptyAppliedFeatEffects();
   const result: AppliedFeatEffects = {
-    abilityBonuses: { ...(current?.abilityBonuses ?? {}) },
+    abilityBonuses: { ...(current?.abilityBonuses ?? empty.abilityBonuses) },
+    epicBoonAbilityBonuses: {
+      ...(current?.epicBoonAbilityBonuses ?? empty.epicBoonAbilityBonuses),
+    },
     initiativeBonus: current?.initiativeBonus ?? 0,
+    initiativeAddsProficiencyBonus: current?.initiativeAddsProficiencyBonus ?? false,
     speedBonusFeet: current?.speedBonusFeet ?? 0,
     skillProficiencies: [...(current?.skillProficiencies ?? [])],
     toolProficiencies: [...(current?.toolProficiencies ?? [])],
     languageProficiencies: [...(current?.languageProficiencies ?? [])],
   };
 
-  mergeEffects(result, feat.effects);
+  const isEpicBoon = feat.category === "epic-boon";
+  mergeEffects(result, feat.effects, isEpicBoon);
   if (choice?.mode === "feat") {
-    addBonuses(result.abilityBonuses, choice.asi);
+    addBonuses(
+      isEpicBoon ? result.epicBoonAbilityBonuses : result.abilityBonuses,
+      choice.asi,
+    );
     result.skillProficiencies.push(...(choice.skillProficiencies ?? []));
     result.toolProficiencies.push(...(choice.toolProficiencies ?? []));
     result.languageProficiencies.push(...(choice.languageProficiencies ?? []));

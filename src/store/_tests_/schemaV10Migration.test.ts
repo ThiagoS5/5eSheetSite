@@ -15,8 +15,8 @@ describe("schema v10 migration", () => {
   it("defaults equippedItemIds for older builds", () => {
     const build = normalizeCharacterBuild(legacyFixture);
 
-    expect(CHARACTER_BUILD_SCHEMA_VERSION).toBe(10);
-    expect(build.exportMetadata.schemaVersion).toBe(10);
+    expect(CHARACTER_BUILD_SCHEMA_VERSION).toBe(11);
+    expect(build.exportMetadata.schemaVersion).toBe(CHARACTER_BUILD_SCHEMA_VERSION);
     expect(build.draft.equippedItemIds).toEqual([]);
   });
 

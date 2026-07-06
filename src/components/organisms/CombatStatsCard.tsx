@@ -1,4 +1,3 @@
-import { getAbilityModifier } from "@/src/adapters/characterDerivedAdapter";
 import { StatBadge } from "@/src/components/atoms/StatBadge";
 import type { CharacterSheetSummary } from "@/types/builder";
 
@@ -7,7 +6,7 @@ interface CombatStatsCardProps {
 }
 
 export function CombatStatsCard({ summary }: CombatStatsCardProps) {
-  const initiative = getAbilityModifier(summary.finalAttributes.destreza);
+  const initiative = summary.initiative;
   const armorClassFormula = summary.armorClassBreakdown
     ?.map((part) => `${part.value} ${part.label}`)
     .join(" + ");

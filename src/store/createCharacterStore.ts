@@ -11,10 +11,7 @@ import {
   getDefaultFlatState,
   normalizeCharacterBuild,
 } from "@/src/store/characterBuildModel";
-import {
-  deriveStartingGoldPo,
-  selectCharacterSheetSummary,
-} from "@/src/store/characterSelectors";
+import { deriveStartingGoldPo } from "@/src/store/characterSelectors";
 import {
   applyDamageToPlayState,
   applyHealingToPlayState,
@@ -128,7 +125,7 @@ export function createCharacterStore(
       set((state) => patchCharacterState(state, { spellcasting })),
     applyDamage: (amount) =>
       set((state) => {
-        const summary = selectCharacterSheetSummary(state);
+        const summary = state.characterBuild.derivedSheet;
         return patchCharacterState(state, {
           playState: applyDamageToPlayState(getPlayState(state), {
             amount,
@@ -138,7 +135,7 @@ export function createCharacterStore(
       }),
     heal: (amount) =>
       set((state) => {
-        const summary = selectCharacterSheetSummary(state);
+        const summary = state.characterBuild.derivedSheet;
         return patchCharacterState(state, {
           playState: applyHealingToPlayState(getPlayState(state), {
             amount,
@@ -148,7 +145,7 @@ export function createCharacterStore(
       }),
     setTempHp: (amount) =>
       set((state) => {
-        const summary = selectCharacterSheetSummary(state);
+        const summary = state.characterBuild.derivedSheet;
         return patchCharacterState(state, {
           playState: setTemporaryHitPointsInPlayState(getPlayState(state), {
             amount,
@@ -211,7 +208,7 @@ export function createCharacterStore(
       }),
     shortRest: (options) =>
       set((state) => {
-        const summary = selectCharacterSheetSummary(state);
+        const summary = state.characterBuild.derivedSheet;
         return patchCharacterState(state, {
           playState: applyShortRestToPlayState(getPlayState(state), {
             maxHp: summary.maxHp,
@@ -226,7 +223,7 @@ export function createCharacterStore(
       }),
     longRest: () =>
       set((state) => {
-        const summary = selectCharacterSheetSummary(state);
+        const summary = state.characterBuild.derivedSheet;
         return patchCharacterState(state, {
           playState: applyLongRestToPlayState(getPlayState(state), {
             maxHp: summary.maxHp,
@@ -334,10 +331,11 @@ export function createCharacterStore(
             ...state.equipmentChoicesBySource,
             [source]: {
               mode,
+              // A seleção é preservada ao alternar para "gold": as regras de
+              // inventário só a consomem quando mode === "items", e assim o
+              // usuário não perde a escolha ao voltar.
               selectedOptionId:
-                mode === "gold"
-                  ? null
-                  : state.equipmentChoicesBySource[source]?.selectedOptionId ?? null,
+                state.equipmentChoicesBySource[source]?.selectedOptionId ?? null,
             },
           },
         }),
@@ -577,7 +575,44 @@ function patchCharacterState(
     },
   );
 
-  return createStoreStateFromBuild(build);
+  return preserveUnchangedReferences(state, createStoreStateFromBuild(build));
+}
+
+/**
+ * A reconstrução do build recria todas as fatias do estado plano, o que fazia
+ * toda assinatura zustand disparar em qualquer mutação. Reusar as referências
+ * anteriores para fatias sem mudança de valor mantém os selectors estáveis.
+ * `characterBuild` fica de fora: ele sempre muda (updatedAt/derivedSheet).
+ */
+function preserveUnchangedReferences<T extends object>(prev: object, next: T): T {
+  const result = { ...next } as Record<string, unknown>;
+  const prevRecord = prev as Record<string, unknown>;
+  for (const key of Object.keys(result)) {
+    if (key === "characterBuild") continue;
+    const prevValue = prevRecord[key];
+    const nextValue = result[key];
+    if (prevValue !== nextValue && isDeepEqualValue(prevValue, nextValue)) {
+      result[key] = prevValue;
+    }
+  }
+  return result as T;
+}
+
+function isDeepEqualValue(a: unknown, b: unknown): boolean {
+  if (a === b) return true;
+  if (Array.isArray(a) && Array.isArray(b)) {
+    return a.length === b.length && a.every((item, i) => isDeepEqualValue(item, b[i]));
+  }
+  if (Array.isArray(a) || Array.isArray(b)) return false;
+  if (isRecord(a) && isRecord(b)) {
+    const aKeys = Object.keys(a);
+    const bKeys = Object.keys(b);
+    return (
+      aKeys.length === bKeys.length &&
+      aKeys.every((key) => isDeepEqualValue(a[key], b[key]))
+    );
+  }
+  return false;
 }
 
 function omitEquipmentSource(
@@ -701,7 +736,7 @@ function extractFlatState(state: FlatCharacterBuilderState): FlatCharacterBuilde
 function resetPlayStateToMaxHp(
   state: CharacterBuilderState & { characterBuild: CharacterBuild },
 ): CharacterBuilderState & { characterBuild: CharacterBuild } {
-  const summary = selectCharacterSheetSummary(state);
+  const summary = state.characterBuild.derivedSheet;
   return patchCharacterState(state as CharacterBuilderStore, {
     playState: createDefaultPlayState(summary.maxHp),
   });

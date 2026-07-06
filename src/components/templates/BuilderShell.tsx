@@ -21,7 +21,7 @@ import { deriveBuilderPendencies } from "@/rules/pendencyRules";
 import { validateBuilderStep } from "@/rules/builderValidation";
 import { getBuilderClasses } from "@/src/services/ruleService";
 import { readGlobalPreferences, writeGlobalPreferences } from "@/src/services/preferencesService";
-import { selectCharacterSheetSummary } from "@/src/store/characterSelectors";
+import { selectDerivedSheet } from "@/src/store/characterSelectors";
 import { useCharacterBuilderState } from "@/src/store/useCharacterBuilderState";
 import { useCharacterStore } from "@/src/store/useCharacterStore";
 
@@ -61,10 +61,7 @@ export function BuilderShell({ children }: BuilderShellProps) {
   const nextStep = builderStepNavigation[currentStepIndex + 1];
   const totalSteps = builderStepNavigation.length;
 
-  const summary = useMemo(
-    () => selectCharacterSheetSummary(characterState),
-    [characterState],
-  );
+  const summary = useCharacterStore(selectDerivedSheet);
   const builderClasses = useMemo(() => getBuilderClasses(), []);
   const className = useMemo(
     () => builderClasses.find((entry) => entry.id === summary.classId)?.name,

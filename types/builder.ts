@@ -277,6 +277,8 @@ export interface FeatChoiceRequirement {
 export interface FeatStructuredEffects {
   abilityBonuses?: AttributeBonuses;
   initiativeBonus?: number;
+  /** 5e 2024 (ex.: Alert): soma o bônus de proficiência à iniciativa. */
+  initiativeAddsProficiencyBonus?: boolean;
   speedBonusFeet?: number;
   skillProficiencies?: string[];
   toolProficiencies?: string[];
@@ -425,6 +427,7 @@ export interface CharacterSheetSummary {
   passives: { perception: number; investigation: number; insight: number };
   senses: SheetSense[];
   languages: string[];
+  toolProficiencies: string[];
   resistances: string[];
   immunities: string[];
   vulnerabilities: string[];

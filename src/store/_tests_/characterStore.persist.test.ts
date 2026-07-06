@@ -1,6 +1,7 @@
 /**
  * @vitest-environment jsdom
  */
+import { CHARACTER_BUILD_SCHEMA_VERSION } from "@/src/types/characterBuild";
 import { beforeEach, describe, expect, it } from "vitest";
 import { createCharacterStore } from "@/src/store/createCharacterStore";
 import { getCharacter } from "@/src/services/characterService";
@@ -118,7 +119,7 @@ describe("createCharacterStore persistence", () => {
           },
         },
         exportMetadata: {
-          schemaVersion: 10,
+          schemaVersion: CHARACTER_BUILD_SCHEMA_VERSION,
           saveId: expect.any(String),
         },
       },
@@ -171,7 +172,7 @@ describe("createCharacterStore persistence", () => {
     const store = createCharacterStore();
     const build = store.getState().characterBuild;
 
-    expect(build.exportMetadata.schemaVersion).toBe(10);
+    expect(build.exportMetadata.schemaVersion).toBe(CHARACTER_BUILD_SCHEMA_VERSION);
     expect(build.choices.selectedSubclassId).toBe("");
     expect(build.progression.levelChoices["1"].classFeatureChoices).toEqual({
       "weapon-mastery": ["Longsword"],
@@ -228,7 +229,7 @@ describe("createCharacterStore persistence", () => {
 
     const store = createCharacterStore();
 
-    expect(store.getState().characterBuild.exportMetadata.schemaVersion).toBe(10);
+    expect(store.getState().characterBuild.exportMetadata.schemaVersion).toBe(CHARACTER_BUILD_SCHEMA_VERSION);
     expect(store.getState().beginnerMode).toBe(false);
     expect(store.getState().characterBuild.choices.beginnerMode).toBe(false);
   });
@@ -291,7 +292,7 @@ describe("createCharacterStore persistence", () => {
 
     const store = createCharacterStore();
 
-    expect(store.getState().characterBuild.exportMetadata.schemaVersion).toBe(10);
+    expect(store.getState().characterBuild.exportMetadata.schemaVersion).toBe(CHARACTER_BUILD_SCHEMA_VERSION);
     expect(store.getState().asiOrFeatByLevel["4"]).toEqual({
       mode: "feat",
       featId: "grappler-xphb",
@@ -353,7 +354,7 @@ describe("createCharacterStore persistence", () => {
 
     const store = createCharacterStore();
 
-    expect(store.getState().characterBuild.exportMetadata.schemaVersion).toBe(10);
+    expect(store.getState().characterBuild.exportMetadata.schemaVersion).toBe(CHARACTER_BUILD_SCHEMA_VERSION);
     expect(store.getState().spellcasting?.preparedSpellIds).toEqual(["fireball-xphb"]);
     const migrated = store.getState().characterBuild;
     expect(migrated.playState).toMatchObject({

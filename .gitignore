@@ -58,6 +58,7 @@ yarn-error.log*
 ai-prompts/
 skills-lock.json
 scratchpad.md
+AUDITORIA.md
 AGENTS.md
 CLAUDE.md
 enviarparaocodex.md

@@ -1,3 +1,4 @@
+import { CHARACTER_BUILD_SCHEMA_VERSION } from "@/src/types/characterBuild";
 import { describe, expect, it } from "vitest";
 import { createCharacterStore } from "@/src/store/createCharacterStore";
 import { deriveStartingGoldPo, selectCharacterSheetSummary } from "@/src/store/characterSelectors";
@@ -37,7 +38,7 @@ describe("createCharacterStore", () => {
           selectedBackgroundId: "",
         },
         exportMetadata: {
-          schemaVersion: 10,
+          schemaVersion: CHARACTER_BUILD_SCHEMA_VERSION,
           saveId: expect.any(String),
           createdAt: expect.any(String),
           updatedAt: expect.any(String),
@@ -146,13 +147,19 @@ describe("createCharacterStore", () => {
     });
   });
 
-  it("clears the selected option when a source switches to gold", () => {
+  it("preserves the selected option when a source switches to gold and back", () => {
     const store = createCharacterStore();
     store.getState().setEquipmentSourceOption("class", "A");
     store.getState().setEquipmentSourceMode("class", "gold");
     expect(store.getState().equipmentChoicesBySource.class).toStrictEqual({
       mode: "gold",
-      selectedOptionId: null,
+      selectedOptionId: "A",
+    });
+
+    store.getState().setEquipmentSourceMode("class", "items");
+    expect(store.getState().equipmentChoicesBySource.class).toStrictEqual({
+      mode: "items",
+      selectedOptionId: "A",
     });
   });
 
@@ -269,7 +276,7 @@ describe("createCharacterStore", () => {
 
     expect(store.getState().beginnerMode).toBe(true);
     expect(store.getState().characterBuild.choices.beginnerMode).toBe(true);
-    expect(store.getState().characterBuild.exportMetadata.schemaVersion).toBe(10);
+    expect(store.getState().characterBuild.exportMetadata.schemaVersion).toBe(CHARACTER_BUILD_SCHEMA_VERSION);
   });
 });
 

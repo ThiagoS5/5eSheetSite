@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { ABILITY_SCORE_CAP, EPIC_BOON_ABILITY_CAP } from "@/src/adapters/characterDerivedAdapter";
 import { SKILL_NAMES } from "@/rules/skillRules";
 import type { AsiOrFeatStepProps } from "@/src/components/organisms/levelup/types";
 import type { BuilderFeat } from "@/types/builder";
@@ -55,6 +56,8 @@ export function AsiOrFeatStep({
       emitAsi(next);
       return;
     }
+    const current = attributes.find((attr) => attr.key === key)?.current ?? 0;
+    if (current + perPoint > ABILITY_SCORE_CAP) return;
     if (mode === "one") {
       emitAsi({ [key]: 2 });
       return;
@@ -72,7 +75,14 @@ export function AsiOrFeatStep({
     onChange({ mode: "feat", featId: feat.id });
   }
 
+  function featAbilityCap(feat: BuilderFeat) {
+    return feat.category === "epic-boon" ? EPIC_BOON_ABILITY_CAP : ABILITY_SCORE_CAP;
+  }
+
   function chooseFeatAbility(feat: BuilderFeat, key: AttributeKey) {
+    const current = attributes.find((attr) => attr.key === key)?.current ?? 0;
+    const amount = feat.abilityBonus?.choose?.amount ?? 1;
+    if (current + amount > featAbilityCap(feat)) return;
     const activeValue = activeFeatValue(feat);
     onChange({
       mode: "feat",
@@ -142,13 +152,14 @@ export function AsiOrFeatStep({
           <div className="grid gap-2 sm:grid-cols-2">
             {attributes.map((attr) => {
               const isSel = picked.includes(attr.key);
-              const isLocked = !isSel && picked.length >= maxPicks;
+              const atCap = !isSel && attr.current + perPoint > ABILITY_SCORE_CAP;
+              const isLocked = atCap || (!isSel && picked.length >= maxPicks);
               const newVal = isSel ? attr.current + perPoint : attr.current;
               return (
                 <button key={attr.key} type="button" onClick={() => pickAttr(attr.key)} disabled={isLocked} aria-pressed={isSel}
                   className="flex items-center justify-between rounded-md border border-white/[0.08] bg-card px-3 py-2 text-sm text-subdued outline-none transition hover:border-white/15 focus-visible:ring-2 focus-visible:ring-brand-crimson-alt/70 disabled:cursor-not-allowed disabled:opacity-40 aria-pressed:border-brand-crimson-alt aria-pressed:bg-brand-crimson-alt/10 aria-pressed:text-foreground">
                   <span>{attr.label}</span>
-                  <span translate="no" className="notranslate">{isSel ? <span className="font-bold text-accent">+{perPoint} </span> : null}{attr.current} -&gt; {newVal}</span>
+                  <span translate="no" className="notranslate">{atCap ? <span className="text-xs text-faint">Max {ABILITY_SCORE_CAP} </span> : null}{isSel ? <span className="font-bold text-accent">+{perPoint} </span> : null}{attr.current} -&gt; {newVal}</span>
                 </button>
               );
             })}
@@ -183,17 +194,20 @@ export function AsiOrFeatStep({
                   .filter((attr) => selectedFeat.abilityBonus?.choose?.from.includes(attr.key))
                   .map((attr) => {
                     const amount = selectedFeat.abilityBonus?.choose?.amount ?? 1;
+                    const cap = featAbilityCap(selectedFeat);
                     const isSelected = value?.mode === "feat" && value.asi?.[attr.key] === amount;
+                    const atCap = !isSelected && attr.current + amount > cap;
                     return (
                       <button
                         key={attr.key}
                         type="button"
                         onClick={() => chooseFeatAbility(selectedFeat, attr.key)}
+                        disabled={atCap}
                         aria-pressed={isSelected}
-                        className="flex items-center justify-between rounded-md border border-white/[0.08] bg-card px-3 py-2 text-sm text-subdued outline-none transition hover:border-white/15 focus-visible:ring-2 focus-visible:ring-brand-crimson-alt/70 aria-pressed:border-brand-crimson-alt aria-pressed:bg-brand-crimson-alt/10 aria-pressed:text-foreground"
+                        className="flex items-center justify-between rounded-md border border-white/[0.08] bg-card px-3 py-2 text-sm text-subdued outline-none transition hover:border-white/15 focus-visible:ring-2 focus-visible:ring-brand-crimson-alt/70 disabled:cursor-not-allowed disabled:opacity-40 aria-pressed:border-brand-crimson-alt aria-pressed:bg-brand-crimson-alt/10 aria-pressed:text-foreground"
                       >
                         <span>{attr.label}</span>
-                        <span translate="no" className="notranslate"><span className="font-bold text-accent">+{amount} </span>{attr.current} -&gt; {attr.current + amount}</span>
+                        <span translate="no" className="notranslate">{atCap ? <span className="text-xs text-faint">Max {cap} </span> : null}<span className="font-bold text-accent">+{amount} </span>{attr.current} -&gt; {atCap ? attr.current : attr.current + amount}</span>
                       </button>
                     );
                   })}

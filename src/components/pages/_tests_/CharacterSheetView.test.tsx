@@ -21,7 +21,7 @@ vi.mock("@/src/store/useCharacterStore", () => ({
     selector({ description: { notas: "", nome: "Thalindra" }, setDescriptionField: () => {} }),
 }));
 vi.mock("@/src/store/characterSelectors", () => ({
-  selectCharacterSheetSummary: () => ({
+  selectDerivedSheet: () => ({
     ruleset: "2024", name: "Thalindra", level: 5, className: "Wizard", speciesName: "High Elf",
     backgroundName: "Sage", armorClass: 13, initiative: 3, speedFeet: 30, currentHp: 27, maxHp: 27,
     proficiencyBonus: 3, attributes: [], skills: [], savingThrows: [], features: [], weapons: [],

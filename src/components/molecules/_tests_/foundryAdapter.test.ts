@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+﻿import { describe, expect, it } from "vitest";
 import { createFoundryCharacterExport } from "@/src/utils/foundryAdapter";
 import type { CharacterBuilderState } from "@/src/store/characterStore.types";
 import type { CharacterSheetSummary } from "@/types/builder";
@@ -118,6 +118,7 @@ const summary: CharacterSheetSummary = {
   passives: { perception: 10, investigation: 10, insight: 10 },
   senses: [],
   languages: state.speciesLanguages,
+  toolProficiencies: [],
   resistances: [],
   immunities: [],
   vulnerabilities: [],

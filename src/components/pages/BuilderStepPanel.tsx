@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, type ReactNode } from "react";
+import { memo, useCallback, useMemo, useState, type ReactNode } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -108,6 +108,8 @@ const BEGINNER_STEP_GUIDES: Partial<
   equipamento: { conceptId: "starting-equipment", title: "What is starting equipment?" },
 };
 
+const DEFAULT_ACTIVE_SOURCES = ["XPHB"];
+
 interface BuilderStepPanelProps {
   step: BuilderStepSlug;
   species: BuilderSpecies[];
@@ -141,12 +143,18 @@ export function BuilderStepPanel({
     classId: string;
     items: string[];
   } | null>(null);
-  const messages = validateBuilderStep(step, characterState);
+  const messages = useMemo(
+    () => validateBuilderStep(step, characterState),
+    [step, characterState],
+  );
   const currentStepIndex = getStepIndex(step);
   const nextStep = builderStepNavigation[currentStepIndex + 1];
   const previousStep = builderStepNavigation[currentStepIndex - 1];
   const isStepUnlocked = currentStepIndex <= characterState.maxUnlockedStepIndex;
-  const previousStepsValid = arePreviousStepsValid(step, characterState);
+  const previousStepsValid = useMemo(
+    () => arePreviousStepsValid(step, characterState),
+    [step, characterState],
+  );
   const canUseCurrentStep = (isStepUnlocked || previousStepsValid) && previousStepsValid;
   const canAdvance = canUseCurrentStep && messages.length === 0 && Boolean(nextStep);
   const nextBlockerMessage =
@@ -165,6 +173,70 @@ export function BuilderStepPanel({
   const languageLimit = getRequiredLanguageCount(characterState);
   const stepPositionLabel = `Step ${Math.max(currentStepIndex + 1, 1)}/${builderStepNavigation.length}`;
 
+  const unlockAndGo = useCallback(
+    async (stepIndex: number) => {
+      const target = builderStepNavigation[stepIndex];
+
+      if (!target) {
+        return;
+      }
+
+      await actions.commitCurrentBuild(target.slug, stepIndex);
+      router.push(target.href);
+    },
+    [actions, router],
+  );
+
+  const requestClassSelection = useCallback(
+    (classId: string) => {
+      const impact = getClassChangeImpact({
+        state: characterState,
+        currentClass: selectedClass,
+      });
+
+      if (
+        characterState.selectedClassId &&
+        characterState.selectedClassId !== classId &&
+        impact.items.length > 0
+      ) {
+        setPendingClassChange({ classId, items: impact.items });
+        return;
+      }
+
+      actions.selectClass(classId);
+      void unlockAndGo(1);
+    },
+    [actions, characterState, selectedClass, unlockAndGo],
+  );
+
+  const requestSpeciesSelection = useCallback(
+    (speciesId: string) => {
+      const changes = getSpeciesReplacementChanges(characterState);
+
+      if (
+        characterState.selectedSpeciesId &&
+        characterState.selectedSpeciesId !== speciesId &&
+        changes.length > 0
+      ) {
+        setPendingReplacement({
+          title: "Change species",
+          description:
+            "Changing species resets internal choices and languages tied to it.",
+          changes,
+          onConfirm: () => {
+            actions.selectSpecies(speciesId);
+            void unlockAndGo(4);
+          },
+        });
+        return;
+      }
+
+      actions.selectSpecies(speciesId);
+      void unlockAndGo(4);
+    },
+    [actions, characterState, unlockAndGo],
+  );
+
   if (!canUseCurrentStep) {
     const blockingPendencies = deriveBuilderPendencies({
       state: characterState,
@@ -179,36 +251,6 @@ export function BuilderStepPanel({
     );
   }
 
-  async function unlockAndGo(stepIndex: number) {
-    const target = builderStepNavigation[stepIndex];
-
-    if (!target) {
-      return;
-    }
-
-    await actions.commitCurrentBuild(target.slug, stepIndex);
-    router.push(target.href);
-  }
-
-  function requestClassSelection(classId: string) {
-    const impact = getClassChangeImpact({
-      state: characterState,
-      currentClass: selectedClass,
-    });
-
-    if (
-      characterState.selectedClassId &&
-      characterState.selectedClassId !== classId &&
-      impact.items.length > 0
-    ) {
-      setPendingClassChange({ classId, items: impact.items });
-      return;
-    }
-
-    actions.selectClass(classId);
-    void unlockAndGo(1);
-  }
-
   function confirmClassChange() {
     if (!pendingClassChange) {
       return;
@@ -217,31 +259,6 @@ export function BuilderStepPanel({
     actions.selectClass(pendingClassChange.classId);
     setPendingClassChange(null);
     void unlockAndGo(1);
-  }
-
-  function requestSpeciesSelection(speciesId: string) {
-    const changes = getSpeciesReplacementChanges(characterState);
-
-    if (
-      characterState.selectedSpeciesId &&
-      characterState.selectedSpeciesId !== speciesId &&
-      changes.length > 0
-    ) {
-      setPendingReplacement({
-        title: "Change species",
-        description:
-          "Changing species resets internal choices and languages tied to it.",
-        changes,
-        onConfirm: () => {
-          actions.selectSpecies(speciesId);
-          void unlockAndGo(4);
-        },
-      });
-      return;
-    }
-
-    actions.selectSpecies(speciesId);
-    void unlockAndGo(4);
   }
 
   function requestBackgroundSelection(
@@ -301,7 +318,7 @@ export function BuilderStepPanel({
           selectedSkills={characterState.classSkillProficiencies}
           selectedFeatureChoices={characterState.classFeatureChoices}
           spellcastingChoices={characterState.spellcasting}
-          activeSources={characterState.creationPreferences?.activeSources ?? ["XPHB"]}
+          activeSources={characterState.creationPreferences?.activeSources ?? DEFAULT_ACTIVE_SOURCES}
           disabled={!canUseCurrentStep}
           onSelectedSkillsChange={actions.setClassSkillProficiencies}
           onSkillTrainingChange={actions.setSkillTraining}
@@ -805,7 +822,7 @@ function ClassStep({
                   classEntry={entry}
                   selected={selectedClassId === entry.id}
                   disabled={disabled}
-                  onSelect={() => onSelectClass(entry.id)}
+                  onSelect={onSelectClass}
                 />
               </div>
             );
@@ -1348,7 +1365,7 @@ function GuidedChoiceResultCard<TItem extends GuidedChoiceItem>({
   );
 }
 
-function ClassOptionCard({
+const ClassOptionCard = memo(function ClassOptionCard({
   classEntry,
   selected,
   disabled,
@@ -1357,11 +1374,12 @@ function ClassOptionCard({
   classEntry: BuilderClass;
   selected: boolean;
   disabled: boolean;
-  onSelect: () => void;
+  onSelect: (classId: string) => void;
 }) {
   const tags = getClassTags(classEntry);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const primaryAbility = formatList(classEntry.primaryAbility);
+  const handleSelect = useCallback(() => onSelect(classEntry.id), [onSelect, classEntry.id]);
 
   return (
     <>
@@ -1380,7 +1398,7 @@ function ClassOptionCard({
         isActive={selected}
         disabled={disabled}
         onClickDetails={() => setDetailsOpen(true)}
-        onClickSelect={onSelect}
+        onClickSelect={handleSelect}
       >
         <div className="grid gap-2 rounded-lg bg-black/40 p-3 backdrop-blur-[2px]">
           <div className="flex items-center justify-between gap-3">
@@ -1419,11 +1437,11 @@ function ClassOptionCard({
         classEntry={classEntry}
         selected={selected}
         disabled={disabled}
-        onSelect={onSelect}
+        onSelect={handleSelect}
       />
     </>
   );
-}
+});
 
 
 function HeroCardDetailLine({ label, value }: { label: string; value: string }) {
@@ -2173,7 +2191,7 @@ function SpeciesStep({
                   species={entry}
                   selected={selectedSpeciesId === entry.id}
                   disabled={disabled}
-                  onSelect={() => onSelectSpecies(entry.id)}
+                  onSelect={onSelectSpecies}
                 />
               </div>
             );
@@ -2193,7 +2211,7 @@ function SpeciesStep({
   );
 }
 
-function SpeciesOptionCard({
+const SpeciesOptionCard = memo(function SpeciesOptionCard({
   species,
   selected,
   disabled,
@@ -2202,9 +2220,10 @@ function SpeciesOptionCard({
   species: BuilderSpecies;
   selected: boolean;
   disabled: boolean;
-  onSelect: () => void;
+  onSelect: (speciesId: string) => void;
 }) {
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const handleSelect = useCallback(() => onSelect(species.id), [onSelect, species.id]);
 
   return (
     <>
@@ -2219,7 +2238,7 @@ function SpeciesOptionCard({
         isActive={selected}
         disabled={disabled}
         onClickDetails={() => setDetailsOpen(true)}
-        onClickSelect={onSelect}
+        onClickSelect={handleSelect}
       >
         <div className="grid gap-2 rounded-lg bg-black/40 p-3 backdrop-blur-[2px]">
           <HeroCardDetailLine label="Size" value={species.size} />
@@ -2246,11 +2265,11 @@ function SpeciesOptionCard({
         species={species}
         selected={selected}
         disabled={disabled}
-        onSelect={onSelect}
+        onSelect={handleSelect}
       />
     </>
   );
-}
+});
 
 function SpeciesDetailsDialog({
   open,
@@ -3131,47 +3150,98 @@ function arePreviousStepsValid(
 }
 
 function useCharacterBuilderActions() {
-  return {
-    selectSpecies: useCharacterStore((state) => state.selectSpecies),
-    selectClass: useCharacterStore((state) => state.selectClass),
-    selectBackground: useCharacterStore((state) => state.selectBackground),
-    addInventoryItem: useCharacterStore((state) => state.addInventoryItem),
-    setInventoryQuantity: useCharacterStore((state) => state.setInventoryQuantity),
-    removeInventoryItem: useCharacterStore((state) => state.removeInventoryItem),
-    toggleEquippedItem: useCharacterStore((state) => state.toggleEquippedItem),
-    setEquipmentSourceMode: useCharacterStore(
-      (state) => state.setEquipmentSourceMode,
-    ),
-    setEquipmentSourceOption: useCharacterStore(
-      (state) => state.setEquipmentSourceOption,
-    ),
-    unlockStep: useCharacterStore((state) => state.unlockStep),
-    commitCurrentBuild: useCharacterStore((state) => state.commitCurrentBuild),
-    setPendingChoiceIds: useCharacterStore((state) => state.setPendingChoiceIds),
-    setClassSkillProficiencies: useCharacterStore(
-      (state) => state.setClassSkillProficiencies,
-    ),
-    setSkillTraining: useCharacterStore((state) => state.setSkillTraining),
-    setClassFeatureChoice: useCharacterStore(
-      (state) => state.setClassFeatureChoice,
-    ),
-    setSpellcastingChoices: useCharacterStore(
-      (state) => state.setSpellcastingChoices,
-    ),
-    setSpeciesChoice: useCharacterStore((state) => state.setSpeciesChoice),
-    setSpeciesLanguages: useCharacterStore((state) => state.setSpeciesLanguages),
-    setAttributeGenerationMethod: useCharacterStore(
-      (state) => state.setAttributeGenerationMethod,
-    ),
-    setBackgroundAbilityBonuses: useCharacterStore(
-      (state) => state.setBackgroundAbilityBonuses,
-    ),
-    setDescriptionField: useCharacterStore((state) => state.setDescriptionField),
-    setForca: useCharacterStore((state) => state.setForca),
-    setDestreza: useCharacterStore((state) => state.setDestreza),
-    setConstituicao: useCharacterStore((state) => state.setConstituicao),
-    setInteligencia: useCharacterStore((state) => state.setInteligencia),
-    setSabedoria: useCharacterStore((state) => state.setSabedoria),
-    setCarisma: useCharacterStore((state) => state.setCarisma),
-  };
+  const selectSpecies = useCharacterStore((state) => state.selectSpecies);
+  const selectClass = useCharacterStore((state) => state.selectClass);
+  const selectBackground = useCharacterStore((state) => state.selectBackground);
+  const addInventoryItem = useCharacterStore((state) => state.addInventoryItem);
+  const setInventoryQuantity = useCharacterStore((state) => state.setInventoryQuantity);
+  const removeInventoryItem = useCharacterStore((state) => state.removeInventoryItem);
+  const toggleEquippedItem = useCharacterStore((state) => state.toggleEquippedItem);
+  const setEquipmentSourceMode = useCharacterStore((state) => state.setEquipmentSourceMode);
+  const setEquipmentSourceOption = useCharacterStore((state) => state.setEquipmentSourceOption);
+  const unlockStep = useCharacterStore((state) => state.unlockStep);
+  const commitCurrentBuild = useCharacterStore((state) => state.commitCurrentBuild);
+  const setPendingChoiceIds = useCharacterStore((state) => state.setPendingChoiceIds);
+  const setClassSkillProficiencies = useCharacterStore(
+    (state) => state.setClassSkillProficiencies,
+  );
+  const setSkillTraining = useCharacterStore((state) => state.setSkillTraining);
+  const setClassFeatureChoice = useCharacterStore((state) => state.setClassFeatureChoice);
+  const setSpellcastingChoices = useCharacterStore((state) => state.setSpellcastingChoices);
+  const setSpeciesChoice = useCharacterStore((state) => state.setSpeciesChoice);
+  const setSpeciesLanguages = useCharacterStore((state) => state.setSpeciesLanguages);
+  const setAttributeGenerationMethod = useCharacterStore(
+    (state) => state.setAttributeGenerationMethod,
+  );
+  const setBackgroundAbilityBonuses = useCharacterStore(
+    (state) => state.setBackgroundAbilityBonuses,
+  );
+  const setDescriptionField = useCharacterStore((state) => state.setDescriptionField);
+  const setForca = useCharacterStore((state) => state.setForca);
+  const setDestreza = useCharacterStore((state) => state.setDestreza);
+  const setConstituicao = useCharacterStore((state) => state.setConstituicao);
+  const setInteligencia = useCharacterStore((state) => state.setInteligencia);
+  const setSabedoria = useCharacterStore((state) => state.setSabedoria);
+  const setCarisma = useCharacterStore((state) => state.setCarisma);
+
+  return useMemo(
+    () => ({
+      selectSpecies,
+      selectClass,
+      selectBackground,
+      addInventoryItem,
+      setInventoryQuantity,
+      removeInventoryItem,
+      toggleEquippedItem,
+      setEquipmentSourceMode,
+      setEquipmentSourceOption,
+      unlockStep,
+      commitCurrentBuild,
+      setPendingChoiceIds,
+      setClassSkillProficiencies,
+      setSkillTraining,
+      setClassFeatureChoice,
+      setSpellcastingChoices,
+      setSpeciesChoice,
+      setSpeciesLanguages,
+      setAttributeGenerationMethod,
+      setBackgroundAbilityBonuses,
+      setDescriptionField,
+      setForca,
+      setDestreza,
+      setConstituicao,
+      setInteligencia,
+      setSabedoria,
+      setCarisma,
+    }),
+    [
+      selectSpecies,
+      selectClass,
+      selectBackground,
+      addInventoryItem,
+      setInventoryQuantity,
+      removeInventoryItem,
+      toggleEquippedItem,
+      setEquipmentSourceMode,
+      setEquipmentSourceOption,
+      unlockStep,
+      commitCurrentBuild,
+      setPendingChoiceIds,
+      setClassSkillProficiencies,
+      setSkillTraining,
+      setClassFeatureChoice,
+      setSpellcastingChoices,
+      setSpeciesChoice,
+      setSpeciesLanguages,
+      setAttributeGenerationMethod,
+      setBackgroundAbilityBonuses,
+      setDescriptionField,
+      setForca,
+      setDestreza,
+      setConstituicao,
+      setInteligencia,
+      setSabedoria,
+      setCarisma,
+    ],
+  );
 }

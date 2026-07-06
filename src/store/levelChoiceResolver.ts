@@ -29,6 +29,10 @@ export function collectAsiBonuses(state: CharacterBuilderState): AttributeBonuse
     if (choice.mode === "asi") {
       addBonuses(bonuses, choice.increases);
     } else {
+      // Bônus de habilidade de Epic Boons são roteados por deriveFeatEffects
+      // (cap 30); aqui entram apenas os half-feats comuns (cap 20).
+      const feat = getFeats().find((entry) => entry.id === choice.featId);
+      if (feat?.category === "epic-boon") continue;
       addBonuses(bonuses, choice.asi);
     }
   }

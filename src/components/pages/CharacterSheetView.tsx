@@ -1,7 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
-import { selectCharacterSheetSummary } from "@/src/store/characterSelectors";
+import { selectDerivedSheet } from "@/src/store/characterSelectors";
 import { useCharacterStore } from "@/src/store/useCharacterStore";
 import { useCharacterBuilderState } from "@/src/store/useCharacterBuilderState";
 import { cn } from "@/src/lib/utils";
@@ -26,7 +25,7 @@ interface CharacterSheetViewProps {
 export function CharacterSheetView({ embedded = false }: CharacterSheetViewProps) {
   const state = useCharacterBuilderState();
   const description = useCharacterStore((s) => s.description);
-  const summary = useMemo(() => selectCharacterSheetSummary(state), [state]);
+  const summary = useCharacterStore(selectDerivedSheet);
 
   function handleExport() {
     const exportData = createFoundryCharacterExport(state, summary);
@@ -69,7 +68,11 @@ export function CharacterSheetView({ embedded = false }: CharacterSheetViewProps
           investigation={summary.passives.investigation}
           insight={summary.passives.insight}
         />
-        <SensesPanel senses={summary.senses} languages={summary.languages} />
+        <SensesPanel
+          senses={summary.senses}
+          languages={summary.languages}
+          toolProficiencies={summary.toolProficiencies}
+        />
         <PlayStatePanel summary={summary} />
         <ConditionsPanel />
       </div>
