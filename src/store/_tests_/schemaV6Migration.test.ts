@@ -17,7 +17,7 @@ describe("schema v6 migration", () => {
   it("normalizes a real v5 build to v6 without losing data", () => {
     const build = normalizeCharacterBuild(v5Fixture);
     expect(build.exportMetadata.schemaVersion).toBe(CHARACTER_BUILD_SCHEMA_VERSION);
-    expect(CHARACTER_BUILD_SCHEMA_VERSION).toBe(10);
+    expect(CHARACTER_BUILD_SCHEMA_VERSION).toBe(11);
 
     expect(build.choices.selectedClassId).toBe(v5Fixture.choices.selectedClassId);
     expect(build.choices.money).toEqual(v5Fixture.choices.money);

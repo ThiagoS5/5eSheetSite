@@ -18,6 +18,7 @@ import {
   normalizeSavingThrowAttributes,
 } from "@/rules/savingThrowRules";
 import {
+  EPIC_BOON_ABILITY_CAP,
   calculateFinalAttributes,
   getAbilityModifier,
   getProficiencyBonus,
@@ -33,7 +34,11 @@ import {
   collectAsiBonuses,
   getActiveSubclassFeatures,
 } from "@/src/store/levelChoiceResolver";
-import { applyFeatEffects, type AppliedFeatEffects } from "@/src/adapters/featCatalog";
+import {
+  applyFeatEffects,
+  createEmptyAppliedFeatEffects,
+  type AppliedFeatEffects,
+} from "@/src/adapters/featCatalog";
 import type { CharacterBuilderState } from "@/src/store/characterStore.types";
 import { EMPTY_COIN_POUCH } from "@/src/types/characterBuild";
 import type {
@@ -77,7 +82,7 @@ export function selectCharacterSheetSummary(
   const featEffects = deriveFeatEffects(state, background);
   const carriedEquipment = deriveCarriedEquipment({ state, characterClass, background });
   const selectedEquipment = deriveSelectedEquipment({ state, carriedEquipment });
-  const finalAttributes = deriveFinalAttributes(state, featEffects.abilityBonuses);
+  const finalAttributes = deriveFinalAttributes(state, featEffects);
   const proficiencyBonus = getProficiencyBonus(state.level);
   const classAndFeatSkillProficiencies = [
     ...state.classSkillProficiencies,
@@ -156,7 +161,10 @@ export function selectCharacterSheetSummary(
     }),
     tempHp: effectivePlay.playState.tempHp,
     hitDice: `${state.level}d${characterClass?.hitDie ?? 6}`,
-    initiative: getAbilityModifier(finalAttributes.destreza) + featEffects.initiativeBonus,
+    initiative:
+      getAbilityModifier(finalAttributes.destreza) +
+      featEffects.initiativeBonus +
+      (featEffects.initiativeAddsProficiencyBonus ? proficiencyBonus : 0),
     speedFeet: (species?.speed ?? 30) + featEffects.speedBonusFeet,
     speedMeters: feetToMeters((species?.speed ?? 30) + featEffects.speedBonusFeet),
     xp: xpForLevel(state.level),
@@ -174,6 +182,7 @@ export function selectCharacterSheetSummary(
     passives: computePassives(skills),
     senses: species?.senses ?? [],
     languages: [...state.speciesLanguages, ...featEffects.languageProficiencies],
+    toolProficiencies: [...new Set(featEffects.toolProficiencies)],
     resistances: [],
     immunities: [],
     vulnerabilities: [],
@@ -198,7 +207,7 @@ export function selectCharacterSheetSummary(
 
 function deriveFinalAttributes(
   state: CharacterBuilderState,
-  featAbilityBonuses: Partial<Record<AttributeKey, number>> = {},
+  featEffects?: AppliedFeatEffects,
 ) {
   const asiBonuses = collectAsiBonuses(state);
   const mergedBonuses = { ...state.backgroundAbilityBonuses };
@@ -206,11 +215,24 @@ function deriveFinalAttributes(
     mergedBonuses[key as AttributeKey] =
       (mergedBonuses[key as AttributeKey] ?? 0) + (value ?? 0);
   }
-  for (const [key, value] of Object.entries(featAbilityBonuses)) {
+  for (const [key, value] of Object.entries(featEffects?.abilityBonuses ?? {})) {
     mergedBonuses[key as AttributeKey] =
       (mergedBonuses[key as AttributeKey] ?? 0) + (value ?? 0);
   }
-  return calculateFinalAttributes(state.baseAttributes, mergedBonuses);
+  // Estágio 1: bônus comuns (background, ASI, half-feats) capados em 20.
+  const cappedAtTwenty = calculateFinalAttributes(state.baseAttributes, mergedBonuses);
+
+  // Estágio 2: Epic Boons (nível 19+) aplicam por cima, podendo chegar a 30.
+  const epicBonuses = featEffects?.epicBoonAbilityBonuses ?? {};
+  const capOverrides: Partial<Record<AttributeKey, number>> = {};
+  let hasEpicBonus = false;
+  for (const [key, value] of Object.entries(epicBonuses)) {
+    if (typeof value !== "number" || value === 0) continue;
+    hasEpicBonus = true;
+    capOverrides[key as AttributeKey] = EPIC_BOON_ABILITY_CAP;
+  }
+  if (!hasEpicBonus) return cappedAtTwenty;
+  return calculateFinalAttributes(cappedAtTwenty, epicBonuses, capOverrides);
 }
 
 function resolveOriginFeat(
@@ -233,14 +255,7 @@ function deriveFeatEffects(
   background: ReturnType<typeof getBuilderBackgrounds>[number] | undefined,
 ): AppliedFeatEffects {
   const feats = getFeats();
-  let effects: AppliedFeatEffects = {
-    abilityBonuses: {},
-    initiativeBonus: 0,
-    speedBonusFeet: 0,
-    skillProficiencies: [],
-    toolProficiencies: [],
-    languageProficiencies: [],
-  };
+  let effects: AppliedFeatEffects = createEmptyAppliedFeatEffects();
 
   const originFeat = resolveOriginFeat(background);
   if (originFeat) {
@@ -251,11 +266,11 @@ function deriveFeatEffects(
     if (Number(level) > state.level || choice.mode !== "feat") continue;
     const feat = feats.find((entry) => entry.id === choice.featId);
     if (!feat) continue;
-    const nonAbilityChoice = {
-      ...choice,
-      asi: undefined,
-    };
-    effects = applyFeatEffects(effects, feat, nonAbilityChoice);
+    // Half-feats comuns têm o ASI coletado em collectAsiBonuses (cap 20);
+    // Epic Boons mantêm o ASI aqui para rotear pelo cap 30.
+    const effectsChoice =
+      feat.category === "epic-boon" ? choice : { ...choice, asi: undefined };
+    effects = applyFeatEffects(effects, feat, effectsChoice);
   }
 
   return effects;

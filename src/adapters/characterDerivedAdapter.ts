@@ -13,15 +13,25 @@ export function getProficiencyBonus(level: number): number {
   return Math.ceil(level / 4) + 1;
 }
 
+// 5e 2024: aumentos por ASI e half-feat não podem elevar um atributo acima de 20;
+// apenas Epic Boons (nível 19+) permitem chegar a 30.
+export const ABILITY_SCORE_CAP = 20;
+export const EPIC_BOON_ABILITY_CAP = 30;
+
 export function calculateFinalAttributes(
   baseAttributes: CharacterAttributes,
   bonuses: AttributeBonuses,
+  capOverrides?: Partial<Record<AttributeKey, number>>,
 ): CharacterAttributes {
   return (Object.keys(baseAttributes) as AttributeKey[]).reduce<CharacterAttributes>(
-    (attributes, key) => ({
-      ...attributes,
-      [key]: baseAttributes[key] + (bonuses[key] ?? 0),
-    }),
+    (attributes, key) => {
+      const cap = capOverrides?.[key] ?? ABILITY_SCORE_CAP;
+      const total = baseAttributes[key] + (bonuses[key] ?? 0);
+      return {
+        ...attributes,
+        [key]: Math.min(total, Math.max(baseAttributes[key], cap)),
+      };
+    },
     { ...baseAttributes },
   );
 }

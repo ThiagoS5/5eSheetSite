@@ -202,11 +202,29 @@ describe("applyFeatEffects", () => {
     ...overrides,
   });
 
-  it("applies curated initiative bonuses from Alert", () => {
+  it("applies curated initiative bonuses from Alert (2024: adds proficiency bonus)", () => {
     const alert = getFeats().find((f) => f.name === "Alert" && f.source === "XPHB");
     if (!alert) throw new Error("Alert missing");
 
-    expect(applyFeatEffects(undefined, alert, baseChoice()).initiativeBonus).toBe(5);
+    const effects = applyFeatEffects(undefined, alert, baseChoice());
+    expect(effects.initiativeAddsProficiencyBonus).toBe(true);
+    expect(effects.initiativeBonus).toBe(0);
+  });
+
+  it("applies curated speed bonuses from Boon of Speed", () => {
+    const boon = getFeats().find((f) => f.name === "Boon of Speed" && f.source === "XPHB");
+    if (!boon) throw new Error("Boon of Speed missing");
+
+    expect(applyFeatEffects(undefined, boon, baseChoice()).speedBonusFeet).toBe(30);
+  });
+
+  it("routes epic boon ability bonuses separately (cap 30)", () => {
+    const boon = getFeats().find((f) => f.name === "Boon of Speed" && f.source === "XPHB");
+    if (!boon) throw new Error("Boon of Speed missing");
+
+    const effects = applyFeatEffects(undefined, boon, baseChoice({ asi: { destreza: 1 } }));
+    expect(effects.epicBoonAbilityBonuses).toEqual({ destreza: 1 });
+    expect(effects.abilityBonuses).toEqual({});
   });
 
   it("applies curated speed bonuses from Speedy", () => {

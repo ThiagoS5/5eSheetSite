@@ -1,9 +1,59 @@
 import { describe, expect, it } from "vitest";
 import {
+  ABILITY_SCORE_CAP,
+  EPIC_BOON_ABILITY_CAP,
+  calculateFinalAttributes,
   calculateInitialHitPoints,
   calculateMaxHitPoints,
   getMaxHitPointsBreakdown,
 } from "@/src/adapters/characterDerivedAdapter";
+import type { CharacterAttributes } from "@/types/dnd";
+
+const baseAttributes = (overrides: Partial<CharacterAttributes> = {}): CharacterAttributes => ({
+  forca: 10,
+  destreza: 10,
+  constituicao: 10,
+  inteligencia: 10,
+  sabedoria: 10,
+  carisma: 10,
+  ...overrides,
+});
+
+describe("calculateFinalAttributes (cap de atributo)", () => {
+  it("soma bônus normalmente abaixo do cap", () => {
+    const result = calculateFinalAttributes(baseAttributes({ forca: 15 }), { forca: 2 });
+    expect(result.forca).toBe(17);
+  });
+
+  it("capa em 20: 19 + 2 => 20", () => {
+    const result = calculateFinalAttributes(baseAttributes({ forca: 19 }), { forca: 2 });
+    expect(result.forca).toBe(ABILITY_SCORE_CAP);
+  });
+
+  it("capa em 20: 20 + 1 (half-feat) => 20", () => {
+    const result = calculateFinalAttributes(baseAttributes({ forca: 20 }), { forca: 1 });
+    expect(result.forca).toBe(20);
+  });
+
+  it("base acima do cap é preservada, mas bônus não empurram além", () => {
+    const result = calculateFinalAttributes(baseAttributes({ forca: 22 }), { forca: 2 });
+    expect(result.forca).toBe(22);
+  });
+
+  it("capOverrides permite cap 30 para Epic Boons", () => {
+    const result = calculateFinalAttributes(
+      baseAttributes({ forca: 20 }),
+      { forca: 2 },
+      { forca: EPIC_BOON_ABILITY_CAP },
+    );
+    expect(result.forca).toBe(22);
+  });
+
+  it("não altera atributos sem bônus", () => {
+    const result = calculateFinalAttributes(baseAttributes(), {});
+    expect(result).toEqual(baseAttributes());
+  });
+});
 
 describe("calculateMaxHitPoints (level-aware)", () => {
   it("matches the level-1 value for level 1", () => {

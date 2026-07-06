@@ -406,8 +406,31 @@ function createBuildFromFlatState(
 
   return {
     ...buildWithPlayState,
-    derivedSheet: deriveSheet(buildWithPlayState),
+    // A primeira derivação já usou normalizedPlayState; se a normalização final
+    // não alterou nada relevante, o sheet é idêntico e a segunda derivação é dispensável.
+    derivedSheet: isEquivalentPlayState(normalizedPlayState, playState)
+      ? firstDerived
+      : deriveSheet(buildWithPlayState),
   };
+}
+
+function isEquivalentPlayState(
+  a: CharacterBuildPlayState,
+  b: CharacterBuildPlayState,
+): boolean {
+  return (
+    a.currentHp === b.currentHp &&
+    a.tempHp === b.tempHp &&
+    a.hitDiceSpent === b.hitDiceSpent &&
+    a.deathSaves.successes === b.deathSaves.successes &&
+    a.deathSaves.failures === b.deathSaves.failures &&
+    a.usedSpellSlots === b.usedSpellSlots &&
+    a.resourceUses === b.resourceUses &&
+    a.resourceRecoveries === b.resourceRecoveries &&
+    a.inspiration === b.inspiration &&
+    a.conditions === b.conditions &&
+    a.overrides === b.overrides
+  );
 }
 
 function normalizeFlatState(
@@ -654,6 +677,7 @@ function createEmptyDerivedSheet(
     passives: { perception: 10, investigation: 10, insight: 10 },
     senses: [],
     languages: state.speciesLanguages,
+    toolProficiencies: [],
     resistances: [],
     immunities: [],
     vulnerabilities: [],

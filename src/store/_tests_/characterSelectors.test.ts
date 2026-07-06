@@ -30,6 +30,43 @@ describe("character selectors", () => {
     expect(summary.senses[0]?.rangeFeet).toBeGreaterThanOrEqual(60);
   });
 
+  it("caps final attributes at 20 after background bonus + ASI", () => {
+    const store = createCharacterStore();
+
+    store.getState().selectClass("fighter-xphb");
+    store.getState().setForca(17);
+    store.getState().setBackgroundAbilityBonuses({ forca: 2 });
+    store.getState().setLevel(4);
+    store.getState().setLevelAsiOrFeat(4, { mode: "asi", increases: { forca: 2 } });
+
+    const summary = selectCharacterSheetSummary(store.getState());
+
+    // 17 base + 2 background + 2 ASI = 21, mas a regra 5e 2024 limita em 20
+    expect(summary.finalAttributes.forca).toBe(20);
+  });
+
+  it("allows epic boon ability bonuses to raise an attribute above 20 (cap 30)", () => {
+    const store = createCharacterStore();
+
+    store.getState().selectClass("fighter-xphb");
+    store.getState().setForca(17);
+    store.getState().setBackgroundAbilityBonuses({ forca: 2 });
+    store.getState().setLevel(19);
+    store.getState().setLevelAsiOrFeat(4, { mode: "asi", increases: { forca: 2 } });
+    store.getState().setLevelAsiOrFeat(19, {
+      mode: "feat",
+      featId: "boon-of-speed-xphb",
+      asi: { forca: 1 },
+    });
+
+    const summary = selectCharacterSheetSummary(store.getState());
+
+    // 17 + 2 (background) + 2 (ASI, capado em 20) + 1 (Epic Boon) = 21
+    expect(summary.finalAttributes.forca).toBe(21);
+    // Boon of Speed também soma +30 ft de deslocamento
+    expect(summary.speedFeet).toBe(60);
+  });
+
   it("includes the chosen class package items in carried load without auto-equipping", () => {
     const store = createCharacterStore();
     const fighter = getBuilderClasses().find((c) => c.id === "fighter-xphb");
@@ -214,7 +251,8 @@ describe("character selectors", () => {
     );
 
     expect(summary.originFeat).toBe("Alert");
-    expect(summary.initiative).toBe(5);
+    // XPHB 2024: Alert soma o bônus de proficiência (+2 no nível 1) à iniciativa.
+    expect(summary.initiative).toBe(summary.proficiencyBonus);
     expect(originFeature?.description).toMatch(/initiative/i);
     expect(originFeature?.description).not.toMatch(/gp|po|equipment|equipamento/i);
   });

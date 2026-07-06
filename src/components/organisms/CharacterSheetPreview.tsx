@@ -8,8 +8,9 @@ import {
   getBuilderSpecies,
 } from "@/src/services/ruleService";
 import { getAbilityModifier } from "@/src/adapters/characterDerivedAdapter";
-import { selectCharacterSheetSummary } from "@/src/store/characterSelectors";
+import { selectDerivedSheet } from "@/src/store/characterSelectors";
 import { useCharacterBuilderState } from "@/src/store/useCharacterBuilderState";
+import { useCharacterStore } from "@/src/store/useCharacterStore";
 import { ATTRIBUTE_LABELS, type AttributeKey } from "@/types/dnd";
 import { TagList } from "@/src/components/molecules/TagList";
 
@@ -28,12 +29,8 @@ export function CharacterSheetPreview({
 }: CharacterSheetPreviewProps) {
   const isDrawer = variant === "drawer";
   const isCollapsed = collapsed && !isDrawer;
-  const characterState = useCharacterBuilderState();
-  const summary = useMemo(
-    () => selectCharacterSheetSummary(characterState),
-    [characterState],
-  );
-  const { description } = characterState;
+  const summary = useCharacterStore(selectDerivedSheet);
+  const { description } = useCharacterBuilderState();
   const speciesName = useMemo(
     () => getBuilderSpecies().find((entry) => entry.id === summary.speciesId)?.name,
     [summary.speciesId],

@@ -10,7 +10,8 @@ import type {
 } from "@/types/dnd";
 import type { CharacterSpellcastingChoices } from "@/types/spells";
 
-export const CHARACTER_BUILD_SCHEMA_VERSION = 10;
+// v11: derivedSheet ganhou toolProficiencies (re-derivado no load; migração pass-through).
+export const CHARACTER_BUILD_SCHEMA_VERSION = 11;
 
 export interface CoinPouch {
   pc: number;

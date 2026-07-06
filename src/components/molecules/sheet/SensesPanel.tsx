@@ -1,10 +1,13 @@
 interface SensesPanelProps {
   senses: Array<{ name: string; rangeFeet?: number }>;
   languages: string[];
+  toolProficiencies?: string[];
 }
 
-export function SensesPanel({ senses, languages }: SensesPanelProps) {
-  if (senses.length === 0 && languages.length === 0) return null;
+export function SensesPanel({ senses, languages, toolProficiencies = [] }: SensesPanelProps) {
+  if (senses.length === 0 && languages.length === 0 && toolProficiencies.length === 0) {
+    return null;
+  }
 
   return (
     <section className="rounded-lg border border-white/[0.08] bg-card p-3">
@@ -40,6 +43,19 @@ export function SensesPanel({ senses, languages }: SensesPanelProps) {
             </p>
           </div>
           <p translate="no" className="notranslate text-xs text-subdued">{languages.join(", ")}</p>
+        </>
+      )}
+      {toolProficiencies.length > 0 && (
+        <>
+          <div className="mb-1 mt-3 flex items-center gap-1.5">
+            <i aria-hidden="true" className="fa-solid fa-toolbox text-muted-foreground" />
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+              Tool Proficiencies
+            </p>
+          </div>
+          <p translate="no" className="notranslate text-xs text-subdued">
+            {toolProficiencies.join(", ")}
+          </p>
         </>
       )}
     </section>

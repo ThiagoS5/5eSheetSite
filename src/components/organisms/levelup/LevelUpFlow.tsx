@@ -4,7 +4,6 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { getBuilderClasses, getFeats } from "@/src/services/ruleService";
-import { selectCharacterSheetSummary } from "@/src/store/characterSelectors";
 import { getPendingRequirements } from "@/src/store/levelChoiceResolver";
 import { getFeatPrerequisiteStatus, getSelectableFeats } from "@/src/adapters/featCatalog";
 import { useCharacterStore } from "@/src/store/useCharacterStore";
@@ -57,9 +56,12 @@ export function LevelUpFlow({ open, onClose }: LevelUpFlowProps) {
 
 
 
-  const [snapshotTaken, setSnapshotTaken] = useState(false);
-  if (open && characterClass && !snapshotTaken) {
-    setSnapshotTaken(true);
+  // O snapshot é re-tirado se nível ou classe mudarem com o diálogo aberto,
+  // evitando que o usuário resolva passos de um estado que não existe mais.
+  const [snapshotKey, setSnapshotKey] = useState<string | null>(null);
+  const currentSnapshotKey = `${state.level}:${state.selectedClassId}`;
+  if (open && characterClass && snapshotKey !== currentSnapshotKey) {
+    setSnapshotKey(currentSnapshotKey);
     const pendingIdsSnapshot = getPendingRequirements(state, characterClass).map((r) => r.id);
     const needsHpStep = state.level > 1 && state.hpRollByLevel[String(state.level)] === undefined;
     const spellStep = characterClass.spellcastingAbility ? [`${SPELL_STEP_PREFIX}${state.level}`] : [];
@@ -69,8 +71,8 @@ export function LevelUpFlow({ open, onClose }: LevelUpFlowProps) {
       ...spellStep,
     ]);
     setActiveIndex(0);
-  } else if (!open && snapshotTaken) {
-    setSnapshotTaken(false);
+  } else if (!open && snapshotKey !== null) {
+    setSnapshotKey(null);
   }
 
   const allRequirements = useMemo(
@@ -128,7 +130,7 @@ export function LevelUpFlow({ open, onClose }: LevelUpFlowProps) {
   const isLast = activeIndex >= steps.length - 1;
   const allResolved = steps.every((id) => isStepResolved(id));
 
-  const summary = selectCharacterSheetSummary(state);
+  const summary = state.characterBuild.derivedSheet;
 
   function renderActiveStep() {
     if (activeHpLevel !== null) {
