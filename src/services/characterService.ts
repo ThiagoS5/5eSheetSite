@@ -8,6 +8,7 @@ import {
   getBuilderClasses,
   getBuilderSpecies,
 } from "@/src/services/ruleService";
+import { getPortraitById } from "@/src/data/portraits";
 import type { CharacterBuild } from "@/src/types/characterBuild";
 import type { Character } from "@/types/Character";
 
@@ -185,6 +186,7 @@ function toDashboardCharacter(character: CharacterBuild): Character {
     pendencies: sheet.pendencies,
     currentStepHref: getStepHref(character.draft.currentStepSlug),
     atributos: character.derivedSheet.finalAttributes,
+    portraitUrl: getPortraitById(character.draft.description.portraitId)?.src,
   };
 }
 
