@@ -556,15 +556,18 @@ function EmptyState({ onCreate }: { onCreate: () => void }) {
               <VaultBenefit label="Living sheet" value="HP, AC, and level on the card" />
               <VaultBenefit label="Table output" value="Export status" />
             </div>
-            <Button
-              type="button"
-              onClick={onCreate}
-              size="lg"
-              className="mt-8 h-auto gap-3 px-6 py-3 font-sans font-bold hover:bg-destructive active:scale-95"
-            >
-              <Plus className="h-5 w-5" />
-              Create Character
-            </Button>
+            <div className="mt-8 flex w-full flex-col gap-3 sm:flex-row sm:items-start">
+              <ImportCharacterButton />
+              <Button
+                type="button"
+                onClick={onCreate}
+                size="lg"
+                className="h-auto gap-3 px-6 py-3 font-sans font-bold hover:bg-destructive active:scale-95"
+              >
+                <Plus className="h-5 w-5" />
+                Create Character
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>

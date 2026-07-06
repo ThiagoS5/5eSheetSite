@@ -52,6 +52,21 @@ describe("Dashboard", () => {
     expect(screen.queryByText("Aelarion Sunweaver")).not.toBeInTheDocument();
   });
 
+  it("renders the import control in the empty state", async () => {
+    render(
+      <CharacterStoreProvider>
+        <Dashboard />
+      </CharacterStoreProvider>,
+    );
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("heading", { name: "Create your first character" }),
+      ).toBeInTheDocument();
+    });
+    expect(screen.getByLabelText(/import character file/i)).toBeInTheDocument();
+  });
+
   it("renders saved local characters and the add-new card when populated", async () => {
     await saveCharacter(createDashboardBuild());
 
@@ -72,6 +87,21 @@ describe("Dashboard", () => {
     expect(screen.getByText("AC")).toBeInTheDocument();
     expect(screen.getAllByText("Create Character")).not.toHaveLength(0);
     expect(screen.queryByText("Shadow on the Wall")).not.toBeInTheDocument();
+  });
+
+  it("renders the import control in the populated state", async () => {
+    await saveCharacter(createDashboardBuild());
+
+    render(
+      <CharacterStoreProvider>
+        <Dashboard />
+      </CharacterStoreProvider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Character Vault" })).toBeInTheDocument();
+    });
+    expect(screen.getByLabelText(/import character file/i)).toBeInTheDocument();
   });
 
   it("creates a new local save and routes continue actions to the saved step", async () => {
