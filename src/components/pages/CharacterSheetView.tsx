@@ -1,9 +1,13 @@
 "use client";
 
+import { pdf } from "@react-pdf/renderer";
+import { buildPdfDocument } from "@/src/adapters/pdfAdapter";
 import { selectDerivedSheet } from "@/src/store/characterSelectors";
 import { useCharacterStore } from "@/src/store/useCharacterStore";
 import { useCharacterBuilderState } from "@/src/store/useCharacterBuilderState";
 import { cn } from "@/src/lib/utils";
+import { deriveCarriedEquipment } from "@/rules/inventoryRules";
+import { getBuilderBackgrounds, getBuilderClasses } from "@/src/services/ruleService";
 import { createFoundryCharacterExport } from "@/src/utils/foundryAdapter";
 import { SHEET_THEME_VARS } from "@/src/components/organisms/sheet/sheetTheme";
 import { SheetHero } from "@/src/components/organisms/sheet/SheetHero";
@@ -27,20 +31,38 @@ export function CharacterSheetView({ embedded = false }: CharacterSheetViewProps
   const description = useCharacterStore((s) => s.description);
   const summary = useCharacterStore(selectDerivedSheet);
 
-  function handleExport() {
+  function handleFoundryExport() {
     const exportData = createFoundryCharacterExport(state, summary);
     const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
+    downloadBlob(blob, `${sanitizeFileName(summary.name)}-foundry-vtt.json`);
+  }
+
+  async function handlePdfExport() {
+    const inventory = deriveCarriedEquipment({
+      state,
+      characterClass: getBuilderClasses().find((entry) => entry.id === state.selectedClassId),
+      background: getBuilderBackgrounds().find((entry) => entry.id === state.selectedBackgroundId),
+    });
+    const blob = await pdf(buildPdfDocument({ summary, description, inventory })).toBlob();
+    downloadBlob(blob, `${sanitizeFileName(summary.name)}-sheet.pdf`);
+  }
+
+  function downloadBlob(blob: Blob, fileName: string) {
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement("a");
     anchor.href = url;
-    anchor.download = `${sanitizeFileName(summary.name)}-foundry-vtt.json`;
+    anchor.download = fileName;
     anchor.click();
     URL.revokeObjectURL(url);
   }
 
   const content = (
     <div className="flex flex-col gap-[14px]" style={SHEET_THEME_VARS}>
-      <SheetHero summary={summary} onExport={handleExport} />
+      <SheetHero
+        summary={summary}
+        onExportFoundry={handleFoundryExport}
+        onExportPdf={handlePdfExport}
+      />
 
       {/* Middle region */}
       <div className="flex flex-wrap items-start gap-[14px]">

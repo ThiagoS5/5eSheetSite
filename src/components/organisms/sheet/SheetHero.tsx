@@ -7,29 +7,23 @@ import { LevelUpButton } from "@/src/components/molecules/LevelUpButton";
 
 interface SheetHeroProps {
   summary: CharacterSheetSummary;
-  onExport: () => void;
+  onExportFoundry: () => void;
+  onExportPdf: () => void;
 }
 
 function fmt(n: number): string {
   return n >= 0 ? `+${n}` : `${n}`;
 }
 
-export function SheetHero({ summary, onExport }: SheetHeroProps) {
+export function SheetHero({ summary, onExportFoundry, onExportPdf }: SheetHeroProps) {
   return (
     <div className="flex flex-col items-center gap-[18px] rounded-2xl border border-border bg-surface-nested px-5 py-[22px] [background:radial-gradient(120%_90%_at_50%_0%,color-mix(in_oklab,var(--primary)_9%,transparent),transparent_60%),var(--surface-nested)]">
 
       <div className="flex w-full flex-wrap items-center justify-between gap-[14px]">
-        <button
-          type="button"
-          onClick={onExport}
-          className={cn(
-            "inline-flex items-center gap-[7px] rounded-[9px] border border-border bg-card px-[14px] py-[9px] text-[10.5px] font-bold uppercase tracking-[0.05em] text-muted-foreground transition-colors hover:border-brand-crimson-alt hover:text-foreground",
-            focusRing,
-          )}
-        >
-          <i aria-hidden="true" className="fa-solid fa-file-export" />
-          Export
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          <ExportButton label="Foundry JSON" icon="fa-file-export" onClick={onExportFoundry} />
+          <ExportButton label="Printable PDF" icon="fa-file-pdf" onClick={onExportPdf} />
+        </div>
         <div className="min-w-[200px] flex-1 text-center">
           <h1 translate="no" className="notranslate m-0 font-serif text-[28px] font-extrabold leading-[1.02] text-foreground">
             {summary.name || "Unnamed Character"}
@@ -99,5 +93,29 @@ export function SheetHero({ summary, onExport }: SheetHeroProps) {
 
       <AttributeGrid attributes={summary.attributes} />
     </div>
+  );
+}
+
+function ExportButton({
+  icon,
+  label,
+  onClick,
+}: {
+  icon: string;
+  label: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "inline-flex items-center gap-[7px] rounded-[9px] border border-border bg-card px-[14px] py-[9px] text-[10.5px] font-bold uppercase tracking-[0.05em] text-muted-foreground transition-colors hover:border-brand-crimson-alt hover:text-foreground",
+        focusRing,
+      )}
+    >
+      <i aria-hidden="true" className={`fa-solid ${icon}`} />
+      {label}
+    </button>
   );
 }

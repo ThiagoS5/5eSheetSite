@@ -21,16 +21,21 @@ describe("SheetHero", () => {
   afterEach(cleanup);
 
   it("renders identity, AC and HP", () => {
-    render(<SheetHero summary={summary} onExport={() => {}} />);
+    render(<SheetHero summary={summary} onExportFoundry={() => {}} onExportPdf={() => {}} />);
     expect(screen.getByRole("heading", { name: "Thalindra" })).toBeInTheDocument();
     expect(screen.getByText("13")).toBeInTheDocument();
     expect(screen.getByText("27")).toBeInTheDocument();
   });
 
-  it("calls onExport when Export is pressed", () => {
-    const onExport = vi.fn();
-    render(<SheetHero summary={summary} onExport={onExport} />);
-    fireEvent.click(screen.getByRole("button", { name: /Export/ }));
-    expect(onExport).toHaveBeenCalled();
+  it("calls the matching export action when an export button is pressed", () => {
+    const onExportFoundry = vi.fn();
+    const onExportPdf = vi.fn();
+    render(<SheetHero summary={summary} onExportFoundry={onExportFoundry} onExportPdf={onExportPdf} />);
+
+    fireEvent.click(screen.getByRole("button", { name: /Foundry JSON/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Printable PDF/ }));
+
+    expect(onExportFoundry).toHaveBeenCalledTimes(1);
+    expect(onExportPdf).toHaveBeenCalledTimes(1);
   });
 });
