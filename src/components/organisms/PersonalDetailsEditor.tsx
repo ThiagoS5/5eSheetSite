@@ -3,7 +3,7 @@
 import { useId, useMemo, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CircleQuestionMark, Dices } from "lucide-react";
+import { CircleQuestionMark, Dices, Sparkles } from "lucide-react";
 import Image from "next/image";
 import { useCharacterStore } from "@/src/store/useCharacterStore";
 import { Input } from "@/src/components/ui/input";
@@ -66,6 +66,26 @@ interface PersonalDetailsEditorProps {
   selectedClass?: BuilderClass;
 }
 
+function SuggestButton({
+  label,
+  onClick,
+}: {
+  label: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      aria-label={`Suggest ${label}`}
+      onClick={onClick}
+      className="inline-flex items-center gap-1.5 rounded-md border border-brand-gold-alt/50 px-2.5 py-1 text-xs font-bold text-foreground outline-none transition hover:bg-brand-gold-alt/10 focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70"
+    >
+      <Sparkles aria-hidden="true" className="h-3.5 w-3.5" />
+      Suggest
+    </button>
+  );
+}
+
 export function PersonalDetailsEditor({
   beginnerMode = false,
   selectedSpecies,
@@ -116,6 +136,17 @@ export function PersonalDetailsEditor({
 
   const currentUnit = useWatch({ control, name: "weightUnit" });
 
+  const narrativeSuggestions = {
+    aparencia: recommendations.appearance,
+    personalidade: recommendations.personality,
+    tracos: recommendations.backstory,
+    notas: recommendations.notes,
+  } as const;
+
+  function applySuggestion(field: keyof typeof narrativeSuggestions) {
+    setValue(field, narrativeSuggestions[field], { shouldDirty: true });
+    void persist();
+  }
 
   const persist = handleSubmit((data) => {
     setDescriptionField("nome", data.nome);
@@ -414,12 +445,18 @@ export function PersonalDetailsEditor({
         </h3>
         <div className="space-y-4 md:space-y-5">
           <div>
-            <FieldLabel
-              htmlFor="pd-aparencia"
-              label="Physical Appearance"
-              help={guidedFieldHelp.aparencia}
-              showHelp={beginnerMode}
-            />
+            <div className="flex items-start justify-between gap-2">
+              <FieldLabel
+                htmlFor="pd-aparencia"
+                label="Physical Appearance"
+                help={guidedFieldHelp.aparencia}
+                showHelp={beginnerMode}
+              />
+              <SuggestButton
+                label="Physical Appearance"
+                onClick={() => applySuggestion("aparencia")}
+              />
+            </div>
             <textarea
               id="pd-aparencia"
               className={textareaCls}
@@ -429,12 +466,18 @@ export function PersonalDetailsEditor({
             />
           </div>
           <div>
-            <FieldLabel
-              htmlFor="pd-personalidade"
-              label="Personality & Mannerisms"
-              help={guidedFieldHelp.personalidade}
-              showHelp={beginnerMode}
-            />
+            <div className="flex items-start justify-between gap-2">
+              <FieldLabel
+                htmlFor="pd-personalidade"
+                label="Personality & Mannerisms"
+                help={guidedFieldHelp.personalidade}
+                showHelp={beginnerMode}
+              />
+              <SuggestButton
+                label="Personality & Mannerisms"
+                onClick={() => applySuggestion("personalidade")}
+              />
+            </div>
             <textarea
               id="pd-personalidade"
               className={textareaCls}
@@ -444,12 +487,18 @@ export function PersonalDetailsEditor({
             />
           </div>
           <div>
-            <FieldLabel
-              htmlFor="pd-tracos"
-              label="Backstory"
-              help={guidedFieldHelp.tracos}
-              showHelp={beginnerMode}
-            />
+            <div className="flex items-start justify-between gap-2">
+              <FieldLabel
+                htmlFor="pd-tracos"
+                label="Backstory"
+                help={guidedFieldHelp.tracos}
+                showHelp={beginnerMode}
+              />
+              <SuggestButton
+                label="Backstory"
+                onClick={() => applySuggestion("tracos")}
+              />
+            </div>
             <textarea
               id="pd-tracos"
               className={textareaCls}
@@ -459,12 +508,18 @@ export function PersonalDetailsEditor({
             />
           </div>
           <div>
-            <FieldLabel
-              htmlFor="pd-notas"
-              label="Additional Notes"
-              help={guidedFieldHelp.notas}
-              showHelp={beginnerMode}
-            />
+            <div className="flex items-start justify-between gap-2">
+              <FieldLabel
+                htmlFor="pd-notas"
+                label="Additional Notes"
+                help={guidedFieldHelp.notas}
+                showHelp={beginnerMode}
+              />
+              <SuggestButton
+                label="Additional Notes"
+                onClick={() => applySuggestion("notas")}
+              />
+            </div>
             <textarea
               id="pd-notas"
               className={textareaCls}
