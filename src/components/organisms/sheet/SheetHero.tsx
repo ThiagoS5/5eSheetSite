@@ -8,6 +8,7 @@ import { LevelUpButton } from "@/src/components/molecules/LevelUpButton";
 interface SheetHeroProps {
   summary: CharacterSheetSummary;
   onExportFoundry: () => void;
+  onExportCanonical: () => void;
   onExportPdf: () => void;
 }
 
@@ -15,13 +16,19 @@ function fmt(n: number): string {
   return n >= 0 ? `+${n}` : `${n}`;
 }
 
-export function SheetHero({ summary, onExportFoundry, onExportPdf }: SheetHeroProps) {
+export function SheetHero({
+  summary,
+  onExportFoundry,
+  onExportCanonical,
+  onExportPdf,
+}: SheetHeroProps) {
   return (
     <div className="flex flex-col items-center gap-[18px] rounded-2xl border border-border bg-surface-nested px-5 py-[22px] [background:radial-gradient(120%_90%_at_50%_0%,color-mix(in_oklab,var(--primary)_9%,transparent),transparent_60%),var(--surface-nested)]">
 
       <div className="flex w-full flex-wrap items-center justify-between gap-[14px]">
         <div className="flex flex-wrap items-center gap-2">
           <ExportButton label="Foundry JSON" icon="fa-file-export" onClick={onExportFoundry} />
+          <ExportButton label="Export JSON" icon="fa-file-export" onClick={onExportCanonical} />
           <ExportButton label="Printable PDF" icon="fa-file-pdf" onClick={onExportPdf} />
         </div>
         <div className="min-w-[200px] flex-1 text-center">
@@ -38,7 +45,7 @@ export function SheetHero({ summary, onExportFoundry, onExportPdf }: SheetHeroPr
               `${summary.ruleset === "2024" ? "2024" : "2014"} rules`,
             ]
               .filter(Boolean)
-              .map((part) => ` · ${part}`)
+              .map((part) => ` - ${part}`)
               .join("")}
           </p>
         </div>

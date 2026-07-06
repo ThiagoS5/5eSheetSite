@@ -9,7 +9,10 @@ import {
   listCharacters,
   saveCharacter,
 } from "@/src/services/characterService";
-import { createEmptyCharacterBuild } from "@/src/store/characterBuildModel";
+import {
+  createEmptyCharacterBuild,
+  normalizeCharacterBuild,
+} from "@/src/store/characterBuildModel";
 
 describe("characterService", () => {
   beforeEach(() => {
@@ -119,5 +122,25 @@ describe("characterService", () => {
     );
 
     expect(await listCharacters()).toHaveLength(1);
+  });
+
+  it("maps portraitId to portraitUrl on the dashboard character", async () => {
+    const build = normalizeCharacterBuild({
+      ...createEmptyCharacterBuild(),
+      draft: {
+        ...createEmptyCharacterBuild().draft,
+        description: {
+          ...createEmptyCharacterBuild().draft.description,
+          nome: "Portrait Hero",
+          portraitId: "portrait-ember-knight",
+        },
+      },
+    });
+
+    await saveCharacter(build);
+    const characters = await listCharacters();
+    const saved = characters.find((entry) => entry.nome === "Portrait Hero");
+
+    expect(saved?.portraitUrl).toBe("/portraits/portrait-ember-knight.svg");
   });
 });

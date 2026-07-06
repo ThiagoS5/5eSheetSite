@@ -10,8 +10,8 @@ import type {
 } from "@/types/dnd";
 import type { CharacterSpellcastingChoices } from "@/types/spells";
 
-// v11: derivedSheet ganhou toolProficiencies (re-derivado no load; migração pass-through).
-export const CHARACTER_BUILD_SCHEMA_VERSION = 11;
+// v12: draft.description ganhou portraitId (galeria local — Fase 8; migração pass-through via defaults).
+export const CHARACTER_BUILD_SCHEMA_VERSION = 12;
 
 export interface CoinPouch {
   pc: number;

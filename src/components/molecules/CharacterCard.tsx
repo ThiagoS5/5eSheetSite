@@ -1,3 +1,4 @@
+import Image from "next/image";
 import type { Character, CharacterAttributes } from "@/types/Character";
 
 interface CharacterCardProps {
@@ -19,15 +20,26 @@ export function CharacterCard({ character }: CharacterCardProps) {
       aria-labelledby={`${character.id}-title`}
       className="h-full rounded-xl border border-slate-800 bg-slate-950 p-5 shadow-lg shadow-slate-950/30"
     >
-      <div className="flex flex-col gap-1">
-        <h3 translate="no" id={`${character.id}-title`} className="notranslate text-xl font-semibold text-foreground">
-          {character.nome}
-        </h3>
-        <p className="text-sm text-slate-300">
-          <span translate="no" className="notranslate font-medium text-cyan-200">{character.classe}</span>
-          {" · "}
-          <span translate="no" className="notranslate">{character.species}</span>
-        </p>
+      <div className="flex items-start gap-3">
+        {character.portraitUrl ? (
+          <Image
+            src={character.portraitUrl}
+            alt=""
+            width={56}
+            height={56}
+            className="h-14 w-14 shrink-0 rounded-lg border border-slate-800 object-cover"
+          />
+        ) : null}
+        <div className="flex flex-col gap-1">
+          <h3 translate="no" id={`${character.id}-title`} className="notranslate text-xl font-semibold text-foreground">
+            {character.nome}
+          </h3>
+          <p className="text-sm text-slate-300">
+            <span translate="no" className="notranslate font-medium text-cyan-200">{character.classe}</span>
+            {" · "}
+            <span translate="no" className="notranslate">{character.species}</span>
+          </p>
+        </div>
       </div>
 
       <dl

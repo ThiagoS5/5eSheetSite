@@ -9,6 +9,7 @@ import { cn } from "@/src/lib/utils";
 import { deriveCarriedEquipment } from "@/rules/inventoryRules";
 import { getBuilderBackgrounds, getBuilderClasses } from "@/src/services/ruleService";
 import { createFoundryCharacterExport } from "@/src/utils/foundryAdapter";
+import { serializeCharacterExport } from "@/src/utils/canonicalExport";
 import { SHEET_THEME_VARS } from "@/src/components/organisms/sheet/sheetTheme";
 import { SheetHero } from "@/src/components/organisms/sheet/SheetHero";
 import { SavingThrowsGrid } from "@/src/components/molecules/sheet/SavingThrowsGrid";
@@ -22,7 +23,7 @@ import { ConditionsPanel } from "@/src/components/molecules/sheet/ConditionsPane
 import { PlayStatePanel } from "@/src/components/organisms/sheet/PlayStatePanel";
 
 interface CharacterSheetViewProps {
-  /** Embedded mode (builder conclusão) drops the full-screen chrome. */
+  /** Embedded mode (builder conclusao) drops the full-screen chrome. */
   embedded?: boolean;
 }
 
@@ -30,11 +31,11 @@ export function CharacterSheetView({ embedded = false }: CharacterSheetViewProps
   const state = useCharacterBuilderState();
   const description = useCharacterStore((s) => s.description);
   const summary = useCharacterStore(selectDerivedSheet);
+  const characterBuild = useCharacterStore((s) => s.characterBuild);
 
   function handleFoundryExport() {
     const exportData = createFoundryCharacterExport(state, summary);
-    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
-    downloadBlob(blob, `${sanitizeFileName(summary.name)}-foundry-vtt.json`);
+    downloadJson(`${sanitizeFileName(summary.name)}-foundry-vtt.json`, JSON.stringify(exportData, null, 2));
   }
 
   async function handlePdfExport() {
@@ -47,13 +48,9 @@ export function CharacterSheetView({ embedded = false }: CharacterSheetViewProps
     downloadBlob(blob, `${sanitizeFileName(summary.name)}-sheet.pdf`);
   }
 
-  function downloadBlob(blob: Blob, fileName: string) {
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement("a");
-    anchor.href = url;
-    anchor.download = fileName;
-    anchor.click();
-    URL.revokeObjectURL(url);
+  function handleExportCanonical() {
+    const json = serializeCharacterExport(characterBuild);
+    downloadJson(`${sanitizeFileName(summary.name)}-forge-fate.json`, json);
   }
 
   const content = (
@@ -61,6 +58,7 @@ export function CharacterSheetView({ embedded = false }: CharacterSheetViewProps
       <SheetHero
         summary={summary}
         onExportFoundry={handleFoundryExport}
+        onExportCanonical={handleExportCanonical}
         onExportPdf={handlePdfExport}
       />
 
@@ -114,4 +112,18 @@ function sanitizeFileName(value: string): string {
   return (
     value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "character"
   );
+}
+
+function downloadJson(fileName: string, json: string): void {
+  const blob = new Blob([json], { type: "application/json" });
+  downloadBlob(blob, fileName);
+}
+
+function downloadBlob(blob: Blob, fileName: string): void {
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = fileName;
+  anchor.click();
+  URL.revokeObjectURL(url);
 }

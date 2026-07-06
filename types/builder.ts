@@ -314,6 +314,8 @@ export interface CharacterDescription {
   personalidade: string;
   tracos: string;
   notas: string;
+  /** Id de retrato da galeria local (src/data/portraits.ts); "" = sem retrato. */
+  portraitId: string;
 }
 
 export interface SheetAttribute {
