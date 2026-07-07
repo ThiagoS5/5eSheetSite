@@ -311,6 +311,23 @@ describe("levelUp integration 1->20", () => {
     expect(final.maxHp).toBe(104);
   }, 30000);
 
+  it("keeps current HP maximized when the level-up HP roll changes max HP", () => {
+    const store = createCharacterStore();
+
+    store.getState().selectClass("fighter-xphb");
+    store.getState().applyDamage(5);
+    store.getState().levelUp();
+    const beforeRoll = selectCharacterSheetSummary(store.getState());
+    expect(beforeRoll.currentHp).toBe(beforeRoll.maxHp);
+
+    store.getState().setLevelHpRoll(2, 10);
+    const afterRoll = selectCharacterSheetSummary(store.getState());
+
+    expect(afterRoll.maxHp).toBeGreaterThan(beforeRoll.maxHp);
+    expect(afterRoll.currentHp).toBe(afterRoll.maxHp);
+    expect(store.getState().playState?.currentHp).toBe(afterRoll.maxHp);
+  });
+
   it("Cleric 1->20 com rolagens numericas de PV", () => {
     const store = createCharacterStore();
     store.getState().selectClass("cleric-xphb");

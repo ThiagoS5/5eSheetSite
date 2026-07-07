@@ -2,38 +2,32 @@
  * @vitest-environment jsdom
  */
 import "@testing-library/jest-dom/vitest";
-import { cleanup, render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { HitPointsStep } from "@/src/components/organisms/levelup/HitPointsStep";
 
 describe("HitPointsStep", () => {
   afterEach(cleanup);
 
-  it("offers average and roll, and confirms average", async () => {
+  it("shows the rolled HP value as a visible result before confirmation", () => {
     const onChoose = vi.fn();
-    render(
-      <HitPointsStep hitDie={10} targetLevel={5} conModifier={2} onChoose={onChoose} />,
-    );
-    await userEvent.click(screen.getByRole("button", { name: /average/i }));
-    expect(onChoose).toHaveBeenCalledWith("average");
 
-    expect(screen.getByText(/6/)).toBeInTheDocument();
-  });
-
-  it("rolls a die and confirms the rolled number", async () => {
-    const onChoose = vi.fn();
     render(
       <HitPointsStep
         hitDie={10}
-        targetLevel={5}
-        conModifier={0}
+        targetLevel={2}
+        conModifier={2}
         onChoose={onChoose}
         rollFn={() => 7}
       />,
     );
-    await userEvent.click(screen.getByRole("button", { name: /roll/i }));
-    await userEvent.click(screen.getByRole("button", { name: /confirm/i }));
-    expect(onChoose).toHaveBeenCalledWith(7);
+
+    fireEvent.click(screen.getByRole("button", { name: /roll die/i }));
+
+    expect(screen.getByText("Rolled HP")).toBeVisible();
+    expect(screen.getByText("7")).toBeVisible();
+    expect(screen.getByText("+2 CON")).toBeVisible();
+    expect(screen.getByText("9 total")).toBeVisible();
+    expect(onChoose).not.toHaveBeenCalled();
   });
 });

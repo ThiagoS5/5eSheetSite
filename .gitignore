@@ -72,7 +72,8 @@ project-delivery-ruler.md
 .superpowers/
 forge-fate-master-plan.md
 !docs/forge-fate-master-plan.md
-
+/templates
+templates/
 # Design Sync (claude.ai/design) — generated output, machine state
 .ds-sync/
 ds-bundle/

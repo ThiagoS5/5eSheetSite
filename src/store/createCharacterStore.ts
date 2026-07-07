@@ -119,7 +119,9 @@ export function createCharacterStore(
         } else {
           next[String(level)] = roll;
         }
-        return patchCharacterState(state, { hpRollByLevel: next });
+        return resetPlayStateToMaxHp(
+          patchCharacterState(state, { hpRollByLevel: next }),
+        );
       }),
     setSpellcastingChoices: (spellcasting) =>
       set((state) => patchCharacterState(state, { spellcasting })),

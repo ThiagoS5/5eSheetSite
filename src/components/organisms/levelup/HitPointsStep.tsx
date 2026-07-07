@@ -17,6 +17,7 @@ export function HitPointsStep({ hitDie, targetLevel, conModifier, onChoose, roll
   const average = Math.floor(hitDie / 2) + 1;
   const averageTotal = average + conModifier;
   const rolledTotal = rolled !== null ? rolled + conModifier : null;
+  const conLabel = `${conModifier >= 0 ? "+" : ""}${conModifier} CON`;
 
   function handleRoll() {
     const roll = rollFn ? rollFn() : rollHitDie(hitDie);
@@ -53,13 +54,39 @@ export function HitPointsStep({ hitDie, targetLevel, conModifier, onChoose, roll
       </div>
 
       {rolled !== null ? (
-        <button
-          type="button"
-          onClick={() => onChoose(rolled)}
-          className="mt-4 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-foreground outline-none transition focus-visible:ring-2 focus-visible:ring-brand-crimson-alt/70"
+        <div
+          aria-live="polite"
+          className="mt-4 rounded-md border border-brand-crimson-alt/45 bg-surface-raised p-4 shadow-inner shadow-black/20"
         >
-          Confirm roll
-        </button>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
+                Rolled HP
+              </p>
+              <div className="mt-1 flex items-baseline gap-3">
+                <span
+                  translate="no"
+                  className="notranslate font-serif text-4xl font-bold leading-none text-foreground"
+                >
+                  {rolled}
+                </span>
+                <span translate="no" className="notranslate text-sm font-semibold text-subdued">
+                  {conLabel}
+                </span>
+              </div>
+              <p className="mt-2 text-sm font-semibold text-foreground">
+                <span translate="no" className="notranslate">{rolledTotal} total</span>
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => onChoose(rolled)}
+              className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-foreground outline-none transition focus-visible:ring-2 focus-visible:ring-brand-crimson-alt/70"
+            >
+              Confirm roll
+            </button>
+          </div>
+        </div>
       ) : null}
     </section>
   );
