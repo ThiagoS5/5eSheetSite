@@ -12,10 +12,10 @@ import {
   View,
 } from "@react-pdf/renderer";
 import type {
-  BuilderEquipmentOption,
   CharacterDescription,
   CharacterSheetSummary,
   SheetFeature,
+  SheetInventoryItem,
 } from "@/types/builder";
 import type { BuilderSpell, CharacterSpellcastingSummary } from "@/types/spells";
 
@@ -29,10 +29,7 @@ export interface PdfExportOptions {
   pageSize?: "A4" | "LETTER";
 }
 
-export interface PdfInventoryItem {
-  item: BuilderEquipmentOption;
-  quantity: number;
-}
+export type PdfInventoryItem = SheetInventoryItem;
 
 export interface PdfInventoryRow {
   id: string;
@@ -66,7 +63,7 @@ export function buildPdfDocument(
 ): ReactElement<DocumentProps> {
   const pageSize = options.pageSize ?? "A4";
   const { summary, description } = input;
-  const inventoryRows = createInventoryRows(summary, input.inventory ?? []);
+  const inventoryRows = createInventoryRows(summary, input.inventory ?? summary.inventory);
 
   return (
     <Document

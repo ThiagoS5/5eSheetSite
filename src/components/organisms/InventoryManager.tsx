@@ -17,7 +17,7 @@ import {
 } from "@/rules/itemCatalogFilters";
 import type { CatalogItem, ItemCategory } from "@/types/builder";
 import type { InventoryEntry } from "@/src/types/characterBuild";
-import { Minus, Plus, ShieldCheck, ShieldOff, Trash2 } from "lucide-react";
+import { Cog, Minus, Plus, ShieldCheck, ShieldOff, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/src/lib/utils";
 
@@ -33,6 +33,18 @@ const ALL_CATEGORIES: ItemCategory[] = [
   "Wondrous",
   "Other Gear",
 ];
+
+const SOURCE_FILTERS = [
+  "AAG", "AI", "AZfyT", "AitFR-AVT", "AitFR-THP", "BAM", "BGDIA", "BGG",
+  "BMT", "CM", "CRCotN", "CoA", "CoS", "DC", "DMG", "DSotDQ", "DitLCoT",
+  "EET", "EFA", "EGW", "ERLW", "FRAiF", "FRHoF", "FTD", "GGR", "GoS",
+  "HAT-LMI", "HftT", "HotB", "HotDQ", "IDRotF", "IMR", "JttRC", "KftGV",
+  "LFL", "LLK", "LoX", "MCV2DC", "MM", "MOT", "MTF", "NF", "NRH-AT",
+  "NRH-TLT", "OGA", "OotA", "PHB", "PSX", "PaBTSO", "PotA", "QftIS",
+  "RHW", "RMBRE", "RoT", "RoTOS", "SCAG", "SCC", "SDW", "SKT", "SatO",
+  "TCE", "TTP", "TftYP", "ToA", "UtHftLH", "VEoR", "VGM", "VRGR",
+  "WBtW", "WDH", "WDMM", "WttHC", "XDMG", "XGE", "XMM", "XMtS", "XPHB",
+] as const;
 
 interface InventoryManagerProps {
   catalog: CatalogItem[];
@@ -56,10 +68,11 @@ export function InventoryManager({
   onToggleEquipped,
 }: InventoryManagerProps) {
   const [filters, setFilters] = useState<CatalogFilterCriteria>(DEFAULT_CATALOG_FILTERS);
+  const [sourceFiltersOpen, setSourceFiltersOpen] = useState(false);
 
   const results = useMemo(() => filterCatalog(catalog, filters), [catalog, filters]);
   const availableSources = useMemo(
-    () => [...new Set(catalog.map((item) => item.source))].sort(),
+    () => new Set(catalog.map((item) => item.source)),
     [catalog],
   );
 
@@ -95,6 +108,10 @@ export function InventoryManager({
           : [...prev.sources, source],
       };
     });
+  }
+
+  function clearSources() {
+    setFilters((prev) => ({ ...prev, sources: [] }));
   }
 
   const visibleResults = results.slice(0, 100);
@@ -176,7 +193,7 @@ export function InventoryManager({
         <AccordionItem value="add">
           <AccordionTrigger>Add Items</AccordionTrigger>
           <AccordionContent>
-            <div className="mb-3">
+            <div className="mb-3 flex items-center gap-2">
               <Input
                 aria-label="Search item"
                 placeholder="Search items..."
@@ -186,6 +203,17 @@ export function InventoryManager({
                 }
                 className="bg-card border-border text-foreground placeholder:text-muted-foreground"
               />
+              <Button
+                type="button"
+                variant={sourceFiltersOpen ? "secondary" : "ghost"}
+                size="icon"
+                aria-label="Filter item sources"
+                aria-controls="item-source-filters"
+                aria-expanded={sourceFiltersOpen}
+                onClick={() => setSourceFiltersOpen((open) => !open)}
+              >
+                <Cog className="h-4 w-4" />
+              </Button>
             </div>
 
             <div className="mb-3 flex flex-wrap gap-1.5">
@@ -210,28 +238,50 @@ export function InventoryManager({
               })}
             </div>
 
-            <div className="mb-3 flex flex-wrap gap-1.5" aria-label="Filter by source">
-              {availableSources.map((source) => {
-                const active = filters.sources.includes(source);
-                return (
+            {sourceFiltersOpen ? (
+              <div
+                id="item-source-filters"
+                className="mb-3 rounded-md border border-border bg-card p-3"
+                aria-label="Filter by source"
+              >
+                <div className="mb-2 flex items-center justify-between gap-2">
+                  <p className="text-xs font-semibold text-subdued">Item sources</p>
                   <button
-                    key={source}
                     type="button"
-                    aria-label={source}
-                    aria-pressed={active}
-                    onClick={() => toggleSource(source)}
-                    className={cn(
-                      "cursor-pointer rounded-md border px-2.5 py-1 text-xs font-bold uppercase tracking-[0.08em] transition-colors",
-                      active
-                        ? "border-accent bg-accent text-background"
-                        : "border-border bg-surface-base text-muted-foreground hover:border-border/80 hover:bg-surface-raised hover:text-foreground",
-                    )}
+                    onClick={clearSources}
+                    className="rounded-md px-2 py-1 text-xs font-semibold text-muted-foreground hover:bg-surface-raised hover:text-foreground"
                   >
-                    Source {source}
+                    Clear sources
                   </button>
-                );
-              })}
-            </div>
+                </div>
+                <div className="flex max-h-44 flex-wrap gap-1.5 overflow-y-auto pr-1">
+                  {SOURCE_FILTERS.map((source) => {
+                    const active = filters.sources.includes(source);
+                    const hasItems = availableSources.has(source);
+                    return (
+                      <button
+                        key={source}
+                        type="button"
+                        aria-label={`Source ${source}`}
+                        aria-pressed={active}
+                        disabled={!hasItems}
+                        title={hasItems ? undefined : "No catalog items loaded for this source"}
+                        onClick={() => toggleSource(source)}
+                        className={cn(
+                          "rounded-md border px-2.5 py-1 text-xs font-bold uppercase tracking-[0.08em] transition-colors",
+                          active
+                            ? "border-accent bg-accent text-background"
+                            : "border-border bg-surface-base text-muted-foreground hover:border-border/80 hover:bg-surface-raised hover:text-foreground",
+                          !hasItems && "cursor-not-allowed opacity-40 hover:bg-surface-base hover:text-muted-foreground",
+                        )}
+                      >
+                        Source {source}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : null}
 
             <div className="mb-3 flex flex-wrap gap-4">
               <label className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-not-allowed">

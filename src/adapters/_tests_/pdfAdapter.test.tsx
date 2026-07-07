@@ -194,6 +194,7 @@ function buildSummary(
       { label: "Base + Dexterity", value: partial.armorClass ?? 10 + modifier(finalAttributes.destreza) },
     ],
     selectedEquipment,
+    inventory: selectedEquipment.map((item) => ({ item, quantity: 1 })),
     selectedTraits: partial.selectedTraits ?? [],
     classFeatures: partial.classFeatures ?? [],
     classSkillProficiencies: partial.classSkillProficiencies ?? ["Perception"],

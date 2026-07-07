@@ -34,12 +34,14 @@ describe("AttributeEditor", () => {
       />,
     );
 
-    expect(screen.getByText("Point Buy: 26 spent, 1 remaining")).toBeInTheDocument();
+    expect(screen.getByText((_, element) => element?.textContent === "Point Buy: 26 spent, 1 remaining")).toBeInTheDocument();
     expect(screen.getByRole("table")).toHaveClass(
       "block",
       "min-w-0",
       "md:table",
     );
+    expect(screen.getAllByText("Modifier").length).toBeGreaterThan(0);
+    expect(screen.queryByText("Modificador")).not.toBeInTheDocument();
     expect(screen.getByRole("row", { name: /Strength/i })).toHaveClass(
       "grid",
       "md:table-row",

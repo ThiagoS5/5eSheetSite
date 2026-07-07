@@ -53,6 +53,8 @@ const XP_BY_LEVEL = [
   85000, 100000, 120000, 140000, 165000, 195000, 225000, 265000, 305000, 355000,
 ];
 
+const BACKGROUND_KIT_OPTION_ID = "background-kit";
+
 export function deriveStartingGoldPo(state: CharacterBuilderState): number {
   const characterClass = getBuilderClasses().find(
     (entry) => entry.id === state.selectedClassId,
@@ -66,8 +68,26 @@ export function deriveStartingGoldPo(state: CharacterBuilderState): number {
   };
 
   return Object.entries(state.equipmentChoicesBySource).reduce((total, [key, choice]) => {
-    if (choice?.mode !== "gold") return total;
-    return total + parseLeadingGoldInteger(goldLabelBySource[key]);
+    if (!choice) return total;
+    if (choice.mode === "gold") {
+      return total + parseLeadingGoldInteger(goldLabelBySource[key]);
+    }
+    if (choice.mode !== "items") return total;
+    if (key === "class") {
+      const selectedPackage = characterClass?.startingEquipmentPackages.find(
+        (entry) => entry.id === choice.selectedOptionId,
+      );
+      return total + copperToGold(selectedPackage?.goldValue ?? 0);
+    }
+    if (key === "background" && choice.selectedOptionId === BACKGROUND_KIT_OPTION_ID) {
+      return total + copperToGold(
+        (background?.equipmentItemsA ?? []).reduce(
+          (sum, item) => sum + (isGoldPackageItem(item) ? item.value ?? 0 : 0),
+          0,
+        ),
+      );
+    }
+    return total;
   }, 0);
 }
 
@@ -138,6 +158,7 @@ export function selectCharacterSheetSummary(
     armorClass: effectivePlay.armorClass,
     armorClassBreakdown: armorClassResult.breakdown,
     selectedEquipment,
+    inventory: carriedEquipment,
     selectedTraits: species?.traits ?? [],
     classFeatures: classFeaturesUpToLevel,
     classSkillProficiencies: classAndFeatSkillProficiencies,
@@ -330,4 +351,12 @@ function parseLeadingGoldInteger(label: string | undefined): number {
   if (!match) return 0;
   const parsed = parseInt(match[0], 10);
   return Number.isNaN(parsed) ? 0 : parsed;
+}
+
+function copperToGold(value: number): number {
+  return value / 100;
+}
+
+function isGoldPackageItem(item: { id: string; label: string }): boolean {
+  return item.label.toLowerCase() === "gold" || item.id.startsWith("gold");
 }

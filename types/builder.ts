@@ -365,6 +365,11 @@ export interface SheetWeapon {
   damageBreakdown?: Array<{ label: string; value: string }>;
 }
 
+export interface SheetInventoryItem {
+  item: BuilderEquipmentOption;
+  quantity: number;
+}
+
 export interface Pendency {
   id: string;
   stepSlug: BuilderStepSlug;
@@ -395,6 +400,7 @@ export interface CharacterSheetSummary {
   armorClass: number;
   armorClassBreakdown?: ArmorClassBreakdownPart[];
   selectedEquipment: BuilderEquipmentOption[];
+  inventory: SheetInventoryItem[];
   selectedTraits: BuilderFeature[];
   classFeatures: BuilderFeature[];
   classSkillProficiencies: string[];

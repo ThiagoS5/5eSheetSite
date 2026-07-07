@@ -155,7 +155,38 @@ describe("character selectors", () => {
     store.getState().addInventoryItem("chain-mail-xphb");
     const summary = selectCharacterSheetSummary(store.getState());
     expect(summary.selectedEquipment.some((e) => e.id === "chain-mail-xphb")).toBe(false);
+    expect(summary.inventory).toContainEqual(
+      expect.objectContaining({
+        item: expect.objectContaining({ id: "chain-mail-xphb", sourceType: "manual" }),
+        quantity: 1,
+      }),
+    );
     expect(summary.carry.currentKg).toBeGreaterThan(0);
+  });
+
+  it("exposes class package, background package, and manual items as carried inventory", () => {
+    const store = createCharacterStore();
+    const fighter = getBuilderClasses().find((c) => c.id === "fighter-xphb");
+    const packageWithChainMail = fighter?.startingEquipmentPackages.find((entry) =>
+      entry.items.some((item) => item.id === "chain-mail-xphb"),
+    );
+    if (!packageWithChainMail) {
+      throw new Error("expected fighter to have a chain mail starting package");
+    }
+
+    store.getState().selectClass("fighter-xphb");
+    store.getState().selectBackground("aberrant-heir-efa");
+    store.getState().setEquipmentSourceOption("class", packageWithChainMail.id);
+    store.getState().setEquipmentSourceOption("background", "A");
+    store.getState().addInventoryItem("longsword-xphb");
+
+    const summary = selectCharacterSheetSummary(store.getState());
+    const ids = summary.inventory.map((entry) => entry.item.id);
+
+    expect(ids).toContain("chain-mail-xphb");
+    expect(ids).toContain("longsword-xphb");
+    expect(summary.inventory.some((entry) => entry.item.sourceType === "background")).toBe(true);
+    expect(summary.inventory.find((entry) => entry.item.id === "longsword-xphb")?.quantity).toBe(1);
   });
 
   it("derives armor class and attacks only from equipped inventory", () => {

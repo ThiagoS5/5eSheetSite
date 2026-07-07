@@ -35,7 +35,6 @@ describe("SheetHero", () => {
       <SheetHero
         summary={summary}
         onExportFoundry={() => {}}
-        onExportCanonical={() => {}}
         onExportPdf={() => {}}
       />,
     );
@@ -47,23 +46,21 @@ describe("SheetHero", () => {
 
   it("calls the matching export action when an export button is pressed", () => {
     const onExportFoundry = vi.fn();
-    const onExportCanonical = vi.fn();
     const onExportPdf = vi.fn();
     render(
       <SheetHero
         summary={summary}
         onExportFoundry={onExportFoundry}
-        onExportCanonical={onExportCanonical}
         onExportPdf={onExportPdf}
       />,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: /Foundry JSON/ }));
-    fireEvent.click(screen.getByRole("button", { name: /Export JSON/ }));
-    fireEvent.click(screen.getByRole("button", { name: /Printable PDF/ }));
+    expect(screen.queryByRole("button", { name: /^Export JSON$/ })).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Export JSON (Foundry)" }));
+    fireEvent.click(screen.getByRole("button", { name: "Export PDF" }));
 
     expect(onExportFoundry).toHaveBeenCalledTimes(1);
-    expect(onExportCanonical).toHaveBeenCalledTimes(1);
     expect(onExportPdf).toHaveBeenCalledTimes(1);
   });
 });

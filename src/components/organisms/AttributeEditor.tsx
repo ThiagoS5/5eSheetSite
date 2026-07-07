@@ -100,14 +100,14 @@ export function AttributeEditor({
 
       <fieldset>
         <legend className="sr-only">Ability score generation method</legend>
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-1 rounded-lg border border-border bg-surface-nested p-1">
           {methods.map((entry) => (
             <button
               key={entry}
               type="button"
               aria-pressed={method === entry}
               onClick={() => onMethodChange(entry)}
-              className="rounded-full border border-border bg-white/5 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.08em] text-muted-foreground outline-none transition hover:border-brand-crimson-alt/70 hover:text-foreground focus-visible:ring-2 focus-visible:ring-brand-crimson-alt/70 aria-pressed:border-brand-crimson-alt aria-pressed:bg-brand-crimson-alt aria-pressed:text-foreground"
+              className="rounded-md border border-transparent px-3 py-2 text-xs font-bold text-muted-foreground outline-none transition hover:bg-card hover:text-foreground focus-visible:ring-2 focus-visible:ring-brand-crimson-alt/70 aria-pressed:border-brand-crimson-alt/70 aria-pressed:bg-primary/20 aria-pressed:text-foreground"
             >
               {getAttributeMethodLabel(entry)}
             </button>
@@ -115,7 +115,7 @@ export function AttributeEditor({
           <button
             type="button"
             onClick={() => setConfirmResetOpen(true)}
-            className="ml-auto text-xs font-bold uppercase tracking-[0.08em] text-muted-foreground underline underline-offset-4 outline-none transition hover:text-foreground focus-visible:ring-2 focus-visible:ring-brand-crimson-alt/70"
+            className="ml-auto rounded-md px-3 py-2 text-xs font-bold text-muted-foreground outline-none transition hover:bg-card hover:text-foreground focus-visible:ring-2 focus-visible:ring-brand-crimson-alt/70"
           >
             Reset
           </button>
@@ -125,9 +125,9 @@ export function AttributeEditor({
       {method === "point-buy" ? (
         <p
           aria-live="polite"
-          className="rounded-md border border-white/[0.08] bg-card px-3 py-2 text-sm font-semibold text-accent"
+          className="rounded-md border border-border bg-card px-3 py-2 text-sm font-semibold text-foreground"
         >
-          Point Buy: {pointBuySpent} spent, {pointBuyRemaining} remaining
+          Point Buy: <span className="text-accent">{pointBuySpent} spent</span>, {pointBuyRemaining} remaining
         </p>
       ) : null}
 
@@ -228,7 +228,7 @@ export function AttributeEditor({
                   </TableCell>
                   <TableCell className="p-0 text-left whitespace-normal md:table-cell md:p-3 md:text-center md:whitespace-nowrap">
                     <span className="mb-1 block text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground md:hidden">
-                      Modificador
+                      Modifier
                     </span>
                     <span className={cn("font-serif text-2xl font-bold", modifierColorClass(modifier))}>
                       {formatSigned(modifier)}

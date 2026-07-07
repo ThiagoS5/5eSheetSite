@@ -6,10 +6,7 @@ import { selectDerivedSheet } from "@/src/store/characterSelectors";
 import { useCharacterStore } from "@/src/store/useCharacterStore";
 import { useCharacterBuilderState } from "@/src/store/useCharacterBuilderState";
 import { cn } from "@/src/lib/utils";
-import { deriveCarriedEquipment } from "@/rules/inventoryRules";
-import { getBuilderBackgrounds, getBuilderClasses } from "@/src/services/ruleService";
 import { createFoundryCharacterExport } from "@/src/utils/foundryAdapter";
-import { serializeCharacterExport } from "@/src/utils/canonicalExport";
 import { SHEET_THEME_VARS } from "@/src/components/organisms/sheet/sheetTheme";
 import { SheetHero } from "@/src/components/organisms/sheet/SheetHero";
 import { SavingThrowsGrid } from "@/src/components/molecules/sheet/SavingThrowsGrid";
@@ -31,7 +28,6 @@ export function CharacterSheetView({ embedded = false }: CharacterSheetViewProps
   const state = useCharacterBuilderState();
   const description = useCharacterStore((s) => s.description);
   const summary = useCharacterStore(selectDerivedSheet);
-  const characterBuild = useCharacterStore((s) => s.characterBuild);
 
   function handleFoundryExport() {
     const exportData = createFoundryCharacterExport(state, summary);
@@ -39,18 +35,8 @@ export function CharacterSheetView({ embedded = false }: CharacterSheetViewProps
   }
 
   async function handlePdfExport() {
-    const inventory = deriveCarriedEquipment({
-      state,
-      characterClass: getBuilderClasses().find((entry) => entry.id === state.selectedClassId),
-      background: getBuilderBackgrounds().find((entry) => entry.id === state.selectedBackgroundId),
-    });
-    const blob = await pdf(buildPdfDocument({ summary, description, inventory })).toBlob();
+    const blob = await pdf(buildPdfDocument({ summary, description, inventory: summary.inventory })).toBlob();
     downloadBlob(blob, `${sanitizeFileName(summary.name)}-sheet.pdf`);
-  }
-
-  function handleExportCanonical() {
-    const json = serializeCharacterExport(characterBuild);
-    downloadJson(`${sanitizeFileName(summary.name)}-forge-fate.json`, json);
   }
 
   const content = (
@@ -58,7 +44,6 @@ export function CharacterSheetView({ embedded = false }: CharacterSheetViewProps
       <SheetHero
         summary={summary}
         onExportFoundry={handleFoundryExport}
-        onExportCanonical={handleExportCanonical}
         onExportPdf={handlePdfExport}
       />
 

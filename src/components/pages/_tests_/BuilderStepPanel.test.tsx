@@ -144,7 +144,7 @@ describe("BuilderStepPanel", () => {
 
     expect(nextButton).toBeDisabled();
     expect(nextButton).toHaveAttribute("aria-describedby", "builder-next-blocker");
-    expect(screen.getByText("Step 2/9")).toBeInTheDocument();
+    expect(screen.queryByText("Step 2/9")).not.toBeInTheDocument();
     expect(screen.getByText(/Choose 2 class skills to continue/i)).toHaveAttribute(
       "id",
       "builder-next-blocker",

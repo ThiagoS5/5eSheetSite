@@ -8,7 +8,6 @@ import { LevelUpButton } from "@/src/components/molecules/LevelUpButton";
 interface SheetHeroProps {
   summary: CharacterSheetSummary;
   onExportFoundry: () => void;
-  onExportCanonical: () => void;
   onExportPdf: () => void;
 }
 
@@ -19,7 +18,6 @@ function fmt(n: number): string {
 export function SheetHero({
   summary,
   onExportFoundry,
-  onExportCanonical,
   onExportPdf,
 }: SheetHeroProps) {
   return (
@@ -27,9 +25,8 @@ export function SheetHero({
 
       <div className="flex w-full flex-wrap items-center justify-between gap-[14px]">
         <div className="flex flex-wrap items-center gap-2">
-          <ExportButton label="Foundry JSON" icon="fa-file-export" onClick={onExportFoundry} />
-          <ExportButton label="Export JSON" icon="fa-file-export" onClick={onExportCanonical} />
-          <ExportButton label="Printable PDF" icon="fa-file-pdf" onClick={onExportPdf} />
+          <ExportButton label="Export PDF" icon="fa-file-pdf" onClick={onExportPdf} />
+          <ExportButton label="Export JSON (Foundry)" icon="fa-file-export" onClick={onExportFoundry} />
         </div>
         <div className="min-w-[200px] flex-1 text-center">
           <h1 translate="no" className="notranslate m-0 font-serif text-[28px] font-extrabold leading-[1.02] text-foreground">
@@ -117,7 +114,7 @@ function ExportButton({
       type="button"
       onClick={onClick}
       className={cn(
-        "inline-flex items-center gap-[7px] rounded-[9px] border border-border bg-card px-[14px] py-[9px] text-[10.5px] font-bold uppercase tracking-[0.05em] text-muted-foreground transition-colors hover:border-brand-crimson-alt hover:text-foreground",
+        "inline-flex items-center gap-[7px] rounded-[9px] border border-border bg-card px-[14px] py-[9px] text-xs font-bold tracking-[0.04em] text-muted-foreground transition-colors hover:border-brand-crimson-alt hover:text-foreground",
         focusRing,
       )}
     >

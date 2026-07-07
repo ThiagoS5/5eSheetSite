@@ -3,7 +3,7 @@ import {
   createCharacterStore,
 } from "@/src/store/createCharacterStore";
 import { selectCharacterSheetSummary } from "@/src/store/characterSelectors";
-import { getBuilderClasses } from "@/src/services/ruleService";
+import { getBuilderBackgrounds, getBuilderClasses } from "@/src/services/ruleService";
 
 describe("character selectors — money, carry, category, skill overrides", () => {
   it("derives starting gold (PO) from the class gold label when money is untouched", () => {
@@ -45,6 +45,44 @@ describe("character selectors — money, carry, category, skill overrides", () =
     const summary = selectCharacterSheetSummary(store.getState());
 
     expect(summary.money.po).toBe(7);
+  });
+
+  it("adds gold embedded in selected equipment packages while money is untouched", () => {
+    const store = createCharacterStore();
+    const fighter = getBuilderClasses().find((c) => c.id === "fighter-xphb");
+    const packageWithGold = fighter?.startingEquipmentPackages.find(
+      (entry) => entry.goldValue > 0,
+    );
+    if (!packageWithGold) {
+      throw new Error("expected fighter to have a package with gold");
+    }
+
+    store.getState().selectClass("fighter-xphb");
+    store.getState().selectBackground("aberrant-heir-efa");
+    store.getState().setEquipmentSourceOption("class", packageWithGold.id);
+    store.getState().setEquipmentSourceOption("background", "background-kit");
+
+    const summary = selectCharacterSheetSummary(store.getState());
+
+    expect(summary.money.po).toBe(20);
+    expect(summary.inventory.map((entry) => entry.item.name)).not.toContain("Gold");
+  });
+
+  it("does not add background item gold until the background kit is selected", () => {
+    const store = createCharacterStore();
+    const background = getBuilderBackgrounds().find((entry) => entry.id === "aberrant-heir-efa");
+    const hasGoldItem = background?.equipmentItemsA?.some((item) => item.label === "Gold");
+    if (!hasGoldItem) {
+      throw new Error("expected aberrant-heir-efa to include embedded gold");
+    }
+
+    store.getState().selectBackground("aberrant-heir-efa");
+    store.getState().setEquipmentSourceMode("background", "items");
+
+    const summary = selectCharacterSheetSummary(store.getState());
+
+    expect(summary.money.po).toBe(0);
+    expect(summary.inventory.some((entry) => entry.item.sourceType === "background")).toBe(false);
   });
 
   it("derives carry.maxKg from finalAttributes.forca", () => {

@@ -171,7 +171,6 @@ export function BuilderStepPanel({
     (entry) => entry.id === characterState.selectedSpeciesId,
   );
   const languageLimit = getRequiredLanguageCount(characterState);
-  const stepPositionLabel = `Step ${Math.max(currentStepIndex + 1, 1)}/${builderStepNavigation.length}`;
 
   const unlockAndGo = useCallback(
     async (stepIndex: number) => {
@@ -419,7 +418,7 @@ export function BuilderStepPanel({
 
       {nextStep || previousStep ? (
         <div className="sticky bottom-0 z-10 border-t border-white/[0.06] bg-surface-nested/95 py-4 backdrop-blur">
-          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+          <div className="grid grid-cols-2 items-center gap-3">
             {previousStep ? (
               <ActionBtn
                 intent="secondary"
@@ -432,9 +431,6 @@ export function BuilderStepPanel({
             ) : (
               <span aria-hidden="true" />
             )}
-            <span className="text-center font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
-              {stepPositionLabel}
-            </span>
             {nextStep ? (
               <ActionBtn
                 size="sm"

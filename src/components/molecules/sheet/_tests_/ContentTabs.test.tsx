@@ -26,8 +26,12 @@ const summary = {
   isSpellcaster: false,
   weapons: [{ name: "Dagger", attackBonus: "+6", damage: "1d4+3 Piercing", notes: "Finesse" }],
   selectedEquipment: [
-    { id: "grimoire", name: "Spellbook", source: "Wizard", sourceType: "class", value: 50, category: "Wondrous" },
     { id: "sword", name: "Longsword", source: "Manual", sourceType: "manual", value: 15, category: "Weapon" },
+  ],
+  inventory: [
+    { item: { id: "grimoire", name: "Spellbook", source: "Wizard", sourceType: "class", value: 50, category: "Wondrous" }, quantity: 1 },
+    { item: { id: "sword", name: "Longsword", source: "Manual", sourceType: "manual", value: 15, category: "Weapon" }, quantity: 2 },
+    { item: { id: "rope", name: "Hempen Rope", source: "Adventuring Gear", sourceType: "background", value: 1, category: "Other Gear" }, quantity: 1 },
   ],
   features: [
     { name: "Spellcasting", description: "...", source: "class" },
@@ -90,8 +94,19 @@ describe("ContentTabs", () => {
     fireEvent.click(screen.getByRole("tab", { name: /Inventory/ }));
     expect(screen.getByText("Spellbook")).toBeInTheDocument();
     expect(screen.getByText("Longsword")).toBeInTheDocument();
+    expect(screen.getByText("Hempen Rope")).toBeInTheDocument();
+    expect(screen.getByText("x2")).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Weapons" }));
     expect(screen.queryByText("Spellbook")).not.toBeInTheDocument();
+    expect(screen.queryByText("Hempen Rope")).not.toBeInTheDocument();
     expect(screen.getByText("Longsword")).toBeInTheDocument();
+  });
+
+  it("filters inventory to utility gear via the Utility chip", () => {
+    fireEvent.click(screen.getByRole("tab", { name: /Inventory/ }));
+    fireEvent.click(screen.getByRole("button", { name: "Utility" }));
+    expect(screen.getByText("Hempen Rope")).toBeInTheDocument();
+    expect(screen.queryByText("Longsword")).not.toBeInTheDocument();
+    expect(screen.queryByText("Spellbook")).not.toBeInTheDocument();
   });
 });

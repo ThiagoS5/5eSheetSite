@@ -21,8 +21,12 @@ export function deriveCarriedEquipment(input: {
   const background = input.background ?? getBuilderBackgrounds().find(
     (entry) => entry.id === input.state.selectedBackgroundId,
   );
-  const classKitItems = getClassKitItems(input.state, input.characterClass);
-  const backgroundKitItems = getBackgroundKitItems(input.state, background);
+  const classKitItems = getClassKitItems(input.state, input.characterClass).filter(
+    (item) => !isGoldPackageItem(item),
+  );
+  const backgroundKitItems = getBackgroundKitItems(input.state, background).filter(
+    (item) => !isGoldPackageItem(item),
+  );
   const classKitItemIdSet = new Set(classKitItems.map((item) => item.id));
   const backgroundKitItemIdSet = new Set(backgroundKitItems.map((item) => item.id));
   const quantitiesById = new Map<string, number>();
@@ -40,15 +44,22 @@ export function deriveCarriedEquipment(input: {
     );
   }
 
-  return getItemCatalog()
-    .filter((item) => quantitiesById.has(item.id))
-    .map((item) => ({
-      item: mapCatalogItemToEquipmentOption(
-        item,
-        resolveSourceType(item.id, classKitItemIdSet, backgroundKitItemIdSet),
-      ),
-      quantity: quantitiesById.get(item.id) ?? 1,
-    }));
+  const catalogById = new Map(getItemCatalog().map((item) => [item.id, item]));
+
+  return [...quantitiesById.entries()].map(([itemId, quantity]) => {
+    const catalogItem = catalogById.get(itemId);
+    const sourceType = resolveSourceType(itemId, classKitItemIdSet, backgroundKitItemIdSet);
+
+    return {
+      item: catalogItem
+        ? mapCatalogItemToEquipmentOption(catalogItem, sourceType)
+        : mapPackageItemToEquipmentOption(
+            [...classKitItems, ...backgroundKitItems].find((entry) => entry.id === itemId),
+            sourceType,
+          ),
+      quantity,
+    };
+  });
 }
 
 export function deriveSelectedEquipment(input: {
@@ -95,6 +106,22 @@ function mapCatalogItemToEquipmentOption(
   };
 }
 
+function mapPackageItemToEquipmentOption(
+  item: BuilderEquipmentPackageItem | undefined,
+  sourceType: BuilderEquipmentOption["sourceType"],
+): BuilderEquipmentOption {
+  const label = item?.label ?? "Unknown Item";
+
+  return {
+    id: item?.id ?? label.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
+    name: label,
+    source: sourceType === "class" ? "Class" : sourceType === "background" ? "Background" : "Manual",
+    sourceType,
+    category: "Other Gear",
+    value: item?.value,
+  };
+}
+
 function getClassKitItems(
   state: CharacterBuilderState,
   characterClass: BuilderClass | undefined,
@@ -127,4 +154,8 @@ function resolveSourceType(
   if (classKitItemIds.has(itemId)) return "class";
   if (backgroundKitItemIds.has(itemId)) return "background";
   return "manual";
+}
+
+function isGoldPackageItem(item: BuilderEquipmentPackageItem): boolean {
+  return item.label.toLowerCase() === "gold" || item.id.startsWith("gold");
 }

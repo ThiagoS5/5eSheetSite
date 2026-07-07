@@ -649,6 +649,7 @@ function createEmptyDerivedSheet(
     hitPoints: 0,
     armorClass: 10,
     selectedEquipment: [],
+    inventory: [],
     selectedTraits: [],
     classFeatures: [],
     classSkillProficiencies: state.classSkillProficiencies,

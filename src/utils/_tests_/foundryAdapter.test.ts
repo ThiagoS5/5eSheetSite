@@ -91,6 +91,19 @@ const summary: CharacterSheetSummary = {
       armorClass: 16,
     },
   ],
+  inventory: [
+    {
+      item: {
+        id: "chain-mail-xphb",
+        name: "Chain Mail",
+        source: "XPHB",
+        sourceType: "class",
+        category: "Armor",
+        armorClass: 16,
+      },
+      quantity: 1,
+    },
+  ],
   selectedTraits: [{ name: "Healing Hands", description: "Restore hit points." }],
   classFeatures: [{ name: "Second Wind", description: "Regain hit points." }],
   classSkillProficiencies: state.classSkillProficiencies,

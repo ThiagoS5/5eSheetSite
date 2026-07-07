@@ -40,10 +40,18 @@ describe("InventoryManager", () => {
   it("filters the catalog by source and renders source badges", () => {
     render(<InventoryManager catalog={catalog} inventory={[]} equippedItemIds={[]} onAddItem={vi.fn()} onSetQuantity={vi.fn()} onRemoveItem={vi.fn()} onToggleEquipped={vi.fn()} />);
     openSection(/Add Items/);
-    fireEvent.click(screen.getByRole("button", { name: "DMG" }));
+    expect(screen.queryByRole("button", { name: "Source DMG" })).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Filter item sources" }));
+    expect(screen.getByRole("button", { name: "Filter item sources" })).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("button", { name: "Source AAG" })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Source DMG" }));
     expect(screen.queryByText("Longsword")).not.toBeInTheDocument();
     expect(screen.getByText("Ring of Protection")).toBeInTheDocument();
     expect(screen.getByText("DMG")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Clear sources" }));
+    expect(screen.getByText("Longsword")).toBeInTheDocument();
   });
 
   it("calls onAddItem when ADD is clicked", () => {

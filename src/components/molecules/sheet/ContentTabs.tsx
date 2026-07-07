@@ -67,7 +67,7 @@ export function ContentTabs({ summary }: ContentTabsProps) {
   const realWeapons = summary.weapons.filter((w) => w.name.trim() !== "");
   const features =
     originFilter === "all" ? summary.features : summary.features.filter((f) => f.source === originFilter);
-  const equipment = summary.selectedEquipment.filter((it) => matchInv(it.category, invFilter));
+  const equipment = summary.inventory.filter((entry) => matchInv(entry.item.category, invFilter));
 
   const handleTablistKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>) => {
     const currentIndex = MAIN_TABS.findIndex((tab) => tab.id === activeTab);
@@ -316,8 +316,13 @@ export function ContentTabs({ summary }: ContentTabsProps) {
             </div>
             {equipment.length > 0 ? (
               <ul className="grid list-none grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-1.5 p-0">
-                {equipment.map((item, index) => {
+                {equipment.map(({ item, quantity }, index) => {
                   const color = item.sourceType === "class" ? "text-brand-gold-alt" : "text-muted-foreground";
+                  const sourceLabel = item.sourceType === "class"
+                    ? "Class"
+                    : item.sourceType === "background"
+                      ? "Background"
+                      : "Manual";
                   return (
                     <li key={`${item.id}-${index}`}>
                       <button
@@ -325,8 +330,8 @@ export function ContentTabs({ summary }: ContentTabsProps) {
                         onClick={() => setDetail({
                           kind: "equipment",
                           name: item.name,
-                          qty: 1,
-                          source: item.sourceType === "class" ? "Class" : "Manual",
+                          qty: quantity,
+                          source: sourceLabel,
                           cost: item.value != null ? `${item.value} GP` : undefined,
                           armorClass: item.armorClass ?? undefined,
                         })}
@@ -335,7 +340,7 @@ export function ContentTabs({ summary }: ContentTabsProps) {
                           focusRing,
                         )}
                       >
-                        <span translate="no" className={cn("notranslate font-bold", color)}>1×</span>
+                        <span translate="no" className={cn("notranslate font-bold", color)}>x{quantity}</span>
                         <span translate="no" className="notranslate">{item.name}</span>
                       </button>
                     </li>
