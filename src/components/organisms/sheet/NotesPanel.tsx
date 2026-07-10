@@ -19,6 +19,7 @@ const SUB_TABS: { id: NoteField; label: string }[] = [
 
 export function NotesPanel() {
   const [active, setActive] = useState<NoteField>("tracos");
+  const [mode, setMode] = useState<"edit" | "view">("edit");
   const description = useCharacterStore((s) => s.description);
   const setDescriptionField = useCharacterStore((s) => s.setDescriptionField);
   const activeLabel = SUB_TABS.find((t) => t.id === active)!.label;
@@ -46,14 +47,40 @@ export function NotesPanel() {
           ))}
         </div>
         <section className="rounded-xl border border-border bg-card p-[14px]">
-          <div className="mb-3 flex items-center gap-[7px]">
-            <i aria-hidden="true" className="fa-solid fa-feather text-[11px] text-brand-crimson-alt" />
-            <p className="text-[10px] font-bold uppercase leading-none tracking-[0.16em] text-muted-foreground">
-              {activeLabel}
-            </p>
+          <div className="mb-3 flex items-center justify-between gap-2">
+            <div className="flex items-center gap-[7px]">
+              <i aria-hidden="true" className="fa-solid fa-feather text-[11px] text-brand-crimson-alt" />
+              <p className="text-[10px] font-bold uppercase leading-none tracking-[0.16em] text-muted-foreground">
+                {activeLabel}
+              </p>
+            </div>
+            <div role="group" aria-label="Editor mode" className="flex items-center gap-1 rounded-lg border border-border bg-surface-nested p-0.5">
+              {([
+                { id: "edit" as const, label: "Edit", icon: "fa-pen" },
+                { id: "view" as const, label: "View", icon: "fa-eye" },
+              ]).map((m) => (
+                <button
+                  key={m.id}
+                  type="button"
+                  aria-pressed={mode === m.id}
+                  onClick={() => setMode(m.id)}
+                  className={cn(
+                    "inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide transition-colors",
+                    focusRing,
+                    mode === m.id
+                      ? "bg-primary text-white"
+                      : "text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  <i aria-hidden="true" className={`fa-solid ${m.icon} text-[9px]`} />
+                  {m.label}
+                </button>
+              ))}
+            </div>
           </div>
           <MarkdownEditor
             docId={active}
+            preview={mode === "view"}
             ariaLabel={`${activeLabel} notes editor`}
             value={description[active] ?? ""}
             onChange={(v) => setDescriptionField(active, v)}

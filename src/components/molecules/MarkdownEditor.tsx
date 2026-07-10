@@ -13,21 +13,27 @@ interface MarkdownEditorProps {
    * into its own container, which leaks/stacks editors when React unmounts it.
    */
   docId: string;
+  /** When true, EasyMDE shows the rendered-markdown preview instead of the editor. */
+  preview?: boolean;
 }
 
 interface EasyMDEInstance {
   value: (val?: string) => string;
   toTextArea: () => void;
+  togglePreview: () => void;
+  isPreviewActive: () => boolean;
   codemirror: { on: (event: string, cb: () => void) => void };
 }
 
-export function MarkdownEditor({ value, onChange, ariaLabel, docId }: MarkdownEditorProps) {
+export function MarkdownEditor({ value, onChange, ariaLabel, docId, preview = false }: MarkdownEditorProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const editorRef = useRef<EasyMDEInstance | null>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   // True while we programmatically swap the loaded document, so the resulting
   // CodeMirror "change" event isn't written back as a user edit.
   const swappingRef = useRef(false);
+  const previewRef = useRef(preview);
+  previewRef.current = preview;
 
   // Latest props, so the mount-once effect and CM handlers read current values.
   const onChangeRef = useRef(onChange);
@@ -66,6 +72,7 @@ export function MarkdownEditor({ value, onChange, ariaLabel, docId }: MarkdownEd
         }) as unknown as EasyMDEInstance;
         editorRef.current = editor;
         activeOnChangeRef.current = onChangeRef.current;
+        if (previewRef.current && !editor.isPreviewActive()) editor.togglePreview();
         editor.codemirror.on("change", () => {
           if (swappingRef.current) return; // ignore programmatic content swaps
           const cb = activeOnChangeRef.current;
@@ -126,6 +133,27 @@ export function MarkdownEditor({ value, onChange, ariaLabel, docId }: MarkdownEd
     activeOnChangeRef.current = onChangeRef.current;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [docId]);
+
+  // Keep EasyMDE's preview state in sync with the `preview` prop. Runs after the
+  // docId-swap effect above (declaration order), so when the document changes
+  // while preview stays on, we re-render the preview from the new content.
+  useEffect(() => {
+    const editor = editorRef.current;
+    if (!editor) return;
+    try {
+      const active = editor.isPreviewActive();
+      if (preview !== active) {
+        editor.togglePreview();
+      } else if (preview) {
+        // Same preview state but the document (docId) changed: refresh it.
+        editor.togglePreview();
+        editor.togglePreview();
+      }
+    } catch {
+      // ignore — editor detached
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [preview, docId]);
 
   return (
     <textarea
