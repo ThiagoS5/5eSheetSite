@@ -1,19 +1,22 @@
 /*
  * Dark-theme overrides for EasyMDE / CodeMirror so the notes editor matches the
- * crimson sheet theme instead of EasyMDE's default light styling. Selectors are
- * scoped under `.EasyMDEContainer` so they out-specify the library defaults
- * (`.CodeMirror`, `.editor-toolbar`) regardless of stylesheet load order, and
- * use the sheet's theme CSS variables so they follow the active accent.
+ * crimson sheet theme instead of EasyMDE's default light styling.
+ *
+ * EasyMDE's own stylesheet defines rules at the same specificity
+ * (e.g. `.EasyMDEContainer .CodeMirror`), so which one wins depends on load
+ * order — unreliable, especially under dev HMR. We use `!important` on the
+ * colour/background declarations so these overrides win regardless of order,
+ * and drive them from the sheet's theme CSS variables so they follow the accent.
  */
 
 .EasyMDEContainer .CodeMirror {
-  background: var(--background);
-  color: var(--foreground);
-  border-color: var(--border);
+  background: var(--background) !important;
+  color: var(--foreground) !important;
+  border-color: var(--border) !important;
 }
 
 .EasyMDEContainer .CodeMirror-cursor {
-  border-left-color: var(--foreground);
+  border-left-color: var(--foreground) !important;
 }
 
 .EasyMDEContainer .CodeMirror-selected {
@@ -23,24 +26,34 @@
   background: color-mix(in oklab, var(--primary) 28%, transparent) !important;
 }
 
+/* Gutters and scrollbar corners default to white/light-grey in the library. */
+.EasyMDEContainer .CodeMirror-gutters {
+  background: var(--background) !important;
+  border-color: var(--border) !important;
+}
+.EasyMDEContainer .CodeMirror-scrollbar-filler,
+.EasyMDEContainer .CodeMirror-gutter-filler {
+  background: var(--background) !important;
+}
+
 .EasyMDEContainer .editor-toolbar {
-  background: var(--surface-nested);
-  border-color: var(--border);
+  background: var(--surface-nested) !important;
+  border-color: var(--border) !important;
   border-bottom: none;
   border-top-left-radius: 9px;
   border-top-right-radius: 9px;
 }
 
 .EasyMDEContainer .editor-toolbar button {
-  color: var(--muted-foreground);
+  color: var(--muted-foreground) !important;
   border-color: transparent;
 }
 
 .EasyMDEContainer .editor-toolbar button:hover,
 .EasyMDEContainer .editor-toolbar button.active {
-  background: var(--card);
-  border-color: var(--border);
-  color: var(--foreground);
+  background: var(--card) !important;
+  border-color: var(--border) !important;
+  color: var(--foreground) !important;
 }
 
 .EasyMDEContainer .editor-toolbar i.separator {
@@ -51,8 +64,8 @@
 /* Rendered-markdown preview panes */
 .EasyMDEContainer .editor-preview,
 .EasyMDEContainer .editor-preview-side {
-  background: var(--card);
-  color: var(--foreground);
+  background: var(--card) !important;
+  color: var(--foreground) !important;
 }
 .EasyMDEContainer .editor-preview a,
 .EasyMDEContainer .editor-preview-side a {

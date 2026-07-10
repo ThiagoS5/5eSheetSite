@@ -53,7 +53,7 @@ export function NotesPanel() {
             </p>
           </div>
           <MarkdownEditor
-            key={active}
+            docId={active}
             ariaLabel={`${activeLabel} notes editor`}
             value={description[active] ?? ""}
             onChange={(v) => setDescriptionField(active, v)}

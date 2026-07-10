@@ -9,7 +9,7 @@ import { MarkdownEditor } from "@/src/components/molecules/MarkdownEditor";
 describe("MarkdownEditor", () => {
   it("renders a labelled textarea and reports changes", () => {
     const onChange = vi.fn();
-    render(<MarkdownEditor value="hello" ariaLabel="Backstory editor" onChange={onChange} />);
+    render(<MarkdownEditor docId="backstory" value="hello" ariaLabel="Backstory editor" onChange={onChange} />);
     const textarea = screen.getByLabelText("Backstory editor") as HTMLTextAreaElement;
     expect(textarea.value).toBe("hello");
     fireEvent.change(textarea, { target: { value: "world" } });
@@ -19,7 +19,7 @@ describe("MarkdownEditor", () => {
   it("does not throw on unmount (guards EasyMDE teardown against detached DOM)", () => {
     const onChange = vi.fn();
     const { unmount } = render(
-      <MarkdownEditor value="hello" ariaLabel="Backstory editor" onChange={onChange} />
+      <MarkdownEditor docId="backstory" value="hello" ariaLabel="Backstory editor" onChange={onChange} />
     );
     expect(() => unmount()).not.toThrow();
   });
