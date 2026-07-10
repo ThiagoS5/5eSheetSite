@@ -9,7 +9,7 @@ import {
 const legacyFixture = v5FixtureRaw as unknown as CharacterBuild;
 
 describe("schema v12 migration", () => {
-  it("bumps the schema version to 12", () => {
+  it("bumps the schema version to 13", () => {
     expect(CHARACTER_BUILD_SCHEMA_VERSION).toBe(13);
   });
 
