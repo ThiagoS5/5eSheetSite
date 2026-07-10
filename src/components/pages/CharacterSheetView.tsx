@@ -54,7 +54,7 @@ export function CharacterSheetView({ embedded = false }: CharacterSheetViewProps
           <SkillsPanel skills={summary.skills} />
         </div>
         <div className="min-w-0 flex-[2_1_400px]">
-          <ContentTabs summary={summary} />
+          <ContentTabs summary={summary} description={description} />
         </div>
         <div className="min-w-0 flex-1 basis-[250px]">
           <CodexColumn summary={summary} description={description} />

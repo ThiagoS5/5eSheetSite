@@ -5,7 +5,7 @@ import "@testing-library/jest-dom/vitest";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, render, screen, fireEvent, within } from "@testing-library/react";
 import { ContentTabs } from "@/src/components/molecules/sheet/ContentTabs";
-import type { CharacterSheetSummary } from "@/types/builder";
+import type { CharacterSheetSummary, CharacterDescription } from "@/types/builder";
 
 const adjustCoin = vi.fn();
 const setCoin = vi.fn();
@@ -41,9 +41,21 @@ const summary = {
   carry: { currentKg: 10, maxKg: 50 },
 } as unknown as CharacterSheetSummary;
 
+const description = {
+  tracos: "",
+  personalidade: "",
+  historia: "",
+  notas: "",
+} as unknown as CharacterDescription;
+
 describe("ContentTabs", () => {
   afterEach(cleanup);
-  beforeEach(() => render(<ContentTabs summary={summary} />));
+  beforeEach(() => render(<ContentTabs summary={summary} description={description} />));
+
+  it("renders the Sheet and Notes tabs", () => {
+    expect(screen.getByRole("tab", { name: /sheet/i })).toBeTruthy();
+    expect(screen.getByRole("tab", { name: /notes/i })).toBeTruthy();
+  });
 
   it("shows weapons as cards on the Actions tab by default", () => {
     expect(screen.getByText("Dagger")).toBeInTheDocument();

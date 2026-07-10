@@ -1,15 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import type { CharacterSheetSummary, ItemCategory } from "@/types/builder";
+import type { CharacterSheetSummary, CharacterDescription, ItemCategory } from "@/types/builder";
 import type { BuilderSpell } from "@/types/spells";
 import { useCharacterStore } from "@/src/store/useCharacterStore";
 import { cn } from "@/src/lib/utils";
 import { focusRing } from "@/src/lib/styles";
 import { originColorVars } from "@/src/components/organisms/sheet/sheetTheme";
 import { ItemDetailModal, type DetailItem } from "@/src/components/organisms/sheet/ItemDetailModal";
+import { SheetTabPanel } from "@/src/components/organisms/sheet/SheetTabPanel";
+import { NotesPanel } from "@/src/components/organisms/sheet/NotesPanel";
 
-type MainTab = "actions" | "spells" | "inventory" | "features" | "notes";
+type MainTab = "actions" | "spells" | "inventory" | "features" | "sheet" | "notes";
 type OriginFilter = "all" | "class" | "species" | "background";
 type InvFilter = "all" | "weapons" | "armor" | "utility" | "magic";
 
@@ -18,6 +20,7 @@ const MAIN_TABS: { id: MainTab; label: string; icon: string }[] = [
   { id: "spells",    label: "Spells",         icon: "fa-wand-sparkles" },
   { id: "inventory", label: "Inventory",      icon: "fa-box-open" },
   { id: "features",  label: "Features",       icon: "fa-scroll" },
+  { id: "sheet",     label: "Sheet",          icon: "fa-shield-halved" },
   { id: "notes",     label: "Notes",          icon: "fa-feather" },
 ];
 
@@ -51,15 +54,14 @@ const chip =
 
 interface ContentTabsProps {
   summary: CharacterSheetSummary;
+  description: CharacterDescription;
 }
 
-export function ContentTabs({ summary }: ContentTabsProps) {
+export function ContentTabs({ summary, description }: ContentTabsProps) {
   const [activeTab, setActiveTab] = useState<MainTab>("actions");
   const [originFilter, setOriginFilter] = useState<OriginFilter>("all");
   const [invFilter, setInvFilter] = useState<InvFilter>("all");
   const [detail, setDetail] = useState<DetailItem | null>(null);
-  const notes = useCharacterStore((s) => s.description.notas);
-  const setDescriptionField = useCharacterStore((s) => s.setDescriptionField);
   const adjustCoin = useCharacterStore((s) => s.adjustCoin);
   const setCarriedLoadKg = useCharacterStore((s) => s.setCarriedLoadKg);
   const spendSlot = useCharacterStore((s) => s.spendSlot);
@@ -385,19 +387,9 @@ export function ContentTabs({ summary }: ContentTabsProps) {
         )}
 
 
-        {activeTab === "notes" && (
-          <textarea
-            value={notes}
-            onBlur={(e) => setDescriptionField("notas", e.target.value)}
-            onChange={(e) => setDescriptionField("notas", e.target.value)}
-            rows={8}
-            placeholder="Write character notes..."
-            className={cn(
-              "h-[440px] w-full resize-y rounded-[9px] border border-border bg-background px-4 py-[14px] text-[13px] text-subdued outline-none placeholder:text-muted-foreground focus:border-primary",
-              focusRing,
-            )}
-          />
-        )}
+        {activeTab === "sheet" && <SheetTabPanel summary={summary} description={description} />}
+
+        {activeTab === "notes" && <NotesPanel />}
       </div>
 
       <ItemDetailModal item={detail} onClose={() => setDetail(null)} />
