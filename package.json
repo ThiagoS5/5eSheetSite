@@ -29,6 +29,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
+    "easymde": "^2.21.0",
     "lucide-react": "^1.18.0",
     "match-sorter": "^8.3.0",
     "motion": "^12.42.2",
@@ -49,13 +50,12 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@testing-library/jest-dom": "^6.9.1",
-    "@vitest/coverage-v8": "^4.1.9",
-    "vitest-axe": "^0.1.0",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitest/coverage-v8": "^4.1.9",
     "culori": "^4.0.2",
     "eslint": "^9",
     "eslint-config-next": "16.2.9",
@@ -63,6 +63,7 @@
     "shadcn": "^4.11.0",
     "tailwindcss": "^4",
     "typescript": "^5",
-    "vitest": "^4.1.8"
+    "vitest": "^4.1.8",
+    "vitest-axe": "^0.1.0"
   }
 }
