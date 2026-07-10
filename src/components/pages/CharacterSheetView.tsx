@@ -9,15 +9,7 @@ import { cn } from "@/src/lib/utils";
 import { createFoundryCharacterExport } from "@/src/utils/foundryAdapter";
 import { SHEET_THEME_VARS } from "@/src/components/organisms/sheet/sheetTheme";
 import { SheetHero } from "@/src/components/organisms/sheet/SheetHero";
-import { SavingThrowsGrid } from "@/src/components/molecules/sheet/SavingThrowsGrid";
-import { SkillsPanel } from "@/src/components/molecules/sheet/SkillsPanel";
 import { ContentTabs } from "@/src/components/molecules/sheet/ContentTabs";
-import { CodexColumn } from "@/src/components/organisms/sheet/CodexColumn";
-import { DefensesPanel } from "@/src/components/molecules/sheet/DefensesPanel";
-import { PassivesPanel } from "@/src/components/molecules/sheet/PassivesPanel";
-import { SensesPanel } from "@/src/components/molecules/sheet/SensesPanel";
-import { ConditionsPanel } from "@/src/components/molecules/sheet/ConditionsPanel";
-import { PlayStatePanel } from "@/src/components/organisms/sheet/PlayStatePanel";
 
 interface CharacterSheetViewProps {
   /** Embedded mode (builder conclusao) drops the full-screen chrome. */
@@ -46,41 +38,7 @@ export function CharacterSheetView({ embedded = false }: CharacterSheetViewProps
         onExportFoundry={handleFoundryExport}
         onExportPdf={handlePdfExport}
       />
-
-      {/* Middle region */}
-      <div className="flex flex-wrap items-start gap-[14px]">
-        <div className="flex min-w-0 flex-1 basis-[280px] flex-col gap-[14px]">
-          <SavingThrowsGrid savingThrows={summary.savingThrows} />
-          <SkillsPanel skills={summary.skills} />
-        </div>
-        <div className="min-w-0 flex-[2_1_400px]">
-          <ContentTabs summary={summary} description={description} />
-        </div>
-        <div className="min-w-0 flex-1 basis-[250px]">
-          <CodexColumn summary={summary} description={description} />
-        </div>
-      </div>
-
-      {/* Bottom panels */}
-      <div className="grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-[14px]">
-        <DefensesPanel
-          resistances={summary.resistances}
-          immunities={summary.immunities}
-          vulnerabilities={summary.vulnerabilities}
-        />
-        <PassivesPanel
-          perception={summary.passives.perception}
-          investigation={summary.passives.investigation}
-          insight={summary.passives.insight}
-        />
-        <SensesPanel
-          senses={summary.senses}
-          languages={summary.languages}
-          toolProficiencies={summary.toolProficiencies}
-        />
-        <PlayStatePanel summary={summary} />
-        <ConditionsPanel />
-      </div>
+      <ContentTabs summary={summary} description={description} />
     </div>
   );
 

@@ -41,8 +41,8 @@ vi.mock("@/src/store/useCharacterBuilderState", () => ({
 vi.mock("@/src/store/useCharacterStore", () => ({
   useCharacterStore: (selector: (s: unknown) => unknown) =>
     selector({
-      description: { notas: "", nome: "Thalindra" },
-      characterBuild: { schemaVersion: 12 },
+      description: { notas: "", nome: "Thalindra", historia: "" },
+      characterBuild: { schemaVersion: 13 },
       setDescriptionField: () => {},
     }),
 }));
@@ -66,6 +66,18 @@ describe("CharacterSheetView", () => {
   it("renders in embedded mode without throwing", () => {
     render(<CharacterSheetView embedded />);
     expect(screen.getByRole("heading", { name: "Thalindra" })).toBeInTheDocument();
+  });
+
+  it("renders a single card: hero plus tabs, with Sheet and Notes tabs available", () => {
+    render(<CharacterSheetView />);
+    expect(screen.getByRole("tab", { name: /sheet/i })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: /notes/i })).toBeInTheDocument();
+  });
+
+  it("renders the Sheet tab content only once (no duplicate loose panels)", () => {
+    render(<CharacterSheetView />);
+    fireEvent.click(screen.getByRole("tab", { name: /sheet/i }));
+    expect(screen.getAllByText("Saving Throws")).toHaveLength(1);
   });
 
   it("downloads the printable PDF from the Export PDF action", async () => {
