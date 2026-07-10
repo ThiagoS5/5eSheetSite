@@ -30,6 +30,8 @@ export function MarkdownEditor({ value, onChange, ariaLabel }: MarkdownEditorPro
           import("easymde"),
           import("easymde/dist/easymde.min.css"),
         ]);
+        // Dark-theme overrides, loaded after EasyMDE's own stylesheet.
+        await import("./markdownEditor.dark.css");
         if (cancelled || !textareaRef.current) return;
         const EasyMDE = mod.default;
         editor = new EasyMDE({
