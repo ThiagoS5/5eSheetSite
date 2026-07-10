@@ -11,6 +11,7 @@ export function createDefaultPlayState(maxHp = 0): CharacterBuildPlayState {
     deathSaves: { successes: 0, failures: 0 },
     inspiration: false,
     conditions: [],
+    campaignLog: [],
     overrides: {},
   };
 }
@@ -134,6 +135,7 @@ export function normalizePlayState(
 
   return {
     ...state,
+    campaignLog: [...(state.campaignLog ?? [])],
     currentHp: Math.min(normalizedMax, Math.max(0, state.currentHp)),
     tempHp,
     hitDiceSpent: Math.max(0, state.hitDiceSpent),

@@ -19,6 +19,7 @@ const playState = (overrides: Partial<CharacterBuildPlayState> = {}): CharacterB
   deathSaves: { successes: 0, failures: 0 },
   inspiration: false,
   conditions: [],
+  campaignLog: [],
   overrides: {},
   ...overrides,
 });

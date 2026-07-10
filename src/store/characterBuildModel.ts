@@ -52,6 +52,7 @@ export const emptyCharacterDescription: CharacterDescription = {
   personalidade: "",
   tracos: "",
   notas: "",
+  historia: "",
   portraitId: "",
 };
 
@@ -587,6 +588,7 @@ function normalizeLegacyPlayState(
     },
     inspiration: playState?.inspiration ?? defaults.inspiration,
     conditions: [...(playState?.conditions ?? defaults.conditions)],
+    campaignLog: [...(playState?.campaignLog ?? defaults.campaignLog)],
     overrides: { ...(playState?.overrides ?? defaults.overrides) },
   };
 }

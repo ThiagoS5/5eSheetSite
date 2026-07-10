@@ -18,6 +18,7 @@ export const personalDetailsSchema = z.object({
   personalidade: z.string().max(500).optional(),
   tracos: z.string().max(2000).optional(),
   notas: z.string().max(1000).optional(),
+  historia: z.string().max(4000).optional(),
   portraitId: z.string().max(60).optional(),
 });
 

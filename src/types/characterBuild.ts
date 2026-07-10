@@ -10,8 +10,8 @@ import type {
 } from "@/types/dnd";
 import type { CharacterSpellcastingChoices } from "@/types/spells";
 
-// v12: draft.description ganhou portraitId (galeria local — Fase 8; migração pass-through via defaults).
-export const CHARACTER_BUILD_SCHEMA_VERSION = 12;
+// v13: draft.description ganhou historia; playState ganhou campaignLog (defaulted migration).
+export const CHARACTER_BUILD_SCHEMA_VERSION = 13;
 
 export interface CoinPouch {
   pc: number;
@@ -115,6 +115,13 @@ export interface CharacterBuildChoices {
 
 export type CharacterBuildDerivedSheet = CharacterSheetSummary;
 
+export interface CampaignLogEntry {
+  id: string;
+  title: string;
+  date: string; // ISO yyyy-mm-dd
+  body: string;
+}
+
 export interface CharacterBuildPlayState {
   currentHp: number;
   tempHp: number;
@@ -125,6 +132,7 @@ export interface CharacterBuildPlayState {
   deathSaves: { successes: number; failures: number };
   inspiration: boolean;
   conditions: string[];
+  campaignLog: CampaignLogEntry[];
   overrides: {
     maxHp?: number;
     armorClass?: number;

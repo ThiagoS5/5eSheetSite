@@ -137,6 +137,7 @@ function description(partial: Partial<CharacterDescription>): CharacterDescripti
     notas:
       partial.notas ??
       "This note block is intentionally rich enough to require the description appendix instead of a cramped page-one field.",
+    historia: partial.historia ?? "",
     portraitId: partial.portraitId ?? "portrait-iron-warden",
   };
 }

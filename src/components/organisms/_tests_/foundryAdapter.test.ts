@@ -60,6 +60,7 @@ const state: CharacterBuilderState = {
     personalidade: "Protective and direct.",
     tracos: "Never backs down.",
     notas: "Export test.",
+    historia: "",
     portraitId: "",
   },
   money: { pc: 7, pp: 5, pe: 2, po: 42, pl: 1 },

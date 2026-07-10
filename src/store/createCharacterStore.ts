@@ -726,6 +726,7 @@ function extractFlatState(state: FlatCharacterBuilderState): FlatCharacterBuilde
       resourceRecoveries: { ...getPlayState(state).resourceRecoveries },
       deathSaves: { ...getPlayState(state).deathSaves },
       conditions: [...getPlayState(state).conditions],
+      campaignLog: [...getPlayState(state).campaignLog],
       overrides: { ...getPlayState(state).overrides },
     },
     creationPreferences: state.creationPreferences

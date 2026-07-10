@@ -314,6 +314,8 @@ export interface CharacterDescription {
   personalidade: string;
   tracos: string;
   notas: string;
+  /** Prosa de história prévia (aba Notas → Backstory). */
+  historia: string;
   /** Id de retrato da galeria local (src/data/portraits.ts); "" = sem retrato. */
   portraitId: string;
 }
