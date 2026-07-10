@@ -8,6 +8,7 @@ import type { CharacterSpellcastingChoices } from "@/types/spells";
 import type {
   AsiOrFeatChoice,
   AttributeGenerationMethod,
+  CampaignLogEntry,
   CreationPreferences,
   EquipmentAcquisitionMode,
   EquipmentChoicesBySource,
@@ -25,6 +26,7 @@ import type {
 export type {
   AsiOrFeatChoice,
   AttributeGenerationMethod,
+  CampaignLogEntry,
   CreationPreferences,
   EquipmentAcquisitionMode,
   EquipmentChoicesBySource,
@@ -120,6 +122,12 @@ export interface CharacterBuilderActions {
   setOverride: (kind: "maxHp" | "armorClass", value: number | null) => void;
   setDeathSaves: (deathSaves: CharacterBuildPlayState["deathSaves"]) => void;
   toggleCondition: (condition: string) => void;
+  addCampaignLogEntry: (entry: Omit<CampaignLogEntry, "id">) => void;
+  updateCampaignLogEntry: (
+    id: string,
+    patch: Partial<Omit<CampaignLogEntry, "id">>,
+  ) => void;
+  removeCampaignLogEntry: (id: string) => void;
   setCreationPreferences: (prefs: CreationPreferences) => void;
   setBeginnerMode: (enabled: boolean) => void;
   setSpeciesChoice: (choiceId: string, value: string) => void;

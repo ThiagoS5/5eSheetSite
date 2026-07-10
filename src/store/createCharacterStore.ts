@@ -35,6 +35,7 @@ import {
   EMPTY_COIN_POUCH,
 } from "@/src/types/characterBuild";
 import type {
+  CampaignLogEntry,
   CharacterBuild,
   CoinPouch,
   CreationPreferences,
@@ -261,6 +262,35 @@ export function createCharacterStore(
       set((state) =>
         patchCharacterState(state, {
           playState: toggleConditionInPlayState(getPlayState(state), condition),
+        }),
+      ),
+    addCampaignLogEntry: (entry) =>
+      set((state) => {
+        const playState = getPlayState(state);
+        const newEntry = { id: crypto.randomUUID(), ...entry };
+        return patchCharacterState(state, {
+          playState: { ...playState, campaignLog: [...playState.campaignLog, newEntry] },
+        });
+      }),
+    updateCampaignLogEntry: (id, patch) =>
+      set((state) => {
+        const playState = getPlayState(state);
+        return patchCharacterState(state, {
+          playState: {
+            ...playState,
+            campaignLog: playState.campaignLog.map((e) =>
+              e.id === id ? { ...e, ...patch } : e,
+            ),
+          },
+        });
+      }),
+    removeCampaignLogEntry: (id) =>
+      set((state) =>
+        patchCharacterState(state, {
+          playState: {
+            ...getPlayState(state),
+            campaignLog: getPlayState(state).campaignLog.filter((e) => e.id !== id),
+          },
         }),
       ),
     setCreationPreferences: (prefs: CreationPreferences) =>

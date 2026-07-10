@@ -446,3 +446,24 @@ describe("character store spellcasting and play mode", () => {
     });
   });
 });
+
+describe("campaign log CRUD", () => {
+  it("adds, updates, and removes entries", () => {
+    const store = createCharacterStore();
+    store.getState().addCampaignLogEntry({ title: "Session 1", date: "2026-07-10", body: "Met the guild." });
+
+    let log = store.getState().characterBuild.playState.campaignLog;
+    expect(log).toHaveLength(1);
+    expect(log[0].title).toBe("Session 1");
+    const id = log[0].id;
+    expect(id).toBeTruthy();
+
+    store.getState().updateCampaignLogEntry(id, { body: "Met the thieves' guild." });
+    log = store.getState().characterBuild.playState.campaignLog;
+    expect(log[0].body).toBe("Met the thieves' guild.");
+    expect(log[0].title).toBe("Session 1");
+
+    store.getState().removeCampaignLogEntry(id);
+    expect(store.getState().characterBuild.playState.campaignLog).toHaveLength(0);
+  });
+});
