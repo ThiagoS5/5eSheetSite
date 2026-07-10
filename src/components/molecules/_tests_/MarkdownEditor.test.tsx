@@ -15,4 +15,12 @@ describe("MarkdownEditor", () => {
     fireEvent.change(textarea, { target: { value: "world" } });
     expect(onChange).toHaveBeenCalledWith("world");
   });
+
+  it("does not throw on unmount (guards EasyMDE teardown against detached DOM)", () => {
+    const onChange = vi.fn();
+    const { unmount } = render(
+      <MarkdownEditor value="hello" ariaLabel="Backstory editor" onChange={onChange} />
+    );
+    expect(() => unmount()).not.toThrow();
+  });
 });

@@ -62,8 +62,14 @@ export function MarkdownEditor({ value, onChange, ariaLabel }: MarkdownEditorPro
       cancelled = true;
       if (timer) clearTimeout(timer);
       if (editor) {
-        onChangeRef.current(editor.value()); // flush last edit
-        editor.toTextArea();
+        try {
+          onChangeRef.current(editor.value()); // flush last edit (best-effort)
+          editor.toTextArea();
+        } catch {
+          // React runs passive-effect cleanup after the DOM subtree is
+          // detached; EasyMDE's toTextArea() (or reading .value()) throws
+          // when its wrapper's parentNode is already gone. Safe to ignore.
+        }
         editor = null;
       }
     };
