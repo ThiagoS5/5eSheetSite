@@ -70,6 +70,91 @@
 .EasyMDEContainer .editor-preview a,
 .EasyMDEContainer .editor-preview-side a {
   color: var(--primary);
+  text-decoration: underline;
+}
+
+/*
+ * Prose styling for the rendered preview. Tailwind's global reset (preflight)
+ * flattens heading sizes/weights and strips list bullets, which makes the
+ * rendered markdown read as plain text. Re-establish the formatting, scoped to
+ * the preview panes so it doesn't affect the rest of the app.
+ */
+.EasyMDEContainer .editor-preview :where(h1, h2, h3, h4, h5, h6),
+.EasyMDEContainer .editor-preview-side :where(h1, h2, h3, h4, h5, h6) {
+  font-weight: 800;
+  line-height: 1.25;
+  margin: 0.75em 0 0.35em;
+}
+.EasyMDEContainer .editor-preview h1,
+.EasyMDEContainer .editor-preview-side h1 { font-size: 1.6em; }
+.EasyMDEContainer .editor-preview h2,
+.EasyMDEContainer .editor-preview-side h2 { font-size: 1.35em; }
+.EasyMDEContainer .editor-preview h3,
+.EasyMDEContainer .editor-preview-side h3 { font-size: 1.15em; }
+.EasyMDEContainer .editor-preview h4,
+.EasyMDEContainer .editor-preview-side h4 { font-size: 1.02em; }
+
+.EasyMDEContainer .editor-preview p,
+.EasyMDEContainer .editor-preview-side p {
+  margin: 0.55em 0;
+  line-height: 1.6;
+}
+.EasyMDEContainer .editor-preview strong,
+.EasyMDEContainer .editor-preview-side strong { font-weight: 700; }
+.EasyMDEContainer .editor-preview em,
+.EasyMDEContainer .editor-preview-side em { font-style: italic; }
+.EasyMDEContainer .editor-preview del,
+.EasyMDEContainer .editor-preview-side del { text-decoration: line-through; }
+
+.EasyMDEContainer .editor-preview ul,
+.EasyMDEContainer .editor-preview-side ul {
+  list-style: disc;
+  padding-left: 1.5em;
+  margin: 0.55em 0;
+}
+.EasyMDEContainer .editor-preview ol,
+.EasyMDEContainer .editor-preview-side ol {
+  list-style: decimal;
+  padding-left: 1.5em;
+  margin: 0.55em 0;
+}
+.EasyMDEContainer .editor-preview li,
+.EasyMDEContainer .editor-preview-side li { margin: 0.2em 0; }
+
+.EasyMDEContainer .editor-preview blockquote,
+.EasyMDEContainer .editor-preview-side blockquote {
+  margin: 0.6em 0;
+  padding-left: 0.85em;
+  border-left: 2px solid var(--border);
+  color: var(--muted-foreground);
+}
+
+.EasyMDEContainer .editor-preview code,
+.EasyMDEContainer .editor-preview-side code {
+  background: var(--surface-nested);
+  padding: 0.1em 0.35em;
+  border-radius: 4px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.9em;
+}
+.EasyMDEContainer .editor-preview pre,
+.EasyMDEContainer .editor-preview-side pre {
+  background: var(--surface-nested);
+  padding: 0.75em 0.9em;
+  border-radius: 8px;
+  overflow: auto;
+  margin: 0.6em 0;
+}
+.EasyMDEContainer .editor-preview pre code,
+.EasyMDEContainer .editor-preview-side pre code {
+  background: transparent;
+  padding: 0;
+}
+.EasyMDEContainer .editor-preview hr,
+.EasyMDEContainer .editor-preview-side hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 0.9em 0;
 }
 
 /* Markdown syntax accents on a dark background */
