@@ -17,6 +17,7 @@ export {
   formatModifier,
   getSpellAppendixDescription,
   groupSpellsByLevel,
+  markdownToParagraphs,
   splitFeatureSummary,
   type PdfCharacterInput,
   type PdfExportOptions,

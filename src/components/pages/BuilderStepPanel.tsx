@@ -806,7 +806,7 @@ function ClassStep({
       </div>
 
       {filteredClasses.length ? (
-        <div className="grid min-w-0 grid-cols-1 gap-3 md:gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <div className="grid min-w-0 grid-cols-1 gap-3 md:gap-4 md:grid-cols-2 2xl:grid-cols-3">
           {filteredClasses.map((entry) => {
             const tier = getRecommendationTier(entry.id);
 
@@ -2001,7 +2001,7 @@ function BackgroundStep({
       ) : null}
 
       {filteredBackgrounds.length ? (
-        <div className="grid w-full min-w-0 grid-cols-1 gap-3 md:gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <div className="grid w-full min-w-0 grid-cols-1 gap-3 md:gap-4 md:grid-cols-2 2xl:grid-cols-3">
           {filteredBackgrounds.map((entry) => {
             const tier = getRecommendationTier(quizRecommendation, entry.id);
 
@@ -2173,7 +2173,7 @@ function SpeciesStep({
       ) : null}
 
       {filteredSpecies.length ? (
-        <div className="grid min-w-0 grid-cols-1 gap-3 md:gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <div className="grid min-w-0 grid-cols-1 gap-3 md:gap-4 md:grid-cols-2 2xl:grid-cols-3">
           {filteredSpecies.map((entry) => {
             const tier = getRecommendationTier(quizRecommendation, entry.id);
 

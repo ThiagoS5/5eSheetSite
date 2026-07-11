@@ -46,7 +46,7 @@ export function BuilderShell({ children }: BuilderShellProps) {
   const [mobileStepsOpen, setMobileStepsOpen] = useState(false);
   const isSummaryStep = pathname?.endsWith("/conclusao") ?? false;
   const showSheetPreview = !isSummaryStep;
-  const gridClass = getGridClass(
+  const gridLayout = getGridLayout(
     sidebarCollapsed,
     sheetCollapsed,
     showSheetPreview,
@@ -113,9 +113,12 @@ export function BuilderShell({ children }: BuilderShellProps) {
         } as React.CSSProperties
       }
     >
-      <main className="min-h-screen overflow-x-clip bg-surface-nested pt-16 text-foreground">
+      <main className="builder-shell-main min-h-screen overflow-x-clip bg-surface-nested text-foreground">
         <Header />
-        <div className={`grid min-h-[calc(100dvh-4rem)] w-full min-w-0 ${gridClass}`}>
+        <div
+          data-builder-layout={gridLayout}
+          className="builder-shell-grid grid min-h-[calc(100dvh-4rem)] w-full min-w-0"
+        >
           {isMobile ? null : <BuilderSidebar />}
 
           <section
@@ -261,28 +264,26 @@ function formatSavedAt(value: string): string {
   }).format(date);
 }
 
-function getGridClass(
+function getGridLayout(
   sidebarCollapsed: boolean,
   sheetCollapsed: boolean,
   showSheetPreview: boolean,
 ): string {
   if (!showSheetPreview) {
-    return sidebarCollapsed
-      ? "xl:grid-cols-[4.5rem_minmax(0,1fr)]"
-      : "xl:grid-cols-[16rem_minmax(0,1fr)]";
+    return sidebarCollapsed ? "summary-collapsed" : "summary-expanded";
   }
 
   if (sidebarCollapsed && sheetCollapsed) {
-    return "xl:grid-cols-[4.5rem_minmax(0,1fr)_4.5rem]";
+    return "full-collapsed";
   }
 
   if (sidebarCollapsed) {
-    return "xl:grid-cols-[4.5rem_minmax(0,1fr)_22rem] 2xl:grid-cols-[4.5rem_minmax(0,1fr)_24rem]";
+    return "full-sidebar-collapsed";
   }
 
   if (sheetCollapsed) {
-    return "xl:grid-cols-[16rem_minmax(0,1fr)_4.5rem]";
+    return "full-sheet-collapsed";
   }
 
-  return "xl:grid-cols-[16rem_minmax(0,1fr)_22rem] 2xl:grid-cols-[16rem_minmax(0,1fr)_24rem]";
+  return "full-expanded";
 }

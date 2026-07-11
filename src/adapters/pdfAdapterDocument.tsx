@@ -64,6 +64,8 @@ export function buildPdfDocument(
   const pageSize = options.pageSize ?? "A4";
   const { summary, description } = input;
   const inventoryRows = createInventoryRows(summary, input.inventory ?? summary.inventory);
+  const gearRows = inventoryRows.filter((row) => row.category !== "Weapon");
+  const characterName = summary.name || "Unnamed Character";
 
   return (
     <Document
@@ -84,7 +86,7 @@ export function buildPdfDocument(
           <StatBox
             label="Hit Points"
             value={`${summary.currentHp}/${summary.maxHp}`}
-            detail={summary.tempHp > 0 ? `${summary.tempHp} temp` : summary.hitDice}
+            detail={summary.tempHp > 0 ? `${summary.tempHp} temp` : undefined}
           />
           <StatBox label="Proficiency" value={formatModifier(summary.proficiencyBonus)} />
           <StatBox label="Hit Dice" value={summary.hitDice} />
@@ -143,13 +145,21 @@ export function buildPdfDocument(
             </Section>
 
             <Section title="Equipment">
-              {summary.selectedEquipment.length > 0 ? (
-                summary.selectedEquipment.slice(0, 8).map((item) => (
-                  <Row key={item.id} label={item.name} value={item.source} />
+              <CoinPouch money={summary.money} />
+              {gearRows.length > 0 ? (
+                gearRows.slice(0, 12).map((row) => (
+                  <Row
+                    key={row.id}
+                    label={`${row.quantity > 1 ? `${row.quantity}x ` : ""}${row.label}${row.equipped ? " *" : ""}`}
+                    value={row.source}
+                  />
                 ))
               ) : (
-                <EmptyLine label="No equipped gear" />
+                <EmptyLine label="No gear carried" />
               )}
+              {gearRows.length > 12 ? (
+                <Text style={styles.mutedText}>+{gearRows.length - 12} more items</Text>
+              ) : null}
               <Text style={styles.mutedText}>
                 Carry {summary.carry.currentKg} / {summary.carry.maxKg} kg
               </Text>
@@ -159,6 +169,9 @@ export function buildPdfDocument(
               {(summary.armorClassBreakdown ?? []).map((part) => (
                 <Row key={part.label} label={part.label} value={formatSignedNumber(part.value)} />
               ))}
+            </Section>
+
+            <Section title="Resistances & Immunities">
               <Text style={styles.bodyText}>Resistances: {formatList(summary.resistances)}</Text>
               <Text style={styles.bodyText}>Immunities: {formatList(summary.immunities)}</Text>
               <Text style={styles.bodyText}>Vulnerabilities: {formatList(summary.vulnerabilities)}</Text>
@@ -174,10 +187,6 @@ export function buildPdfDocument(
 
             <Section title="Senses & Languages">
               <Text style={styles.bodyText}>
-                Passives: Perception {summary.passives.perception}, Investigation{" "}
-                {summary.passives.investigation}, Insight {summary.passives.insight}
-              </Text>
-              <Text style={styles.bodyText}>
                 Senses:{" "}
                 {summary.senses.length > 0
                   ? summary.senses
@@ -190,45 +199,38 @@ export function buildPdfDocument(
               <Text style={styles.bodyText}>Languages: {formatList(summary.languages)}</Text>
               <Text style={styles.bodyText}>Tools: {formatList(summary.toolProficiencies)}</Text>
             </Section>
+
+            <View style={styles.passiveStack}>
+              <PassiveBox label="Passive Wisdom (Perception)" value={summary.passives.perception} />
+              <PassiveBox
+                label="Passive Intelligence (Investigation)"
+                value={summary.passives.investigation}
+              />
+              <PassiveBox label="Passive Wisdom (Insight)" value={summary.passives.insight} />
+            </View>
           </View>
         </View>
-
-        <View style={styles.bottomGrid}>
-          <Section title="Coins">
-            <Text style={styles.bodyText}>
-              CP {summary.money.pc} - SP {summary.money.pp} - EP {summary.money.pe} - GP{" "}
-              {summary.money.po} - PP {summary.money.pl}
-            </Text>
-          </Section>
-          <Section title="Character Notes">
-            <Text style={styles.bodyText}>
-              {truncate(
-                [description.aparencia, description.personalidade, description.tracos]
-                  .filter(Boolean)
-                  .join(" "),
-                270,
-              ) || "See description appendix."}
-            </Text>
-          </Section>
-        </View>
+        <PageFooter characterName={characterName} />
       </Page>
 
       {summary.spellcasting ? (
         <Page size={pageSize} style={styles.page}>
           <AppendixHeader title="Spellcasting Appendix" />
           <SpellcastingAppendix spellcasting={summary.spellcasting} />
+          <PageFooter characterName={characterName} />
         </Page>
       ) : null}
 
       <Page size={pageSize} style={styles.page}>
-        <AppendixHeader title="Features & Inventory Appendix" />
+        <AppendixHeader title="Features Appendix" />
         <FeatureAppendix features={summary.features} />
-        <InventoryAppendix inventoryRows={inventoryRows} summary={summary} />
+        <PageFooter characterName={characterName} />
       </Page>
 
       <Page size={pageSize} style={styles.page}>
         <AppendixHeader title="Description Appendix" />
         <DescriptionAppendix description={description} />
+        <PageFooter characterName={characterName} />
       </Page>
     </Document>
   );
@@ -366,42 +368,6 @@ function FeatureAppendix({ features }: { features: SheetFeature[] }): ReactEleme
   );
 }
 
-function InventoryAppendix({
-  inventoryRows,
-  summary,
-}: {
-  inventoryRows: PdfInventoryRow[];
-  summary: CharacterSheetSummary;
-}): ReactElement {
-  return (
-    <Section title="Inventory & Attacks">
-      <Text style={styles.bodyText}>
-        Carrying {summary.carry.currentKg} / {summary.carry.maxKg} kg
-      </Text>
-      {inventoryRows.length > 0 ? (
-        inventoryRows.map((row) => (
-          <Row
-            key={row.id}
-            label={`${row.quantity > 1 ? `${row.quantity}x ` : ""}${row.label}${row.equipped ? " (equipped)" : ""}`}
-            value={row.source}
-          />
-        ))
-      ) : (
-        <EmptyLine label="No inventory recorded" />
-      )}
-      {summary.weapons.map((weapon) => (
-        <View key={weapon.name} style={styles.spellCard}>
-          <Text style={styles.itemTitle}>{weapon.name}</Text>
-          <Text style={styles.bodyText}>
-            {weapon.attackBonus} to hit - {weapon.damage}
-          </Text>
-          <Text style={styles.mutedText}>{weapon.notes}</Text>
-        </View>
-      ))}
-    </Section>
-  );
-}
-
 function DescriptionAppendix({ description }: { description: CharacterDescription }): ReactElement {
   return (
     <View style={styles.descriptionGrid}>
@@ -413,19 +379,37 @@ function DescriptionAppendix({ description }: { description: CharacterDescriptio
           <Row key={field.label} label={field.label} value={field.value} />
         ))}
       </View>
-      <Section title="Appearance">
-        <Text style={styles.bodyText}>{description.aparencia || "Not recorded."}</Text>
-      </Section>
-      <Section title="Personality">
-        <Text style={styles.bodyText}>{description.personalidade || "Not recorded."}</Text>
-      </Section>
-      <Section title="Traits">
-        <Text style={styles.bodyText}>{description.tracos || "Not recorded."}</Text>
-      </Section>
-      <Section title="Notes">
-        <Text style={styles.bodyText}>{description.notas || "Not recorded."}</Text>
-      </Section>
+      <ProseSection title="Appearance" value={description.aparencia} />
+      <ProseSection title="Personality" value={description.personalidade} />
+      <ProseSection title="Traits" value={description.tracos} />
+      <ProseSection title="Notes" value={description.notas} />
     </View>
+  );
+}
+
+function ProseSection({ title, value }: { title: string; value: string }): ReactElement {
+  const paragraphs = markdownToParagraphs(value);
+
+  return (
+    <Section title={title}>
+      {paragraphs.length > 0 ? (
+        paragraphs.map((paragraph, index) => (
+          <Text key={index} style={styles.paragraph}>
+            {paragraph}
+          </Text>
+        ))
+      ) : (
+        <Text style={styles.bodyText}>Not recorded.</Text>
+      )}
+    </Section>
+  );
+}
+
+function PageFooter({ characterName }: { characterName: string }): ReactElement {
+  return (
+    <Text fixed style={styles.pageFooter}>
+      Forge & Fate — {characterName}
+    </Text>
   );
 }
 
@@ -463,6 +447,38 @@ function StatBox({
       <Text style={styles.statLabel}>{label}</Text>
       <Text style={compact ? styles.compactStatValue : styles.statValue}>{value}</Text>
       {detail ? <Text style={styles.statDetail}>{detail}</Text> : null}
+    </View>
+  );
+}
+
+function CoinPouch({ money }: { money: CharacterSheetSummary["money"] }): ReactElement {
+  const coins: Array<{ label: string; value: number }> = [
+    { label: "CP", value: money.pc },
+    { label: "SP", value: money.pp },
+    { label: "EP", value: money.pe },
+    { label: "GP", value: money.po },
+    { label: "PP", value: money.pl },
+  ];
+
+  return (
+    <View style={styles.coinRow}>
+      {coins.map((coin) => (
+        <View key={coin.label} style={styles.coinBox}>
+          <Text style={styles.coinLabel}>{coin.label}</Text>
+          <Text style={styles.coinValue}>{coin.value}</Text>
+        </View>
+      ))}
+    </View>
+  );
+}
+
+function PassiveBox({ label, value }: { label: string; value: number }): ReactElement {
+  return (
+    <View style={styles.passiveBox}>
+      <View style={styles.passiveValueFrame}>
+        <Text style={styles.passiveValue}>{value}</Text>
+      </View>
+      <Text style={styles.passiveLabel}>{label.toUpperCase()}</Text>
     </View>
   );
 }
@@ -568,6 +584,26 @@ export function compactDescriptionFields(description: CharacterDescription): Des
   ].filter((field) => field.value.trim().length > 0);
 }
 
+export function markdownToParagraphs(value: string): string[] {
+  return value
+    .replace(/```[\s\S]*?```/g, "")
+    .split(/\n+/)
+    .map((line) =>
+      line
+        .replace(/^#{1,6}\s+/, "")
+        .replace(/^\s*[-*+]\s+/, "• ")
+        .replace(/^\s*>\s?/, "")
+        .replace(/\*\*([^*]+)\*\*/g, "$1")
+        .replace(/\*([^*]+)\*/g, "$1")
+        .replace(/__([^_]+)__/g, "$1")
+        .replace(/_([^_]+)_/g, "$1")
+        .replace(/`([^`]+)`/g, "$1")
+        .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
+        .trim(),
+    )
+    .filter((line) => line.length > 0);
+}
+
 function formatSignedNumber(value: number): string {
   return value >= 0 ? `+${value}` : String(value);
 }
@@ -635,8 +671,8 @@ const styles = StyleSheet.create({
   },
   appendixTitle: {
     color: INK,
-    fontSize: 18,
-    fontWeight: 700,
+    fontFamily: "Times-Bold",
+    fontSize: 19,
   },
   blockItem: {
     borderBottomColor: "#d7c6b4",
@@ -649,24 +685,46 @@ const styles = StyleSheet.create({
     fontSize: 8.5,
     lineHeight: 1.35,
   },
-  bottomGrid: {
-    flexDirection: "row",
-    gap: 8,
-    marginTop: 8,
-  },
   centerColumn: {
-    flexBasis: "36%",
+    flexBasis: 0,
+    flexGrow: 36,
     gap: 8,
+  },
+  coinBox: {
+    alignItems: "center",
+    borderColor: GOLD,
+    borderRadius: 4,
+    borderWidth: 1,
+    flexBasis: 0,
+    flexGrow: 1,
+    paddingHorizontal: 2,
+    paddingVertical: 3,
+  },
+  coinLabel: {
+    color: MUTED,
+    fontSize: 6,
+    letterSpacing: 0.6,
+    textTransform: "uppercase",
+  },
+  coinRow: {
+    flexDirection: "row",
+    gap: 3,
+    marginBottom: 5,
+  },
+  coinValue: {
+    color: INK,
+    fontSize: 9,
+    fontWeight: 700,
   },
   characterLine: {
     color: ACCENT,
+    fontFamily: "Times-BoldItalic",
     fontSize: 11,
-    fontWeight: 700,
   },
   characterName: {
     color: INK,
-    fontSize: 25,
-    fontWeight: 700,
+    fontFamily: "Times-Bold",
+    fontSize: 26,
     lineHeight: 1.05,
   },
   compactStatBox: {
@@ -688,13 +746,12 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   descriptionFields: {
-    flex: 1,
+    marginBottom: 8,
   },
-  descriptionGrid: {
-    gap: 8,
-  },
+  descriptionGrid: {},
   descriptionPortrait: {
     alignItems: "flex-start",
+    marginBottom: 8,
   },
   header: {
     alignItems: "center",
@@ -719,7 +776,8 @@ const styles = StyleSheet.create({
     fontWeight: 700,
   },
   leftColumn: {
-    flexBasis: "27%",
+    flexBasis: 0,
+    flexGrow: 27,
     gap: 8,
   },
   mainGrid: {
@@ -731,12 +789,64 @@ const styles = StyleSheet.create({
     fontSize: 7.5,
     lineHeight: 1.25,
   },
+  passiveBox: {
+    alignItems: "center",
+    borderColor: BORDER,
+    borderRadius: 10,
+    borderWidth: 1,
+    flexDirection: "row",
+    gap: 6,
+    paddingHorizontal: 5,
+    paddingVertical: 3,
+  },
+  passiveLabel: {
+    color: MUTED,
+    flex: 1,
+    fontSize: 6.5,
+    letterSpacing: 0.6,
+  },
+  passiveStack: {
+    gap: 4,
+  },
+  passiveValue: {
+    color: INK,
+    fontSize: 10,
+    fontWeight: 700,
+  },
+  passiveValueFrame: {
+    alignItems: "center",
+    borderColor: ACCENT,
+    borderRadius: 9,
+    borderWidth: 1,
+    height: 18,
+    justifyContent: "center",
+    width: 24,
+  },
   page: {
     backgroundColor: PAGE_BACKGROUND,
     color: INK,
     fontFamily: "Helvetica",
     fontSize: 9,
-    padding: 24,
+    paddingBottom: 34,
+    paddingHorizontal: 24,
+    paddingTop: 24,
+  },
+  pageFooter: {
+    bottom: 14,
+    color: MUTED,
+    fontSize: 6.5,
+    left: 24,
+    letterSpacing: 1,
+    position: "absolute",
+    right: 24,
+    textAlign: "center",
+    textTransform: "uppercase",
+  },
+  paragraph: {
+    color: INK,
+    fontSize: 8.5,
+    lineHeight: 1.4,
+    marginBottom: 3,
   },
   portraitFrame: {
     alignItems: "center",
@@ -748,7 +858,8 @@ const styles = StyleSheet.create({
     width: 82,
   },
   rightColumn: {
-    flexBasis: "37%",
+    flexBasis: 0,
+    flexGrow: 37,
     gap: 8,
   },
   row: {
@@ -779,11 +890,16 @@ const styles = StyleSheet.create({
     padding: 7,
   },
   sectionTitle: {
+    backgroundColor: "#ede1cd",
+    borderRadius: 3,
     color: ACCENT,
     fontSize: 8,
     fontWeight: 700,
     letterSpacing: 0.9,
     marginBottom: 5,
+    paddingHorizontal: 4,
+    paddingVertical: 2,
+    textAlign: "center",
     textTransform: "uppercase",
   },
   spellCard: {

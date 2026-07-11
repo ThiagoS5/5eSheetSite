@@ -7,6 +7,7 @@ import {
   createInventoryRows,
   getSpellAppendixDescription,
   groupSpellsByLevel,
+  markdownToParagraphs,
   renderPdfBuffer,
   type PdfInventoryItem,
 } from "@/src/adapters/pdfAdapter";
@@ -733,6 +734,36 @@ describe("pdfAdapter", () => {
 
     expect(grouped.map((group) => group.level)).toEqual([0, 2]);
     expect(grouped[1]?.spells.map((entry) => entry.name)).toEqual(["Blur", "Zone of Truth"]);
+  });
+
+  it("strips markdown syntax and splits notes into paragraphs", () => {
+    const paragraphs = markdownToParagraphs(
+      "# Journal\n\n**Bold plans** with *emphasis* and `code`.\n\n- first errand\n- second errand\n\n> a quoted vow\n\n[a map](https://example.com)",
+    );
+
+    expect(paragraphs).toEqual([
+      "Journal",
+      "Bold plans with emphasis and code.",
+      "• first errand",
+      "• second errand",
+      "a quoted vow",
+      "a map",
+    ]);
+  });
+
+  it("renders very long markdown notes across pages without failing", async () => {
+    const longNotes = Array.from(
+      { length: 60 },
+      (_, index) =>
+        `## Entry ${index + 1}\n\nThe party pressed on through **chapter ${index + 1}** of the campaign, logging debts, allies, and unresolved mysteries in careful detail.`,
+    ).join("\n\n");
+    const buffer = await renderPdfBuffer({
+      summary: rowan,
+      description: description({ nome: "Rowan Pike", notas: longNotes }),
+    });
+
+    expect(buffer.toString("utf8", 0, 4)).toBe("%PDF");
+    expect(countPdfPages(buffer)).toBeGreaterThanOrEqual(4);
   });
 
   it("marks carried equipped items once and preserves their carried quantity", () => {

@@ -43,7 +43,8 @@ describe("BuilderShell", () => {
 
     const shell = document.querySelector("main");
 
-    expect(shell).toHaveClass("pt-16");
+    // padding-top do header fixo agora vem de .builder-shell-main (app/globals.css, 4rem = pt-16)
+    expect(shell).toHaveClass("builder-shell-main");
     const builderTitle = screen.getByRole("heading", { name: "Forge & Fate" });
     const builderSection = screen.getByRole("region", { name: "Forge & Fate" });
 

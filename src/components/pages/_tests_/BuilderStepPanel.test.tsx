@@ -598,7 +598,7 @@ describe("BuilderStepPanel", () => {
     expect(speciesGrid).toHaveClass(
       "grid-cols-1",
       "md:grid-cols-2",
-      "xl:grid-cols-3",
+      "2xl:grid-cols-3",
     );
     expect(speciesGrid).not.toHaveClass("lg:grid-cols-3");
     expect(speciesGrid).not.toHaveClass("xl:grid-cols-4");
