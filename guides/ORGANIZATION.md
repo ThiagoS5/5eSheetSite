@@ -66,22 +66,24 @@ Levels and their meaning (dependency flows downward only — an atom never impor
 
 ### Component file convention
 
-Target convention for **new** components (folder-per-component):
+Application-owned components use folder-per-component. The `ui/` folder is the exception:
+shadcn/Radix primitives stay in their generated flat files unless the shadcn CLI changes that
+structure. Non-component helpers may stay as direct module files when they are not React
+components (`attributeIcons.ts`, `sanitizeNotesHtml.ts`, `sheetTheme.ts`).
 
 ```text
 src/components/molecules/CharacterCard/
-├── index.tsx           # the component (default export named CharacterCard)
-├── index.types.ts      # component-specific types (only if non-trivial)
+├── index.tsx           # the component (named export, e.g. CharacterCard)
+├── index.types.ts      # component-specific public props/types when the component accepts props
 ├── index.css           # ONLY if Tailwind genuinely cannot express it (rare)
 └── _tests_/
     └── index.test.tsx
 ```
 
-Existing components use flat files (`CharacterCard.tsx` + `_tests_/CharacterCard.test.tsx`).
-Both conventions are valid; **do not mass-rename**. Convert flat → folder only when a
-component grows extra files (types, css, subcomponents), and update all imports in the same
-change. Styling is Tailwind classes with tokens from `app/globals.css`; a component `.css`
-file is the exception (`markdownEditor.dark.css` is the precedent), never the default.
+No-prop components may omit `index.types.ts`; do not create empty type files just to satisfy
+the shape. Tests are always colocated under `_tests_/index.test.tsx` next to the component.
+Styling is Tailwind classes with tokens from `app/globals.css`; a component `.css` file is
+the exception (`MarkdownEditor/index.css` is the precedent), never the default.
 
 ### Placement decision for a new component
 
