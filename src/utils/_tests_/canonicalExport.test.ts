@@ -90,4 +90,34 @@ describe("importCharacter", () => {
     if (result.ok) return;
     expect(result.error).toContain("newer version");
   });
+
+  it("strips prototype-pollution keys and leaves Object.prototype intact", () => {
+    // Build the raw JSON string by hand: a `__proto__` key written in an object
+    // literal would set the prototype (and be dropped by JSON.stringify), so it
+    // has to reach the parser as a literal string key to test the reviver.
+    const buildWithDangerousKeys =
+      "{" +
+      '"__proto__":{"polluted":"yes"},' +
+      '"constructor":{"evil":true},' +
+      JSON.stringify(baseBuild).slice(1);
+    const malicious =
+      "{" +
+      '"format":"forge-fate-character",' +
+      '"formatVersion":1,' +
+      '"exportedAt":"2026-07-06T12:00:00.000Z",' +
+      '"app":{"name":"Forge & Fate","schemaVersion":' +
+      CHARACTER_BUILD_SCHEMA_VERSION +
+      "}," +
+      '"build":' +
+      buildWithDangerousKeys +
+      "}";
+
+    const result = importCharacter(malicious);
+
+    expect(result.ok).toBe(true);
+    expect(
+      (Object.prototype as Record<string, unknown>).polluted,
+    ).toBeUndefined();
+    expect(({} as Record<string, unknown>).polluted).toBeUndefined();
+  });
 });

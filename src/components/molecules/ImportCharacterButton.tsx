@@ -7,6 +7,8 @@ import { importCharacter } from "@/src/utils/canonicalExport";
 import { saveCharacter } from "@/src/services/characterService";
 import { ActionBtn } from "@/src/components/atoms/ActionBtn";
 
+const MAX_IMPORT_BYTES = 2 * 1024 * 1024; // 2 MB
+
 export function ImportCharacterButton() {
   const inputRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string | null>(null);
@@ -17,6 +19,16 @@ export function ImportCharacterButton() {
     }
 
     setError(null);
+
+    // Um build normal tem poucos KB; recusar arquivos enormes antes de ler evita
+    // travar a aba com JSON.parse de centenas de MB (DoS de memória no cliente).
+    if (file.size > MAX_IMPORT_BYTES) {
+      const message = "This file is too large to be a Forge & Fate character.";
+      setError(message);
+      toast.error(message);
+      return;
+    }
+
     const result = importCharacter(await file.text());
 
     if (!result.ok) {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { sanitizeNotesHtml } from "@/src/components/molecules/sanitizeNotesHtml";
 
 interface MarkdownEditorProps {
   value: string;
@@ -64,6 +65,17 @@ export function MarkdownEditor({ value, onChange, ariaLabel, docId, preview = fa
           spellChecker: false,
           status: false,
           minHeight: "360px",
+          // Por padrão o EasyMDE injeta um <link> para o Font Awesome no
+          // maxcdn.bootstrapcdn.com a cada montagem — uma dependência externa
+          // de terceiro (risco de supply-chain) que a CSP bloquearia. O app já
+          // hospeda o Font Awesome localmente (app/layout.tsx), então desligamos.
+          autoDownloadFontAwesome: false,
+          // EasyMDE renders the preview from `marked` with no sanitization and
+          // injects it via innerHTML; without this hook a note containing HTML
+          // (e.g. from an imported character file) executes arbitrary scripts.
+          renderingConfig: {
+            sanitizerFunction: sanitizeNotesHtml,
+          },
           toolbar: [
             "bold", "italic", "strikethrough", "heading-2", "heading-3", "|",
             "unordered-list", "ordered-list", "quote", "|",
