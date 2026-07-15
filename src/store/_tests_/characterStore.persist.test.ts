@@ -2,9 +2,12 @@
  * @vitest-environment jsdom
  */
 import { CHARACTER_BUILD_SCHEMA_VERSION } from "@/src/types/characterBuild";
-import { beforeEach, describe, expect, it } from "vitest";
-import { createCharacterStore } from "@/src/store/createCharacterStore";
-import { getCharacter } from "@/src/services/characterService";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  createCharacterStore,
+  disposeCharacterStore,
+} from "@/src/store/createCharacterStore";
+import { getCharacter, saveCharacter } from "@/src/services/characterService";
 
 describe("createCharacterStore persistence", () => {
   beforeEach(() => {
@@ -110,7 +113,8 @@ describe("createCharacterStore persistence", () => {
         },
         draft: {
           currentStepSlug: "detalhes-especie",
-          maxUnlockedStepIndex: 4,
+          // v14 inseriu o step "subclasse"; o índice 4 pré-v14 vira 5.
+          maxUnlockedStepIndex: 5,
           description: expect.objectContaining({ nome: "Migrated Hero" }),
 
           inventory: [{ itemId: "chain-mail-xphb", quantity: 1 }],
@@ -389,6 +393,105 @@ describe("createCharacterStore persistence", () => {
       exportMetadata: {
         saveId,
       },
+    });
+  });
+
+  describe("vault autosave", () => {
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it("persists level-up choices to the vault so a reload keeps them", async () => {
+      vi.useFakeTimers();
+      const store = createCharacterStore();
+      const saveId = store.getState().characterBuild.exportMetadata.saveId;
+
+      store.getState().selectClass("fighter-xphb");
+      await saveCharacter(store.getState().characterBuild);
+
+      store.getState().levelUp();
+      store.getState().levelUp();
+      store.getState().setLevelHpRoll(2, "average");
+
+      await vi.advanceTimersByTimeAsync(1000);
+
+      await expect(getCharacter(saveId)).resolves.toMatchObject({
+        progression: {
+          level: 3,
+          levelChoices: {
+            "2": { hpRoll: "average" },
+          },
+        },
+      });
+    });
+
+    it("does not create vault entries for drafts never saved to the vault", async () => {
+      vi.useFakeTimers();
+      const store = createCharacterStore();
+      const saveId = store.getState().characterBuild.exportMetadata.saveId;
+
+      store.getState().selectClass("wizard-xphb");
+      await vi.advanceTimersByTimeAsync(1000);
+
+      await expect(getCharacter(saveId)).resolves.toBeNull();
+    });
+
+    it("flushes a pending autosave on pagehide", async () => {
+      vi.useFakeTimers();
+      const store = createCharacterStore();
+      const saveId = store.getState().characterBuild.exportMetadata.saveId;
+
+      store.getState().selectClass("fighter-xphb");
+      await saveCharacter(store.getState().characterBuild);
+
+      store.getState().levelUp();
+      window.dispatchEvent(new Event("pagehide"));
+
+      await expect(getCharacter(saveId)).resolves.toMatchObject({
+        progression: { level: 2 },
+      });
+    });
+
+    it("disposes: flushes pending work, then stops listening after teardown", async () => {
+      vi.useFakeTimers();
+      const store = createCharacterStore();
+      const saveId = store.getState().characterBuild.exportMetadata.saveId;
+
+      store.getState().selectClass("fighter-xphb");
+      await saveCharacter(store.getState().characterBuild);
+
+      // A pending (debounced) change is flushed by dispose itself.
+      store.getState().levelUp();
+      disposeCharacterStore(store);
+      await Promise.resolve();
+      await expect(getCharacter(saveId)).resolves.toMatchObject({
+        progression: { level: 2 },
+      });
+
+      // After teardown, neither further store changes nor pagehide write again.
+      store.getState().levelUp();
+      await vi.advanceTimersByTimeAsync(1000);
+      window.dispatchEvent(new Event("pagehide"));
+      await Promise.resolve();
+      await expect(getCharacter(saveId)).resolves.toMatchObject({
+        progression: { level: 2 },
+      });
+    });
+
+    it("does not leak a pagehide listener per created store", () => {
+      const addSpy = vi.spyOn(window, "addEventListener");
+      const removeSpy = vi.spyOn(window, "removeEventListener");
+
+      const store = createCharacterStore();
+      const added = addSpy.mock.calls.filter(([type]) => type === "pagehide").length;
+      expect(added).toBe(1);
+
+      disposeCharacterStore(store);
+      const removed = removeSpy.mock.calls.filter(([type]) => type === "pagehide").length;
+      expect(removed).toBe(1);
+
+      addSpy.mockRestore();
+      removeSpy.mockRestore();
     });
   });
 });

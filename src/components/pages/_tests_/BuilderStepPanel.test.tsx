@@ -490,7 +490,8 @@ describe("BuilderStepPanel", () => {
       expect(Object.values(saves)[0]).toMatchObject({
         draft: {
           currentStepSlug: "especie",
-          maxUnlockedStepIndex: 3,
+          // v14: o step "subclasse" entrou antes de "antecedente"; especie é 4.
+          maxUnlockedStepIndex: 4,
         },
       });
     });

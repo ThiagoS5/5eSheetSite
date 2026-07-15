@@ -11,6 +11,7 @@ import type { CharacterSpellcastingSummary } from "@/types/spells";
 export type BuilderStepSlug =
   | "classe"
   | "recursos-classe"
+  | "subclasse"
   | "antecedente"
   | "especie"
   | "detalhes-especie"

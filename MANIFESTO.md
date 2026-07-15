@@ -1,171 +1,196 @@
-# 📜 Forge & Fate — Manifesto de Visão e Arquitetura
+# Forge & Fate Manifesto
 
-> **Como usar este documento.** Este é o estado final que o projeto deve atingir. Antes de qualquer tarefa, leia a seção relevante e pergunte: *"isto aproxima o código da visão, ou cria dívida que terei de desfazer no nível 20?"*. Decisões de curto prazo que contrariem este manifesto devem ser justificadas ou rejeitadas. É um documento vivo: ao concluir uma feature de roadmap, atualize a seção 7 (Estado Atual vs. Visão).
+> This is the project's living vision and architecture guide. Before any feature, refactor, UI polish, export change, or schema change, ask: does this move Forge & Fate toward the complete level 1-20 living character lifecycle, or does it create debt that must be undone later?
 
----
+Forge & Fate is not a form filler. It is a web character builder for Dungeons & Dragons 5e 2024 that treats the sheet as a living, calculated, portable, versioned model.
 
-## 1. O Objetivo Final (A Estrela Guia)
+## 1. North Star
 
-O **Forge & Fate** não é um formulário de preenchimento. O objetivo é ser a **referência definitiva em criador de fichas web para D&D 5e (regras 2024)** — robusto a ponto de rivalizar com plataformas oficiais (D&D Beyond), com uma experiência imersiva, rápida e **matematicamente impecável**. Toda decisão de código mira o longo prazo e a escalabilidade.
+Forge & Fate must become a serious, table-ready D&D 5e character builder:
 
-### 1.1 Idioma canônico: English-only
+- Fast enough for repeated use.
+- Clear enough for new players.
+- Dense enough for experienced players.
+- Accurate enough to trust at the table.
+- Portable enough to leave the app through canonical JSON, Foundry VTT, and printable PDF.
+- Structured enough to survive level 20, subclasses, spellcasting, future multiclassing, and export growth without rewrites.
 
-O **Forge & Fate é um produto em inglês**. A interface final, textos estáticos, `aria-labels`, mensagens de validação, estados vazios, tooltips, testes que travam copy, metadados, commits, PRs e documentação técnica de desenvolvimento devem ser escritos em **inglês nativo**, usando vocabulário canônico de D&D 5e.
+The app should feel like an advanced dark-fantasy tactical panel, not a corporate SaaS dashboard, generic form wizard, or static character-sheet clone.
 
-Português **não é idioma-alvo do produto nem do desenvolvimento**. Qualquer texto novo em português deve ser tratado como dívida ou legado a migrar, exceto quando for necessário apenas para reconhecer saves antigos, nomes internos históricos ou dados externos imutáveis. Como a base 5etools é estruturalmente em inglês, a UI deve preservar termos brutos da API com `translate="no"` / `notranslate` quando isso evitar que o Google Tradutor do navegador quebre nomes canônicos, siglas ou valores de regra.
+## 2. Canonical Language
 
-## 2. Escopo Core e Ciclo de Vida do Personagem
+Forge & Fate is an English-language product.
 
-O sistema suporta a jornada completa de um personagem — o que exige um estado global (Zustand) extremamente bem estruturado e um modelo de dados versionado.
+Use native English for product UI, static text, `aria-label`s, validation messages, empty states, tooltips, tests that lock copy, metadata, commits, PRs, and development docs. Use canonical D&D 5e vocabulary.
 
-- **Progressão Épica (Nível 1 ao 20):** do camponês nível 1 ao semideus nível 20, com proficiência, HP, recursos e magias calculados dinamicamente. O bônus de proficiência já é derivado do nível (`getProficiencyBonus(level)`).
-- **Multiclasse Integrada:** banco de dados e interface preparados para ramificações de multiclasse, respeitando pré-requisitos de atributo e sobreposição de proficiências.
-- **Evolução Contínua (Level Up Vivo):** a ficha **não** é read-only após a criação. O jogador cria hoje e, semanas depois, "Upa de Nível", adiciona talentos, rola novos PV e atualiza o inventário (itens mágicos do Mestre).
-- **Cofre de Personagens (Character Vault):** hub que armazena e gerencia múltiplos personagens simultaneamente.
+Portuguese copy is legacy unless it is required for old saves, historical internal field names, or immutable external data. When raw 5etools terms are shown, protect canonical rule names with `translate="no"` / `notranslate` when browser translation could corrupt names, abbreviations, or rule values.
 
-## 3. Integração e Saída de Dados
+## 3. Product Lifecycle
 
-Um personagem precisa sair da plataforma para a mesa (física ou virtual):
-- **Exportação para VTT:** JSON estruturado compatível com o sistema D&D 5e do Foundry VTT.
-- **Geração de PDF:** ficha tradicional otimizada para impressão.
+The product lifecycle is one continuous loop:
 
-## 4. Identidade Visual e UX (Dark Fantasy)
+1. Create or import a character in the Vault.
+2. Choose guided, standard, or quick-build creation.
+3. Complete the 9-step builder.
+4. Review the living sheet.
+5. Play with current HP, conditions, rests, spell slots, resources, notes, and campaign log.
+6. Level up without reopening the whole wizard.
+7. Export to table formats.
+8. Return later and keep the same canonical character evolving.
 
-A interface deve parecer um **"painel tático avançado"**, não um site corporativo.
-- **Tech Stack UI:** Tailwind CSS v4 (CSS-first, sem `tailwind.config`), shadcn/ui, Lucide + FontAwesome.
-- **Estética:** Dark Fantasy. Fundo obsidiana, bordas sutis, foco em carmesim vibrante.
-- **Densidade & Acessibilidade:** alta densidade (tabelas, accordions, split-panes) sem poluição. Esconder complexidade até o usuário precisar dela. Sempre `aria-*` e foco visível.
+Any new feature should plug into that lifecycle instead of becoming an isolated panel.
 
-### 4.1 Paleta canônica (design tokens — use as classes, nunca hex literais)
+## 4. Current Implemented Baseline
 
-> ⚠️ **Importante:** as cores são **design tokens** definidos em OKLCH em `app/globals.css` (`:root, .dark` + `@theme inline`). **Não use hex literais** (`bg-[#…]`, `text-[#…]`, `border-[#…]`) em `className` — use as utilities de token abaixo. Para mudar uma cor, edite o token no `globals.css`; nunca espalhe hex pelos componentes.
+This is the current audited baseline as of 2026-07-11.
 
-| Intenção | Classe de token |
-|---|---|
-| Fundo base (obsidiana) | `bg-background` |
-| Fundo atenuado | `bg-muted` |
-| Superfície/card | `bg-card` / `bg-surface-raised` |
-| Superfície interna (card dentro de card) | `bg-surface-nested` |
-| Superfície base / elevada | `bg-surface-base` / `bg-surface-elevated` |
-| Borda sutil | `border-border` (padrão) / `border-border/50` (mais sutil) |
-| Texto primário | `text-foreground` |
-| Texto secundário | `text-subdued` |
-| Texto atenuado (labels) | `text-muted-foreground` |
-| Texto muito fraco | `text-faint` |
-| Carmesim primário (foco/ativo) | `text-primary` / `border-primary` / `bg-primary` |
-| Carmesim alternativo | `text-brand-crimson-alt` / `bg-brand-crimson-alt` |
-| Ouro (destaque/aviso) | `text-accent` / `bg-accent` · alt: `brand-gold-alt` |
-| Verde / azul de marca | `brand-green` / `brand-blue` |
-| Tons decorativos de classe/antecedente | `tone-arcane*`, `tone-druid*`, `tone-gold*`, `tone-crimson*` |
+### Product Surfaces
 
-> **Acessibilidade (WCAG 2.2 AA):** carmesim (`text-primary`) **não** passa AA como texto pequeno em fundo escuro — use só em texto grande (≥24px), ícones e bordas. Para labels pequenos, use `text-foreground` com um indicador carmesim (`border-l-2 border-primary`, ícone ou sublinhado). Nenhum texto funcional abaixo de `text-[10px]`.
+- Character Vault with local saves, create, resume, duplicate, delete, import, search, status, and ready-to-export state.
+- 9-step builder: class, class features, background, species, species details, ability scores, equipment, description, conclusion.
+- Creation modes: guided mode, standard mode, and quick build.
+- Beginner guidance with recommendation quizzes and inline contextual help.
+- Dense `/sheet` and builder conclusion surfaces that share `CharacterSheetView`.
 
-Componentes shadcn ficam em `src/components/ui/`. Ícones via `src/components/atoms/FontAwesomeIcon.tsx` (classes `fa-*`) ou `lucide-react`.
+### Domain And Persistence
 
-## 5. Engenharia e Código (Princípios Inegociáveis)
+- `CharacterBuild` is the canonical persisted model at schema v13.
+- The persisted shape is split into `draft`, `progression`, `choices`, `playState`, `derivedSheet`, and `exportMetadata`.
+- Store persistence and Vault reads normalize old saves through the canonical build model.
+- Schema migrations are covered for the important historical shapes, with fixture-based tests.
 
-Aja como **Engenheiro de Software Sênior** focado em manutenibilidade.
-- **SOLID / separação de camadas:** regras de D&D vivem fora do React. Lógica → `rules/` e `src/adapters/`; apresentação → `src/components/`; estado → `src/store/`; dados → `src/services/`.
-- **Source Isolation:** nunca misture fontes. Classe, Antecedente e Espécie habitam blocos independentes e estados separados no Zustand, agrupados por origem. *Implementação de referência:* equipamento isolado por fonte (`equipmentChoicesBySource` no store + `EquipmentChecklist.tsx`). Exceções de regra de uma fonte nunca quebram outra.
-- **Zero Dívida Técnica Voluntária:** se uma feature exige refatorar o store para escalar (como o equipamento por fontes), **proponha a refatoração**. Nada de gambiarra que será desfeita no nível 20.
+### Rules Engine
 
----
+- D&D math lives outside React in `rules/`, `src/adapters/`, and services.
+- `selectCharacterSheetSummary` remains the single derived truth boundary and delegates to pure rule modules.
+- Current derived coverage includes ability scores, proficiency, HP, hit dice, AC, initiative, speed, skills, saving throws, passives, features, pendencies, money, carry, inventory, attacks, spellcasting, defenses fields, languages, tools, and play-state values.
 
-## 6. Mapa da Arquitetura Atual (aterrado no código)
+### Level 1-20 And Living Play
 
-Fluxo de dados central:
+- Level-aware proficiency, HP, hit dice, class features, subclass requirements, ASI/feat requirements, feature choices, and spellcasting exist.
+- `LevelUpFlow` supports HP choice, subclass choice, ASI/feat choice, feature-option choice, and spell choices for spellcasters.
+- Play state supports damage, healing, temporary HP, short rest, long rest, spent spell slots, resource uses, conditions, death saves, inspiration, HP/AC overrides, notes, and campaign log.
 
+### Character Options
+
+- Classes, species, backgrounds, languages, feats, spells, and item catalogs are normalized from local 5e data.
+- Subclasses are modeled and chosen through level-up requirements.
+- Feats and ASI are mutually exclusive at the choice point, with categories, prerequisites, attribute caps, and curated mechanical effects.
+- Spellcasting has normalized spells, class spell lists, filters, slot derivation, save DC, spell attack, cantrip/known/prepared limits, and sheet/export visibility.
+- Inventory has quantities, equip/unequip, item catalog search/filtering, armor/shield AC effects, weapon attacks, carried load, and carried inventory rendering.
+
+### Exports
+
+- Foundry VTT export consumes `CharacterSheetSummary` and includes identity, abilities, skills, tools, traits, inventory, equipment, weapons, spells, and class/species/background items.
+- Canonical Forge & Fate JSON export/import exists in `src/utils/canonicalExport.ts` with a versioned envelope and lossless round-trip tests.
+- Dashboard import writes imported characters into the Vault with a new save id.
+- Printable PDF generation exists through `@react-pdf/renderer`, with matrix tests for martial, spellcaster, high-level, rich-description, inventory, portrait, and long-notes cases.
+
+## 5. Real Gaps And Next Features
+
+The next work should focus on closing product gaps, not rebuilding completed foundations.
+
+### P0: Finish Portable Export UX
+
+- Add an explicit Forge & Fate canonical JSON export action to the Vault, conclusion, and sheet surfaces.
+- Keep Foundry labeled as Foundry, not generic JSON.
+- Make import/export copy explain format differences without adding instructional clutter inside the main sheet.
+- Preserve `ForgeFateExportV1` as the internal round-trip format and Foundry/PDF as external adapters.
+
+### P0: Launch-Hardening Pass
+
+- Run a full manual browser pass across Vault, builder, conclusion, and sheet at mobile/tablet/desktop.
+- Verify keyboard navigation, focus order, labels, reduced-motion behavior, and no horizontal overflow.
+- Confirm one martial and one spellcaster can be created, leveled, saved, reopened, exported to Foundry, exported to PDF, exported to canonical JSON, and imported back.
+- Keep a11y at WCAG 2.2 AA.
+
+### P1: Rules Coverage Expansion
+
+- Derive `resistances`, `immunities`, and `vulnerabilities` from species, feats, class features, spells, items, and manual overrides where appropriate.
+- Expand feat mechanical effects beyond the current curated subset.
+- Model magic item effects without leaking ad-hoc calculations into UI.
+- Connect feature/resource usage more tightly to short-rest and long-rest recovery rules.
+
+### P1: Source Preferences And Catalog Scope
+
+- Apply `creationPreferences.activeSources` consistently across class, species, background, feat, spell, and item catalogs.
+- Show clear warnings when a save contains a choice from a source that is currently disabled.
+- Keep source isolation intact: one source cannot mutate or erase another source's choices.
+
+### P1: Migration Consolidation
+
+- Extract a shared `migrateCharacterBuild(raw, fromVersion)` path used by the builder store, Vault normalization, and canonical import.
+- Keep fixture coverage for every supported schema family.
+- Never change `CharacterBuild` shape without a schema bump, migration, and tests.
+
+### P2: Multiclass Design Then Implementation
+
+- Write the multiclass ADR before code changes.
+- Plan the migration from `choices.selectedClassId` to `classLevels: { classId, level, subclassId }[]`.
+- Define total-level proficiency, per-class features, multiclass spell slots, proficiencies, starter equipment limits, and Foundry/PDF mapping.
+- Implement only after the export and launch-hardening gaps are closed.
+
+### P2: Vault Evolution
+
+- Consider cloud sync, public share links, backup/restore, and cross-device continuity after local v1 is stable.
+- Keep the local Vault useful and reliable even if cloud features never ship.
+
+## 6. Architecture Map
+
+```text
+public/data/*.json
+  -> src/services/
+  -> src/adapters/
+  -> rules/
+  -> src/store/
+  -> CharacterBuild
+  -> selectCharacterSheetSummary()
+  -> UI, Vault, canonical JSON, Foundry VTT, PDF
 ```
-public/data/*.json  ──►  src/services/ruleService.ts  ──►  Builder (UI)
-   (dados 5e brutos)        (+ src/adapters/fiveEToolsAdapter.ts)        │
-                                                                         ▼
-                              src/store/ (Zustand)  ◄──►  CharacterBuild (modelo canônico)
-                                       │                  src/types/characterBuild.ts
-                                       ▼
-                       selectCharacterSheetSummary()  ──►  CharacterSheetSummary (verdade derivada)
-                                       │                          │
-                          src/utils/foundryAdapter.ts        UI (resumo/preview)
-                          (export VTT)        [PDF: a criar]
-```
 
-### Camadas e responsabilidades
+### Layer Responsibilities
 
-- **`public/data/`** — dados 5e brutos (classes, antecedentes, espécies, magias, itens). Fonte da verdade de regras.
-- **`src/services/`** — acesso a dados.
-  - `ruleService.ts`: `getBuilderClasses / getBuilderSpecies / getBuilderBackgrounds / getBuilderEquipmentOptions / getBuilderLanguages`.
-  - `raw5eService.ts`: normalização do formato 5etools.
-  - `characterService.ts`: **o Vault** — `listCharacters / getCharacter / saveCharacter / duplicateCharacter / deleteCharacter` em localStorage (`forge-fate-character-saves:v1`). Normaliza (migra) todo build na leitura.
-- **`src/adapters/`** — cálculo e adaptação.
-  - `characterDerivedAdapter.ts`: `getAbilityModifier`, `getProficiencyBonus(level)`, `calculateFinalAttributes`, `calculateInitialHitPoints`, `calculateArmorClass`. **Toda matemática de ficha mora aqui.**
-  - `fiveEToolsAdapter.ts`: traduz dados 5etools para os tipos do builder.
-- **`rules/`** — regras puras, sem React: `builderValidation.ts` (validação por etapa), `pointBuyRules.ts`, `characterRules.ts` (barrel).
-- **`src/store/`** — estado Zustand e serialização.
-  - `characterStore.types.ts`: `FlatCharacterBuilderState` + `CharacterBuilderActions`.
-  - `createCharacterStore.ts`: store, ações, `persist` (sessionStorage `ficha-5e-builder`), `migrate`, `extractFlatState`.
-  - `characterBuildModel.ts`: serialização flat↔`CharacterBuild`, `normalizeFlatState`, `deriveSheet`, defaults.
-  - `characterSelectors.ts`: `selectCharacterSheetSummary()` — **a única fonte da verdade derivada** (HP, CA, modificadores, equipamento, validações).
-  - `useCharacterStore.tsx`: hook de acesso.
-- **`src/components/`** — Atomic Design: `atoms/ → molecules/ → organisms/ → templates/ → pages/`, mais `ui/` (shadcn). Builder: `app/builder/[step]/page.tsx` → `BuilderStepPanel.tsx` (9 etapas via `templates/builderStepNavigation.ts`), `BuilderShell.tsx`, `BuilderSidebar.tsx`. Vault: `pages/Dashboard.tsx`, `organisms/CharacterRoster.tsx`, `molecules/CharacterCard.tsx`.
-- **`src/types/` & `types/`** — `characterBuild.ts` (modelo canônico), `builder.ts`, `dnd.ts`, `Character.ts`, `fiveETools.ts`.
+- `public/data/`: local D&D data.
+- `src/services/`: data access, character storage, preferences, spell/item/class catalog services.
+- `src/adapters/`: domain transforms and export adapters.
+- `rules/`: pure rule modules with no React dependency.
+- `src/store/`: Zustand store, persistence, migrations, `CharacterBuild` serialization, and selectors.
+- `src/components/`: UI composition using the project's atomic-ish component structure and shadcn/Radix primitives.
+- `types/` and `src/types/`: domain contracts. Prefer existing import conventions until a dedicated type-consolidation task is opened.
 
-### Modelo canônico de persistência
+## 7. Non-Negotiable Engineering Rules
 
-`CharacterBuild` (`src/types/characterBuild.ts`) é o contrato serializado:
+- Rules do not live in React components.
+- UI consumes `CharacterSheetSummary` or writes explicit `CharacterBuild` choices.
+- External formats never dictate the internal model.
+- Foundry and PDF are adapters; canonical JSON is Forge & Fate's own round-trip format.
+- `CharacterBuild` changes require schema bump, migration, and tests.
+- Persisted old saves must remain readable.
+- Source isolation is sacred.
+- Use the existing design tokens for app UI. Do not scatter literal colors in components.
+- PDF print styling may own a small print-specific palette inside the PDF adapter.
+- Keep text and controls usable at mobile width and 200 percent zoom.
+- Keep commands, docs, commits, PRs, and UI copy in English.
 
-```ts
-interface CharacterBuild {
-  draft;          // estado do wizard: etapa atual, steps desbloqueados, equipmentChoicesBySource, descrição
-  progression;    // { level, levelChoices: Record<levelStr, ...> }  ← hook para 1–20
-  choices;        // classe/espécie/antecedente, perícias, atributos, idiomas
-  derivedSheet;   // CharacterSheetSummary congelado (recalculado em toda gravação)
-  exportMetadata; // { schemaVersion, saveId, createdAt, updatedAt }
-}
-```
+## 8. Definition Of Done
 
-Regra de ouro: **mudou o shape persistido → bumpe `CHARACTER_BUILD_SCHEMA_VERSION`, escreva a migração e cubra com teste.** (Lição da refatoração de equipamento: a v1→v2 mapeia o legado `equipmentAcquisitionMode` para `equipmentChoicesBySource.class`.)
+A change is not done until the relevant slice passes:
 
----
+- Focused Vitest coverage for behavior.
+- `npm run typecheck`.
+- `npm run lint`.
+- `npm run build` for route, app-shell, export, or framework-sensitive changes.
+- Browser verification for UI, layout, a11y, or export-download work.
+- Migration tests when persisted shape changes.
+- `CharacterSheetSummary` remains the derived-truth boundary.
+- Guide docs are updated when roadmap status, architecture, or workflow changes.
 
-## 7. Estado Atual vs. Visão (Roadmap / onde cada feature se encaixa)
+## 9. Glossary
 
-| Capacidade (Visão) | Hoje | Onde plugar a evolução |
-|---|---|---|
-| **Vault (múltiplos personagens)** | ✅ Existe | `characterService.ts` + `Dashboard`. Evoluir: sincronização/cloud futura. |
-| **Export VTT (Foundry)** | ✅ Existe | `src/utils/foundryAdapter.ts` consumindo `CharacterSheetSummary`. |
-| **Cálculo level-aware** | ✅ | `getProficiencyBonus(level)`, HP via `calculateMaxHitPoints(hitDie, con, level)` (regra fixa do 5e 2024) e features de classe filtradas por `level` no `selectCharacterSheetSummary`. |
-| **Progressão 1–20** | 🟡 Parcial | Derivação já é level-aware (HP + features). Faltam: **UI para definir/subir de nível** (o `setLevel` existe mas nada o aciona), consumo de `progression.levelChoices` (ASI/talentos por nível) e recursos por nível (slots de magia). |
-| **Multiclasse** | ⛔ Falta | `choices.selectedClassId` é **singular**. Refatorar para `classes: { classId, level, subclassId }[]` (refatoração deliberada do store + bump de schema + migração). Proficiência total = soma dos níveis. |
-| **Subclasse** | ⛔ Falta | Dados em `public/data/class/*`. Modelar `subclassId` por classe em `choices`/`classes[]`. |
-| **Magias (spellcasting)** | ⛔ Falta | Dados em `public/data/spells/`. Adicionar modelo de magias preparadas/conhecidas em `CharacterBuild.choices` + slots derivados por nível no adapter. |
-| **Level Up Vivo (pós-criação)** | ⛔ Falta | Ações de "level up" no store que adicionam um `levelChoices[n]` sem reabrir o wizard; recomputar `derivedSheet`. |
-| **Export PDF** | ⛔ Falta | Criar `src/adapters/pdfAdapter.ts` (paralelo ao `foundryAdapter`), consumindo o mesmo `CharacterSheetSummary`. |
-
-Princípio de roadmap: **toda nova feature consome `CharacterSheetSummary` ou estende `CharacterBuild` — nunca recalcula regras na camada de UI.**
-
----
-
-## 8. Invariantes de Engenharia (Definition of Done)
-
-Uma mudança só está "pronta" quando:
-1. **TDD:** teste primeiro (Vitest). Testa comportamento, não mocks. `npx vitest run` 100% verde.
-2. **Tipos limpos:** `npx tsc --noEmit` sem erros.
-3. **Lint limpo:** `npx eslint <arquivos tocados>` sem erros.
-4. **Verdade derivada única:** HP/CA/modificadores/validação vêm de `selectCharacterSheetSummary` / `src/adapters/`, nunca recalculados na UI.
-5. **Source isolation preservada:** escolhas por origem ficam em estados separados; uma fonte não pode corromper outra.
-6. **Persistência versionada:** mudou o shape de `CharacterBuild` → bump `CHARACTER_BUILD_SCHEMA_VERSION` + `migrate` + teste de migração (`characterStore.persist.test.ts`).
-7. **Design real:** usa a paleta hex da seção 4.1; não inventa tokens inexistentes.
-8. **Commits frequentes e focados;** sem `git add -A` cego (há artefatos não rastreados: `ds-bundle/`, `.design-sync/`, `next-env.d.ts`).
-9. **Zero dívida voluntária:** se escalar exige refatorar o store, refatore — não gambiarre.
-
----
-
-## 9. Glossário
-
-- **CharacterBuild** — modelo canônico serializado (draft + progression + choices + derivedSheet + exportMetadata).
-- **CharacterSheetSummary** — verdade derivada calculada por `selectCharacterSheetSummary`; entrada de todos os exports.
-- **Source Isolation** — escolhas agrupadas por origem (Classe/Antecedente/Espécie) em estados independentes.
-- **Vault** — cofre de personagens em localStorage (`characterService.ts`).
-- **Derived Sheet** — `derivedSheet` recalculado a cada gravação; cache da ficha pronta.
-- **Schema Version** — `CHARACTER_BUILD_SCHEMA_VERSION`; governa migração de saves antigos.
-- **Builder Step** — uma das 9 etapas do wizard (`builderStepNavigation.ts`).
-- **Attribute Key** — `forca | destreza | constituicao | inteligencia | sabedoria | carisma`.
+- `CharacterBuild`: canonical persisted character model.
+- `CharacterSheetSummary`: derived sheet truth used by UI and exports.
+- `Source isolation`: class, species, background, equipment, feats, spells, and future sources stay independently owned.
+- `Vault`: local character library backed by `characterService`.
+- `Play state`: table-session state such as HP, slots, conditions, resources, notes, and log.
+- `Canonical export`: versioned Forge & Fate JSON envelope for round-trip import.
+- `External adapter`: Foundry VTT and PDF outputs derived from Forge & Fate truth.

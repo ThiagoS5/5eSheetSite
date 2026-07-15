@@ -4,6 +4,7 @@ import {
   isPointBuyComplete,
   isValidPointBuyScore,
 } from "@/rules/pointBuyRules";
+import { getLevelRequirements } from "@/rules/levelProgression";
 import {
   getBuilderBackgrounds,
   getBuilderClasses,
@@ -56,6 +57,35 @@ export function validateBuilderStep(
 
     if (featureMessages.length) {
       return featureMessages;
+    }
+  }
+
+  if (step === "subclasse") {
+    if (!state.selectedClassId) {
+      return ["Choose a Class before choosing a subclass."];
+    }
+
+    const selectedClass = getBuilderClasses().find(
+      (entry) => entry.id === state.selectedClassId,
+    );
+    const subclassRequired =
+      selectedClass !== undefined &&
+      getLevelRequirements(selectedClass, 0, state.level).some(
+        (requirement) => requirement.kind === "subclass",
+      );
+
+    if (subclassRequired) {
+      if (!state.selectedSubclassId) {
+        return [`Choose a ${selectedClass.name} subclass to continue.`];
+      }
+
+      const isValidSubclass = selectedClass.subclasses.some(
+        (subclass) => subclass.id === state.selectedSubclassId,
+      );
+
+      if (!isValidSubclass) {
+        return ["Choose a subclass that belongs to the selected class."];
+      }
     }
   }
 
@@ -139,6 +169,7 @@ export function validateBuilderStep(
     const previousSteps: BuilderStepSlug[] = [
       "classe",
       "recursos-classe",
+      "subclasse",
       "antecedente",
       "especie",
       "detalhes-especie",

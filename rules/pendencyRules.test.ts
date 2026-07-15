@@ -27,7 +27,7 @@ describe("pendency rules", () => {
     });
   });
 
-  it("includes unresolved level choices as resources-step pendencies", () => {
+  it("routes the unresolved subclass choice to the subclass step, once", () => {
     const store = createCharacterStore();
     store.getState().selectClass("fighter-xphb");
     store.getState().setLevel(3);
@@ -37,10 +37,34 @@ describe("pendency rules", () => {
       characterClass: fighterClass(),
     });
 
+    const subclassPendencies = pendencies.filter(
+      (pendency) => /subclass/i.test(pendency.label),
+    );
+    expect(subclassPendencies).toEqual([
+      {
+        id: "subclasse-0",
+        stepSlug: "subclasse",
+        label: "Choose a Fighter subclass to continue.",
+        severity: "blocking",
+      },
+    ]);
+  });
+
+  it("keeps non-subclass level choices as resources-step pendencies", () => {
+    const store = createCharacterStore();
+    store.getState().selectClass("fighter-xphb");
+    store.getState().selectSubclass("battle-master-xphb");
+    store.getState().setLevel(4);
+
+    const pendencies = deriveBuilderPendencies({
+      state: store.getState(),
+      characterClass: fighterClass(),
+    });
+
     expect(pendencies).toContainEqual({
-      id: "level-3-subclass",
+      id: "level-4-asi-or-feat",
       stepSlug: "recursos-classe",
-      label: "Level 3: choose a subclass",
+      label: "Level 4: choose ASI or feat",
       severity: "blocking",
     });
   });

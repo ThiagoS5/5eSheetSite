@@ -1,7 +1,7 @@
 import { createStore } from "zustand/vanilla";
 import { createJSONStorage, persist } from "zustand/middleware";
-import type { StateCreator } from "zustand/vanilla";
-import { saveCharacter } from "@/src/services/characterService";
+import type { StateCreator, StoreApi } from "zustand/vanilla";
+import { hasCharacterSync, saveCharacter } from "@/src/services/characterService";
 import { getBuilderClasses } from "@/src/services/ruleService";
 import { deriveCarriedEquipment } from "@/rules/inventoryRules";
 import {
@@ -553,7 +553,7 @@ export function createCharacterStore(
     return createStore<CharacterBuilderStore>()(storeCreator);
   }
 
-  return createStore<CharacterBuilderStore>()(
+  const store = createStore<CharacterBuilderStore>()(
     persist(storeCreator, {
       name: "ficha-5e-builder",
       storage: createJSONStorage(() => sessionStorage),
@@ -568,6 +568,83 @@ export function createCharacterStore(
       }),
     }),
   );
+
+  // O teardown do autosave fica preso ao store para que o provider possa
+  // liberá-lo ao desmontar (ver disposeCharacterStore); sem isso, a subscription
+  // e o listener de `pagehide` vazariam a cada troca de rota que remonta o provider.
+  (store as CharacterStoreWithTeardown)[VAULT_AUTOSAVE_TEARDOWN] =
+    attachVaultAutosave(store);
+
+  return store;
+}
+
+/**
+ * Libera os recursos do autosave presos a um store (subscription + listener de
+ * `pagehide`). O CharacterStoreProvider chama isto no cleanup do efeito.
+ */
+export function disposeCharacterStore(
+  store: StoreApi<CharacterBuilderStore>,
+): void {
+  const teardown = (store as CharacterStoreWithTeardown)[VAULT_AUTOSAVE_TEARDOWN];
+  if (teardown) {
+    teardown();
+    (store as CharacterStoreWithTeardown)[VAULT_AUTOSAVE_TEARDOWN] = undefined;
+  }
+}
+
+const VAULT_AUTOSAVE_DEBOUNCE_MS = 500;
+const VAULT_AUTOSAVE_TEARDOWN = Symbol("vaultAutosaveTeardown");
+
+type CharacterStoreWithTeardown = StoreApi<CharacterBuilderStore> & {
+  [VAULT_AUTOSAVE_TEARDOWN]?: (() => void) | undefined;
+};
+
+/**
+ * O sessionStorage guarda apenas o rascunho da sessão; o Vault (localStorage)
+ * é a fonte durável. Sem este autosave, mudanças feitas fora do fluxo de
+ * commit do builder (level-up, play state, notas na ficha viva) eram perdidas
+ * ao recarregar ou reabrir o personagem pelo Dashboard.
+ */
+function attachVaultAutosave(store: StoreApi<CharacterBuilderStore>): () => void {
+  let saveTimer: ReturnType<typeof setTimeout> | undefined;
+  let pendingSave = false;
+  let lastSeenBuild = store.getState().characterBuild;
+  // Último build efetivamente gravado, para não reserializar o Vault inteiro com
+  // o mesmo conteúdo (ex.: flush do debounce seguido de flush no pagehide).
+  let lastSavedBuild = lastSeenBuild;
+
+  const flush = () => {
+    if (!pendingSave) return;
+    pendingSave = false;
+    if (saveTimer !== undefined) clearTimeout(saveTimer);
+    const build = store.getState().characterBuild;
+    if (build === lastSavedBuild) return;
+    if (hasCharacterSync(build.exportMetadata.saveId)) {
+      lastSavedBuild = build;
+      void saveCharacter(build);
+    }
+  };
+
+  const unsubscribe = store.subscribe((state) => {
+    const build = state.characterBuild;
+    if (build === lastSeenBuild) return;
+    lastSeenBuild = build;
+    if (!hasCharacterSync(build.exportMetadata.saveId)) return;
+    pendingSave = true;
+    if (saveTimer !== undefined) clearTimeout(saveTimer);
+    saveTimer = setTimeout(flush, VAULT_AUTOSAVE_DEBOUNCE_MS);
+  });
+
+  window.addEventListener("pagehide", flush);
+
+  return () => {
+    // Grava qualquer edição pendente antes de soltar os recursos, depois remove
+    // a subscription e o listener para não vazar o store desmontado.
+    flush();
+    if (saveTimer !== undefined) clearTimeout(saveTimer);
+    unsubscribe();
+    window.removeEventListener("pagehide", flush);
+  };
 }
 
 export function getAttributeMethodLabel(method: AttributeGenerationMethod): string {

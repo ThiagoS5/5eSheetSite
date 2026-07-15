@@ -53,11 +53,21 @@ export type ImportCharacterResult =
  * antigos ao ponto único `normalizeCharacterBuild`. Sempre gera saveId novo —
  * import nunca sobrescreve um save existente por colisão.
  */
+// Chaves que permitiriam poluição de protótipo se sobrevivessem ao merge do
+// import; um build legítimo nunca as usa, então são descartadas ao desserializar.
+const DANGEROUS_KEYS = new Set(["__proto__", "constructor", "prototype"]);
+
+function parseImportJson(rawJson: string): unknown {
+  return JSON.parse(rawJson, (key, value) =>
+    DANGEROUS_KEYS.has(key) ? undefined : value,
+  );
+}
+
 export function importCharacter(rawJson: string): ImportCharacterResult {
   let parsed: unknown;
 
   try {
-    parsed = JSON.parse(rawJson);
+    parsed = parseImportJson(rawJson);
   } catch {
     return { ok: false, error: "The file is not valid JSON." };
   }

@@ -29,7 +29,14 @@ const ATTRIBUTE_KEYS: AttributeKey[] = ["forca", "destreza", "constituicao", "in
 
 interface LevelUpFlowProps {
   open: boolean;
-  onClose: () => void;
+  /**
+   * Called when the flow closes. `committed` is true when the level-up was
+   * accepted (Finish, or leaving to the subclass screen to continue it) and
+   * false when it was cancelled (Escape, backdrop, X) — the caller reverts the
+   * level increment in the latter case so cancelling never leaves the character
+   * a level higher.
+   */
+  onClose: (committed: boolean) => void;
 }
 
 function getAllRequirementsById(characterClass: BuilderClass) {
@@ -49,9 +56,6 @@ export function LevelUpFlow({ open, onClose }: LevelUpFlowProps) {
 
   const [stepIds, setStepIds] = useState<string[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
-
-
-
 
 
 
@@ -132,6 +136,17 @@ export function LevelUpFlow({ open, onClose }: LevelUpFlowProps) {
 
   const summary = state.characterBuild.derivedSheet;
 
+  function getStepLabel(id: string | undefined): string {
+    if (id === undefined) return "";
+    if (isHpStepId(id) !== null) return "Hit Points";
+    if (isSpellStepId(id)) return "Spells";
+    const req = allRequirements.get(id);
+    if (!req) return "";
+    if (req.kind === "subclass") return "Subclass";
+    if (req.kind === "asi-or-feat") return "Ability Scores or Feat";
+    return req.featureName;
+  }
+
   function renderActiveStep() {
     if (activeHpLevel !== null) {
       const conModifier = getAbilityModifier(summary.finalAttributes.constituicao);
@@ -171,9 +186,10 @@ export function LevelUpFlow({ open, onClose }: LevelUpFlowProps) {
       return (
         <SubclassStep
           level={req.level}
+          className={characterClass!.name}
           subclasses={characterClass!.subclasses}
           selectedSubclassId={state.selectedSubclassId}
-          onSelect={(id) => state.selectSubclass(id)}
+          onNavigateToSubclassScreen={() => onClose(true)}
         />
       );
     }
@@ -230,7 +246,7 @@ export function LevelUpFlow({ open, onClose }: LevelUpFlowProps) {
   }
 
   return (
-    <Dialog.Root open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
+    <Dialog.Root open={open} onOpenChange={(o) => { if (!o) onClose(false); }}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 flex items-stretch justify-center overflow-y-auto bg-black/70 p-0 backdrop-blur-md md:items-center md:p-6">
           <Dialog.Content className="relative flex h-[100dvh] w-full min-w-0 flex-col overflow-hidden border border-white/[0.08] bg-surface-nested text-foreground shadow-2xl shadow-black/60 outline-none focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70 md:h-[min(88vh,720px)] md:max-w-2xl md:rounded-xl">
@@ -242,14 +258,32 @@ export function LevelUpFlow({ open, onClose }: LevelUpFlowProps) {
               </button>
             </Dialog.Close>
 
-            <div className="flex items-center gap-1.5 border-b border-white/[0.07] px-5 py-3">
-              {steps.map((id, i) => (
-                <span key={id} aria-hidden="true"
-                  className={`h-2 w-2 rounded-full ${i === activeIndex ? "bg-primary" : isStepResolved(id) ? "bg-accent" : "bg-white/20"}`} />
-              ))}
-              <span className="ml-auto text-[10px] uppercase tracking-widest text-muted-foreground">
-                {steps.length > 0 ? `Step ${activeIndex + 1} of ${steps.length}` : "All resolved"}
-              </span>
+            <div className="border-b border-white/[0.07] px-5 pb-3 pt-4">
+              <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-brand-gold-alt">
+                Level Up · Level{" "}
+                <span translate="no" className="notranslate">{state.level}</span>
+              </p>
+              <div className="mt-0.5 flex items-baseline justify-between gap-3 pr-10">
+                <h2 translate="no" className="notranslate min-w-0 truncate font-serif text-xl font-bold tracking-wide text-foreground">
+                  {characterClass.name}
+                </h2>
+                <span className="shrink-0 text-[10px] uppercase tracking-widest text-muted-foreground">
+                  {steps.length > 0 ? `Step ${activeIndex + 1} of ${steps.length}` : "All resolved"}
+                </span>
+              </div>
+              {steps.length > 0 ? (
+                <div className="mt-2.5 flex items-center gap-2">
+                  <div className="flex flex-1 items-center gap-1.5">
+                    {steps.map((id, i) => (
+                      <span key={id} aria-hidden="true"
+                        className={`h-1.5 flex-1 rounded-full transition-colors duration-200 ${i === activeIndex ? "bg-primary" : isStepResolved(id) ? "bg-brand-green" : "bg-white/15"}`} />
+                    ))}
+                  </div>
+                  <span className="shrink-0 text-xs font-semibold text-subdued">
+                    {getStepLabel(activeId)}
+                  </span>
+                </div>
+              ) : null}
             </div>
 
             <div className="min-h-0 flex-1 overflow-y-auto p-5">
@@ -262,7 +296,7 @@ export function LevelUpFlow({ open, onClose }: LevelUpFlowProps) {
                 ← Back
               </button>
               {isLast ? (
-                <button type="button" onClick={onClose} disabled={!allResolved}
+                <button type="button" onClick={() => onClose(true)} disabled={!allResolved}
                   className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-foreground outline-none transition disabled:opacity-45 focus-visible:ring-2 focus-visible:ring-brand-crimson-alt/70">
                   Finish
                 </button>

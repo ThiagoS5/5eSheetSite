@@ -51,4 +51,23 @@ describe("ImportCharacterButton", () => {
     );
     expect((await listCharacters()).length).toBe(before);
   });
+
+  it("rejects oversized files without reading or writing them", async () => {
+    const user = userEvent.setup();
+    render(<ImportCharacterButton />);
+    const before = (await listCharacters()).length;
+
+    // A File whose reported size exceeds the 2 MB cap; the guard checks
+    // `file.size` before calling `.text()`, so no parse ever runs.
+    const huge = makeFile("{}");
+    Object.defineProperty(huge, "size", { value: 3 * 1024 * 1024 });
+
+    const input = screen.getByLabelText(/import character file/i);
+    await user.upload(input, huge);
+
+    await waitFor(() =>
+      expect(screen.getByRole("alert")).toHaveTextContent(/too large/i),
+    );
+    expect((await listCharacters()).length).toBe(before);
+  });
 });

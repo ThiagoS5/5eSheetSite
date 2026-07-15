@@ -24,6 +24,13 @@ export const builderStepNavigation: readonly BuilderStepNavigationItem[] = [
     marker: "RC",
   },
   {
+    slug: "subclasse",
+    href: "/builder/subclasse",
+    label: "Subclass",
+    shortLabel: "Subclass",
+    marker: "SU",
+  },
+  {
     slug: "antecedente",
     href: "/builder/antecedente",
     label: "Background",

@@ -3,11 +3,15 @@
 import {
   createContext,
   useContext,
+  useEffect,
   useState,
   type PropsWithChildren,
 } from "react";
 import { useStore } from "zustand";
-import { createCharacterStore } from "@/src/store/createCharacterStore";
+import {
+  createCharacterStore,
+  disposeCharacterStore,
+} from "@/src/store/createCharacterStore";
 import type { CharacterBuilderStore } from "@/src/store/characterStore.types";
 
 export type CharacterStoreApi = ReturnType<typeof createCharacterStore>;
@@ -22,7 +26,20 @@ export function CharacterStoreProvider({
   children,
   store: injectedStore,
 }: PropsWithChildren<CharacterStoreProviderProps>) {
-  const [store] = useState(() => injectedStore ?? createCharacterStore());
+  // `owns` distingue o store criado aqui (que devemos liberar) de um injetado
+  // por testes/consumidores externos (que não é nosso para descartar).
+  const [{ store, owns }] = useState(() =>
+    injectedStore
+      ? { store: injectedStore, owns: false }
+      : { store: createCharacterStore(), owns: true },
+  );
+
+  useEffect(() => {
+    if (!owns) return;
+    // Ao desmontar (ex.: trocar de grupo de rota), libera a subscription e o
+    // listener de `pagehide` do autosave para não vazar o store.
+    return () => disposeCharacterStore(store);
+  }, [store, owns]);
 
   return (
     <CharacterStoreContext.Provider value={store}>

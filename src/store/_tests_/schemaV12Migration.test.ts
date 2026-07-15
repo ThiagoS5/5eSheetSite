@@ -9,14 +9,14 @@ import {
 const legacyFixture = v5FixtureRaw as unknown as CharacterBuild;
 
 describe("schema v12 migration", () => {
-  it("bumps the schema version to 13", () => {
-    expect(CHARACTER_BUILD_SCHEMA_VERSION).toBe(13);
+  it("bumps the schema version to at least 13", () => {
+    expect(CHARACTER_BUILD_SCHEMA_VERSION).toBeGreaterThanOrEqual(13);
   });
 
   it("defaults portraitId to empty string for older builds", () => {
     const build = normalizeCharacterBuild(legacyFixture);
 
-    expect(build.exportMetadata.schemaVersion).toBe(13);
+    expect(build.exportMetadata.schemaVersion).toBe(CHARACTER_BUILD_SCHEMA_VERSION);
     expect(build.draft.description.portraitId).toBe("");
   });
 

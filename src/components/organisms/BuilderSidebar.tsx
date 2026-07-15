@@ -47,7 +47,7 @@ interface SidebarStepGroup {
   childSlugs: BuilderStepSlug[];
 }
 
-const classGroupSlugs: BuilderStepSlug[] = ["classe", "recursos-classe"];
+const classGroupSlugs: BuilderStepSlug[] = ["classe", "recursos-classe", "subclasse"];
 const speciesGroupSlugs: BuilderStepSlug[] = ["especie", "detalhes-especie"];
 const groupedSlugs = new Set<BuilderStepSlug>([
   ...classGroupSlugs,
@@ -74,6 +74,7 @@ const sidebarGroups: SidebarStepGroup[] = [
 const stepIconBySlug: Record<BuilderStepSlug, string> = {
   classe: "fa-solid fa-wand",
   "recursos-classe": "fa-solid fa-wand-sparkles",
+  subclasse: "fa-solid fa-shield-halved",
   antecedente: "fa-solid fa-scroll-old",
   especie: "fa-solid fa-dragon",
   "detalhes-especie": "fa-solid fa-eye-evil",
