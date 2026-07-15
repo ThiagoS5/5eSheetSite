@@ -96,7 +96,7 @@ file is the exception (`markdownEditor.dark.css` is the precedent), never the de
 
 | You are writing... | It goes in... | Test goes in... |
 | --- | --- | --- |
-| D&D rule math (anything combining two rule inputs: attribute+PB, item+DEX, level+table) | `rules/<topic>Rules.ts` — pure, no React | `rules/<topic>Rules.test.ts` or `rules/_tests_/` |
+| D&D rule math (anything combining two rule inputs: attribute+PB, item+DEX, level+table) | `rules/<topic>Rules.ts` — pure, no React | `rules/_tests_/` |
 | Normalization of raw 5e/foundry data into builder models | `src/adapters/` | `src/adapters/_tests_/` |
 | Export to an external format (Foundry, PDF) | adapter: `src/utils/foundryAdapter.ts`, `src/adapters/pdfAdapter*` | mirrored `_tests_/` |
 | Canonical JSON export/import | `src/utils/canonicalExport.ts` | `src/utils/_tests_/` |
@@ -115,9 +115,9 @@ raw-data parsing in the UI layer; React imports in `rules/`.
 ## 4. Tests
 
 - Framework: Vitest 4 + Testing Library + jsdom (`vitest.config.ts`, `vitest.setup.ts`).
-- Convention: a `_tests_/` folder **next to the code it tests**, mirroring the module name
-  (`rules/` also allows sibling `*.test.ts` files — both patterns exist; prefer `_tests_/`
-  for new code).
+- Convention: a `_tests_/` folder **next to the code it tests**, mirroring the module name.
+  This is the single pattern — the legacy sibling `*.test.ts` files in `rules/` were
+  consolidated into `rules/_tests_/` on 2026-07-15; do not create sibling test files.
 - Rule modules are tested with real 5e 2024 numbers, not mocks (master plan §7.4).
 - Schema migrations keep one frozen fixture per historical schema version in
   `src/store/_tests_/fixtures/` — fixtures are never "updated" to the new shape.
