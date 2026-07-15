@@ -1,9 +1,9 @@
-import type { BreakdownPart, BuilderEquipmentOption } from "@/types/builder";
+import type { BreakdownPart, BuilderEquipmentOption } from "@/src/types/builder";
 import type {
   AttributeBonuses,
   AttributeKey,
   CharacterAttributes,
-} from "@/types/dnd";
+} from "@/src/types/dnd";
 
 export function getAbilityModifier(score: number): number {
   return Math.floor((score - 10) / 2);

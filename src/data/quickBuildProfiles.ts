@@ -1,4 +1,4 @@
-import type { CharacterAttributes } from "@/types/dnd";
+import type { CharacterAttributes } from "@/src/types/dnd";
 
 export interface QuickBuildProfile {
   classId: string;

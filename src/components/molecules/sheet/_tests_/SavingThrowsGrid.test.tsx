@@ -5,7 +5,7 @@ import "@testing-library/jest-dom/vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, it, expect } from "vitest";
 import { SavingThrowsGrid } from "@/src/components/molecules/sheet/SavingThrowsGrid";
-import type { SheetSavingThrow } from "@/types/builder";
+import type { SheetSavingThrow } from "@/src/types/builder";
 
 const saves: SheetSavingThrow[] = [
   { attributeKey: "forca", label: "Strength", abbr: "STR", modifier: -1, isProficient: false },

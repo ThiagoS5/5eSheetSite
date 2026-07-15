@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { createFoundryCharacterExport } from "@/src/utils/foundryAdapter";
 import type { CharacterBuilderState } from "@/src/store/characterStore.types";
-import type { CharacterSheetSummary } from "@/types/builder";
+import type { CharacterSheetSummary } from "@/src/types/builder";
 
 const state: CharacterBuilderState = {
   ruleset: "2024",

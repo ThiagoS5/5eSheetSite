@@ -1,4 +1,4 @@
-import type { AttributeKey } from "@/types/dnd";
+import type { AttributeKey } from "@/src/types/dnd";
 
 export type SpellSchool =
   | "Abjuration"

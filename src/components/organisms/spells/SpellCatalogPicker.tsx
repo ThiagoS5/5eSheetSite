@@ -6,7 +6,7 @@ import { Skeleton } from "@/src/components/ui/skeleton";
 import { ChoiceCounter } from "@/src/components/molecules/ChoiceCounter";
 import { cn } from "@/src/lib/utils";
 import { focusRing } from "@/src/lib/styles";
-import type { CharacterSpellcastingChoices, BuilderSpell, SpellSchool } from "@/types/spells";
+import type { CharacterSpellcastingChoices, BuilderSpell, SpellSchool } from "@/src/types/spells";
 
 interface SpellCatalogPickerProps {
   className: string;

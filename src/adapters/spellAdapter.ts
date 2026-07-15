@@ -1,5 +1,5 @@
 import { formatTaggedTextAsPlain, toSlug } from "@/src/adapters/fiveEToolsAdapter";
-import type { BuilderSpell, SpellSchool } from "@/types/spells";
+import type { BuilderSpell, SpellSchool } from "@/src/types/spells";
 
 export interface RawSpell {
   name: string;

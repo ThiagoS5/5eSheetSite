@@ -6,7 +6,7 @@ import {
 } from "@/src/services/ruleService";
 import { getItemCatalog } from "@/src/services/itemCatalogService";
 import { BuilderStepPanel } from "@/src/components/pages/BuilderStepPanel";
-import type { BuilderStepSlug } from "@/types/builder";
+import type { BuilderStepSlug } from "@/src/types/builder";
 
 const stepContent: Record<BuilderStepSlug, { title: string; description: string }> = {
   classe: {

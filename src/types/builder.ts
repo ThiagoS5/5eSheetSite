@@ -3,10 +3,10 @@ import type {
   AttributeKey,
   CharacterAttributes,
   Ruleset,
-} from "@/types/dnd";
+} from "@/src/types/dnd";
 import type { CoinPouch } from "@/src/types/characterBuild";
-import type { RulesTextNode } from "@/types/rulesText";
-import type { CharacterSpellcastingSummary } from "@/types/spells";
+import type { RulesTextNode } from "@/src/types/rulesText";
+import type { CharacterSpellcastingSummary } from "@/src/types/spells";
 
 export type BuilderStepSlug =
   | "classe"

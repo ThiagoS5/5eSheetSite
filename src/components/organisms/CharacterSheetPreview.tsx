@@ -11,7 +11,7 @@ import { getAbilityModifier } from "@/src/adapters/characterDerivedAdapter";
 import { selectDerivedSheet } from "@/src/store/characterSelectors";
 import { useCharacterBuilderState } from "@/src/store/useCharacterBuilderState";
 import { useCharacterStore } from "@/src/store/useCharacterStore";
-import { ATTRIBUTE_LABELS, type AttributeKey } from "@/types/dnd";
+import { ATTRIBUTE_LABELS, type AttributeKey } from "@/src/types/dnd";
 import { TagList } from "@/src/components/molecules/TagList";
 
 const attributes = Object.keys(ATTRIBUTE_LABELS) as AttributeKey[];

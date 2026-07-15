@@ -1,8 +1,8 @@
 import baseItemsData from "@/public/data/items-base.json";
 import itemsData from "@/public/data/items.json";
 import { normalizeCatalogItem } from "@/src/adapters/itemCatalogAdapter";
-import type { CatalogItem } from "@/types/builder";
-import type { Raw5eItem } from "@/types/fiveETools";
+import type { CatalogItem } from "@/src/types/builder";
+import type { Raw5eItem } from "@/src/types/fiveETools";
 
 const rawItems = (itemsData as { item: Raw5eItem[] }).item;
 const rawBaseItems = (baseItemsData as { baseitem: Raw5eItem[] }).baseitem;

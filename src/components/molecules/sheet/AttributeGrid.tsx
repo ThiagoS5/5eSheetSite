@@ -1,4 +1,4 @@
-import type { SheetAttribute } from "@/types/builder";
+import type { SheetAttribute } from "@/src/types/builder";
 import { cn } from "@/src/lib/utils";
 
 interface AttributeGridProps {

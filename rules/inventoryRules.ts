@@ -6,7 +6,7 @@ import type {
   BuilderClass,
   BuilderEquipmentPackageItem,
   BuilderEquipmentOption,
-} from "@/types/builder";
+} from "@/src/types/builder";
 
 export interface CarriedEquipmentEntry {
   item: BuilderEquipmentOption;

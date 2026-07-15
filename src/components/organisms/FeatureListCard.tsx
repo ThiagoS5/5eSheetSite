@@ -4,7 +4,7 @@ import { useState } from "react";
 import { parseRulesText } from "@/src/adapters/rulesTextAst";
 import { RulesTextView } from "@/src/components/molecules/RulesTextView";
 import { cn } from "@/src/lib/utils";
-import type { BuilderFeature } from "@/types/builder";
+import type { BuilderFeature } from "@/src/types/builder";
 
 interface FeatureListCardProps {
   title: string;

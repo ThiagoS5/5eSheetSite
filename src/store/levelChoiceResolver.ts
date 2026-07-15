@@ -2,8 +2,8 @@ import { getLevelRequirements, type LevelChoiceRequirement } from "@/rules/level
 import { getFeats, getSubclassesForClass } from "@/src/services/ruleService";
 import type { CharacterBuilderState } from "@/src/store/characterStore.types";
 import type { AsiOrFeatChoice } from "@/src/types/characterBuild";
-import type { BuilderClass, BuilderFeature } from "@/types/builder";
-import type { AttributeBonuses, AttributeKey } from "@/types/dnd";
+import type { BuilderClass, BuilderFeature } from "@/src/types/builder";
+import type { AttributeBonuses, AttributeKey } from "@/src/types/dnd";
 import { calculateFinalAttributes } from "@/src/adapters/characterDerivedAdapter";
 import { ASI_FEAT_ID, getFeatPrerequisiteStatus } from "@/src/adapters/featCatalog";
 

@@ -3,7 +3,7 @@ import type {
   BuilderClass,
   BuilderFeat,
   SheetFeature,
-} from "@/types/builder";
+} from "@/src/types/builder";
 import type { AsiOrFeatChoice } from "@/src/types/characterBuild";
 
 

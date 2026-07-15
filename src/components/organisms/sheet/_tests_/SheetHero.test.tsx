@@ -5,7 +5,7 @@ import "@testing-library/jest-dom/vitest";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { SheetHero } from "@/src/components/organisms/sheet/SheetHero";
-import type { CharacterSheetSummary } from "@/types/builder";
+import type { CharacterSheetSummary } from "@/src/types/builder";
 
 vi.mock("@/src/components/molecules/LevelUpButton", () => ({
   LevelUpButton: () => <button type="button">Level Up</button>,

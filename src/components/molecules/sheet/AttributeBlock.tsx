@@ -1,4 +1,4 @@
-import type { SheetAttribute } from "@/types/builder";
+import type { SheetAttribute } from "@/src/types/builder";
 import { cn } from "@/src/lib/utils";
 import { StatFrame } from "@/src/components/atoms/sheet/frames/StatFrame";
 

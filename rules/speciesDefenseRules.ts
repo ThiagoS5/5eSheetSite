@@ -1,4 +1,4 @@
-import type { BuilderSpecies } from "@/types/builder";
+import type { BuilderSpecies } from "@/src/types/builder";
 
 export function deriveSpeciesResistances(
   species: BuilderSpecies | undefined,

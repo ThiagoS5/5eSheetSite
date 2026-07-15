@@ -7,15 +7,15 @@ import {
   HeroChoiceCard,
   type HeroChoiceTheme,
 } from "@/src/components/molecules/HeroChoiceCard";
-import type { BuilderBackground } from "@/types/builder";
-import type { RulesTextNode } from "@/types/rulesText";
+import type { BuilderBackground } from "@/src/types/builder";
+import type { RulesTextNode } from "@/src/types/rulesText";
 import { parseRulesText } from "@/src/adapters/rulesTextAst";
 import { RulesTextView } from "@/src/components/molecules/RulesTextView";
 import {
   ATTRIBUTE_LABELS,
   type AttributeBonuses,
   type AttributeKey,
-} from "@/types/dnd";
+} from "@/src/types/dnd";
 
 interface BackgroundCardProps {
   background: BuilderBackground;

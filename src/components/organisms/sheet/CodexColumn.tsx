@@ -1,6 +1,6 @@
 "use client";
 
-import type { CharacterDescription, CharacterSheetSummary } from "@/types/builder";
+import type { CharacterDescription, CharacterSheetSummary } from "@/src/types/builder";
 import { cn } from "@/src/lib/utils";
 import { truncate } from "@/src/utils/truncate";
 

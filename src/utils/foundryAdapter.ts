@@ -5,9 +5,9 @@ import type {
   BuilderEquipmentOption,
   CharacterSheetSummary,
   SheetFeature,
-} from "@/types/builder";
-import type { AttributeKey } from "@/types/dnd";
-import type { BuilderSpell } from "@/types/spells";
+} from "@/src/types/builder";
+import type { AttributeKey } from "@/src/types/dnd";
+import type { BuilderSpell } from "@/src/types/spells";
 
 type AbilityAbbreviation = "str" | "dex" | "con" | "int" | "wis" | "cha";
 type FoundryItemType =

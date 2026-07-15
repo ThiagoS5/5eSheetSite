@@ -4,8 +4,8 @@ import { useState } from "react";
 import { ABILITY_SCORE_CAP, EPIC_BOON_ABILITY_CAP } from "@/src/adapters/characterDerivedAdapter";
 import { SKILL_NAMES } from "@/rules/skillRules";
 import type { AsiOrFeatStepProps } from "@/src/components/organisms/levelup/types";
-import type { BuilderFeat } from "@/types/builder";
-import type { AttributeKey } from "@/types/dnd";
+import type { BuilderFeat } from "@/src/types/builder";
+import type { AttributeKey } from "@/src/types/dnd";
 
 type Tab = "asi" | "feat";
 type AsiMode = "one" | "two";

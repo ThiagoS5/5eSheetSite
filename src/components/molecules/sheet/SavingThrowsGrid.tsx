@@ -1,4 +1,4 @@
-import type { SheetSavingThrow } from "@/types/builder";
+import type { SheetSavingThrow } from "@/src/types/builder";
 
 interface SavingThrowsGridProps {
   savingThrows: SheetSavingThrow[];

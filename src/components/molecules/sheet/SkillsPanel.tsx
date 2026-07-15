@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import type { SheetSkill } from "@/types/builder";
-import type { AttributeKey } from "@/types/dnd";
+import type { SheetSkill } from "@/src/types/builder";
+import type { AttributeKey } from "@/src/types/dnd";
 import type { SkillTrainingLevel } from "@/src/types/characterBuild";
 import { useCharacterStore } from "@/src/store/useCharacterStore";
 import { cn } from "@/src/lib/utils";

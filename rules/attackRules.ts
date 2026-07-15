@@ -3,8 +3,8 @@ import type {
   BuilderEquipmentOption,
   SheetWeapon,
   WeaponRangeType,
-} from "@/types/builder";
-import type { AttributeKey, CharacterAttributes } from "@/types/dnd";
+} from "@/src/types/builder";
+import type { AttributeKey, CharacterAttributes } from "@/src/types/dnd";
 
 type AttackWeapon = Pick<
   BuilderEquipmentOption,

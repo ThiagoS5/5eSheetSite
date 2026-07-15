@@ -5,7 +5,7 @@ import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { EquipmentChecklist } from "@/src/components/organisms/EquipmentChecklist";
-import type { BuilderClass, BuilderBackground } from "@/types/builder";
+import type { BuilderClass, BuilderBackground } from "@/src/types/builder";
 
 const selectedClass: BuilderClass = {
   id: "rogue-xphb",

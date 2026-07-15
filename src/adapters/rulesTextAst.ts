@@ -2,7 +2,7 @@ import type {
   RulesTextInlineNode,
   RulesTextNode,
   RulesTextRefType,
-} from "@/types/rulesText";
+} from "@/src/types/rulesText";
 
 const REF_TAGS: ReadonlySet<string> = new Set<RulesTextRefType>([
   "spell",

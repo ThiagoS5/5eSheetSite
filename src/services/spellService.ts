@@ -15,7 +15,7 @@ import xgeData from "@/public/data/spells/spells-xge.json";
 import xphbData from "@/public/data/spells/spells-xphb.json";
 import spellSourcesData from "@/public/data/spells/sources.json";
 import { normalizeSpell, type RawSpell } from "@/src/adapters/spellAdapter";
-import type { BuilderSpell, SpellCatalogFilter } from "@/types/spells";
+import type { BuilderSpell, SpellCatalogFilter } from "@/src/types/spells";
 
 interface SpellFile {
   spell?: RawSpell[];

@@ -1,13 +1,13 @@
 import { getSpellById } from "@/src/services/spellService";
 import { getAbilityModifier } from "@/src/adapters/characterDerivedAdapter";
-import type { BuilderClass } from "@/types/builder";
-import { ATTRIBUTE_LABELS, type AttributeKey, type CharacterAttributes } from "@/types/dnd";
+import type { BuilderClass } from "@/src/types/builder";
+import { ATTRIBUTE_LABELS, type AttributeKey, type CharacterAttributes } from "@/src/types/dnd";
 import type {
   BuilderSpell,
   CharacterSpellcastingChoices,
   CharacterSpellcastingSummary,
   SpellSlotSummary,
-} from "@/types/spells";
+} from "@/src/types/spells";
 
 const ATTRIBUTE_BY_LABEL: Record<string, AttributeKey> = {
   STR: "forca",

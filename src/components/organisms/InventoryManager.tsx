@@ -15,7 +15,7 @@ import {
   filterCatalog,
   type CatalogFilterCriteria,
 } from "@/rules/itemCatalogFilters";
-import type { CatalogItem, ItemCategory } from "@/types/builder";
+import type { CatalogItem, ItemCategory } from "@/src/types/builder";
 import type { InventoryEntry } from "@/src/types/characterBuild";
 import { Cog, Minus, Plus, ShieldCheck, ShieldOff, Trash2 } from "lucide-react";
 import { toast } from "sonner";

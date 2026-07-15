@@ -14,7 +14,7 @@ import type {
   BuilderEquipmentPackage,
   BuilderEquipmentPackageItem,
   BuilderSpecies,
-} from "@/types/builder";
+} from "@/src/types/builder";
 
 interface EquipmentSourceKit {
   id: string;

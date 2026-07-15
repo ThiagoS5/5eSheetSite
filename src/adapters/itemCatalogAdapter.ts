@@ -5,8 +5,8 @@ import type {
   InventoryArmorProfile,
   InventoryItemType,
   ItemCategory,
-} from "@/types/builder";
-import type { Raw5eItem } from "@/types/fiveETools";
+} from "@/src/types/builder";
+import type { Raw5eItem } from "@/src/types/fiveETools";
 
 const TYPE_TO_CATEGORY: Record<string, ItemCategory> = {
   M: "Weapon", R: "Weapon",

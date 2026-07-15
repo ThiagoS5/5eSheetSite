@@ -13,15 +13,15 @@ import type {
   BuilderSpecies,
   BuilderSubclass,
   SpeciesDamageResistance,
-} from "@/types/builder";
+} from "@/src/types/builder";
 import {
   ATTRIBUTE_ABBREVIATION_MAP,
   ATTRIBUTE_LABELS,
   type AttributeKey,
-} from "@/types/dnd";
+} from "@/src/types/dnd";
 import { applyClassCardFraming } from "@/src/data/classCardArt";
 import { astToPlainText, parseRulesText } from "@/src/adapters/rulesTextAst";
-import type { RulesTextNode } from "@/types/rulesText";
+import type { RulesTextNode } from "@/src/types/rulesText";
 import type {
   Raw5eBackground,
   Raw5eClass,
@@ -34,7 +34,7 @@ import type {
   Raw5eStartingEquipmentItem,
   Raw5eSubclass,
   Raw5eWeightedAbilityChoice,
-} from "@/types/fiveETools";
+} from "@/src/types/fiveETools";
 
 const SKILL_LABELS: Record<string, string> = {
   acrobatics: "Acrobatics",

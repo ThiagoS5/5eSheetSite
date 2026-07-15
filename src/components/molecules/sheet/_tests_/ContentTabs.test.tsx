@@ -5,7 +5,7 @@ import "@testing-library/jest-dom/vitest";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, render, screen, fireEvent, within } from "@testing-library/react";
 import { ContentTabs } from "@/src/components/molecules/sheet/ContentTabs";
-import type { CharacterSheetSummary, CharacterDescription } from "@/types/builder";
+import type { CharacterSheetSummary, CharacterDescription } from "@/src/types/builder";
 
 const adjustCoin = vi.fn();
 const setCoin = vi.fn();

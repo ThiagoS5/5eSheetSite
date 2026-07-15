@@ -1,4 +1,4 @@
-import type { BuilderEquipmentOption } from "@/types/builder";
+import type { BuilderEquipmentOption } from "@/src/types/builder";
 
 interface EquipmentCardProps {
   equipment: BuilderEquipmentOption[];

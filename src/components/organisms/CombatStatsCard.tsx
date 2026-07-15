@@ -1,5 +1,5 @@
 import { StatBadge } from "@/src/components/atoms/StatBadge";
-import type { CharacterSheetSummary } from "@/types/builder";
+import type { CharacterSheetSummary } from "@/src/types/builder";
 
 interface CombatStatsCardProps {
   summary: CharacterSheetSummary;

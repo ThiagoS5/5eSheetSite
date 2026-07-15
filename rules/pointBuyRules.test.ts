@@ -11,7 +11,7 @@ import {
   isPointBuyComplete,
   isValidPointBuyScore,
 } from "@/rules/pointBuyRules";
-import type { CharacterAttributes } from "@/types/dnd";
+import type { CharacterAttributes } from "@/src/types/dnd";
 
 const baseAttributes: CharacterAttributes = {
   forca: 8,

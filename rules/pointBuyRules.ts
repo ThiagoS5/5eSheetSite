@@ -1,4 +1,4 @@
-import type { AttributeKey, CharacterAttributes } from "@/types/dnd";
+import type { AttributeKey, CharacterAttributes } from "@/src/types/dnd";
 
 export const POINT_BUY_BUDGET = 27;
 export const POINT_BUY_MIN_SCORE = 8;

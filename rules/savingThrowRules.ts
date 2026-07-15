@@ -1,7 +1,7 @@
 import { getAbilityModifier } from "@/src/adapters/characterDerivedAdapter";
-import type { SheetSavingThrow } from "@/types/builder";
-import { ATTRIBUTE_LABELS } from "@/types/dnd";
-import type { AttributeKey, CharacterAttributes } from "@/types/dnd";
+import type { SheetSavingThrow } from "@/src/types/builder";
+import { ATTRIBUTE_LABELS } from "@/src/types/dnd";
+import type { AttributeKey, CharacterAttributes } from "@/src/types/dnd";
 
 const ATTRIBUTE_KEYS: AttributeKey[] = [
   "forca",

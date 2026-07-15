@@ -5,7 +5,7 @@ import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { AttributeEditor } from "@/src/components/organisms/AttributeEditor";
-import type { CharacterAttributes } from "@/types/dnd";
+import type { CharacterAttributes } from "@/src/types/dnd";
 
 const pointBuyAttributes: CharacterAttributes = {
   forca: 15,

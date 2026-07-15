@@ -1,6 +1,6 @@
 import { getAbilityModifier } from "@/src/adapters/characterDerivedAdapter";
 import type { HpRollChoice } from "@/src/types/characterBuild";
-import type { BreakdownPart } from "@/types/builder";
+import type { BreakdownPart } from "@/src/types/builder";
 
 export interface HitPointsInput {
   hitDie: number;

@@ -2,7 +2,9 @@
 
 > **Documento mestre do projeto.** Este arquivo consolida visão, estado atual, arquitetura-alvo, contratos de domínio, roadmap por fases e critérios de aceite do Forge & Fate. Ele complementa (não substitui) o `MANIFESTO.md`: o Manifesto define a estrela-guia; este plano define **o caminho ordenado até ela**. Ao concluir uma fase, atualize a seção 2 (Estado Atual) e a tabela da seção 22.
 >
-> **Data da auditoria:** 2026-07-06 · **Schema atual:** `CHARACTER_BUILD_SCHEMA_VERSION = 10`
+> **⚠️ Nota de atualização (2026-07-15):** as **Fases 1–9 estão concluídas** (status por fase na seção 22) e o schema atual é `CHARACTER_BUILD_SCHEMA_VERSION = 14`. As seções 2–21 descrevem a auditoria de planejamento de 2026-07-06 (schema v10) e permanecem como **registro histórico e racional das decisões** — para o estado atual consolidado, leia `AUDITORIA.md` e `project-delivery-ruler.md` nesta mesma pasta (`guides/`). Em conflito, vale a ordem: `MANIFESTO.md` → `project-delivery-ruler.md` → este plano.
+>
+> **Data da auditoria original:** 2026-07-06 · **Schema na época:** v10 · **Schema atual:** v14
 
 ---
 
@@ -148,7 +150,7 @@ src/utils/           adapters de saída: foundryAdapter, [novos] canonicalExport
 
 ## 5. Contrato de Domínio
 
-### 5.1 `CharacterBuild` (auditado — `src/types/characterBuild.ts`, schema v5)
+### 5.1 `CharacterBuild` (auditado na época em schema v5 — hoje v14; as "extensões planejadas" abaixo já aterrissaram)
 
 O contrato existente já tem os cinco blocos exigidos. Abaixo, o papel de cada um e as extensões planejadas (cada extensão = bump de schema + migração):
 
@@ -699,13 +701,15 @@ Etapa 9 (Conclusão) e `CharacterSheetPage` ganham: Exportar JSON · Exportar Fo
 - **Arquivos:** `src/data/conceptGlossary.ts`, `src/data/quickBuildProfiles.ts` (kit recomendado por classe: perícias, atributos sugeridos, escolhas de recursos, equipamento padrão), `molecules/HelpHint.tsx`, `molecules/StepIntroCard.tsx`, quiz na etapa Classe, dialog inicial no `Dashboard.tsx`, preferência `forge-fate-preferences:v1`, `choices.beginnerMode` (**bump v7** — ou agrupar com v6 se fases 2–3 aterrissarem juntas).
 - **Tarefas extras (DDB — seção 28.1 nº 2 e 28.2 nº 6):** Construção Rápida aplica o `quickBuildProfile` da classe pelas **mesmas ações do store** e navega direto à etapa 8 (nome) — a engine valida como ficha normal; quiz de 5 perguntas randomizadas destacando exatamente 2 classes (principal em verde, segunda opção em âmbar; nunca travando as demais).
 - **Aceite:** iniciante completa ficha só com o guia; Construção Rápida gera ficha jogável sem pendência bloqueante em < 1 minuto para cada classe 2024; veterano com modo off não vê nada extra; cobertura de todos os conceitos da seção 9.4; tudo acessível por teclado.
-- **Dependências:** nenhuma dura (pode paralelizar com F2). **Riscos:** excsesso de conteúdo didático poluindo a UI para veteranos → tudo condicionado ao toggle e colapável.
+- **Dependências:** nenhuma dura (pode paralelizar com F2). **Riscos:** excesso de conteúdo didático poluindo a UI para veteranos → tudo condicionado ao toggle e colapsável.
+- **✅ Status — concluída:** modal inicial com Guiado/Padrão/Construção Rápida (`Dashboard.tsx`, `quickBuildProfiles.ts`), glossário (`conceptGlossary.ts`), `HelpHint`/`StepIntroCard`, quiz de classe (`classQuiz.ts`, `guidedChoiceQuiz.ts`) e preferência persistida.
 
 ### Fase 4 — Feats e ASI completos
 - **Objetivo:** Origin/General/Epic Boons categorizados; pré-requisitos; **efeitos aplicados**.
 - **Arquivos:** `src/adapters/featCatalog.ts` (+`category`, +`applyFeatEffects(build, feat)` para ASI parcial/velocidade/iniciativa/proficiências), `characterSelectors.ts` (compor efeitos), `AsiOrFeatStep` (filtro por categoria/pré-requisito, explicação ASI vs. feat), fix do origin feat do antecedente (seção 13).
 - **Aceite:** feat com +1 atributo reflete em tudo; Epic Boon só nível 19+; pré-requisito bloqueia com motivo visível; origin feat com descrição correta.
 - **Dependências:** F1 (composição de bônus), F2 (níveis). **Riscos:** efeitos textuais não-mecanizáveis → aplicar só efeitos estruturados; resto vira feature textual na ficha (decisão registrada, não bug).
+- **✅ Status — fundação concluída:** catálogo com categorias/pré-requisitos/caps (`featCatalog.ts`), exclusividade ASI×feat no level-up, efeitos mecânicos curados aplicados. **Pendente (registrado no ruler):** ampliar a mecanização de efeitos além do subconjunto curado.
 
 ### Fase 5 — Magias
 - **Objetivo:** domínio de spells completo (seção 15).
@@ -713,12 +717,14 @@ Etapa 9 (Conclusão) e `CharacterSheetPage` ganham: Exportar JSON · Exportar Fo
 - **Tarefas extras (DDB — seção 28.2 nº 5 e 10):** busca por nome + filtros por círculo/escola/fonte com **badges de fonte** nos cards (respeitando `creationPreferences.activeSources`); skeletons (`ui/skeleton.tsx`) durante carregamento sob demanda do catálogo.
 - **Aceite:** testes da seção 15.3; conjurador exporta magias no Foundry; iniciante entende slots; catálogo de centenas de magias navegável com busca/filtros e contadores ("2 de 3 truques").
 - **Dependências:** F1, F2, F4 (feats de magia opcionais). **Riscos:** volume de dados (622 KB PHB + 581 KB XPHB) → carregar sob demanda por classe; tabelas de slots divergentes (warlock) → módulo por tipo de caster.
+- **✅ Status — concluída:** `spellService`, `spellAdapter`, `rules/spellcastingRules.ts`, `types/spells.ts`, `SpellCatalogPicker` e `SpellsStep` no level-up; CD/ataque/slots/limites derivados no summary e exportados.
 
 ### Fase 5b — Play mode da ficha
 - **Objetivo:** a ficha vira mesa de jogo: PV atual, descansos, usos de recursos, slots gastos, inspiração, overrides sinalizados (seção 28.1 nº 8 e 9).
 - **Arquivos:** novo bloco `playState` em `CharacterBuild` (**bump v9** — seção 5.1), `rules/restRules.ts` (descanso curto/longo: o que reseta, puro e testado), ações no store (`applyDamage`, `heal`, `setTempHp`, `spendSlot`, `useResource`, `shortRest`, `longRest`, `toggleInspiration`, `setOverride`), `CharacterSheetPage` + `organisms/sheet/*` (tracker de PV com dano/cura/temp, checkboxes de usos por recurso, botões de descanso, badge de inspiração — `DeathSavesOverlay` e `ConditionsPanel` já existem e passam a ler/escrever `playState`).
 - **Aceite:** dano/cura nunca produz PV inválido (clamp 0..máx+temp); descanso longo restaura PV/slots/recursos conforme regra 2024 e descanso curto permite gastar dados de vida; overrides de PV máx/CA exibem badge "manual" com reset; tudo persiste no Vault e sobrevive a reload.
 - **Dependências:** F2 (recursos por nível), F5 (slots). **Riscos:** misturar `playState` com `choices` → bloco separado por construção; regras de reset por recurso variam → tabela de recuperação (`shortRest`/`longRest`) no dado normalizado do recurso.
+- **✅ Status — concluída:** bloco `playState` no contrato, `rules/restRules.ts`, ações de dano/cura/descanso/slots/recursos/condições/inspiração/overrides, painéis em `organisms/sheet/*`, notas e diário de campanha persistidos.
 
 ### Fase 6 — Inventário real
 
@@ -745,10 +751,12 @@ Etapa 9 (Conclusão) e `CharacterSheetPage` ganham: Exportar JSON · Exportar Fo
 - **Arquivos:** `src/utils/canonicalExport.ts`, `types/export.ts`, UI no Dashboard/Conclusão/ficha; `CharacterDescription` + `personalDetailsSchema.ts` estendidos (**bump v11**: alinhamento, fé, altura, peso, idade, olhos, cabelo, pele, `portraitId` — todos opcionais); sugestões de personalidade por antecedente (dados de `backgrounds.json`) com botão "sugerir"; galeria local de retratos autorais em `public/portraits/` (seleção na etapa 8, exibição no `CharacterCard` e no PDF); gerador de nome aleatório por espécie (`src/data/nameGenerator.ts`).
 - **Aceite:** round-trip sem perda (incluindo os campos novos); import de schema antigo migra; import inválido falha com mensagem clara; retrato aparece no Dashboard; sugestão de personalidade respeita o antecedente selecionado e permanece editável.
 - **Dependências:** contrato estável (após F5b/F6 — ou seja, bumps v6–v10 aterrissados). Upload de retrato próprio: pós-v1.
+- **✅ Status — núcleo concluído:** `canonicalExport.ts` + `types/export.ts` com envelope versionado e round-trip testado (inclusive schemas legados); import no Dashboard grava no Vault com `saveId` novo; descrição rica (detalhes físicos, personalidade sugerida, galeria de retratos, gerador de nomes) entregue. **Pendente (P0 no ruler):** ação de export JSON canônico como UI de primeira classe em Vault/conclusão/ficha.
 
 ### Fase 9 — PDF
 - **Objetivo:** seção 19.3. **Arquivos:** `src/adapters/pdfAdapter.ts` (+dep `@react-pdf/renderer`).
 - **Aceite:** smoke tests; PDF legível de conjurador e marcial, incluindo retrato e descrição rica. **Dependências:** F5, F6, F7, F8 (descrição estendida e `portraitId` entram no PDF).
+- **✅ Status — concluída:** `pdfAdapter` + `pdfAdapterDocument` com layout estilo ficha oficial (moedas, passivas, notas em markdown) e testes-matriz (marcial, conjurador, alto nível, descrição rica, inventário, retrato, notas longas). **Pendente (baixo, no ruler):** QA visual de impressão com PDFs reais.
 
 ### Fase 10 — Preparação para multiclasse (design, não implementação)
 - **Objetivo:** garantir que nada das fases anteriores impeça `classLevels[]`.
@@ -765,7 +773,7 @@ Etapa 9 (Conclusão) e `CharacterSheetPage` ganham: Exportar JSON · Exportar Fo
 - `scripts/prune-data.js` / `build-player-lore.js`: documentar no README quando rodar e o que produzem.
 - Tipar retorno de `validateBuilderStep` como `Pendency[]` (F1) mantendo compat com strings na UI até migrar.
 - Revisar `xp/xpThreshold` (hoje XP é *derivado do nível* — decidir se XP manual entra no escopo ou se remove do summary).
-- Auditar `types/` (raiz) vs `src/types/` — unificar convenção de import (`@/types` vs `@/src/types`).
+- ~~Auditar `types/` (raiz) vs `src/types/` — unificar convenção de import~~ — **resolvido 2026-07-15**: contratos consolidados em `src/types/` (import `@/src/types/*`); `hooks/` da raiz também migrou para `src/hooks/` (ver `guides/ORGANIZATION.md` §5).
 - Adicionar script `test:watch` e `format` ao `package.json` (DX).
 - `README.md`: garantir que não menciona Vite e aponta para este plano + MANIFESTO.
 
@@ -847,6 +855,9 @@ Lista fechada de bibliotecas aprovadas para o roadmap (critério global nº 8 �
 | `cmdk` | `^1.1.1` | Busca/combobox dos catálogos (base do componente `Command` do shadcn) | F5/F6 |
 | `match-sorter` | `^8.3.0` | Ranking de resultados de busca (tolerância a acentos, ordenação por relevância) | F5/F6 |
 | `motion` | `^12.42.2` | Animação da rolagem 4d6, transições de etapa e drawer mobile | F1/F2 |
+| `dompurify` | `^3.4.12` | Sanitização do preview de notas em markdown (defesa XSS) — reverte a rejeição original, que valia só para o AST de regras | pós-F9 (segurança) |
+| `easymde` | `^2.21.0` | Editor markdown das notas da ficha (sem Font Awesome externo — CSP) | pós-F9 |
+| `@vercel/analytics` / `@vercel/speed-insights` | `^2.x` | Telemetria de uso e performance no deploy Vercel | infra |
 
 **Dev (`devDependencies`):**
 
@@ -856,7 +867,7 @@ Lista fechada de bibliotecas aprovadas para o roadmap (critério global nº 8 �
 | `vitest-axe` | `^0.1.0` | Testes automatizados de acessibilidade (axe-core) — exigência da seção 20 | matchers registrados em `vitest.setup.ts` |
 | `@vitest/coverage-v8` | `^4.1.9` | Relatório de cobertura da engine ("testes acompanham regra") | bloco `coverage` em `vitest.config.ts` + script `test:coverage` |
 
-**Rejeitadas (registrar aqui se a decisão mudar):** gerenciadores de estado extras (Redux/Jotai/TanStack Query), axios, dayjs/date-fns, kits de componente CSS-in-JS (MUI/Chakra), DOMPurify (o AST da F7 não renderiza HTML bruto), seedrandom (PRNG próprio de ~10 linhas em `abilityRollRules.ts`).
+**Rejeitadas (registrar aqui se a decisão mudar):** gerenciadores de estado extras (Redux/Jotai/TanStack Query), axios, dayjs/date-fns, kits de componente CSS-in-JS (MUI/Chakra), seedrandom (PRNG próprio de ~10 linhas em `abilityRollRules.ts`). *(DOMPurify foi rejeitado para o AST da F7 — que continua sem HTML bruto — mas aprovado depois para sanitizar o preview de notas markdown; ver tabela acima.)*
 
 ## 27. Checklist Final de Lançamento (v1 lançável)
 

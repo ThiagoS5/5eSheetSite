@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import type { CharacterSheetSummary, CharacterDescription, ItemCategory } from "@/types/builder";
-import type { BuilderSpell } from "@/types/spells";
+import type { CharacterSheetSummary, CharacterDescription, ItemCategory } from "@/src/types/builder";
+import type { BuilderSpell } from "@/src/types/spells";
 import { useCharacterStore } from "@/src/store/useCharacterStore";
 import { cn } from "@/src/lib/utils";
 import { focusRing } from "@/src/lib/styles";

@@ -31,7 +31,7 @@ The product lifecycle is one continuous loop:
 
 1. Create or import a character in the Vault.
 2. Choose guided, standard, or quick-build creation.
-3. Complete the 9-step builder.
+3. Complete the 10-step builder.
 4. Review the living sheet.
 5. Play with current HP, conditions, rests, spell slots, resources, notes, and campaign log.
 6. Level up without reopening the whole wizard.
@@ -42,19 +42,21 @@ Any new feature should plug into that lifecycle instead of becoming an isolated 
 
 ## 4. Current Implemented Baseline
 
-This is the current audited baseline as of 2026-07-11.
+This is the current audited baseline as of 2026-07-15.
 
 ### Product Surfaces
 
 - Character Vault with local saves, create, resume, duplicate, delete, import, search, status, and ready-to-export state.
-- 9-step builder: class, class features, background, species, species details, ability scores, equipment, description, conclusion.
+- 10-step builder: class, class features, subclass, background, species, species details, ability scores, equipment, description, conclusion. (The dedicated subclass step landed with schema v14; older docs may still say "9-step".)
 - Creation modes: guided mode, standard mode, and quick build.
+- Dedicated subclass builder step and level-up modal with state-integrity guarantees (cancel reverts).
+- Security hardening: CSP + headers in `next.config.ts`, sanitized notes preview (DOMPurify), import hardening with anti-prototype-pollution reviver and 2 MB size limit, no external CDN assets.
 - Beginner guidance with recommendation quizzes and inline contextual help.
 - Dense `/sheet` and builder conclusion surfaces that share `CharacterSheetView`.
 
 ### Domain And Persistence
 
-- `CharacterBuild` is the canonical persisted model at schema v13.
+- `CharacterBuild` is the canonical persisted model at schema v14.
 - The persisted shape is split into `draft`, `progression`, `choices`, `playState`, `derivedSheet`, and `exportMetadata`.
 - Store persistence and Vault reads normalize old saves through the canonical build model.
 - Schema migrations are covered for the important historical shapes, with fixture-based tests.
@@ -74,7 +76,7 @@ This is the current audited baseline as of 2026-07-11.
 ### Character Options
 
 - Classes, species, backgrounds, languages, feats, spells, and item catalogs are normalized from local 5e data.
-- Subclasses are modeled and chosen through level-up requirements.
+- Subclasses are modeled with a dedicated builder step and through level-up requirements.
 - Feats and ASI are mutually exclusive at the choice point, with categories, prerequisites, attribute caps, and curated mechanical effects.
 - Spellcasting has normalized spells, class spell lists, filters, slot derivation, save DC, spell attack, cantrip/known/prepared limits, and sheet/export visibility.
 - Inventory has quantities, equip/unequip, item catalog search/filtering, armor/shield AC effects, weapon attacks, carried load, and carried inventory rendering.
@@ -156,7 +158,7 @@ public/data/*.json
 - `rules/`: pure rule modules with no React dependency.
 - `src/store/`: Zustand store, persistence, migrations, `CharacterBuild` serialization, and selectors.
 - `src/components/`: UI composition using the project's atomic-ish component structure and shadcn/Radix primitives.
-- `types/` and `src/types/`: domain contracts. Prefer existing import conventions until a dedicated type-consolidation task is opened.
+- `src/types/`: all domain contracts (consolidated 2026-07-15; imported as `@/src/types/*`).
 
 ## 7. Non-Negotiable Engineering Rules
 

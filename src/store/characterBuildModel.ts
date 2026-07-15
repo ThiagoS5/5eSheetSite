@@ -24,8 +24,8 @@ import type {
   BuilderStepSlug,
   CharacterDescription,
   CharacterSheetSummary,
-} from "@/types/builder";
-import type { CharacterAttributes } from "@/types/dnd";
+} from "@/src/types/builder";
+import type { CharacterAttributes } from "@/src/types/dnd";
 
 export const defaultCharacterAttributes: CharacterAttributes = {
   forca: 8,

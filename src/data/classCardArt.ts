@@ -1,4 +1,4 @@
-import type { BuilderClassImage } from "@/types/builder";
+import type { BuilderClassImage } from "@/src/types/builder";
 
 
 type CardFraming = Required<

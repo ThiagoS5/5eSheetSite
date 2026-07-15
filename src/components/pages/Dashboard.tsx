@@ -46,9 +46,9 @@ import {
 import { quickBuildProfiles, type QuickBuildProfile } from "@/src/data/quickBuildProfiles";
 import { useCharacterStore } from "@/src/store/useCharacterStore";
 import type { CharacterBuild } from "@/src/types/characterBuild";
-import type { BuilderBackground } from "@/types/builder";
-import type { AttributeBonuses, AttributeKey } from "@/types/dnd";
-import type { Character } from "@/types/Character";
+import type { BuilderBackground } from "@/src/types/builder";
+import type { AttributeBonuses, AttributeKey } from "@/src/types/dnd";
+import type { Character } from "@/src/types/Character";
 
 const builderStartHref = "/builder/classe";
 const sheetHref = "/sheet";

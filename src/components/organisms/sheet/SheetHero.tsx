@@ -1,4 +1,4 @@
-import type { CharacterSheetSummary } from "@/types/builder";
+import type { CharacterSheetSummary } from "@/src/types/builder";
 import { cn } from "@/src/lib/utils";
 import { focusRing } from "@/src/lib/styles";
 import { CombatStatFrame } from "@/src/components/atoms/sheet/frames/CombatStatFrame";

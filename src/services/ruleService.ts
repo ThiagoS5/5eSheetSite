@@ -37,7 +37,7 @@ import type {
   BuilderLanguage,
   BuilderSpecies,
   DataSourceAuditEntry,
-} from "@/types/builder";
+} from "@/src/types/builder";
 import type {
   Raw5eBackgroundFile,
   Raw5eClassFile,
@@ -46,7 +46,7 @@ import type {
   Raw5eLanguageFile,
   RawPlayerLoreFile,
   Raw5eRaceFile,
-} from "@/types/fiveETools";
+} from "@/src/types/fiveETools";
 
 const raceFile = racesData as Raw5eRaceFile;
 const backgroundFile = backgroundsData as Raw5eBackgroundFile;

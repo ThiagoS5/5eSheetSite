@@ -1,5 +1,5 @@
 import type { CharacterBuild } from "@/src/types/characterBuild";
-import type { CharacterSheetSummary } from "@/types/builder";
+import type { CharacterSheetSummary } from "@/src/types/builder";
 
 export {
   deriveStartingGoldPo,

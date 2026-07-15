@@ -1,6 +1,6 @@
 import { getAbilityModifier } from "@/src/adapters/characterDerivedAdapter";
-import type { SheetSkill } from "@/types/builder";
-import type { AttributeKey, CharacterAttributes } from "@/types/dnd";
+import type { SheetSkill } from "@/src/types/builder";
+import type { AttributeKey, CharacterAttributes } from "@/src/types/dnd";
 
 const SKILL_DISPLAY: Record<string, string> = {
   Acrobatics: "Acrobatics",

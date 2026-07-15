@@ -36,7 +36,19 @@
 - [Experiência atual](#experiência-atual)
 - [Roadmap](#roadmap)
 - [Como rodar](#como-rodar)
+- [Documentação e guias](#documentação-e-guias)
 - [Autor](#autor)
+
+## Documentação e guias
+
+Toda a documentação canônica do projeto vive na pasta [`guides/`](guides/README.md) — visão de
+produto ([MANIFESTO](guides/MANIFESTO.md)), régua de entrega
+([project-delivery-ruler](guides/project-delivery-ruler.md)), roadmap por fases
+([master plan](guides/forge-fate-master-plan.md)), auditoria ([AUDITORIA](guides/AUDITORIA.md)),
+design system ([DESIGN](guides/DESIGN.md)), organização de pastas
+([ORGANIZATION](guides/ORGANIZATION.md)) e regras para agentes de IA
+([AGENTS](guides/AGENTS.md)). **Agentes de IA e novos contribuidores devem ler
+[`guides/README.md`](guides/README.md) antes de qualquer alteração no código.**
 
 ## O problema
 

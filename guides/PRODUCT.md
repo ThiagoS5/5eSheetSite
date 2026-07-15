@@ -26,9 +26,9 @@ Success means the interface is fast, immersive, accessible, and trusted. Rules r
 Implemented:
 
 - Local Character Vault with create, resume, duplicate, delete, search, import, and export-ready status.
-- 9-step builder with guided, standard, and quick-build entry paths.
+- 10-step builder with guided, standard, and quick-build entry paths.
 - Beginner-mode recommendation quizzes and inline contextual help.
-- Schema v13 canonical `CharacterBuild`, including `playState`.
+- Schema v14 canonical `CharacterBuild`, including `playState`.
 - Pure rules/adapters for derived sheet math, level progression, HP, AC, attacks, inventory, spellcasting, rests, pendencies, rules-text AST, Foundry, canonical export/import, and PDF.
 - Living sheet with level-up, play-state panels, notes, conditions, campaign log, Foundry export, and PDF export.
 

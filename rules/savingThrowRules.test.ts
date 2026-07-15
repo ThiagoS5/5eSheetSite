@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { computeSavingThrows } from "@/rules/savingThrowRules";
-import type { CharacterAttributes } from "@/types/dnd";
+import type { CharacterAttributes } from "@/src/types/dnd";
 
 const attributes: CharacterAttributes = {
   forca: 16,

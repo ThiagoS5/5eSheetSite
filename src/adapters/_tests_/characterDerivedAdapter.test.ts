@@ -7,7 +7,7 @@ import {
   calculateMaxHitPoints,
   getMaxHitPointsBreakdown,
 } from "@/src/adapters/characterDerivedAdapter";
-import type { CharacterAttributes } from "@/types/dnd";
+import type { CharacterAttributes } from "@/src/types/dnd";
 
 const baseAttributes = (overrides: Partial<CharacterAttributes> = {}): CharacterAttributes => ({
   forca: 10,

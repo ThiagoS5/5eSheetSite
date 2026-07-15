@@ -47,8 +47,8 @@ import type {
   BuilderFeature,
   CharacterSheetSummary,
   SheetFeature,
-} from "@/types/builder";
-import type { AttributeKey } from "@/types/dnd";
+} from "@/src/types/builder";
+import type { AttributeKey } from "@/src/types/dnd";
 
 const XP_BY_LEVEL = [
   0, 300, 900, 2700, 6500, 14000, 23000, 34000, 48000, 64000,

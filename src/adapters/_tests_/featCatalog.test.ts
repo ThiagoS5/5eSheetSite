@@ -6,7 +6,7 @@ import {
   getSelectableFeats,
   meetsPrerequisite,
 } from "@/src/adapters/featCatalog";
-import type { BuilderFeat } from "@/types/builder";
+import type { BuilderFeat } from "@/src/types/builder";
 import type { AsiOrFeatChoice } from "@/src/types/characterBuild";
 
 describe("getFeats", () => {

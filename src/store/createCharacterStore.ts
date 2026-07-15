@@ -41,7 +41,7 @@ import type {
   EquipmentChoicesBySource,
   HpRollChoice,
 } from "@/src/types/characterBuild";
-import type { BuilderStepSlug } from "@/types/builder";
+import type { BuilderStepSlug } from "@/src/types/builder";
 
 export const initialCharacterState: CharacterBuilderState =
   createStoreStateFromBuild(createEmptyCharacterBuild());

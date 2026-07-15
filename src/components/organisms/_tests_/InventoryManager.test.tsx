@@ -3,7 +3,7 @@ import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { InventoryManager } from "@/src/components/organisms/InventoryManager";
-import type { CatalogItem } from "@/types/builder";
+import type { CatalogItem } from "@/src/types/builder";
 
 const catalog: CatalogItem[] = [
   { id: "longsword-xphb", name: "Longsword", source: "XPHB", category: "Weapon", type: "weapon", isMagical: false, isCommon: false, isContainer: false },

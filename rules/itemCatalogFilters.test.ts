@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_CATALOG_FILTERS, filterCatalog } from "@/rules/itemCatalogFilters";
-import type { CatalogItem } from "@/types/builder";
+import type { CatalogItem } from "@/src/types/builder";
 
 const item = (over: Partial<CatalogItem>): CatalogItem => ({
   id: over.name ? over.name.toLowerCase() : "x", name: "X", source: "PHB",

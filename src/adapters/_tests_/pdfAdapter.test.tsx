@@ -16,9 +16,9 @@ import type {
   CharacterDescription,
   CharacterSheetSummary,
   SheetSkill,
-} from "@/types/builder";
-import type { AttributeKey, CharacterAttributes } from "@/types/dnd";
-import type { BuilderSpell, CharacterSpellcastingSummary } from "@/types/spells";
+} from "@/src/types/builder";
+import type { AttributeKey, CharacterAttributes } from "@/src/types/dnd";
+import type { BuilderSpell, CharacterSpellcastingSummary } from "@/src/types/spells";
 
 const ATTRIBUTE_ORDER: Array<{ key: AttributeKey; label: string; abbr: string }> = [
   { key: "forca", label: "Strength", abbr: "STR" },

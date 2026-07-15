@@ -16,8 +16,8 @@ import type {
   CharacterSheetSummary,
   SheetFeature,
   SheetInventoryItem,
-} from "@/types/builder";
-import type { BuilderSpell, CharacterSpellcastingSummary } from "@/types/spells";
+} from "@/src/types/builder";
+import type { BuilderSpell, CharacterSpellcastingSummary } from "@/src/types/spells";
 
 export interface PdfCharacterInput {
   summary: CharacterSheetSummary;

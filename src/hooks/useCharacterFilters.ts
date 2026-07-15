@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import type { Character } from "@/types/Character";
+import type { Character } from "@/src/types/Character";
 
 interface UseCharacterFiltersResult {
   filteredCharacters: readonly Character[];
