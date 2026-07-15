@@ -7,7 +7,7 @@ import {
   FORGE_FATE_EXPORT_FORMAT,
   FORGE_FATE_EXPORT_FORMAT_VERSION,
   type ForgeFateExportV1,
-} from "@/types/export";
+} from "@/src/types/export";
 import {
   createSaveId,
   normalizeCharacterBuild,

@@ -10,7 +10,7 @@ import {
 } from "@/src/services/ruleService";
 import { getPortraitById } from "@/src/data/portraits";
 import type { CharacterBuild } from "@/src/types/characterBuild";
-import type { Character } from "@/types/Character";
+import type { Character } from "@/src/types/Character";
 
 const STORAGE_KEY = "forge-fate-character-saves:v1";
 export const CHARACTER_SAVES_CHANGED_EVENT = "forge-fate-character-saves:changed";

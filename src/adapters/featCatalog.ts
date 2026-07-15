@@ -5,8 +5,8 @@ import type {
   FeatCategory,
   FeatPrerequisite,
   FeatStructuredEffects,
-} from "@/types/builder";
-import { ATTRIBUTE_ABBREVIATION_MAP, type AttributeKey } from "@/types/dnd";
+} from "@/src/types/builder";
+import { ATTRIBUTE_ABBREVIATION_MAP, type AttributeKey } from "@/src/types/dnd";
 import { stringifyEntries, toSlug } from "@/src/adapters/fiveEToolsAdapter";
 import type { AsiOrFeatChoice } from "@/src/types/characterBuild";
 

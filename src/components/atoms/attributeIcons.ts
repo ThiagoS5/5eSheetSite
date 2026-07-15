@@ -1,4 +1,4 @@
-import type { AttributeKey } from "@/types/dnd";
+import type { AttributeKey } from "@/src/types/dnd";
 
 export const ATTRIBUTE_ICON_CLASS: Record<AttributeKey, string> = {
   forca: "fa-solid fa-hand-fist",

@@ -1,4 +1,4 @@
-import type { BuilderStepSlug } from "@/types/builder";
+import type { BuilderStepSlug } from "@/src/types/builder";
 
 export interface BuilderStepNavigationItem {
   slug: BuilderStepSlug;

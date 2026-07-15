@@ -16,8 +16,8 @@ import type {
   CharacterSheetSummary,
   SheetFeature,
   SheetInventoryItem,
-} from "@/types/builder";
-import type { BuilderSpell, CharacterSpellcastingSummary } from "@/types/spells";
+} from "@/src/types/builder";
+import type { BuilderSpell, CharacterSpellcastingSummary } from "@/src/types/spells";
 
 export interface PdfCharacterInput {
   summary: CharacterSheetSummary;
@@ -55,6 +55,7 @@ const SOURCE_LABELS: Record<SheetFeature["source"], string> = {
   background: "Background",
   class: "Class",
   species: "Species",
+  feat: "Feat",
 };
 
 export function buildPdfDocument(

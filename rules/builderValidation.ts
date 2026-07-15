@@ -10,7 +10,7 @@ import {
   getBuilderClasses,
 } from "@/src/services/ruleService";
 import type { CharacterBuilderState } from "@/src/store/characterStore.types";
-import type { BuilderStepSlug } from "@/types/builder";
+import type { BuilderStepSlug } from "@/src/types/builder";
 
 export function validateBuilderStep(
   step: BuilderStepSlug,

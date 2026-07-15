@@ -14,7 +14,7 @@ import {
   getPersonalDetailsRecommendations,
 } from "@/src/data/personalDetailsRecommendations";
 import { generateRandomName } from "@/src/data/nameGenerator";
-import type { BuilderBackground, BuilderClass, BuilderSpecies } from "@/types/builder";
+import type { BuilderBackground, BuilderClass, BuilderSpecies } from "@/src/types/builder";
 import {
   personalDetailsSchema,
   parseWeight,

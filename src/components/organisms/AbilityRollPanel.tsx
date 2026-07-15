@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { rollAbilityScoreSet, type AbilityRoll } from "@/rules/abilityRollRules";
 import { Button } from "@/src/components/ui/button";
-import { ATTRIBUTE_LABELS, type AttributeKey, type CharacterAttributes } from "@/types/dnd";
+import { ATTRIBUTE_LABELS, type AttributeKey, type CharacterAttributes } from "@/src/types/dnd";
 
 const attributes = Object.keys(ATTRIBUTE_LABELS) as AttributeKey[];
 

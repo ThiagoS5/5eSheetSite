@@ -1,10 +1,10 @@
-import type { CharacterDescription } from "@/types/builder";
+import type { CharacterDescription } from "@/src/types/builder";
 import type {
   CharacterBuild,
   CharacterBuildPlayState,
   CoinPouch,
 } from "@/src/types/characterBuild";
-import type { CharacterSpellcastingChoices } from "@/types/spells";
+import type { CharacterSpellcastingChoices } from "@/src/types/spells";
 import type {
   AsiOrFeatChoice,
   AttributeGenerationMethod,
@@ -21,7 +21,7 @@ import type {
   AttributeBonuses,
   CharacterAttributes,
   Ruleset,
-} from "@/types/dnd";
+} from "@/src/types/dnd";
 
 export type {
   AsiOrFeatChoice,

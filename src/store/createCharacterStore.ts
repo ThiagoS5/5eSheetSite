@@ -35,14 +35,13 @@ import {
   EMPTY_COIN_POUCH,
 } from "@/src/types/characterBuild";
 import type {
-  CampaignLogEntry,
   CharacterBuild,
   CoinPouch,
   CreationPreferences,
   EquipmentChoicesBySource,
   HpRollChoice,
 } from "@/src/types/characterBuild";
-import type { BuilderStepSlug } from "@/types/builder";
+import type { BuilderStepSlug } from "@/src/types/builder";
 
 export const initialCharacterState: CharacterBuilderState =
   createStoreStateFromBuild(createEmptyCharacterBuild());

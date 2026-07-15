@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { astToPlainText, parseRulesText } from "@/src/adapters/rulesTextAst";
-import type { RulesTextNode } from "@/types/rulesText";
+import type { RulesTextNode } from "@/src/types/rulesText";
 
 describe("parseRulesText", () => {
   it("converts a plain string entry into a paragraph", () => {

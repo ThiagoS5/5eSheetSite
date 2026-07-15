@@ -5,7 +5,7 @@ import "@testing-library/jest-dom/vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, it, expect } from "vitest";
 import { AttributeGrid } from "@/src/components/molecules/sheet/AttributeGrid";
-import type { SheetAttribute } from "@/types/builder";
+import type { SheetAttribute } from "@/src/types/builder";
 
 const attrs: SheetAttribute[] = [
   { key: "forca", label: "Strength", abbr: "STR", score: 8, modifier: -1 },

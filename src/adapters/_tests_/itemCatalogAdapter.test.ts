@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { normalizeCatalogItem } from "@/src/adapters/itemCatalogAdapter";
-import type { Raw5eItem } from "@/types/fiveETools";
+import type { Raw5eItem } from "@/src/types/fiveETools";
 
 const raw = (over: Partial<Raw5eItem>): Raw5eItem => ({ name: "X", source: "PHB", ...over });
 

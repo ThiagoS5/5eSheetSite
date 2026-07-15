@@ -3,7 +3,7 @@ import {
   type HeroChoiceTheme,
 } from "@/src/components/molecules/HeroChoiceCard";
 import { getHitDieIconClass } from "@/src/components/atoms/FontAwesomeIcon";
-import type { BuilderClass } from "@/types/builder";
+import type { BuilderClass } from "@/src/types/builder";
 
 /**
  * Temas por classe transcritos do character builder da D&D Beyond

@@ -6,7 +6,7 @@ import {
 } from "@/rules/inventoryRules";
 import { getUnresolvedLevelChoices } from "@/src/store/levelChoiceResolver";
 import type { CharacterBuilderState } from "@/src/store/characterStore.types";
-import type { BuilderClass, BuilderStepSlug, Pendency } from "@/types/builder";
+import type { BuilderClass, BuilderStepSlug, Pendency } from "@/src/types/builder";
 
 const VALIDATED_STEPS: BuilderStepSlug[] = [
   "classe",

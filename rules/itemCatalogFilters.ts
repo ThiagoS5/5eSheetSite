@@ -1,4 +1,4 @@
-import type { CatalogItem, ItemCategory } from "@/types/builder";
+import type { CatalogItem, ItemCategory } from "@/src/types/builder";
 
 export interface CatalogFilterCriteria {
   query: string;

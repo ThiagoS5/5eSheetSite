@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { createFoundryCharacterExport } from "@/src/utils/foundryAdapter";
 import type { CharacterBuilderState } from "@/src/store/characterStore.types";
-import type { CharacterSheetSummary } from "@/types/builder";
+import type { CharacterSheetSummary } from "@/src/types/builder";
 
 const state: CharacterBuilderState = {
   ruleset: "2024",
@@ -400,6 +400,71 @@ describe("foundryAdapter", () => {
       type: "loot",
       system: { quantity: 1 },
     });
+  });
+
+  it("exports unique 16-char alphanumeric item ids even for long similar names", () => {
+    const longNameSummary: CharacterSheetSummary = {
+      ...summary,
+      features: [
+        { name: "Channel Divinity: Sacred Weapon", description: "A", source: "class" },
+        { name: "Channel Divinity: Turn the Unholy", description: "B", source: "class" },
+      ],
+    };
+    const actor = createFoundryCharacterExport(state, longNameSummary);
+    const ids = actor.items.map((item) => item._id);
+
+    expect(new Set(ids).size).toBe(ids.length);
+    for (const id of ids) {
+      expect(id).toMatch(/^[a-zA-Z0-9]{16}$/);
+    }
+  });
+
+  it("does not duplicate class features and species traits already present in summary.features", () => {
+    const actor = createFoundryCharacterExport(state, summary);
+    const featNames = actor.items
+      .filter((item) => item.type === "feat")
+      .map((item) => item.name);
+
+    expect(featNames.filter((name) => name === "Alert")).toHaveLength(1);
+    // selectedTraits/classFeatures are projections of summary.features in real
+    // derivations; the export must read features only, once.
+    expect(featNames).not.toContain("Healing Hands");
+    expect(featNames).not.toContain("Second Wind");
+  });
+
+  it("maps warlock pact magic to pact slots and pact progression", () => {
+    const warlockSummary: CharacterSheetSummary = {
+      ...summary,
+      classId: "warlock-xphb",
+      className: "Warlock",
+      spellcasting: {
+        ...summary.spellcasting!,
+        slots: [{ level: 3, total: 2, used: 0, remaining: 2 }],
+      },
+    };
+    const actor = createFoundryCharacterExport(state, warlockSummary);
+    const classItem = actor.items.find((item) => item.type === "class");
+
+    expect(actor.system.spells?.pact).toMatchObject({ value: 2, max: 2 });
+    expect(actor.system.spells?.spell3).toMatchObject({ value: 0, max: 0 });
+    expect(classItem?.system.spellcasting).toMatchObject({ progression: "pact" });
+  });
+
+  it("converts 5etools single-letter school codes to dnd5e three-letter codes", () => {
+    const singleLetterSummary: CharacterSheetSummary = {
+      ...summary,
+      spellcasting: {
+        ...summary.spellcasting!,
+        cantrips: [{ ...summary.spellcasting!.cantrips[0], schoolCode: "V" }],
+        knownSpells: [{ ...summary.spellcasting!.knownSpells[0], schoolCode: "T", school: "Transmutation" }],
+        preparedSpells: [],
+      },
+    };
+    const actor = createFoundryCharacterExport(state, singleLetterSummary);
+    const itemByName = new Map(actor.items.map((item) => [item.name, item]));
+
+    expect(itemByName.get("Fire Bolt")?.system.school).toBe("evo");
+    expect(itemByName.get("Shield")?.system.school).toBe("trs");
   });
 
   it("exports spells as dnd5e spell items with level, school, preparation, and source class", () => {

@@ -5,7 +5,7 @@ import "@testing-library/jest-dom/vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { FeatureOptionStep } from "@/src/components/organisms/levelup/FeatureOptionStep";
-import type { BuilderChoiceOption } from "@/types/builder";
+import type { BuilderChoiceOption } from "@/src/types/builder";
 
 const options: BuilderChoiceOption[] = [
   { label: "Longsword", value: "Longsword" },

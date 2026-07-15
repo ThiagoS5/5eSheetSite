@@ -1,5 +1,5 @@
 import Image from "next/image";
-import type { Character, CharacterAttributes } from "@/types/Character";
+import type { Character, CharacterAttributes } from "@/src/types/Character";
 
 interface CharacterCardProps {
   character: Character;

@@ -1,6 +1,6 @@
 "use client";
 
-import type { CharacterSheetSummary, CharacterDescription } from "@/types/builder";
+import type { CharacterSheetSummary, CharacterDescription } from "@/src/types/builder";
 import { SavingThrowsGrid } from "@/src/components/molecules/sheet/SavingThrowsGrid";
 import { SkillsPanel } from "@/src/components/molecules/sheet/SkillsPanel";
 import { DefensesPanel } from "@/src/components/molecules/sheet/DefensesPanel";

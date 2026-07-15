@@ -1,5 +1,5 @@
 import type { CharacterBuilderState } from "@/src/store/characterStore.types";
-import type { BuilderClass } from "@/types/builder";
+import type { BuilderClass } from "@/src/types/builder";
 
 export interface ClassChangeImpact {
   items: string[];

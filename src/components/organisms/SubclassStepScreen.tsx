@@ -14,7 +14,7 @@ import {
 import { RulesTextView } from "@/src/components/molecules/RulesTextView";
 import { WizardStepHeader } from "@/src/components/molecules/WizardStepHeader";
 import { getLevelRequirements } from "@/rules/levelProgression";
-import type { BuilderClass, BuilderSubclass } from "@/types/builder";
+import type { BuilderClass, BuilderSubclass } from "@/src/types/builder";
 
 interface SubclassStepScreenProps {
   characterClass?: BuilderClass;

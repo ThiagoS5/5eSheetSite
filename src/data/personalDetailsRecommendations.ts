@@ -1,4 +1,4 @@
-import type { BuilderBackground, BuilderClass, BuilderSpecies } from "@/types/builder";
+import type { BuilderBackground, BuilderClass, BuilderSpecies } from "@/src/types/builder";
 
 type NameFrame = (name: string) => string;
 

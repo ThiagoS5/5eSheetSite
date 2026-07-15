@@ -1,6 +1,6 @@
 "use client";
 
-import type { CharacterDescription } from "@/types/builder";
+import type { CharacterDescription } from "@/src/types/builder";
 
 const fields: ReadonlyArray<{
   name: keyof CharacterDescription;

@@ -9,7 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/src/components/ui/table";
-import type { RulesTextInlineNode, RulesTextNode } from "@/types/rulesText";
+import type { RulesTextInlineNode, RulesTextNode } from "@/src/types/rulesText";
 
 interface RulesTextViewProps {
   nodes: RulesTextNode[];

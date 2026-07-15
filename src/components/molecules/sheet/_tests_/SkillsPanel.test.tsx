@@ -5,7 +5,7 @@ import "@testing-library/jest-dom/vitest";
 import { cleanup, render, screen, fireEvent } from "@testing-library/react";
 import { afterEach, describe, it, expect, vi, beforeEach } from "vitest";
 import { SkillsPanel } from "@/src/components/molecules/sheet/SkillsPanel";
-import type { SheetSkill } from "@/types/builder";
+import type { SheetSkill } from "@/src/types/builder";
 
 const setSkillTraining = vi.fn();
 const setSkillOverride = vi.fn();

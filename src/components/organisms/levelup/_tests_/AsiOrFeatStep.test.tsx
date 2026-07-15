@@ -8,7 +8,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { AsiOrFeatStep } from "@/src/components/organisms/levelup/AsiOrFeatStep";
 import type { AsiAttribute } from "@/src/components/organisms/levelup/types";
 import type { AsiOrFeatChoice } from "@/src/types/characterBuild";
-import type { BuilderFeat } from "@/types/builder";
+import type { BuilderFeat } from "@/src/types/builder";
 
 const attributes: AsiAttribute[] = [
   { key: "forca", label: "Strength", current: 13 },

@@ -1,5 +1,5 @@
 import { getAbilityModifier } from "@/src/adapters/characterDerivedAdapter";
-import type { ArmorClassBreakdownPart, ArmorType, Pendency } from "@/types/builder";
+import type { ArmorClassBreakdownPart, ArmorType, Pendency } from "@/src/types/builder";
 
 type ArmorClassEquipment = {
   id: string;

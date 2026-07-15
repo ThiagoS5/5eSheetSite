@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { CharacterSheetSummary } from "@/types/builder";
+import type { CharacterSheetSummary } from "@/src/types/builder";
 import { useCharacterStore } from "@/src/store/useCharacterStore";
 import { cn } from "@/src/lib/utils";
 import { focusRing } from "@/src/lib/styles";

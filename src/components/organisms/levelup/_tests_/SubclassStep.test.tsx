@@ -5,7 +5,7 @@ import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { SubclassStep } from "@/src/components/organisms/levelup/SubclassStep";
-import type { BuilderSubclass } from "@/types/builder";
+import type { BuilderSubclass } from "@/src/types/builder";
 
 const subclasses: BuilderSubclass[] = [
   { id: "battle-master-xphb", name: "Battle Master", shortName: "Battle Master", source: "XPHB", features: [{ name: "Combat Superiority", description: "...", level: 3 }] },

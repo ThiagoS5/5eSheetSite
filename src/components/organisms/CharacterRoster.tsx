@@ -1,8 +1,8 @@
 "use client";
 
 import { CharacterCard } from "@/src/components/molecules/CharacterCard";
-import { useCharacterFilters } from "@/hooks/useCharacterFilters";
-import type { Character } from "@/types/Character";
+import { useCharacterFilters } from "@/src/hooks/useCharacterFilters";
+import type { Character } from "@/src/types/Character";
 
 interface CharacterRosterProps {
   characters: readonly Character[];

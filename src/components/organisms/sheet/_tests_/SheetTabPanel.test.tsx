@@ -4,7 +4,7 @@
 import "@testing-library/jest-dom/vitest";
 import { describe, it, expect, vi } from "vitest";
 import { render } from "@testing-library/react";
-import type { CharacterSheetSummary, CharacterDescription } from "@/types/builder";
+import type { CharacterSheetSummary, CharacterDescription } from "@/src/types/builder";
 import { EMPTY_COIN_POUCH } from "@/src/types/characterBuild";
 
 vi.mock("@/src/store/useCharacterStore", () => ({

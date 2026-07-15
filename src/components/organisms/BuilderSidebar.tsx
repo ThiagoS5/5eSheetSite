@@ -35,7 +35,7 @@ import { useCharacterStore } from "@/src/store/useCharacterStore";
 import { getBuilderClasses } from "@/src/services/ruleService";
 import type { CharacterBuilderState } from "@/src/store/characterStore.types";
 import { deriveBuilderPendencies } from "@/rules/pendencyRules";
-import type { BuilderStepSlug, Pendency } from "@/types/builder";
+import type { BuilderStepSlug, Pendency } from "@/src/types/builder";
 
 type StepStatus = "active" | "complete" | "warning" | "available" | "locked";
 

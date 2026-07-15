@@ -1,7 +1,7 @@
 import { parseRulesText } from "@/src/adapters/rulesTextAst";
 import { HoverTooltip } from "@/src/components/molecules/HoverTooltip";
 import { RulesTextView } from "@/src/components/molecules/RulesTextView";
-import type { BuilderFeature } from "@/types/builder";
+import type { BuilderFeature } from "@/src/types/builder";
 
 interface FeatureTagListProps {
   features: readonly BuilderFeature[];

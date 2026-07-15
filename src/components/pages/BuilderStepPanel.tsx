@@ -52,9 +52,9 @@ import type {
   BuilderLanguage,
   BuilderSpecies,
   BuilderStepSlug,
-} from "@/types/builder";
-import type { AttributeBonuses, AttributeKey } from "@/types/dnd";
-import type { CharacterSpellcastingChoices } from "@/types/spells";
+} from "@/src/types/builder";
+import type { AttributeBonuses, AttributeKey } from "@/src/types/dnd";
+import type { CharacterSpellcastingChoices } from "@/src/types/spells";
 import { ActionBtn } from "@/src/components/atoms/ActionBtn";
 import {
   FontAwesomeIcon,
@@ -65,7 +65,7 @@ import { ChoiceCounter } from "@/src/components/molecules/ChoiceCounter";
 import { FeatureTagList } from "@/src/components/molecules/FeatureTagList";
 import { RulesTextView } from "@/src/components/molecules/RulesTextView";
 import { parseRulesText } from "@/src/adapters/rulesTextAst";
-import type { RulesTextNode } from "@/types/rulesText";
+import type { RulesTextNode } from "@/src/types/rulesText";
 import { StartingLevelStepper } from "@/src/components/molecules/StartingLevelStepper";
 import { StepIntroCard } from "@/src/components/molecules/StepIntroCard";
 import { SpellCatalogPicker } from "@/src/components/organisms/spells/SpellCatalogPicker";
@@ -98,7 +98,7 @@ import {
 import { SubclassStepScreen } from "@/src/components/organisms/SubclassStepScreen";
 import { builderStepNavigation } from "@/src/components/templates/builderStepNavigation";
 import { deriveBuilderPendencies } from "@/rules/pendencyRules";
-import type { Pendency } from "@/types/builder";
+import type { Pendency } from "@/src/types/builder";
 import { CharacterSheetView } from "@/src/components/pages/CharacterSheetView";
 
 const BEGINNER_STEP_GUIDES: Partial<

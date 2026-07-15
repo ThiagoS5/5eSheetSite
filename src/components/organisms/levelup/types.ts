@@ -1,6 +1,6 @@
 import type { AsiOrFeatChoice } from "@/src/types/characterBuild";
-import type { BuilderChoiceOption, BuilderFeat, BuilderSubclass } from "@/types/builder";
-import type { AttributeKey } from "@/types/dnd";
+import type { BuilderChoiceOption, BuilderFeat, BuilderSubclass } from "@/src/types/builder";
+import type { AttributeKey } from "@/src/types/dnd";
 
 export interface SubclassStepProps {
   level: number;

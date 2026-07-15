@@ -2,13 +2,13 @@ import type {
   BuilderStepSlug,
   CharacterDescription,
   CharacterSheetSummary,
-} from "@/types/builder";
+} from "@/src/types/builder";
 import type {
   AttributeBonuses,
   CharacterAttributes,
   Ruleset,
-} from "@/types/dnd";
-import type { CharacterSpellcastingChoices } from "@/types/spells";
+} from "@/src/types/dnd";
+import type { CharacterSpellcastingChoices } from "@/src/types/spells";
 
 // v13: draft.description ganhou historia; playState ganhou campaignLog (defaulted migration).
 // v14: novo step "subclasse" inserido após "recursos-classe"; maxUnlockedStepIndex de builds

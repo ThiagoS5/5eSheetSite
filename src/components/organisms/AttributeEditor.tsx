@@ -36,7 +36,7 @@ import {
   type AttributeBonuses,
   type AttributeKey,
   type CharacterAttributes,
-} from "@/types/dnd";
+} from "@/src/types/dnd";
 
 const attributes = Object.keys(ATTRIBUTE_LABELS) as AttributeKey[];
 const methods: readonly AttributeGenerationMethod[] = [
