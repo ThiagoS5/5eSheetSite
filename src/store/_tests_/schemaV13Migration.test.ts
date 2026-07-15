@@ -21,7 +21,6 @@ describe("schema v13 migration — historia + campaignLog", () => {
     const build = normalizeCharacterBuild(legacy as never);
 
     expect(build.exportMetadata.schemaVersion).toBe(CHARACTER_BUILD_SCHEMA_VERSION);
-    expect(CHARACTER_BUILD_SCHEMA_VERSION).toBe(13);
     expect(build.draft.description.historia).toBe("");
     expect(build.draft.description.notas).toBe("keep me");
     expect(build.playState.campaignLog).toEqual([]);

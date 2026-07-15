@@ -11,6 +11,7 @@ import type { BuilderClass, BuilderStepSlug, Pendency } from "@/types/builder";
 const VALIDATED_STEPS: BuilderStepSlug[] = [
   "classe",
   "recursos-classe",
+  "subclasse",
   "antecedente",
   "especie",
   "detalhes-especie",
@@ -38,7 +39,11 @@ export function deriveBuilderPendencies(input: {
   const levelPendencies =
     characterClass === undefined
       ? []
-      : getUnresolvedLevelChoices(state, characterClass).map((choice) => ({
+      : getUnresolvedLevelChoices(state, characterClass)
+          // A pendência de subclasse é reportada pela validação do step
+          // "subclasse"; duplicá-la aqui geraria duas entradas para a mesma escolha.
+          .filter((choice) => choice.kind !== "subclass")
+          .map((choice) => ({
           id: `level-${choice.level}-${choice.kind}`,
           stepSlug: LEVEL_CHOICE_STEP,
           label: normalizeLevelChoiceLabel(choice.label),

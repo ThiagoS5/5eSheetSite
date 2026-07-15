@@ -294,12 +294,13 @@ describe("character selectors", () => {
     store.getState().setLevel(3);
 
     const pending = selectCharacterSheetSummary(store.getState());
-    expect((pending.pendencies ?? []).some((p) => p.id === "level-3-subclass")).toBe(true);
+    // A pendência de subclasse agora nasce da validação do step "subclasse".
+    expect((pending.pendencies ?? []).some((p) => p.stepSlug === "subclasse")).toBe(true);
     expect(pending.validationMessages.some((m) => /subclass/i.test(m))).toBe(true);
 
     store.getState().selectSubclass("battle-master-xphb");
     const resolved = selectCharacterSheetSummary(store.getState());
-    expect((resolved.pendencies ?? []).some((p) => p.id === "level-3-subclass")).toBe(false);
+    expect((resolved.pendencies ?? []).some((p) => p.stepSlug === "subclasse")).toBe(false);
     expect(resolved.features.some((f) => f.source === "class")).toBe(true);
     expect(resolved.validationMessages.some((m) => /subclass/i.test(m))).toBe(false);
   });

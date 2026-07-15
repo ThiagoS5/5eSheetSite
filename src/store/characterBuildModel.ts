@@ -119,12 +119,36 @@ export function createCharacterBuildFromLegacyState(
   );
 }
 
+/**
+ * v14 inseriu o step "subclasse" nesta posição da navegação; índices de
+ * desbloqueio persistidos antes disso apontam para a ordem antiga e precisam
+ * ser deslocados para não travar steps que o jogador já havia liberado.
+ */
+const SUBCLASS_STEP_INSERT_INDEX = 2;
+
+function migrateMaxUnlockedStepIndex(
+  build: Partial<CharacterBuild>,
+): number | undefined {
+  const maxUnlockedStepIndex = build.draft?.maxUnlockedStepIndex;
+  const schemaVersion = build.exportMetadata?.schemaVersion;
+  if (
+    maxUnlockedStepIndex !== undefined &&
+    typeof schemaVersion === "number" &&
+    schemaVersion < 14 &&
+    maxUnlockedStepIndex >= SUBCLASS_STEP_INSERT_INDEX
+  ) {
+    return maxUnlockedStepIndex + 1;
+  }
+  return maxUnlockedStepIndex;
+}
+
 export function normalizeCharacterBuild(
   build: Partial<CharacterBuild>,
 ): CharacterBuild {
   return createCharacterBuildFromLegacyState(
     {
       ...flattenCharacterBuild(build),
+      maxUnlockedStepIndex: migrateMaxUnlockedStepIndex(build),
       characterBuild: build as CharacterBuild,
     },
     {

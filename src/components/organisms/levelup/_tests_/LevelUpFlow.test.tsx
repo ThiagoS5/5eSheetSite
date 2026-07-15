@@ -17,6 +17,7 @@ function Harness({ level }: { level: number }) {
   const selectClass = useCharacterStore((s) => s.selectClass);
   const setLevel = useCharacterStore((s) => s.setLevel);
   const setClassFeatureChoice = useCharacterStore((s) => s.setClassFeatureChoice);
+  const selectSubclass = useCharacterStore((s) => s.selectSubclass);
   const setLevelHpRoll = useCharacterStore((s) => s.setLevelHpRoll);
   const [open, setOpen] = useState(false);
   return (
@@ -31,6 +32,9 @@ function Harness({ level }: { level: number }) {
         }}
       >
         setup
+      </button>
+      <button onClick={() => selectSubclass("battle-master-xphb")}>
+        resolve-subclass
       </button>
       <LevelUpFlow open={open} onClose={() => setOpen(false)} />
     </div>
@@ -49,9 +53,14 @@ describe("LevelUpFlow", () => {
 
 
     expect(screen.getByRole("heading", { name: "Subclass" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: /Choose a subclass/i }),
+    ).toHaveAttribute("href", "/builder/subclasse");
     expect(screen.getByRole("button", { name: /Continue|Finish/ })).toBeDisabled();
 
-    fireEvent.click(screen.getAllByRole("button", { name: /Select/ })[0]);
+    // O Radix Dialog marca o conteúdo fora do modal com aria-hidden, então o
+    // botão auxiliar do harness precisa ser localizado por texto, não por role.
+    fireEvent.click(screen.getByText("resolve-subclass"));
     expect(screen.getByRole("button", { name: /Continue|Finish/ })).toBeEnabled();
   }, INTEGRATION_TEST_TIMEOUT_MS);
 

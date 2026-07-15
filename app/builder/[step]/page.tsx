@@ -17,6 +17,10 @@ const stepContent: Record<BuilderStepSlug, { title: string; description: string 
     title: "Class Features",
     description: "Choose starting skills and features required by the selected class.",
   },
+  subclasse: {
+    title: "Subclass",
+    description: "Specialize the class with a subclass and its exclusive features.",
+  },
   antecedente: {
     title: "Background",
     description: "Apply 2024 ability score bonuses, Origin Feat, and narrative data.",

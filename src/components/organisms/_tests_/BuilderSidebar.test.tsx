@@ -24,7 +24,7 @@ vi.mock("@/src/store/useCharacterStore", () => ({
       inventory: [],
       equippedItemIds: [],
       equipmentChoicesBySource: {},
-      maxUnlockedStepIndex: 8,
+      maxUnlockedStepIndex: 9,
       pendingChoiceIds: [],
       classSkillProficiencies: [],
       skillTraining: {},
@@ -88,6 +88,7 @@ describe("BuilderSidebar", () => {
     expect(links.map((link) => link.getAttribute("href"))).toStrictEqual([
       "/builder/classe",
       "/builder/recursos-classe",
+      "/builder/subclasse",
       "/builder/antecedente",
       "/builder/especie",
       "/builder/detalhes-especie",
@@ -116,7 +117,7 @@ describe("BuilderSidebar", () => {
     expect(screen.getByTitle("Close sidebar (Ctrl+B)")).toBeInTheDocument();
     expect(
       screen.getByRole("progressbar", { name: /Wizard progress/i }),
-    ).toHaveAttribute("aria-valuenow", "22.22222222222222");
+    ).toHaveAttribute("aria-valuenow", "20");
     expect(screen.getByRole("button", { name: "Class" })).toHaveAttribute(
       "aria-expanded",
       "true",

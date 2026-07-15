@@ -4,9 +4,11 @@ import type { AttributeKey } from "@/types/dnd";
 
 export interface SubclassStepProps {
   level: number;
+  className: string;
   subclasses: BuilderSubclass[];
   selectedSubclassId: string;
-  onSelect: (subclassId: string) => void;
+  /** Fecha o modal antes de navegar para a tela Class › Subclass. */
+  onNavigateToSubclassScreen: () => void;
 }
 
 export interface FeatureOptionStepProps {

@@ -54,6 +54,10 @@ export async function getCharacter(saveId: string): Promise<CharacterBuild | nul
   return readSaveMap()[saveId] ?? null;
 }
 
+export function hasCharacterSync(saveId: string): boolean {
+  return listCharactersSync().some((character) => character.id === saveId);
+}
+
 export async function saveCharacter(character: CharacterBuild): Promise<CharacterBuild> {
   const now = new Date().toISOString();
   const normalizedCharacter = normalizeCharacterBuild({

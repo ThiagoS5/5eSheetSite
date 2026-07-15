@@ -11,7 +11,9 @@ import type {
 import type { CharacterSpellcastingChoices } from "@/types/spells";
 
 // v13: draft.description ganhou historia; playState ganhou campaignLog (defaulted migration).
-export const CHARACTER_BUILD_SCHEMA_VERSION = 13;
+// v14: novo step "subclasse" inserido após "recursos-classe"; maxUnlockedStepIndex de builds
+//      antigos é deslocado +1 quando já passava do ponto de inserção.
+export const CHARACTER_BUILD_SCHEMA_VERSION = 14;
 
 export interface CoinPouch {
   pc: number;
