@@ -34,16 +34,20 @@ export function MarkdownEditor({ value, onChange, ariaLabel, docId, preview = fa
   // CodeMirror "change" event isn't written back as a user edit.
   const swappingRef = useRef(false);
   const previewRef = useRef(preview);
-  previewRef.current = preview;
 
   // Latest props, so the mount-once effect and CM handlers read current values.
   const onChangeRef = useRef(onChange);
-  onChangeRef.current = onChange;
   const valueRef = useRef(value);
-  valueRef.current = value;
   // onChange bound to the doc actually loaded in the editor (updated on swap),
   // so a debounced write is always attributed to the right field.
   const activeOnChangeRef = useRef(onChange);
+
+  // Declared before the effects below so they always read this render's props.
+  useEffect(() => {
+    previewRef.current = preview;
+    onChangeRef.current = onChange;
+    valueRef.current = value;
+  });
 
   // Mount EasyMDE once for the component's lifetime.
   useEffect(() => {
@@ -115,7 +119,6 @@ export function MarkdownEditor({ value, onChange, ariaLabel, docId, preview = fa
         editorRef.current = null;
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Swap the loaded document when docId changes, without remounting EasyMDE.
@@ -143,7 +146,6 @@ export function MarkdownEditor({ value, onChange, ariaLabel, docId, preview = fa
     }
     swappingRef.current = false;
     activeOnChangeRef.current = onChangeRef.current;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [docId]);
 
   // Keep EasyMDE's preview state in sync with the `preview` prop. Runs after the
@@ -164,7 +166,6 @@ export function MarkdownEditor({ value, onChange, ariaLabel, docId, preview = fa
     } catch {
       // ignore — editor detached
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [preview, docId]);
 
   return (

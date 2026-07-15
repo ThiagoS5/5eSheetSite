@@ -12,6 +12,7 @@ import type {
   BuilderLanguage,
   BuilderSpecies,
   BuilderSubclass,
+  SpeciesDamageResistance,
 } from "@/types/builder";
 import {
   ATTRIBUTE_ABBREVIATION_MAP,
@@ -92,10 +93,31 @@ export function normalizeSpecies(
     choiceGroups: normalizeSpeciesChoiceGroups(race.entries),
     senses:
       typeof race.darkvision === "number" && race.darkvision > 0
-        ? [{ name: "Visao no Escuro", rangeFeet: race.darkvision }]
+        ? [{ name: "Darkvision", rangeFeet: race.darkvision }]
         : [],
+    resistances: normalizeDamageModifiers(race.resist),
+    immunities: normalizeDamageModifiers(race.immune).filter(
+      (entry): entry is string => typeof entry === "string",
+    ),
+    vulnerabilities: normalizeDamageModifiers(race.vulnerable).filter(
+      (entry): entry is string => typeof entry === "string",
+    ),
     detail: detail || `${race.name} species details.`,
   };
+}
+
+function normalizeDamageModifiers(raw: unknown): SpeciesDamageResistance[] {
+  if (!Array.isArray(raw)) return [];
+
+  return raw.flatMap((entry): SpeciesDamageResistance[] => {
+    if (typeof entry === "string") return [entry];
+    if (!entry || typeof entry !== "object") return [];
+    const choose = (entry as { choose?: { from?: unknown[] } }).choose;
+    const from = (choose?.from ?? []).filter(
+      (value): value is string => typeof value === "string",
+    );
+    return from.length > 0 ? [{ chooseFrom: from }] : [];
+  });
 }
 
 export function normalizeBackground(

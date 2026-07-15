@@ -16,6 +16,9 @@ export interface Raw5eRace {
   ability?: unknown;
   entries?: unknown[];
   darkvision?: number;
+  resist?: unknown[];
+  immune?: unknown[];
+  vulnerable?: unknown[];
 }
 
 export interface Raw5eRaceFile {

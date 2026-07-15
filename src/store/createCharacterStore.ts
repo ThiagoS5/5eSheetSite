@@ -35,7 +35,6 @@ import {
   EMPTY_COIN_POUCH,
 } from "@/src/types/characterBuild";
 import type {
-  CampaignLogEntry,
   CharacterBuild,
   CoinPouch,
   CreationPreferences,

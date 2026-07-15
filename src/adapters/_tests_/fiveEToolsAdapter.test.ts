@@ -110,11 +110,11 @@ it("marks the subclass-granting feature with grantsSubclass", () => {
 describe("species senses", () => {
   it("populates darkvision for a species that has it (real data)", () => {
     const withDarkvision = getBuilderSpecies().filter((s) =>
-      s.senses.some((sense) => sense.name === "Visao no Escuro"),
+      s.senses.some((sense) => sense.name === "Darkvision"),
     );
     expect(withDarkvision.length).toBeGreaterThan(0);
     for (const species of withDarkvision) {
-      const sense = species.senses.find((s) => s.name === "Visao no Escuro")!;
+      const sense = species.senses.find((s) => s.name === "Darkvision")!;
       expect(sense.rangeFeet).toBeGreaterThanOrEqual(60);
     }
   });

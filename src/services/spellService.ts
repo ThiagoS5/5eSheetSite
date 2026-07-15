@@ -3,10 +3,8 @@ import aiData from "@/public/data/spells/spells-ai.json";
 import aitfrAvtData from "@/public/data/spells/spells-aitfr-avt.json";
 import bmtData from "@/public/data/spells/spells-bmt.json";
 import efaData from "@/public/data/spells/spells-efa.json";
-import egwData from "@/public/data/spells/spells-egw.json";
 import frhofData from "@/public/data/spells/spells-frhof.json";
 import ftdData from "@/public/data/spells/spells-ftd.json";
-import ggrData from "@/public/data/spells/spells-ggr.json";
 import idrotfData from "@/public/data/spells/spells-idrotf.json";
 import llkData from "@/public/data/spells/spells-llk.json";
 import phbData from "@/public/data/spells/spells-phb.json";
@@ -39,10 +37,8 @@ const spellFiles: SpellFile[] = [
   aitfrAvtData,
   bmtData,
   efaData,
-  egwData,
   frhofData,
   ftdData,
-  ggrData,
   idrotfData,
   llkData,
   phbData,

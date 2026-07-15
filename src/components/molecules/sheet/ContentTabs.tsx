@@ -12,7 +12,7 @@ import { SheetTabPanel } from "@/src/components/organisms/sheet/SheetTabPanel";
 import { NotesPanel } from "@/src/components/organisms/sheet/NotesPanel";
 
 type MainTab = "actions" | "spells" | "inventory" | "features" | "sheet" | "notes";
-type OriginFilter = "all" | "class" | "species" | "background";
+type OriginFilter = "all" | "class" | "species" | "background" | "feat";
 type InvFilter = "all" | "weapons" | "armor" | "utility" | "magic";
 
 const MAIN_TABS: { id: MainTab; label: string; icon: string }[] = [
@@ -29,6 +29,7 @@ const ORIGIN_FILTERS: { id: OriginFilter; label: string }[] = [
   { id: "class",      label: "Class" },
   { id: "species",    label: "Species" },
   { id: "background", label: "Background" },
+  { id: "feat",       label: "Feats" },
 ];
 
 const INV_FILTERS: { id: InvFilter; label: string }[] = [
@@ -38,6 +39,13 @@ const INV_FILTERS: { id: InvFilter; label: string }[] = [
   { id: "utility", label: "Utility" },
   { id: "magic",   label: "Magic" },
 ];
+
+const ORIGIN_BADGE_LABELS: Record<Exclude<OriginFilter, "all">, string> = {
+  class: "Class",
+  species: "Species",
+  background: "Background",
+  feat: "Feat",
+};
 
 const MAGIC_CATS = new Set(["Ring", "Rod", "Scroll", "Staff", "Wand", "Wondrous", "Potion"]);
 
@@ -373,7 +381,7 @@ export function ContentTabs({ summary, description }: ContentTabsProps) {
                         className="whitespace-nowrap rounded border px-[7px] py-0.5 text-[8.5px] font-bold uppercase tracking-[0.1em]"
                         style={{ color: v.color, background: v.colorBg, borderColor: v.colorSoft }}
                       >
-                        {f.source === "class" ? "Class" : f.source === "species" ? "Species" : "Background"}
+                        {ORIGIN_BADGE_LABELS[f.source]}
                       </span>
                     </div>
                     {f.description && <p className="m-0 text-xs leading-relaxed text-subdued">{f.description}</p>}

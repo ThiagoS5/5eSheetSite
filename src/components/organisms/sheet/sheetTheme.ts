@@ -6,12 +6,13 @@ export const SHEET_THEME_VARS = {
   "--brand-crimson-alt": "oklch(0.53 0.2 28)",
 } as CSSProperties;
 
-export type OriginSource = "class" | "species" | "background";
+export type OriginSource = "class" | "species" | "background" | "feat";
 
 const ORIGIN_COLOR: Record<OriginSource, string> = {
   class: "var(--brand-gold-alt)",
   species: "var(--brand-green)",
   background: "var(--brand-blue)",
+  feat: "var(--brand-crimson-alt)",
 };
 
 export function originColor(source: OriginSource): string {

@@ -1,4 +1,10 @@
-import type { BuilderChoiceOption, BuilderClass } from "@/types/builder";
+import type {
+  BuilderChoiceOption,
+  BuilderClass,
+  BuilderFeat,
+  SheetFeature,
+} from "@/types/builder";
+import type { AsiOrFeatChoice } from "@/src/types/characterBuild";
 
 
 export const ASI_FEATURE_NAME = "Ability Score Improvement";
@@ -69,4 +75,21 @@ export function getLevelRequirements(
   }
 
   return requirements.sort((a, b) => a.level - b.level);
+}
+
+/** Feats picked on ASI-or-feat levels, as sheet features (mechanics apply elsewhere). */
+export function deriveChosenFeatSummaries(
+  asiOrFeatByLevel: Record<number, AsiOrFeatChoice>,
+  characterLevel: number,
+  feats: readonly BuilderFeat[],
+): SheetFeature[] {
+  return Object.entries(asiOrFeatByLevel)
+    .filter(([level, choice]) => Number(level) <= characterLevel && choice.mode === "feat")
+    .sort(([a], [b]) => Number(a) - Number(b))
+    .flatMap(([, choice]) => {
+      if (choice.mode !== "feat") return [];
+      const feat = feats.find((entry) => entry.id === choice.featId);
+      if (!feat) return [];
+      return [{ name: feat.name, description: feat.description, source: "feat" as const }];
+    });
 }

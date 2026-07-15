@@ -16,6 +16,26 @@ const allowedDomains = [
   "conditions",
 ];
 
+// Files inside allowed domains that no code imports (see src/services/*).
+// spells-egw/ggr have no entry in spells/sources.json, so their spells can
+// never be assigned to a class in the picker.
+const unusedFiles = [
+  "conditionsdiseases.json",
+  "optionalfeatures.json",
+  "foundry-feats.json",
+  "foundry-items.json",
+  "foundry-optionalfeatures.json",
+  "foundry-races.json",
+  "class/class-mystic.json",
+  "class/class-sidekick.json",
+  "class/foundry.json",
+  "class/index.json",
+  "spells/foundry.json",
+  "spells/index.json",
+  "spells/spells-egw.json",
+  "spells/spells-ggr.json",
+];
+
 function assertInsideDataDir(targetPath) {
   const resolvedTarget = path.resolve(targetPath);
   const resolvedDataDir = path.resolve(dataDir);
@@ -155,6 +175,13 @@ function main() {
   }
 
   removed = addStats(removed, pruneFluffEntries(dataDir));
+
+  for (const relativePath of unusedFiles) {
+    const entryPath = path.join(dataDir, relativePath);
+    if (fs.existsSync(entryPath)) {
+      removed = addStats(removed, removeEntry(entryPath));
+    }
+  }
 
   console.log(
     `Removed ${removed.files} files and ${removed.directories} directories (${formatBytes(

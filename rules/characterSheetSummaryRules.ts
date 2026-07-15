@@ -11,7 +11,9 @@ import {
   deriveCarriedLoadKg,
   deriveSelectedEquipment,
 } from "@/rules/inventoryRules";
+import { deriveChosenFeatSummaries } from "@/rules/levelProgression";
 import { deriveBuilderPendencies } from "@/rules/pendencyRules";
+import { deriveSpeciesImmunities, deriveSpeciesResistances, deriveSpeciesVulnerabilities } from "@/rules/speciesDefenseRules";
 import { computePassives, computeSkills } from "@/rules/skillRules";
 import {
   computeSavingThrows,
@@ -204,9 +206,9 @@ export function selectCharacterSheetSummary(
     senses: species?.senses ?? [],
     languages: [...state.speciesLanguages, ...featEffects.languageProficiencies],
     toolProficiencies: [...new Set(featEffects.toolProficiencies)],
-    resistances: [],
-    immunities: [],
-    vulnerabilities: [],
+    resistances: deriveSpeciesResistances(species, state.speciesChoices),
+    immunities: deriveSpeciesImmunities(species),
+    vulnerabilities: deriveSpeciesVulnerabilities(species),
     features: deriveFeatures({ classFeaturesUpToLevel, characterClass, state, species, background }),
     weapons: deriveAttacks({
       finalAttributes,
@@ -329,6 +331,7 @@ function deriveFeatures(input: {
           source: "background" as const,
         }]
       : []),
+    ...deriveChosenFeatSummaries(input.state.asiOrFeatByLevel, input.state.level, getFeats()),
   ].filter((feature) => feature.name);
 }
 

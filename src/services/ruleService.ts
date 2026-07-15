@@ -110,7 +110,7 @@ export function getDataSourceAudit(): DataSourceAuditEntry[] {
     },
     {
       step: "Ability Scores",
-      files: ["data/charcreationoptions.json", "data/backgrounds.json"],
+      files: ["data/backgrounds.json"],
       purpose: "Attribute generation methods and background ability choices.",
     },
     {

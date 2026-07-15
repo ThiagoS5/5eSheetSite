@@ -1,4 +1,5 @@
 import foundryReference from "@/src/_references/foundry-reference.json";
+import { getBuilderClasses } from "@/src/services/ruleService";
 import type { CharacterBuilderState } from "@/src/store/characterStore.types";
 import type {
   BuilderEquipmentOption,
@@ -187,6 +188,38 @@ const TOOL_TO_FOUNDRY: Record<string, string> = {
   "woodcarver's tools": "woodcarver",
 };
 
+// 5etools single-letter school codes -> dnd5e three-letter codes.
+const SPELL_SCHOOL_CODES: Record<string, string> = {
+  A: "abj",
+  C: "con",
+  D: "div",
+  E: "enc",
+  V: "evo",
+  I: "ill",
+  N: "nec",
+  T: "trs",
+};
+
+const SPELL_SCHOOL_BY_NAME: Record<string, string> = {
+  abjuration: "abj",
+  conjuration: "con",
+  divination: "div",
+  enchantment: "enc",
+  evocation: "evo",
+  illusion: "ill",
+  necromancy: "nec",
+  transmutation: "trs",
+};
+
+// 5etools casterProgression -> dnd5e spellcasting progression.
+const CASTER_PROGRESSION_TO_FOUNDRY: Record<string, string> = {
+  full: "full",
+  "1/2": "half",
+  "1/3": "third",
+  pact: "pact",
+  artificer: "artificer",
+};
+
 const DAMAGE_TYPES: Record<string, string> = {
   B: "bludgeoning",
   Bludgeoning: "bludgeoning",
@@ -220,7 +253,11 @@ export function createFoundryCharacterExport(
   actor.system.currency = mapCurrency(summary);
   actor.system.details = mapDetails(actor.system.details, state, summary, identity);
   actor.system.skills = mapSkills(actor.system.skills ?? {}, summary);
-  actor.system.spells = mapSpellSlots(actor.system.spells, summary);
+  actor.system.spells = mapSpellSlots(
+    actor.system.spells,
+    summary,
+    getFoundryCasterProgression(summary) === "pact",
+  );
   actor.system.tools = mapTools(actor.system.tools ?? {}, summary);
   actor.system.traits = mapTraits(actor.system.traits ?? {}, summary);
 
@@ -364,11 +401,13 @@ function mapSkills(
 function mapSpellSlots(
   current: FoundryCharacterSystem["spells"] | undefined,
   summary: CharacterSheetSummary,
+  isPactCaster: boolean,
 ): FoundrySpellSlots {
+  const leveledSlots = isPactCaster ? [] : summary.spellcasting?.slots ?? [];
   const slots = Object.fromEntries(
     Array.from({ length: 9 }, (_, index) => {
       const level = index + 1;
-      const source = summary.spellcasting?.slots.find((slot) => slot.level === level);
+      const source = leveledSlots.find((slot) => slot.level === level);
       return [
         `spell${level}`,
         {
@@ -379,12 +418,20 @@ function mapSpellSlots(
       ];
     }),
   ) as FoundrySpellSlots;
+  const pactSlot = isPactCaster ? summary.spellcasting?.slots[0] : undefined;
   slots.pact = {
     ...(current?.pact ?? {}),
-    value: 0,
-    max: 0,
+    value: pactSlot?.remaining ?? 0,
+    max: pactSlot?.total ?? 0,
   };
   return slots;
+}
+
+function getFoundryCasterProgression(summary: CharacterSheetSummary): string {
+  if (!summary.isSpellcaster) return "none";
+  const characterClass = getBuilderClasses().find((entry) => entry.id === summary.classId);
+  const progression = characterClass?.spellcastingProgression?.casterProgression ?? "";
+  return CASTER_PROGRESSION_TO_FOUNDRY[progression] ?? "full";
 }
 
 function mapTools(
@@ -439,13 +486,9 @@ function createFoundryItems(
   summary: CharacterSheetSummary,
 ): FoundryItemExport[] {
   const identity = createIdentityItems(state, summary);
+  // summary.features already carries class, subclass, species, and origin-feat
+  // features; re-adding selectedTraits/classFeatures would duplicate items.
   const featureItems = [
-    ...summary.selectedTraits.map((trait) =>
-      createFeatureItem(trait.name, trait.description, "race"),
-    ),
-    ...summary.classFeatures.map((feature) =>
-      createFeatureItem(feature.name, feature.description, "class"),
-    ),
     ...summary.features.map((feature) => createSheetFeatureItem(feature)),
     ...Object.entries(summary.classFeatureChoices).map(([choiceId, values]) =>
       createFeatureItem(titleFromId(choiceId), values.join(", "), "class"),
@@ -456,10 +499,20 @@ function createFoundryItems(
   );
   const spellItems = createSpellItems(summary);
 
-  return [...identity, ...featureItems, ...inventoryItems, ...spellItems].map((item, index) => ({
-    ...item,
-    sort: index * 100000,
-  }));
+  const usedIds = new Set<string>();
+  return [...identity, ...featureItems, ...inventoryItems, ...spellItems].map((item, index) => {
+    let id = item._id;
+    let salt = 0;
+    while (usedIds.has(id)) {
+      id = createFoundryId(`${item._id}:${++salt}`);
+    }
+    usedIds.add(id);
+    return {
+      ...item,
+      _id: id,
+      sort: index * 100000,
+    };
+  });
 }
 
 function createIdentityItems(
@@ -480,7 +533,7 @@ function createIdentityItems(
         levels: summary.level,
         hd: { denomination: summary.hitDice.split("d")[1] ? `d${summary.hitDice.split("d")[1]}` : "d6", spent: 0, additional: "" },
         spellcasting: {
-          progression: summary.isSpellcaster ? "full" : "none",
+          progression: getFoundryCasterProgression(summary),
           ability: summary.spellcasting ? ATTRIBUTE_TO_FOUNDRY[summary.spellcasting.ability] : "",
           preparation: {},
         },
@@ -558,7 +611,7 @@ function createSheetFeatureItem(feature: SheetFeature): FoundryItemExport {
 function createFeatureItem(
   name: string,
   description: string,
-  source: "background" | "class" | "race" | "species",
+  source: "background" | "class" | "feat" | "race" | "species",
 ): FoundryItemExport {
   const typeValue = source === "species" ? "race" : source;
   return createBaseItem({
@@ -819,7 +872,7 @@ function createSpellItem(
       source: createSource(spell.source),
       description: createDescription(spell.description),
       level: spell.level,
-      school: spell.schoolCode || spell.school.toLowerCase().slice(0, 3),
+      school: toFoundrySpellSchool(spell),
       properties: parseSpellProperties(spell.components, spell.duration),
       ability: summary.spellcasting ? ATTRIBUTE_TO_FOUNDRY[summary.spellcasting.ability] : "",
       materials: { value: parseMaterialComponent(spell.components), consumed: false, cost: 0, supply: 0 },
@@ -1025,9 +1078,23 @@ function titleFromId(id: string): string {
     .join(" ");
 }
 
+function toFoundrySpellSchool(spell: BuilderSpell): string {
+  const code = spell.schoolCode ?? "";
+  const mapped = SPELL_SCHOOL_CODES[code.toUpperCase()];
+  if (mapped) return mapped;
+  if (/^[a-z]{3}$/i.test(code)) return code.toLowerCase();
+  return SPELL_SCHOOL_BY_NAME[spell.school.toLowerCase()] ?? "";
+}
+
+// Deterministic 16-char alphanumeric id derived from the full input string,
+// so long names that share a prefix cannot collide.
 function createFoundryId(value: string): string {
-  return value
-    .replace(/[^a-zA-Z0-9]/g, "")
-    .slice(0, 16)
-    .padEnd(16, "0");
+  let h1 = 0x811c9dc5;
+  let h2 = 0xcbf29ce4;
+  for (let index = 0; index < value.length; index++) {
+    const code = value.charCodeAt(index);
+    h1 = Math.imul(h1 ^ code, 0x01000193) >>> 0;
+    h2 = Math.imul(h2 ^ code, 0x85ebca6b) >>> 0;
+  }
+  return `${h1.toString(36)}${h2.toString(36)}`.padEnd(16, "0").slice(0, 16);
 }

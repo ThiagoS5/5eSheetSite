@@ -99,8 +99,14 @@ export interface BuilderSpecies {
   abilityBonuses: AttributeBonuses[];
   choiceGroups: BuilderChoiceGroup[];
   senses: SheetSense[];
+  /** Fixed damage resistances plus choice-based ones (e.g. Draconic Ancestry). */
+  resistances: SpeciesDamageResistance[];
+  immunities: string[];
+  vulnerabilities: string[];
   detail: string;
 }
+
+export type SpeciesDamageResistance = string | { chooseFrom: string[] };
 
 export interface BuilderAbilityOption {
   mode: "+2/+1" | "+1/+1/+1";
@@ -355,7 +361,7 @@ export interface SheetSense {
 export interface SheetFeature {
   name: string;
   description: string;
-  source: "class" | "species" | "background";
+  source: "class" | "species" | "background" | "feat";
 }
 
 export interface SheetWeapon {

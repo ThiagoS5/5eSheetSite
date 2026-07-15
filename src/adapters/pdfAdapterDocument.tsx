@@ -55,6 +55,7 @@ const SOURCE_LABELS: Record<SheetFeature["source"], string> = {
   background: "Background",
   class: "Class",
   species: "Species",
+  feat: "Feat",
 };
 
 export function buildPdfDocument(
