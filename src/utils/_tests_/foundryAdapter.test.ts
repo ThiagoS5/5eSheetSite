@@ -1,7 +1,13 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import * as itemCatalogService from "@/src/services/itemCatalogService";
+import * as spellService from "@/src/services/spellService";
 import { createFoundryCharacterExport } from "@/src/utils/foundryAdapter";
 import type { CharacterBuilderState } from "@/src/store/characterStore.types";
 import type { CharacterSheetSummary } from "@/src/types/builder";
+
+afterEach(() => {
+  vi.restoreAllMocks();
+});
 
 const state: CharacterBuilderState = {
   ruleset: "2024",
@@ -402,6 +408,56 @@ describe("foundryAdapter", () => {
     });
   });
 
+  it("exports inventory items with real descriptions, images, and usable activities", () => {
+    const actor = createFoundryCharacterExport(state, summary);
+    const itemByName = new Map(actor.items.map((item) => [item.name, item]));
+    const chainMail = itemByName.get("Chain Mail");
+    const longsword = itemByName.get("Longsword");
+    const potion = itemByName.get("Potion of Healing");
+
+    expect(chainMail?.img).toBe(
+      "https://raw.githubusercontent.com/5etools-mirror-3/5etools-img/main/items/XPHB/Chain%20Mail.webp",
+    );
+    expect((chainMail?.system.description as { value?: string }).value).toContain("Armor Class 16");
+
+    expect(longsword?.img).toBe(
+      "https://raw.githubusercontent.com/5etools-mirror-3/5etools-img/main/items/XPHB/Longsword.webp",
+    );
+    const weaponActivities = longsword?.system.activities as Record<string, { name?: string }> | undefined;
+    expect(Object.values(weaponActivities ?? {})[0]).toMatchObject({
+      type: "attack",
+      name: "Attack",
+      target: { affects: { count: "1", type: "creature" } },
+    });
+
+    expect(potion?.img).toBe(
+      "https://raw.githubusercontent.com/5etools-mirror-3/5etools-img/main/items/XDMG/Potion%20of%20Healing.webp",
+    );
+    expect((potion?.system.description as { value?: string }).value).toContain("regains");
+    const potionActivities = potion?.system.activities as Record<string, { name?: string }> | undefined;
+    expect(Object.values(potionActivities ?? {})[0]).toMatchObject({
+      name: "Use",
+      activation: { type: "bonus" },
+      target: { affects: { count: "1", type: "creature" } },
+    });
+  });
+
+  it("loads the item catalog once while enriching one Foundry export inventory", () => {
+    const catalogSpy = vi.spyOn(itemCatalogService, "getItemCatalog");
+
+    createFoundryCharacterExport(state, summary);
+
+    expect(catalogSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it("loads the spell catalog once while enriching one Foundry export spell list", () => {
+    const catalogSpy = vi.spyOn(spellService, "getSpellCatalog");
+
+    createFoundryCharacterExport(state, summary);
+
+    expect(catalogSpy).toHaveBeenCalledTimes(1);
+  });
+
   it("exports unique 16-char alphanumeric item ids even for long similar names", () => {
     const longNameSummary: CharacterSheetSummary = {
       ...summary,
@@ -501,5 +557,142 @@ describe("foundryAdapter", () => {
         sourceClass: "fighter",
       },
     });
+  });
+
+  it("exports spells with Foundry-ready description, image, target, uses, and cast activity", () => {
+    const actor = createFoundryCharacterExport(state, summary);
+    const magicMissile = actor.items.find(
+      (item) => item.type === "spell" && item.name === "Magic Missile",
+    );
+
+    expect(magicMissile?.img).toBe(
+      "https://raw.githubusercontent.com/5etools-mirror-3/5etools-img/main/spells/XPHB/Magic%20Missile.webp",
+    );
+    expect((magicMissile?.system.description as { value?: string }).value).toContain("one more dart");
+    expect(magicMissile?.system.source).toMatchObject({ book: "PHB 2024", rules: "2024" });
+    expect(magicMissile?.system.target).toMatchObject({
+      affects: { type: "creature" },
+    });
+    expect(magicMissile?.system.uses).toMatchObject({ max: "", spent: 0, recovery: [] });
+
+    const activities = magicMissile?.system.activities as Record<string, Record<string, unknown>> | undefined;
+    const castActivity = Object.values(activities ?? {})[0];
+    expect(castActivity).toMatchObject({
+      type: "utility",
+      name: "Cast",
+      consumption: { spellSlot: true },
+      range: { value: "120", units: "ft" },
+      target: { affects: { type: "creature" }, prompt: true },
+      uses: { spent: 0, recovery: [] },
+    });
+  });
+
+  it("infers Foundry targets for self and object edge-case spell wording", () => {
+    const edgeCaseSummary: CharacterSheetSummary = {
+      ...summary,
+      spellcasting: {
+        ...summary.spellcasting!,
+        cantrips: [
+          {
+            id: "blade-ward-xphb",
+            name: "Blade Ward",
+            source: "XPHB",
+            level: 0,
+            school: "Abjuration",
+            schoolCode: "abj",
+            classNames: ["Wizard"],
+            castingTime: "Action",
+            range: "Self",
+            duration: "Concentration, up to 1 minute",
+            components: "V, S",
+            description:
+              "Whenever a creature makes an attack roll against you before the spell ends, the attacker subtracts 1d4 from the attack roll.",
+          },
+          {
+            id: "light-xphb",
+            name: "Light",
+            source: "XPHB",
+            level: 0,
+            school: "Evocation",
+            schoolCode: "evo",
+            classNames: ["Wizard"],
+            castingTime: "Action",
+            range: "Touch",
+            duration: "1 hour",
+            components: "V, M",
+            description:
+              "You touch one Large or smaller object that isn't being worn or carried by someone else.",
+          },
+        ],
+        knownSpells: [],
+        preparedSpells: [],
+      },
+    };
+    const actor = createFoundryCharacterExport(state, edgeCaseSummary);
+    const itemByName = new Map(actor.items.map((item) => [item.name, item]));
+    const bladeWard = itemByName.get("Blade Ward");
+    const light = itemByName.get("Light");
+    const bladeWardActivities = bladeWard?.system.activities as
+      | Record<string, Record<string, unknown>>
+      | undefined;
+    const bladeWardCast = Object.values(bladeWardActivities ?? {})[0];
+
+    expect(bladeWard?.system.target).toMatchObject({
+      affects: { count: "", type: "", special: "Self" },
+    });
+    expect(bladeWardCast).toMatchObject({
+      target: { affects: { count: "", type: "", special: "Self" } },
+    });
+    expect(light?.system.target).toMatchObject({
+      affects: { count: "1", type: "object", special: "" },
+    });
+  });
+
+  it("promotes legacy PHB inventory and spell choices to 2024 catalog data", () => {
+    const legacySummary: CharacterSheetSummary = {
+      ...summary,
+      inventory: [
+        {
+          item: {
+            ...summary.inventory[0].item,
+            id: "chain-mail-phb",
+            source: "PHB",
+            hasFluffImages: true,
+          },
+          quantity: 1,
+        },
+      ],
+      spellcasting: {
+        ...summary.spellcasting!,
+        cantrips: [],
+        knownSpells: [],
+        preparedSpells: [
+          {
+            ...summary.spellcasting!.preparedSpells[0],
+            id: "magic-missile-phb",
+            source: "PHB",
+            description: "Legacy PHB text.",
+            hasFluffImages: true,
+          },
+        ],
+      },
+    };
+    const actor = createFoundryCharacterExport(state, legacySummary);
+    const chainMail = actor.items.find((item) => item.name === "Chain Mail");
+    const magicMissile = actor.items.find(
+      (item) => item.type === "spell" && item.name === "Magic Missile",
+    );
+
+    expect(chainMail?.img).toBe(
+      "https://raw.githubusercontent.com/5etools-mirror-3/5etools-img/main/items/XPHB/Chain%20Mail.webp",
+    );
+    expect(chainMail?.system.source).toMatchObject({ book: "PHB 2024", rules: "2024" });
+    expect((chainMail?.system.description as { value?: string }).value).toContain("Armor Class 16");
+
+    expect(magicMissile?.img).toBe(
+      "https://raw.githubusercontent.com/5etools-mirror-3/5etools-img/main/spells/XPHB/Magic%20Missile.webp",
+    );
+    expect(magicMissile?.system.source).toMatchObject({ book: "PHB 2024", rules: "2024" });
+    expect((magicMissile?.system.description as { value?: string }).value).toContain("one more dart");
   });
 });

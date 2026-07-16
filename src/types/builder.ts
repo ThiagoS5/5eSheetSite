@@ -214,6 +214,7 @@ export interface CatalogItem {
   category: ItemCategory;
   type?: InventoryItemType;
   detail?: string;
+  hasFluffImages?: boolean;
   rarity?: string;
   isMagical: boolean;
   isCommon: boolean;
@@ -245,6 +246,7 @@ export interface BuilderEquipmentOption {
   category: ItemCategory;
   type?: InventoryItemType;
   detail?: string;
+  hasFluffImages?: boolean;
   rarity?: string;
   isMagical?: boolean;
   isCommon?: boolean;

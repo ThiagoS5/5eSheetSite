@@ -136,6 +136,7 @@ export function normalizeCatalogItem(rawItem: Raw5eItem): CatalogItem {
     category: resolveCategory(rawItem),
     type: resolveInventoryType(rawItem),
     detail: detail || undefined,
+    hasFluffImages: rawItem.hasFluffImages,
     rarity,
     isMagical: Boolean(rarity) && rarity !== "none",
     isCommon: rarity === "common",

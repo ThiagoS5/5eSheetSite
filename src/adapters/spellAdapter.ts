@@ -23,6 +23,7 @@ export interface RawSpell {
   };
   entries?: unknown[];
   entriesHigherLevel?: unknown[];
+  hasFluffImages?: boolean;
 }
 
 const SCHOOL_NAMES: Record<string, SpellSchool> = {
@@ -52,7 +53,8 @@ export function normalizeSpell(
     range: formatRange(raw.range),
     duration: formatDuration(raw.duration),
     components: formatComponents(raw.components),
-    description: formatSpellEntries(raw.entries),
+    description: formatSpellEntries([...(raw.entries ?? []), ...(raw.entriesHigherLevel ?? [])]),
+    hasFluffImages: raw.hasFluffImages,
   };
 }
 
