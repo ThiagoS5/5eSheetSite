@@ -49,6 +49,20 @@ describe("preferencesService", () => {
     );
   });
 
+  it("preserves unversioned custom source preferences while forcing XPHB", () => {
+    localStorage.setItem(
+      "forge-fate-preferences:v1",
+      JSON.stringify({
+        creationDefaults: { activeSources: ["EFA"], progressionMode: "xp" },
+      }),
+    );
+
+    expect(readGlobalPreferences().creationDefaults).toEqual({
+      activeSources: ["XPHB", "EFA"],
+      progressionMode: "xp",
+    });
+  });
+
   it("preserves versioned XPHB-only custom preferences", () => {
     localStorage.setItem(
       "forge-fate-preferences:v1",
