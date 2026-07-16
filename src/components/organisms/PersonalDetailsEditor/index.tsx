@@ -59,6 +59,8 @@ const labelCls =
 
 const AGE_MAX = 999999;
 
+type NarrativeSuggestionField = "aparencia" | "personalidade" | "historia" | "notas";
+
 function SuggestButton({
   label,
   onClick,
@@ -87,23 +89,17 @@ export function PersonalDetailsEditor({
 }: PersonalDetailsEditorProps) {
   const description = useCharacterStore((s) => s.description);
   const setDescriptionField = useCharacterStore((s) => s.setDescriptionField);
-  const recommendations = useMemo(
-    () =>
-      getPersonalDetailsRecommendations({
-        species: selectedSpecies,
-        background: selectedBackground,
-        characterClass: selectedClass,
-      }),
-    [selectedBackground, selectedClass, selectedSpecies],
-  );
-  const guidedFieldHelp = useMemo(
-    () => buildPersonalDetailsFieldHelp(recommendations),
-    [recommendations],
-  );
-
   const { weightValue, weightUnit } = parseWeight(description.weight);
+  const [suggestionIndexes, setSuggestionIndexes] = useState<
+    Record<NarrativeSuggestionField, number>
+  >({
+    aparencia: 0,
+    personalidade: 0,
+    historia: 0,
+    notas: 0,
+  });
 
-  const { register, handleSubmit, control, setValue, formState: { errors } } =
+  const { register, control, setValue, getValues, formState: { errors } } =
     useForm<PersonalDetailsForm>({
       resolver: zodResolver(personalDetailsSchema),
       mode: "onBlur",
@@ -123,26 +119,54 @@ export function PersonalDetailsEditor({
         aparencia: description.aparencia ?? "",
         personalidade: description.personalidade ?? "",
         tracos: description.tracos ?? "",
+        historia: description.historia || description.tracos || "",
         notas: description.notas ?? "",
       },
     });
 
   const currentUnit = useWatch({ control, name: "weightUnit" });
+  const currentAlignment = useWatch({ control, name: "alinhamento" });
+  const recommendations = useMemo(
+    () =>
+      getPersonalDetailsRecommendations({
+        species: selectedSpecies,
+        background: selectedBackground,
+        characterClass: selectedClass,
+        alignment: currentAlignment || description.alinhamento,
+      }),
+    [
+      currentAlignment,
+      description.alinhamento,
+      selectedBackground,
+      selectedClass,
+      selectedSpecies,
+    ],
+  );
+  const guidedFieldHelp = useMemo(
+    () => buildPersonalDetailsFieldHelp(recommendations),
+    [recommendations],
+  );
 
-  const narrativeSuggestions = {
-    aparencia: recommendations.appearance,
-    personalidade: recommendations.personality,
-    tracos: recommendations.backstory,
-    notas: recommendations.notes,
-  } as const;
+  const narrativeSuggestions = recommendations.suggestions;
 
-  function applySuggestion(field: keyof typeof narrativeSuggestions) {
-    setValue(field, narrativeSuggestions[field], { shouldDirty: true });
+  function applySuggestion(field: NarrativeSuggestionField) {
+    const suggestions = narrativeSuggestions[field];
+    const index = suggestionIndexes[field] % suggestions.length;
+    setValue(field, suggestions[index], {
+      shouldDirty: true,
+      shouldTouch: true,
+      shouldValidate: true,
+    });
+    setSuggestionIndexes((current) => ({
+      ...current,
+      [field]: current[field] + 1,
+    }));
     void persist();
   }
 
-  const persist = handleSubmit((data) => {
-    setDescriptionField("nome", data.nome);
+  function persist() {
+    const data = getValues();
+    setDescriptionField("nome", data.nome ?? "");
     setDescriptionField("alinhamento", data.alinhamento ?? "");
     setDescriptionField("faith", data.faith ?? "");
     setDescriptionField("lifestyle", data.lifestyle ?? "");
@@ -154,10 +178,10 @@ export function PersonalDetailsEditor({
     setDescriptionField("hair", data.hair ?? "");
     setDescriptionField("aparencia", data.aparencia ?? "");
     setDescriptionField("personalidade", data.personalidade ?? "");
-    setDescriptionField("tracos", data.tracos ?? "");
+    setDescriptionField("historia", data.historia ?? "");
     setDescriptionField("notas", data.notas ?? "");
     setDescriptionField("weight", formatWeight(data.weightValue, data.weightUnit));
-  });
+  }
 
   function selectWeightUnit(unit: WeightUnit) {
     setValue("weightUnit", unit);
@@ -482,22 +506,22 @@ export function PersonalDetailsEditor({
           <div>
             <div className="flex items-start justify-between gap-2">
               <FieldLabel
-                htmlFor="pd-tracos"
+                htmlFor="pd-historia"
                 label="Backstory"
-                help={guidedFieldHelp.tracos}
+                help={guidedFieldHelp.historia}
                 showHelp={beginnerMode}
               />
               <SuggestButton
                 label="Backstory"
-                onClick={() => applySuggestion("tracos")}
+                onClick={() => applySuggestion("historia")}
               />
             </div>
             <textarea
-              id="pd-tracos"
+              id="pd-historia"
               className={textareaCls}
               rows={4}
               placeholder="Where they came from, what they lived through, and what brought them here..."
-              {...register("tracos")}
+              {...register("historia")}
             />
           </div>
           <div>

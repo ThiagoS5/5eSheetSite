@@ -32,6 +32,17 @@ describe("HeroChoiceCard", () => {
     expect(screen.getByText("A master of martial combat.")).toBeInTheDocument();
   });
 
+  it("renders badge titles for source abbreviations", () => {
+    renderCard({
+      badges: [{ label: "XPHB", title: "Player's Handbook 2024" }, "Martial"],
+    });
+
+    const badge = screen.getByText("XPHB");
+    expect(badge).toHaveAttribute("title", "Player's Handbook 2024");
+    expect(badge).toHaveAttribute("translate", "no");
+    expect(badge).toHaveClass("notranslate");
+  });
+
   it("fires the details and select handlers from their buttons", () => {
     const props = renderCard();
 
@@ -41,5 +52,18 @@ describe("HeroChoiceCard", () => {
 
     expect(props.onClickDetails).toHaveBeenCalled();
     expect(props.onClickSelect).toHaveBeenCalled();
+  });
+
+  it("stretches to the height of its grid cell", () => {
+    const { container } = render(<HeroChoiceCard
+      title="Aasimar"
+      badges={["XPHB"]}
+      description="Mortals with celestial sparks."
+      isActive={false}
+      onClickDetails={vi.fn()}
+      onClickSelect={vi.fn()}
+    />);
+
+    expect(container.querySelector("article")).toHaveClass("h-full");
   });
 });

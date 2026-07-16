@@ -8,7 +8,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import { PersonalDetailsEditor } from "@/src/components/organisms/PersonalDetailsEditor";
 import { createCharacterStore } from "@/src/store/createCharacterStore";
 import { CharacterStoreProvider } from "@/src/store/useCharacterStore";
-import { getBuilderBackgrounds } from "@/src/services/ruleService";
+import { getBuilderBackgrounds, getBuilderSpecies } from "@/src/services/ruleService";
 import { getPersonalDetailsRecommendations } from "@/src/data/personalDetailsRecommendations";
 
 describe("PersonalDetailsEditor portrait gallery", () => {
@@ -95,5 +95,51 @@ describe("PersonalDetailsEditor portrait gallery", () => {
     await user.keyboard("End");
     await user.type(field, " Edited.");
     expect(field.value).toContain("Edited.");
+  });
+
+  it("cycles through contextual personality suggestions", async () => {
+    const user = userEvent.setup();
+    const species = getBuilderSpecies().find((entry) => entry.id === "elf-xphb");
+    const background = getBuilderBackgrounds().find((b) => b.id === "acolyte-xphb");
+    const recommendations = getPersonalDetailsRecommendations({
+      species,
+      background,
+      alignment: "Lawful Good",
+    });
+    const store = createCharacterStore();
+    render(
+      <CharacterStoreProvider store={store}>
+        <PersonalDetailsEditor selectedSpecies={species} selectedBackground={background} />
+      </CharacterStoreProvider>,
+    );
+
+    await user.selectOptions(screen.getByLabelText(/alignment/i), "Lawful Good");
+    await user.click(
+      screen.getByRole("button", { name: /suggest personality & mannerisms/i }),
+    );
+    await user.click(
+      screen.getByRole("button", { name: /suggest personality & mannerisms/i }),
+    );
+
+    const field = document.getElementById("pd-personalidade") as HTMLTextAreaElement;
+    expect(field.value).toBe(recommendations.suggestions.personalidade[1]);
+    expect(field.value.toLowerCase()).not.toMatch(/sleep|sleepwalk|sleepwalking/);
+  });
+
+  it("persists the Backstory field to notes-backstory history", async () => {
+    const user = userEvent.setup();
+    const store = createCharacterStore();
+    render(
+      <CharacterStoreProvider store={store}>
+        <PersonalDetailsEditor />
+      </CharacterStoreProvider>,
+    );
+
+    const backstory = screen.getByLabelText("Backstory");
+    await user.type(backstory, "Raised on caravan roads.");
+    await user.tab();
+
+    expect(store.getState().description.historia).toBe("Raised on caravan roads.");
+    expect(store.getState().description.tracos).toBe("");
   });
 });

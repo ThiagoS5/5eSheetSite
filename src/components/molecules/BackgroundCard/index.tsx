@@ -11,6 +11,7 @@ import type { BuilderBackground } from "@/src/types/builder";
 import type { RulesTextNode } from "@/src/types/rulesText";
 import { parseRulesText } from "@/src/adapters/rulesTextAst";
 import { RulesTextView } from "@/src/components/molecules/RulesTextView";
+import { getSourceBookTitle } from "@/src/services/sourcePreferenceService";
 import {
   ATTRIBUTE_LABELS,
   type AttributeBonuses,
@@ -73,7 +74,11 @@ export function BackgroundCard({
     <>
       <HeroChoiceCard
         title={background.name}
-        badges={[background.source].filter(Boolean)}
+        badges={
+          background.source
+            ? [{ label: background.source, title: getSourceBookTitle(background.source) }]
+            : []
+        }
         description={background.summary}
         imageSrc={background.image?.src}
         imageAlt={background.image?.alt}

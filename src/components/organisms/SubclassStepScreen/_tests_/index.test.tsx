@@ -10,7 +10,7 @@ import type { BuilderClass } from "@/src/types/builder";
 const wizardClass: BuilderClass = {
   id: "wizard",
   name: "Wizard",
-  source: "PHB",
+  source: "XPHB",
   ruleset: "2024",
   level: 1,
   hitDie: 6,
@@ -37,7 +37,7 @@ const wizardClass: BuilderClass = {
       id: "evoker",
       name: "Evoker",
       shortName: "Evoker",
-      source: "PHB",
+      source: "XPHB",
       features: [
         {
           name: "Sculpt Spells",
@@ -50,7 +50,7 @@ const wizardClass: BuilderClass = {
       id: "illusionist",
       name: "Illusionist",
       shortName: "Illusionist",
-      source: "PHB",
+      source: "XPHB",
       features: [],
     },
   ],
@@ -64,7 +64,7 @@ describe("SubclassStepScreen", () => {
       <SubclassStepScreen
         level={3}
         selectedSubclassId=""
-        activeSources={["PHB"]}
+        activeSources={["XPHB"]}
         disabled={false}
         onSelect={vi.fn()}
       />,
@@ -80,7 +80,7 @@ describe("SubclassStepScreen", () => {
         characterClass={wizardClass}
         level={3}
         selectedSubclassId=""
-        activeSources={["PHB"]}
+        activeSources={["XPHB"]}
         disabled={false}
         onSelect={onSelect}
       />,

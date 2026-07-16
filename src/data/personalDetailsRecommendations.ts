@@ -43,7 +43,15 @@ export interface PersonalDetailsRecommendations {
   personality: string;
   backstory: string;
   notes: string;
+  suggestions: {
+    aparencia: string[];
+    personalidade: string[];
+    historia: string[];
+    notas: string[];
+  };
 }
+
+const SUGGESTION_COUNT = 50;
 
 const defaultSpeciesPattern: SpeciesPattern = {
   names: ["Alden", "Mira", "Rowan", "Kael", "Thalia", "Dain"],
@@ -451,20 +459,29 @@ export function getPersonalDetailsRecommendations({
   species,
   background,
   characterClass,
+  alignment,
 }: {
   species?: BuilderSpecies;
   background?: BuilderBackground;
   characterClass?: BuilderClass;
+  alignment?: string;
 }): PersonalDetailsRecommendations {
   const speciesPattern = species ? speciesPatterns[species.id] ?? defaultSpeciesPattern : defaultSpeciesPattern;
   const backgroundPattern = background
     ? backgroundPatterns[background.id] ?? backgroundPatterns["wayfarer-xphb"]
     : backgroundPatterns["wayfarer-xphb"];
   const classPattern = characterClass ? classPatterns[characterClass.id] : undefined;
+  const resolvedAlignment = alignment || backgroundPattern.alignments[0] || "True Neutral";
   const names = speciesPattern.names
     .slice(0, 6)
     .map((name, index) => backgroundPattern.nameFrames[index % backgroundPattern.nameFrames.length](name));
   const titleParts = [species?.name, background?.name, characterClass?.name].filter(Boolean);
+  const appearance = `${speciesPattern.appearance} ${backgroundPattern.personality}`;
+  const personality = classPattern
+    ? `${backgroundPattern.personality} ${classPattern.personality}`
+    : backgroundPattern.personality;
+  const backstory = `${backgroundPattern.backstory} ${resolvedAlignment} choices should shape the cost, mercy, and risk they accept.`;
+  const notes = classPattern?.notes ?? "Add one bond, one fear, one unfinished promise, and one question for the DM.";
 
   return {
     title: titleParts.length ? titleParts.join(" / ") : "Open character concept",
@@ -478,13 +495,121 @@ export function getPersonalDetailsRecommendations({
     eyes: speciesPattern.eyes,
     skin: speciesPattern.skin,
     hair: speciesPattern.hair,
-    appearance: `${speciesPattern.appearance} ${backgroundPattern.personality}`,
-    personality: classPattern
-      ? `${backgroundPattern.personality} ${classPattern.personality}`
-      : backgroundPattern.personality,
-    backstory: backgroundPattern.backstory,
-    notes: classPattern?.notes ?? "Add one bond, one fear, one unfinished promise, and one question for the DM.",
+    appearance,
+    personality,
+    backstory,
+    notes,
+    suggestions: buildSuggestionSet({
+      species,
+      background,
+      characterClass,
+      speciesPattern,
+      classPattern,
+      alignment: resolvedAlignment,
+      base: { appearance, personality, backstory, notes },
+    }),
   };
+}
+
+function buildSuggestionSet({
+  species,
+  background,
+  characterClass,
+  speciesPattern,
+  classPattern,
+  alignment,
+  base,
+}: {
+  species?: BuilderSpecies;
+  background?: BuilderBackground;
+  characterClass?: BuilderClass;
+  speciesPattern: SpeciesPattern;
+  classPattern?: ClassPattern;
+  alignment: string;
+  base: {
+    appearance: string;
+    personality: string;
+    backstory: string;
+    notes: string;
+  };
+}): PersonalDetailsRecommendations["suggestions"] {
+  const speciesName = species?.name ?? "their species";
+  const backgroundName = background?.name ?? "chosen background";
+  const className = characterClass?.name ?? "adventuring role";
+  const speciesGuard = getSpeciesGuard(species);
+  const classNote = classPattern?.notes ?? "Their current goal should give the DM one usable hook.";
+
+  return {
+    aparencia: expandSuggestions(base.appearance, (tone, detail) =>
+      `${tone} Show the ${speciesName} profile through ${detail}: ${speciesPattern.appearance} Their ${backgroundName} past should still be readable at first glance.`,
+    ),
+    personalidade: expandSuggestions(base.personality, (tone, detail) =>
+      `${tone} As a ${backgroundName}, they reveal ${detail}; as a ${speciesName}, ${speciesGuard} Their ${alignment} choices guide what they protect, refuse, or risk.`,
+    ),
+    historia: expandSuggestions(base.backstory, (tone, detail) =>
+      `${tone} Their ${backgroundName} life left ${detail}, and their ${speciesName} history changes how the wound is carried. A ${alignment} decision put them on the road as a ${className}.`,
+    ),
+    notas: expandSuggestions(base.notes, (tone, detail) =>
+      `${tone} Keep one table-ready note about ${detail}. ${classNote} Tie it to ${backgroundName}, ${speciesName} lore, and the pressure of ${alignment}.`,
+    ),
+  };
+}
+
+function expandSuggestions(
+  first: string,
+  build: (tone: string, detail: string) => string,
+): string[] {
+  const tones = [
+    "Quietly",
+    "Openly",
+    "Under pressure",
+    "Around strangers",
+    "With allies",
+    "When afraid",
+    "After a victory",
+  ];
+  const details = [
+    "a debt that still has a name",
+    "a ritual they repeat before danger",
+    "a keepsake they never explain fully",
+    "a boundary they will not cross",
+    "a lesson learned from loss",
+    "a skill that once saved someone",
+    "a contradiction they try to hide",
+  ];
+  const suggestions = [first];
+
+  for (const tone of tones) {
+    for (const detail of details) {
+      if (suggestions.length >= SUGGESTION_COUNT) {
+        return suggestions;
+      }
+
+      suggestions.push(build(tone, detail));
+    }
+  }
+
+  return suggestions;
+}
+
+function getSpeciesGuard(species: BuilderSpecies | undefined): string {
+  if (species?.id === "elf-xphb") {
+    return "their trance, long memory, and ageless poise shape habits without ordinary bedtime rituals.";
+  }
+
+  if (species?.id === "warforged-efa") {
+    return "their constructed body, repairs, and maker marks shape how they read comfort and identity.";
+  }
+
+  if (species?.id === "changeling-efa") {
+    return "identity is practiced, chosen, and sometimes protected behind a familiar face.";
+  }
+
+  if (species?.id === "reborn-rhw") {
+    return "fragmented memory and returned existence make small routines feel deliberate.";
+  }
+
+  return "their lore should change body language, taboos, instincts, and social habits.";
 }
 
 export function buildPersonalDetailsFieldHelp(
@@ -504,6 +629,7 @@ export function buildPersonalDetailsFieldHelp(
   | "aparencia"
   | "personalidade"
   | "tracos"
+  | "historia"
   | "notas",
   string
 > {
@@ -522,6 +648,7 @@ export function buildPersonalDetailsFieldHelp(
     aparencia: recommendations.appearance,
     personalidade: recommendations.personality,
     tracos: recommendations.backstory,
+    historia: recommendations.backstory,
     notas: recommendations.notes,
   };
 }

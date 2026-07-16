@@ -46,6 +46,11 @@ export function deriveSpellcastingSummary(input: {
   const progression = input.characterClass.spellcastingProgression;
   const levelIndex = Math.max(0, Math.min(19, input.level - 1));
   const slots = getSpellSlots(input.characterClass, input.level, input.usedSpellSlots ?? {});
+  const cantrips = dedupeSpellsByName(choices.cantripIds.map(getSpellById).filter(isSpell));
+  const knownSpells = dedupeSpellsByName(choices.knownSpellIds.map(getSpellById).filter(isSpell));
+  const preparedSpells = dedupeSpellsByName(
+    choices.preparedSpellIds.map(getSpellById).filter(isSpell),
+  );
 
   return {
     ability,
@@ -55,18 +60,33 @@ export function deriveSpellcastingSummary(input: {
     cantripsKnownLimit: progression?.cantripsKnown[levelIndex] ?? 0,
     knownSpellLimit: progression?.knownSpells[levelIndex] ?? 0,
     preparedSpellLimit: progression?.preparedSpells[levelIndex] ?? 0,
-    selectedCantripCount: choices.cantripIds.length,
-    selectedKnownCount: choices.knownSpellIds.length,
-    selectedPreparedCount: choices.preparedSpellIds.length,
+    selectedCantripCount: cantrips.length,
+    selectedKnownCount: knownSpells.length,
+    selectedPreparedCount: preparedSpells.length,
     slots,
-    cantrips: choices.cantripIds.map(getSpellById).filter(isSpell),
-    knownSpells: choices.knownSpellIds.map(getSpellById).filter(isSpell),
-    preparedSpells: choices.preparedSpellIds.map(getSpellById).filter(isSpell),
+    cantrips,
+    knownSpells,
+    preparedSpells,
   };
 }
 
 function isSpell(spell: BuilderSpell | undefined): spell is BuilderSpell {
   return Boolean(spell);
+}
+
+function dedupeSpellsByName(spells: BuilderSpell[]): BuilderSpell[] {
+  const byName = new Map<string, BuilderSpell>();
+
+  for (const spell of spells) {
+    const key = spell.name.toLowerCase();
+    const current = byName.get(key);
+
+    if (!current || (spell.source === "XPHB" && current.source !== "XPHB")) {
+      byName.set(key, spell);
+    }
+  }
+
+  return [...byName.values()];
 }
 
 export function getSpellSlots(

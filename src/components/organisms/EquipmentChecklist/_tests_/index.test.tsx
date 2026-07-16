@@ -220,6 +220,24 @@ describe("EquipmentChecklist", () => {
     expect(screen.queryByText(/Choose A or B/)).toBeNull();
   });
 
+  it("clicking background Offered Items stores the real background-kit option", () => {
+    const onSourceModeChange = vi.fn();
+    const onSourceOptionChange = vi.fn();
+    render(
+      <EquipmentChecklist
+        selectedBackground={selectedBackground}
+        choicesBySource={{ background: { mode: "gold", selectedOptionId: null } }}
+        onSourceModeChange={onSourceModeChange}
+        onSourceOptionChange={onSourceOptionChange}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /Offered Items/i }));
+
+    expect(onSourceModeChange).toHaveBeenCalledWith("background", "items");
+    expect(onSourceOptionChange).toHaveBeenCalledWith("background", "background-kit");
+  });
+
   it("shows only option A (items) when a background lacks structured equipmentItemsA", () => {
     const bgNoItems: BuilderBackground = {
       ...selectedBackground,

@@ -18,6 +18,13 @@ export type CharacterStoreApi = ReturnType<typeof createCharacterStore>;
 
 const CharacterStoreContext = createContext<CharacterStoreApi | null>(null);
 
+type PersistHydrationApi = {
+  persist?: {
+    hasHydrated: () => boolean;
+    onFinishHydration: (listener: () => void) => () => void;
+  };
+};
+
 interface CharacterStoreProviderProps {
   store?: CharacterStoreApi;
 }
@@ -60,4 +67,35 @@ export function useCharacterStore<T>(
   }
 
   return useStore(store, selector);
+}
+
+export function useCharacterStoreHydrated(): boolean {
+  const store = useContext(CharacterStoreContext);
+
+  if (!store) {
+    throw new Error(
+      "useCharacterStoreHydrated must be used within CharacterStoreProvider",
+    );
+  }
+
+  const persistApi = (store as PersistHydrationApi).persist;
+  const [hydrated, setHydrated] = useState(() =>
+    persistApi?.hasHydrated() ?? true,
+  );
+
+  useEffect(() => {
+    const currentPersistApi = (store as PersistHydrationApi).persist;
+
+    if (!currentPersistApi) {
+      return undefined;
+    }
+
+    if (currentPersistApi.hasHydrated()) {
+      return undefined;
+    }
+
+    return currentPersistApi.onFinishHydration(() => setHydrated(true));
+  }, [store]);
+
+  return hydrated;
 }

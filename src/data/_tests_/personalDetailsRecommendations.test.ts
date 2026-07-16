@@ -28,6 +28,8 @@ describe("personalDetailsRecommendations", () => {
     expect(recommendations.alignments).toContain("Lawful Good");
     expect(recommendations.age).toContain("100-750");
     expect(recommendations.personality).toContain("sacred duty");
+    expect(recommendations.suggestions.personalidade).toHaveLength(50);
+    expect(recommendations.suggestions.historia).toHaveLength(50);
   });
 
   it("creates a different pattern for a Reborn Charlatan", () => {
@@ -68,6 +70,10 @@ describe("personalDetailsRecommendations", () => {
       expect(recommendations.names).toHaveLength(6);
       expect(recommendations.age).toBeTruthy();
       expect(recommendations.appearance).toBeTruthy();
+      expect(recommendations.suggestions.aparencia).toHaveLength(50);
+      expect(recommendations.suggestions.personalidade).toHaveLength(50);
+      expect(recommendations.suggestions.historia).toHaveLength(50);
+      expect(recommendations.suggestions.notas).toHaveLength(50);
     }
 
     for (const backgroundEntry of backgrounds) {
@@ -80,6 +86,7 @@ describe("personalDetailsRecommendations", () => {
       expect(recommendations.names).toHaveLength(6);
       expect(recommendations.alignments.length).toBeGreaterThan(0);
       expect(recommendations.backstory).toBeTruthy();
+      expect(recommendations.suggestions.historia).toHaveLength(50);
     }
 
     for (const classEntry of classes) {
@@ -91,6 +98,19 @@ describe("personalDetailsRecommendations", () => {
 
       expect(recommendations.personality).toBeTruthy();
       expect(recommendations.notes).toBeTruthy();
+      expect(recommendations.suggestions.notas).toHaveLength(50);
     }
+  });
+
+  it("avoids sleep-based mannerisms for elves", () => {
+    const species = getBuilderSpecies().find((entry) => entry.id === "elf-xphb");
+    const recommendations = getPersonalDetailsRecommendations({
+      species,
+      alignment: "Chaotic Good",
+    });
+
+    const joined = recommendations.suggestions.personalidade.join(" ").toLowerCase();
+    expect(joined).not.toMatch(/sleep|slept|sleepwalk|sleepwalking|dreamless sleep/);
+    expect(recommendations.suggestions.historia.join(" ")).toContain("Chaotic Good");
   });
 });

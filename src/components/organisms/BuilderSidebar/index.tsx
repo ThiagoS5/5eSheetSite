@@ -30,7 +30,10 @@ import {
 } from "@/src/components/ui/sidebar";
 import { cn } from "@/src/lib/utils";
 import { FontAwesomeIcon } from "@/src/components/atoms/FontAwesomeIcon";
-import { builderStepNavigation } from "@/src/components/templates/builderStepNavigation";
+import {
+  builderStepNavigation,
+  getVisibleBuilderStepNavigation,
+} from "@/src/components/templates/builderStepNavigation";
 import { useCharacterStore } from "@/src/store/useCharacterStore";
 import { getBuilderClasses } from "@/src/services/ruleService";
 import type { CharacterBuilderState } from "@/src/store/characterStore.types";
@@ -51,11 +54,6 @@ interface SidebarStepGroup {
 
 const classGroupSlugs: BuilderStepSlug[] = ["classe", "recursos-classe", "subclasse"];
 const speciesGroupSlugs: BuilderStepSlug[] = ["especie", "detalhes-especie"];
-const groupedSlugs = new Set<BuilderStepSlug>([
-  ...classGroupSlugs,
-  ...speciesGroupSlugs,
-]);
-
 const sidebarGroups: SidebarStepGroup[] = [
   {
     id: "class",
@@ -91,11 +89,19 @@ export function BuilderSidebar({ variant = "desktop" }: BuilderSidebarProps) {
   const pathname = usePathname();
   const characterState = useCharacterStore((state) => state);
   const collapsed = state === "collapsed";
-  const currentIndex = builderStepNavigation.findIndex(
+  const visibleSteps = useMemo(
+    () => getVisibleBuilderStepNavigation({ level: characterState.level }),
+    [characterState.level],
+  );
+  const currentIndex = visibleSteps.findIndex(
     (step) => step.href === pathname,
   );
-  const currentStep = builderStepNavigation[currentIndex] ?? builderStepNavigation[0];
-  const totalSteps = builderStepNavigation.length;
+  const currentStep =
+    visibleSteps[currentIndex] ??
+    builderStepNavigation.find((step) => step.href === pathname) ??
+    visibleSteps[0] ??
+    builderStepNavigation[0];
+  const totalSteps = visibleSteps.length;
   const totalCompletableSteps = Math.max(totalSteps - 1, 1);
   const completedCount = Math.max(
     Math.min(characterState.maxUnlockedStepIndex, totalCompletableSteps),
@@ -103,8 +109,35 @@ export function BuilderSidebar({ variant = "desktop" }: BuilderSidebarProps) {
   );
   const progress = ((Math.max(currentIndex, 0) + 1) / totalSteps) * 100;
   const currentSlug = currentStep.slug;
-  const isClassRoute = classGroupSlugs.includes(currentSlug);
-  const isSpeciesRoute = speciesGroupSlugs.includes(currentSlug);
+  const visibleStepSlugs = useMemo(
+    () => new Set(visibleSteps.map((step) => step.slug)),
+    [visibleSteps],
+  );
+  const visibleClassGroupSlugs = useMemo(
+    () => classGroupSlugs.filter((slug) => visibleStepSlugs.has(slug)),
+    [visibleStepSlugs],
+  );
+  const visibleSpeciesGroupSlugs = useMemo(
+    () => speciesGroupSlugs.filter((slug) => visibleStepSlugs.has(slug)),
+    [visibleStepSlugs],
+  );
+  const visibleGroupedSlugs = useMemo(
+    () =>
+      new Set<BuilderStepSlug>([
+        ...visibleClassGroupSlugs,
+        ...visibleSpeciesGroupSlugs,
+      ]),
+    [visibleClassGroupSlugs, visibleSpeciesGroupSlugs],
+  );
+  const visibleSidebarGroups = useMemo(
+    () => [
+      { ...sidebarGroups[0], childSlugs: visibleClassGroupSlugs },
+      { ...sidebarGroups[1], childSlugs: visibleSpeciesGroupSlugs },
+    ],
+    [visibleClassGroupSlugs, visibleSpeciesGroupSlugs],
+  );
+  const isClassRoute = visibleClassGroupSlugs.includes(currentSlug);
+  const isSpeciesRoute = visibleSpeciesGroupSlugs.includes(currentSlug);
   const [isClassOpen, setIsClassOpen] = useState(false);
   const [isSpeciesOpen, setIsSpeciesOpen] = useState(false);
   const classGroupOpen = isClassRoute || isClassOpen;
@@ -117,8 +150,8 @@ export function BuilderSidebar({ variant = "desktop" }: BuilderSidebarProps) {
   }, [characterState]);
 
   const flatSteps = useMemo(
-    () => builderStepNavigation.filter((step) => !groupedSlugs.has(step.slug)),
-    [],
+    () => visibleSteps.filter((step) => !visibleGroupedSlugs.has(step.slug)),
+    [visibleGroupedSlugs, visibleSteps],
   );
 
   const asideClassName =
@@ -201,7 +234,7 @@ export function BuilderSidebar({ variant = "desktop" }: BuilderSidebarProps) {
             <nav aria-label="Character Builder steps" className="min-w-0">
               <SidebarMenu className={cn("min-w-0 gap-1", collapsed && "xl:items-center")}>
                 <GroupedStepItem
-                  group={sidebarGroups[0]}
+                  group={visibleSidebarGroups[0]}
                   open={classGroupOpen}
                   onOpenChange={setIsClassOpen}
                   collapsed={collapsed}
@@ -217,7 +250,7 @@ export function BuilderSidebar({ variant = "desktop" }: BuilderSidebarProps) {
                   pendencies={pendencies}
                 />
                 <GroupedStepItem
-                  group={sidebarGroups[1]}
+                  group={visibleSidebarGroups[1]}
                   open={speciesGroupOpen}
                   onOpenChange={setIsSpeciesOpen}
                   collapsed={collapsed}

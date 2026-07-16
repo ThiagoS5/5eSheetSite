@@ -44,7 +44,9 @@ export function CreationPreferencesDialog({
   }
 
   function selectAllSources() {
-    setActiveSources(sourceOptions.map((option) => option.code));
+    setActiveSources(
+      sourceOptions.filter((option) => !option.inactive).map((option) => option.code),
+    );
   }
 
   function deselectOptionalSources() {
@@ -113,14 +115,15 @@ export function CreationPreferencesDialog({
                 {sourceOptions.map((source) => (
                   <label
                     key={source.code}
+                    title={source.disabledReason}
                     className={`flex items-center gap-2 text-sm ${
-                      source.locked ? "text-muted-foreground" : "text-foreground"
+                      source.locked || source.inactive ? "text-muted-foreground" : "text-foreground"
                     }`}
                   >
                     <input
                       type="checkbox"
-                      checked={activeSources.includes(source.code)}
-                      disabled={source.locked}
+                      checked={!source.inactive && activeSources.includes(source.code)}
+                      disabled={source.locked || source.inactive}
                       onChange={(e) => toggleSource(source.code, e.target.checked)}
                       className="h-4 w-4 accent-primary"
                     />

@@ -339,8 +339,16 @@ export function ContentTabs({ summary, description }: ContentTabsProps) {
                           name: item.name,
                           qty: quantity,
                           source: sourceLabel,
-                          cost: item.value != null ? `${item.value} GP` : undefined,
+                          category: item.category,
+                          type: formatInventoryType(item.type),
+                          cost: formatItemValue(item.value),
+                          weight: formatItemWeight(item.weightKg),
                           armorClass: item.armorClass ?? undefined,
+                          rarity: formatRarity(item.rarity),
+                          properties: item.weaponProperties?.length ? item.weaponProperties.join(", ") : undefined,
+                          damage: formatItemDamage(item.damageDice, item.damageType),
+                          range: item.range,
+                          description: item.detail,
                         })}
                         className={cn(
                           "flex w-full items-baseline gap-[9px] rounded-lg border border-border bg-surface-nested px-[11px] py-2 text-left text-[12.5px] text-subdued transition-colors hover:bg-card",
@@ -448,6 +456,60 @@ function SpellList({ title, spells }: { title: string; spells: BuilderSpell[] })
       </div>
     </section>
   );
+}
+
+function formatInventoryType(type: string | undefined): string | undefined {
+  if (!type) {
+    return undefined;
+  }
+
+  return type.replace(/(^|-)([a-z])/g, (_match, prefix: string, char: string) =>
+    `${prefix === "-" ? " " : ""}${char.toUpperCase()}`,
+  );
+}
+
+function formatItemValue(value: number | undefined): string | undefined {
+  if (value == null) {
+    return undefined;
+  }
+
+  if (value === 0) {
+    return "0 GP";
+  }
+
+  if (value % 100 === 0) {
+    return `${value / 100} GP`;
+  }
+
+  if (value % 10 === 0) {
+    return `${value / 10} SP`;
+  }
+
+  return `${value} CP`;
+}
+
+function formatItemWeight(value: number | undefined): string | undefined {
+  if (value == null) {
+    return undefined;
+  }
+
+  return `${value} kg`;
+}
+
+function formatRarity(value: string | undefined): string | undefined {
+  if (!value || value === "none") {
+    return undefined;
+  }
+
+  return formatInventoryType(value);
+}
+
+function formatItemDamage(dice: string | undefined, type: string | undefined): string | undefined {
+  if (!dice && !type) {
+    return undefined;
+  }
+
+  return [dice, type].filter(Boolean).join(" ");
 }
 
 function CoinCard({

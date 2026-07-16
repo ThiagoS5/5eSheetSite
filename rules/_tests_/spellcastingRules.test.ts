@@ -87,6 +87,33 @@ describe("spellcasting rules", () => {
     });
   });
 
+  it("dedupes legacy PHB and XPHB spell choices by name with XPHB preferred", () => {
+    const summary = deriveSpellcastingSummary({
+      characterClass: wizard(),
+      level: 11,
+      finalAttributes: {
+        forca: 8,
+        destreza: 12,
+        constituicao: 14,
+        inteligencia: 16,
+        sabedoria: 10,
+        carisma: 8,
+      },
+      proficiencyBonus: 4,
+      choices: {
+        cantripIds: [],
+        knownSpellIds: [],
+        preparedSpellIds: ["arcane-gate-phb", "arcane-gate-xphb"],
+      },
+      usedSpellSlots: {},
+    });
+
+    expect(summary?.preparedSpells.map((spell) => spell.id)).toEqual([
+      "arcane-gate-xphb",
+    ]);
+    expect(summary?.selectedPreparedCount).toBe(1);
+  });
+
   it("derives pact magic slots at the warlock slot level", () => {
     const summary = deriveSpellcastingSummary({
       characterClass: warlock(),

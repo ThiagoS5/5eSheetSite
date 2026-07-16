@@ -139,6 +139,7 @@ export interface BuilderEquipmentPackageItem {
   label: string;
   quantity: number;
   value?: number;
+  catalogItemId?: string;
 }
 
 export interface BuilderEquipmentPackage {
@@ -212,6 +213,8 @@ export interface CatalogItem {
   source: string;
   category: ItemCategory;
   type?: InventoryItemType;
+  detail?: string;
+  rarity?: string;
   isMagical: boolean;
   isCommon: boolean;
   isContainer: boolean;
@@ -241,6 +244,11 @@ export interface BuilderEquipmentOption {
   sourceType: "class" | "background" | "manual";
   category: ItemCategory;
   type?: InventoryItemType;
+  detail?: string;
+  rarity?: string;
+  isMagical?: boolean;
+  isCommon?: boolean;
+  isContainer?: boolean;
   weightKg?: number;
   armorClass?: number;
   armorClassBonus?: number;

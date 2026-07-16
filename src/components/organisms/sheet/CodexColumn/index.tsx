@@ -119,7 +119,7 @@ export function CodexColumn({ description, className }: CodexColumnProps) {
           Personality Traits
         </h3>
         <NarrativeField label="Personality & Mannerisms" value={description.personalidade} limit={100} />
-        <NarrativeField label="Backstory" value={description.tracos} limit={200} />
+        <NarrativeField label="Backstory" value={description.historia || description.tracos} limit={200} />
         <NarrativeField label="Notes" value={description.notas} limit={150} />
       </section>
     </aside>

@@ -57,6 +57,7 @@ describe("BackgroundCard", () => {
     renderCard();
 
     expect(screen.getByText("Sage")).toBeInTheDocument();
+    expect(screen.getByText("PHB")).toHaveAttribute("title", "Player's Handbook");
     expect(screen.getByText("A scholar of rare lore.")).toBeInTheDocument();
     expect(screen.getByText("Magic Initiate")).toBeInTheDocument();
     expect(screen.getByText(/Skills: Arcana, History/i)).toBeInTheDocument();

@@ -4,9 +4,18 @@ export interface SourceTaggedEntry {
 }
 
 export const BASE_SOURCE_CODE = "XPHB";
+export const INACTIVE_SOURCE_CODES = new Set(["PHB"]);
 
 export function normalizeSourceCode(source: string): string {
   return source.trim().toUpperCase();
+}
+
+export function isInactiveSourceCode(source: string | undefined): boolean {
+  if (!source) {
+    return false;
+  }
+
+  return INACTIVE_SOURCE_CODES.has(normalizeSourceCode(source));
 }
 
 export function getActiveSourceSet(
@@ -16,7 +25,9 @@ export function getActiveSourceSet(
     return undefined;
   }
 
-  const sourceSet = new Set(activeSources.map(normalizeSourceCode));
+  const sourceSet = new Set(
+    activeSources.map(normalizeSourceCode).filter((source) => !isInactiveSourceCode(source)),
+  );
   sourceSet.add(BASE_SOURCE_CODE);
 
   return sourceSet;

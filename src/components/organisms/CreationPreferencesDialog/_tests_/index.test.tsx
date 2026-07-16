@@ -35,6 +35,12 @@ describe("CreationPreferencesDialog", () => {
       screen.getByRole("checkbox", { name: "XPHB (Player's Handbook 2024)" }),
     ).toBeDisabled();
     expect(
+      screen.getByRole("checkbox", { name: "PHB (Player's Handbook)" }),
+    ).toBeDisabled();
+    expect(
+      screen.getByRole("checkbox", { name: "PHB (Player's Handbook)" }),
+    ).not.toBeChecked();
+    expect(
       screen.getByRole("checkbox", {
         name: "EFA (Eberron: Forge of the Artificer)",
       }),
@@ -130,6 +136,9 @@ describe("CreationPreferencesDialog", () => {
         name: "EFA (Eberron: Forge of the Artificer)",
       }),
     ).toBeChecked();
+    expect(
+      screen.getByRole("checkbox", { name: "PHB (Player's Handbook)" }),
+    ).not.toBeChecked();
   });
 
   it("saves only the selected optional sources plus locked XPHB", () => {

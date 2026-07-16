@@ -68,6 +68,36 @@ describe("character selectors — money, carry, category, skill overrides", () =
     expect(summary.inventory.map((entry) => entry.item.name)).not.toContain("Gold");
   });
 
+  it("adds Chondathan Freebooter package gold to the sheet without carrying Gold as an item", () => {
+    const store = createCharacterStore();
+    const background = getBuilderBackgrounds().find(
+      (entry) => entry.name === "Chondathan Freebooter",
+    );
+    if (!background) {
+      throw new Error("expected Chondathan Freebooter to exist");
+    }
+
+    store.getState().selectBackground(background.id);
+    store.getState().setEquipmentSourceOption("background", "background-kit");
+
+    const summary = selectCharacterSheetSummary(store.getState());
+
+    expect(summary.money.po).toBe(38);
+    expect(summary.inventory.map((entry) => entry.item.name)).toEqual([
+      "Dagger",
+      "Weaver's Tools",
+      "Backpack",
+      "Ball Bearings",
+      "Basket",
+      "Bedroll",
+      "Bucket",
+      "Rations (3 days' worth)",
+      "Rope",
+      "Signal Whistle",
+      "Traveler's Clothes",
+    ]);
+  });
+
   it("does not add background item gold until the background kit is selected", () => {
     const store = createCharacterStore();
     const background = getBuilderBackgrounds().find((entry) => entry.id === "aberrant-heir-efa");

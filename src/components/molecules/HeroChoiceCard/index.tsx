@@ -205,11 +205,14 @@ export function HeroChoiceCard({
     "--hero-accent": theme.accent,
     "--hero-frame-light": FRAME_GOLD_LIGHT,
   } as CSSProperties;
+  const badgeItems = badges.map((badge) =>
+    typeof badge === "string" ? { label: badge } : badge,
+  );
 
   return (
     <article
       style={themeVars}
-      className={`group relative flex min-h-[424px] min-w-0 flex-col transition duration-200 ${
+      className={`group relative flex h-full min-h-[424px] w-full min-w-0 flex-col transition duration-200 ${
         isActive ? "" : "hover:-translate-y-1"
       }`}
     >
@@ -285,11 +288,13 @@ export function HeroChoiceCard({
             {title}
           </h3>
 
-          {badges.length ? (
+          {badgeItems.length ? (
             <div className="flex flex-wrap gap-x-2 gap-y-1">
-              {badges.map((badge) => (
+              {badgeItems.map((badge, index) => (
                 <span
-                  key={badge}
+                  key={`${badge.label}-${index}`}
+                  title={badge.title}
+                  aria-label={badge.title ? `${badge.label}: ${badge.title}` : undefined}
                   translate="no"
                   className="notranslate flex h-8 items-center justify-center overflow-hidden whitespace-nowrap rounded-full border-2 px-4 text-sm uppercase tracking-[0.8px]"
                   style={{
@@ -299,7 +304,7 @@ export function HeroChoiceCard({
                     color: TEXT_SOFT,
                   }}
                 >
-                  {badge}
+                  {badge.label}
                 </span>
               ))}
             </div>
@@ -315,11 +320,11 @@ export function HeroChoiceCard({
           {children}
         </div>
 
-        <div className="flex items-center justify-end gap-2">
+        <div className="flex flex-wrap items-center justify-end gap-2">
           <button
             type="button"
             onClick={onClickDetails}
-            className="flex h-10 items-center justify-center rounded-lg border-2 border-[#A2ACB2] px-6 text-sm font-bold uppercase leading-6 tracking-[0.8px] outline-none backdrop-blur-[2px] transition hover:border-white hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-white"
+            className="flex min-h-10 items-center justify-center rounded-lg border-2 border-[#A2ACB2] px-5 py-2 text-sm font-bold uppercase leading-tight tracking-[0.8px] outline-none backdrop-blur-[2px] transition hover:border-white hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-white"
             style={{ color: TEXT_SOFT }}
           >
             {detailsLabel}
@@ -330,10 +335,10 @@ export function HeroChoiceCard({
             onClick={onClickSelect}
             disabled={disabled}
             aria-pressed={isActive}
-            className="flex h-10 items-stretch outline-none transition hover:brightness-150 focus-visible:drop-shadow-[0_0_6px_rgba(236,207,131,0.9)] disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex min-h-10 items-stretch outline-none transition hover:brightness-150 focus-visible:drop-shadow-[0_0_6px_rgba(236,207,131,0.9)] disabled:cursor-not-allowed disabled:opacity-50"
           >
             <span
-              className="relative z-[1] flex h-10 items-center justify-center gap-2 rounded-l-lg py-2 pl-4 text-sm font-bold uppercase leading-6 tracking-[0.8px] shadow-[inset_0_2px_0_rgba(236,207,131,1),inset_0_-2px_0_rgba(236,207,131,1),inset_2px_0_0_rgba(236,207,131,1)]"
+              className="relative z-[1] flex min-h-10 items-center justify-center gap-2 rounded-l-lg py-2 pl-4 text-sm font-bold uppercase leading-tight tracking-[0.8px] shadow-[inset_0_2px_0_rgba(236,207,131,1),inset_0_-2px_0_rgba(236,207,131,1),inset_2px_0_0_rgba(236,207,131,1)]"
               style={{ backgroundColor: BUTTON_DARK, color: TEXT_SOFT }}
             >
               {isActive ? selectedLabel : selectLabel}

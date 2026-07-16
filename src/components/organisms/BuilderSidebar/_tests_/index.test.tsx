@@ -88,7 +88,6 @@ describe("BuilderSidebar", () => {
     expect(links.map((link) => link.getAttribute("href"))).toStrictEqual([
       "/builder/classe",
       "/builder/recursos-classe",
-      "/builder/subclasse",
       "/builder/antecedente",
       "/builder/especie",
       "/builder/detalhes-especie",
@@ -116,8 +115,10 @@ describe("BuilderSidebar", () => {
 
     expect(screen.getByTitle("Close sidebar (Ctrl+B)")).toBeInTheDocument();
     expect(
-      screen.getByRole("progressbar", { name: /Wizard progress/i }),
-    ).toHaveAttribute("aria-valuenow", "20");
+      screen
+        .getByRole("progressbar", { name: /Wizard progress/i })
+        .getAttribute("aria-valuenow"),
+    ).toMatch(/^22\.2/);
     expect(screen.getByRole("button", { name: "Class" })).toHaveAttribute(
       "aria-expanded",
       "true",

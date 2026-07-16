@@ -7,6 +7,17 @@ import { render, screen, fireEvent, cleanup } from "@testing-library/react";
 import { ItemDetailModal, type DetailItem } from "@/src/components/organisms/sheet/ItemDetailModal";
 
 const weapon: DetailItem = { kind: "weapon", name: "Adaga", attackBonus: "+6", damage: "1d4+3 Perfurante", notes: "Acuidade" };
+const equipment: DetailItem = {
+  kind: "equipment",
+  name: "Hempen Rope",
+  qty: 1,
+  source: "Background",
+  category: "Other Gear",
+  type: "Gear",
+  weight: "4.54 kg",
+  cost: "1 GP",
+  description: "A sturdy 50-foot coil of hempen rope.",
+};
 
 describe("ItemDetailModal", () => {
   afterEach(cleanup);
@@ -28,5 +39,14 @@ describe("ItemDetailModal", () => {
     render(<ItemDetailModal item={weapon} onClose={onClose} />);
     fireEvent.click(screen.getByLabelText("Close"));
     expect(onClose).toHaveBeenCalled();
+  });
+
+  it("renders real equipment metadata and description", () => {
+    render(<ItemDetailModal item={equipment} onClose={() => {}} />);
+
+    expect(screen.getByText("Other Gear")).toBeInTheDocument();
+    expect(screen.getByText("Gear")).toBeInTheDocument();
+    expect(screen.getByText("4.54 kg")).toBeInTheDocument();
+    expect(screen.getByText("A sturdy 50-foot coil of hempen rope.")).toBeInTheDocument();
   });
 });

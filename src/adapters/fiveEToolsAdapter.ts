@@ -439,7 +439,8 @@ export function extractBackgroundGold(
 ): string | undefined {
   const first = (startingEquipment ?? [])[0];
   if (!first || typeof first !== "object") return undefined;
-  const bArr = (first as Record<string, unknown>).b;
+  const equipmentOptions = first as Record<string, unknown>;
+  const bArr = equipmentOptions.b ?? equipmentOptions.B;
   if (!Array.isArray(bArr) || !bArr[0]) return undefined;
   const copper = (bArr[0] as Record<string, unknown>).value;
   if (typeof copper !== "number") return undefined;
@@ -461,7 +462,8 @@ export function extractBackgroundItemsA(
 ): BuilderEquipmentPackageItem[] {
   const first = (startingEquipment ?? [])[0];
   if (!first || typeof first !== "object") return [];
-  const aArr = (first as Record<string, unknown>).a;
+  const equipmentOptions = first as Record<string, unknown>;
+  const aArr = equipmentOptions.a ?? equipmentOptions.A;
   if (!Array.isArray(aArr)) return [];
 
   return aArr.flatMap((entry, i): BuilderEquipmentPackageItem[] => {
@@ -475,25 +477,37 @@ export function extractBackgroundItemsA(
       if (typeof obj.value === "number") {
         return [{ id: `gold-${i}`, label: "Gold", quantity: 1, value: obj.value }];
       }
+      const ref = typeof obj.item === "string" ? obj.item : null;
+      const refName = ref ? toTitleCase(ref.split("|")[0] ?? "") : null;
+      const rawQuantity = typeof obj.quantity === "number" ? obj.quantity : 1;
       const label =
         typeof obj.displayName === "string"
           ? obj.displayName
-          : typeof obj.item === "string"
-          ? toTitleCase(obj.item.split("|")[0] ?? "")
+          : refName
+          ? formatPackageItemLabel(refName, rawQuantity)
           : null;
       if (!label) return [];
-      const quantity = typeof obj.quantity === "number" ? obj.quantity : 1;
-      const ref = typeof obj.item === "string" ? obj.item : null;
+      const quantity = refName?.toLowerCase() === "rations" && rawQuantity > 1
+        ? 1
+        : rawQuantity;
+      const catalogItemId = refName ? toSlug(refName, "xphb") : undefined;
       return [{
-        id: ref
-          ? toSlug(toTitleCase(ref.split("|")[0] ?? label), "xphb")
-          : toKebabCase(label),
+        id: catalogItemId ?? toKebabCase(label),
         label,
         quantity,
+        catalogItemId,
       }];
     }
     return [];
   });
+}
+
+function formatPackageItemLabel(name: string, quantity: number): string {
+  if (name.toLowerCase() === "rations" && quantity > 1) {
+    return `Rations (${quantity} days' worth)`;
+  }
+
+  return name;
 }
 
 function normalizeClassSkillChoices(rawClass: Raw5eClass): BuilderClass["skillChoices"] {
