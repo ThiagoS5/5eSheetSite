@@ -69,7 +69,7 @@ src/_references/*
 # The canonical guide docs live in guides/ and MUST stay tracked
 !guides/
 /templates
-templates/
+/templates/
 # Design Sync (claude.ai/design) — generated output, machine state
 .ds-sync/
 ds-bundle/
