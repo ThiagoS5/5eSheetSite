@@ -5,7 +5,10 @@ import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { saveCharacter } from "@/src/services/characterService";
-import { readGlobalPreferences } from "@/src/services/preferencesService";
+import {
+  CURRENT_GLOBAL_PREFERENCES_VERSION,
+  readGlobalPreferences,
+} from "@/src/services/preferencesService";
 import { getBuilderBackgrounds, getBuilderClasses, getBuilderLanguages } from "@/src/services/ruleService";
 import {
   createCharacterBuildFromLegacyState,
@@ -137,6 +140,70 @@ describe("Dashboard", () => {
     fireEvent.click(continueButtons[continueButtons.length - 1]);
     expect(push).toHaveBeenCalledWith("/builder/equipamento");
   }, 15000);
+
+  it("applies saved global source defaults to a new character", async () => {
+    localStorage.setItem(
+      "forge-fate-preferences:v1",
+      JSON.stringify({
+        preferencesVersion: CURRENT_GLOBAL_PREFERENCES_VERSION,
+        beginnerMode: false,
+        creationDefaults: {
+          activeSources: ["XPHB"],
+          progressionMode: "milestone",
+        },
+      }),
+    );
+
+    render(
+      <CharacterStoreProvider>
+        <Dashboard />
+      </CharacterStoreProvider>,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /Create Character/i }));
+
+    await waitFor(() => {
+      const saves = JSON.parse(localStorage.getItem("forge-fate-character-saves:v1") ?? "{}");
+      const savedBuild = Object.values(saves)[0] as CharacterBuild | undefined;
+      expect(savedBuild?.choices.creationPreferences).toEqual({
+        activeSources: ["XPHB"],
+        progressionMode: "milestone",
+      });
+    });
+    expect(push).toHaveBeenCalledWith("/builder/classe");
+  });
+
+  it("applies saved global source defaults to quick builds", async () => {
+    localStorage.setItem(
+      "forge-fate-preferences:v1",
+      JSON.stringify({
+        preferencesVersion: CURRENT_GLOBAL_PREFERENCES_VERSION,
+        creationDefaults: {
+          activeSources: ["XPHB"],
+          progressionMode: "milestone",
+        },
+      }),
+    );
+
+    render(
+      <CharacterStoreProvider>
+        <Dashboard />
+      </CharacterStoreProvider>,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /Create Character/i }));
+    fireEvent.click(screen.getByRole("button", { name: "Guerreiro marcial" }));
+
+    await waitFor(() => {
+      const saves = JSON.parse(localStorage.getItem("forge-fate-character-saves:v1") ?? "{}");
+      const savedBuild = Object.values(saves)[0] as CharacterBuild | undefined;
+      expect(savedBuild?.choices.creationPreferences).toEqual({
+        activeSources: ["XPHB"],
+        progressionMode: "milestone",
+      });
+    });
+    expect(push).toHaveBeenCalledWith("/builder/descricao");
+  });
 
   it("supports quick vault actions for saved characters", async () => {
     vi.spyOn(window, "confirm").mockReturnValue(true);

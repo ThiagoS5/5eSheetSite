@@ -44,7 +44,7 @@ import {
 import { quickBuildProfiles, type QuickBuildProfile } from "@/src/data/quickBuildProfiles";
 import { useCharacterStore } from "@/src/store/useCharacterStore";
 import { serializeCharacterExport } from "@/src/utils/canonicalExport";
-import type { CharacterBuild } from "@/src/types/characterBuild";
+import type { CharacterBuild, CreationPreferences } from "@/src/types/characterBuild";
 import type { BuilderBackground } from "@/src/types/builder";
 import type { AttributeBonuses, AttributeKey } from "@/src/types/dnd";
 import type { Character } from "@/src/types/Character";
@@ -99,15 +99,18 @@ export function Dashboard() {
     const globalPrefs = readGlobalPreferences();
 
     if (typeof globalPrefs.beginnerMode === "boolean") {
-      startNewCharacter(globalPrefs.beginnerMode);
+      startNewCharacter(globalPrefs.beginnerMode, globalPrefs.creationDefaults);
       return;
     }
 
     setCreationModeOpen(true);
   }
 
-  function startNewCharacter(beginnerMode: boolean) {
-    const build = createBuildWithBeginnerMode(beginnerMode);
+  function startNewCharacter(
+    beginnerMode: boolean,
+    creationPreferences = readGlobalPreferences().creationDefaults,
+  ) {
+    const build = createBuildWithBeginnerMode(beginnerMode, creationPreferences);
 
     loadCharacterBuild(build);
     void saveCharacter(build);
@@ -118,8 +121,11 @@ export function Dashboard() {
     router.push(builderStartHref);
   }
 
-  function startQuickBuild(profile: QuickBuildProfile) {
-    const build = createQuickBuild(profile);
+  function startQuickBuild(
+    profile: QuickBuildProfile,
+    creationPreferences = readGlobalPreferences().creationDefaults,
+  ) {
+    const build = createQuickBuild(profile, creationPreferences);
 
     loadCharacterBuild(build);
     void saveCharacter(build);
@@ -239,7 +245,10 @@ export function Dashboard() {
   );
 }
 
-function createBuildWithBeginnerMode(beginnerMode: boolean): CharacterBuild {
+function createBuildWithBeginnerMode(
+  beginnerMode: boolean,
+  creationPreferences: CreationPreferences,
+): CharacterBuild {
   const build = createEmptyCharacterBuild();
 
   return createCharacterBuildFromLegacyState(
@@ -247,6 +256,7 @@ function createBuildWithBeginnerMode(beginnerMode: boolean): CharacterBuild {
       ...build.choices,
       characterBuild: build,
       beginnerMode,
+      creationPreferences,
     },
     {
       createdAt: build.exportMetadata.createdAt,
@@ -257,7 +267,10 @@ function createBuildWithBeginnerMode(beginnerMode: boolean): CharacterBuild {
   );
 }
 
-function createQuickBuild(profile: QuickBuildProfile): CharacterBuild {
+function createQuickBuild(
+  profile: QuickBuildProfile,
+  creationPreferences: CreationPreferences,
+): CharacterBuild {
   const build = createEmptyCharacterBuild();
   const classes = getBuilderClasses();
   const selectedClass = classes.find((entry) => entry.id === profile.classId) ?? classes[0];
@@ -279,6 +292,7 @@ function createQuickBuild(profile: QuickBuildProfile): CharacterBuild {
     {
       characterBuild: build,
       beginnerMode: false,
+      creationPreferences,
       selectedClassId: selectedClass?.id ?? profile.classId,
       selectedSpeciesId: selectedSpecies?.id ?? "",
       selectedBackgroundId: selectedBackground?.id ?? "",

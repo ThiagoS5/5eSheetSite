@@ -76,11 +76,6 @@ export interface CreationPreferences {
   progressionMode: ProgressionMode;
 }
 
-export const DEFAULT_CREATION_PREFERENCES: CreationPreferences = {
-  activeSources: ["XPHB"],
-  progressionMode: "xp",
-};
-
 export interface CharacterBuildLevelChoiceState {
   asiOrFeat?: AsiOrFeatChoice;
   classFeatureChoices: Record<string, string[]>;

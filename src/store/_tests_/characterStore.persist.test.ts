@@ -40,6 +40,58 @@ describe("createCharacterStore persistence", () => {
     });
   });
 
+  it("forces XPHB into creation preferences saved through the store", () => {
+    const store = createCharacterStore();
+
+    store.getState().setCreationPreferences({
+      activeSources: ["EFA"],
+      progressionMode: "xp",
+    });
+
+    expect(store.getState().creationPreferences).toEqual({
+      activeSources: ["XPHB", "EFA"],
+      progressionMode: "xp",
+    });
+    expect(store.getState().characterBuild.choices.creationPreferences).toEqual({
+      activeSources: ["XPHB", "EFA"],
+      progressionMode: "xp",
+    });
+    disposeCharacterStore(store);
+  });
+
+  it("normalizes loaded character builds whose creation preferences omit XPHB", () => {
+    const templateStore = createCharacterStore();
+    const build = {
+      ...templateStore.getState().characterBuild,
+      choices: {
+        ...templateStore.getState().characterBuild.choices,
+        creationPreferences: {
+          activeSources: ["EFA"],
+          progressionMode: "milestone",
+        },
+      },
+    };
+    disposeCharacterStore(templateStore);
+
+    sessionStorage.clear();
+    sessionStorage.setItem(
+      "ficha-5e-builder",
+      JSON.stringify({ state: { characterBuild: build }, version: 14 }),
+    );
+
+    const store = createCharacterStore();
+
+    expect(store.getState().creationPreferences).toEqual({
+      activeSources: ["XPHB", "EFA"],
+      progressionMode: "milestone",
+    });
+    expect(store.getState().characterBuild.choices.creationPreferences).toEqual({
+      activeSources: ["XPHB", "EFA"],
+      progressionMode: "milestone",
+    });
+    disposeCharacterStore(store);
+  });
+
   it("migrates legacy flat sessionStorage state into the canonical build", () => {
 
 

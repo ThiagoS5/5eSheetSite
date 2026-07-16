@@ -2,7 +2,7 @@ import type { CharacterSpellcastingChoices } from "@/src/types/spells";
 
 export interface SpellCatalogPickerProps {
   className: string;
-  activeSources: string[];
+  activeSources?: readonly string[];
   value?: CharacterSpellcastingChoices;
   cantripLimit: number;
   spellLimit: number;

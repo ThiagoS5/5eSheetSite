@@ -121,8 +121,6 @@ const BEGINNER_STEP_GUIDES: Partial<
   equipamento: { conceptId: "starting-equipment", title: "What is starting equipment?" },
 };
 
-const DEFAULT_ACTIVE_SOURCES = ["XPHB"];
-
 interface PendingReplacement {
   title: string;
   description: string;
@@ -181,7 +179,7 @@ function getInactiveSourceWarnings({
   selectedSpecies,
   selectedSubclass,
 }: {
-  activeSources: readonly string[];
+  activeSources: readonly string[] | undefined;
   itemCatalog: readonly CatalogItem[];
   preservedItemIds: readonly string[];
   selectedFeatIds: readonly string[];
@@ -251,7 +249,7 @@ function getInactiveSpellSourceWarnings({
   selectedSpellIds,
   getSpellById,
 }: {
-  activeSources: readonly string[];
+  activeSources: readonly string[] | undefined;
   selectedSpellIds: readonly string[];
   getSpellById: typeof import("@/src/services/spellService").getSpellById;
 }): InactiveSourceWarning[] {
@@ -273,7 +271,7 @@ function getInactiveSpellSourceWarnings({
 
 function addInactiveSourceWarning(
   warnings: Map<string, InactiveSourceWarning>,
-  activeSources: readonly string[],
+  activeSources: readonly string[] | undefined,
   entry: {
     id?: string;
     kind: string;
@@ -376,7 +374,7 @@ export function BuilderStepPanel({
   const selectedSpecies = species.find(
     (entry) => entry.id === characterState.selectedSpeciesId,
   );
-  const activeSources = characterState.creationPreferences?.activeSources ?? DEFAULT_ACTIVE_SOURCES;
+  const activeSources = characterState.creationPreferences?.activeSources;
   const selectedSubclass = selectedClass?.subclasses.find(
     (entry) => entry.id === characterState.selectedSubclassId,
   );
@@ -435,7 +433,7 @@ export function BuilderStepPanel({
     ],
   );
   const spellSourceWarningKey = useMemo(
-    () => `${activeSources.join("|")}::${selectedSpellIds.join("|")}`,
+    () => `${activeSources?.join("|") ?? "all"}::${selectedSpellIds.join("|")}`,
     [activeSources, selectedSpellIds],
   );
   const [spellSourceWarningResult, setSpellSourceWarningResult] = useState<{
@@ -1941,7 +1939,7 @@ function ClassFeaturesStep({
   selectedSkills: string[];
   selectedFeatureChoices: Record<string, string[]>;
   spellcastingChoices?: CharacterSpellcastingChoices;
-  activeSources: string[];
+  activeSources?: readonly string[];
   disabled: boolean;
   onSelectedSkillsChange: (skills: string[]) => void;
   onSkillTrainingChange: (skill: string, level: SkillTrainingLevel) => void;

@@ -15,12 +15,24 @@ describe("sourceFiltering", () => {
   it("matches active source codes case-insensitively", () => {
     expect(isSourceActive("xphb", ["XPHB"])).toBe(true);
     expect(isSourceActive("PHB", ["xphb"])).toBe(false);
+    expect(isSourceActive("PHB", undefined)).toBe(true);
   });
 
   it("filters inactive sources while preserving explicit legacy selections", () => {
     expect(filterByActiveSources(entries, ["XPHB"], ["legacy-fighter-phb"])).toEqual([
       entries[0],
       entries[1],
+    ]);
+  });
+
+  it("leaves all sources visible when no preference has been saved", () => {
+    expect(filterByActiveSources(entries, undefined)).toEqual(entries);
+  });
+
+  it("keeps XPHB active even when a saved selection omits it", () => {
+    expect(filterByActiveSources(entries, ["EFA"]).map((entry) => entry.id)).toEqual([
+      "fighter-xphb",
+      "artificer-efa",
     ]);
   });
 

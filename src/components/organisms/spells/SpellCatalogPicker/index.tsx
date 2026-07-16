@@ -43,7 +43,8 @@ export function SpellCatalogPicker({
     ],
     [choices.cantripIds, choices.knownSpellIds, choices.preparedSpellIds],
   );
-  const requestKey = `${className}:${activeSources.join("|")}:${preservedSpellIds.join("|")}`;
+  const sourceKey = activeSources?.join("|") ?? "all";
+  const requestKey = `${className}:${sourceKey}:${preservedSpellIds.join("|")}`;
   const loading = loadedKey !== requestKey;
 
   useEffect(() => {
