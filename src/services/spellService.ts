@@ -72,7 +72,7 @@ export function getSpellById(spellId: string): BuilderSpell | undefined {
 
 export function getSpellCatalogForClass(input: {
   className: string;
-  activeSources?: string[];
+  activeSources?: readonly string[];
   preservedSpellIds?: string[];
 }): BuilderSpell[] {
   const activeSources = getActiveSourceSet(input.activeSources);
@@ -81,7 +81,9 @@ export function getSpellCatalogForClass(input: {
 
   return getSpellCatalog().filter(
     (spell) =>
-      (activeSources.has(normalizeSourceCode(spell.source)) || preservedSpellIds.has(spell.id)) &&
+      (!activeSources ||
+        activeSources.has(normalizeSourceCode(spell.source)) ||
+        preservedSpellIds.has(spell.id)) &&
       spell.classNames.some((name) => name.toLowerCase() === className),
   );
 }

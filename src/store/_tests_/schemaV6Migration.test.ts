@@ -7,7 +7,6 @@ import {
 } from "@/src/store/characterBuildModel";
 import {
   CHARACTER_BUILD_SCHEMA_VERSION,
-  DEFAULT_CREATION_PREFERENCES,
 } from "@/src/types/characterBuild";
 import type { CharacterBuild } from "@/src/types/characterBuild";
 
@@ -83,10 +82,4 @@ describe("schema v6 migration", () => {
     expect(build.choices.attributeGenerationMethod).toBe("roll-4d6");
   });
 
-  it("exposes DEFAULT_CREATION_PREFERENCES with XPHB + xp", () => {
-    expect(DEFAULT_CREATION_PREFERENCES).toEqual({
-      activeSources: ["XPHB"],
-      progressionMode: "xp",
-    });
-  });
 });

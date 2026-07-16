@@ -15,7 +15,6 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   getBuilderBackgrounds,
   getBuilderClasses,
-  getFeats,
   getBuilderLanguages,
   getBuilderSpecies,
 } from "@/src/services/ruleService";
@@ -237,6 +236,7 @@ describe("BuilderStepPanel", () => {
 
     render(
       <CharacterStoreProvider>
+        <OnlyXphbSourcesInitializer />
         <BuilderStepPanel
           step="classe"
           {...builderData}
@@ -278,31 +278,25 @@ describe("BuilderStepPanel", () => {
   });
 
   it("warns when a saved feat choice uses a disabled source", async () => {
-    const disabledFeat = getFeats().find((feat) => feat.source === "XPHB");
-
-    if (!disabledFeat) {
-      throw new Error("expected at least one XPHB feat");
-    }
-
     render(
       <CharacterStoreProvider>
-        <DisabledSourceFeatInitializer featId={disabledFeat.id} />
+        <DisabledSourceFeatInitializer featId="legacy-feat-efa" />
         <BuilderStepPanel step="classe" {...builderData} />
       </CharacterStoreProvider>,
     );
 
     await waitFor(() => {
       expect(screen.getByLabelText("Disabled source choices")).toHaveTextContent(
-        `Feat: ${disabledFeat.name} (${disabledFeat.source})`,
+        "Feat: Legacy Feat (EFA)",
       );
     });
   });
 
   it("warns when a saved spell choice uses a disabled source", async () => {
-    const disabledSpell = getSpellById("acid-splash-xphb");
+    const disabledSpell = getSpellById("air-bubble-aag");
 
     if (!disabledSpell) {
-      throw new Error("expected Acid Splash from XPHB in the spell catalog");
+      throw new Error("expected Air Bubble from AAG in the spell catalog");
     }
 
     render(
@@ -338,10 +332,10 @@ describe("BuilderStepPanel", () => {
   });
 
   it("opens class details in the new class modal layout", () => {
-    const firstClass = builderData.classes.find((entry) => entry.source === "XPHB");
+    const firstClass = builderData.classes[0];
 
     if (!firstClass) {
-      throw new Error("expected at least one active 2024 class");
+      throw new Error("expected at least one active class");
     }
 
     render(
@@ -902,6 +896,18 @@ function LegacySourceSelectionInitializer() {
     setCreationPreferences({ activeSources: ["XPHB"], progressionMode: "xp" });
     selectClass("legacy-fighter-phb");
   }, [selectClass, setCreationPreferences]);
+
+  return null;
+}
+
+function OnlyXphbSourcesInitializer() {
+  const setCreationPreferences = useCharacterStore(
+    (state) => state.setCreationPreferences,
+  );
+
+  useEffect(() => {
+    setCreationPreferences({ activeSources: ["XPHB"], progressionMode: "xp" });
+  }, [setCreationPreferences]);
 
   return null;
 }

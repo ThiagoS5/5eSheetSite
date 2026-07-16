@@ -3,6 +3,7 @@ import {
   getBuilderBackgrounds,
   getBuilderClasses,
 } from "@/src/services/ruleService";
+import { normalizeCreationPreferences } from "@/src/services/sourcePreferenceService";
 import { selectCharacterSheetSummary } from "@/src/store/characterSelectors";
 import type {
   FlatCharacterBuilderState,
@@ -536,7 +537,9 @@ function normalizeFlatState(
     hpRollByLevel: sanitizeHpRollByLevel(
       state.hpRollByLevel ?? defaults.hpRollByLevel,
     ),
-    creationPreferences: state.creationPreferences ?? defaults.creationPreferences,
+    creationPreferences: normalizeCreationPreferences(
+      state.creationPreferences ?? defaults.creationPreferences,
+    ),
     beginnerMode: state.beginnerMode ?? defaults.beginnerMode,
   };
 }

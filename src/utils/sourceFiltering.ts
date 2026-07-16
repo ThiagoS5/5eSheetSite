@@ -3,16 +3,23 @@ export interface SourceTaggedEntry {
   source: string;
 }
 
-const DEFAULT_ACTIVE_SOURCES = ["XPHB"];
+export const BASE_SOURCE_CODE = "XPHB";
 
 export function normalizeSourceCode(source: string): string {
   return source.trim().toUpperCase();
 }
 
-export function getActiveSourceSet(activeSources: readonly string[] | undefined): ReadonlySet<string> {
-  const sources = activeSources?.length ? activeSources : DEFAULT_ACTIVE_SOURCES;
+export function getActiveSourceSet(
+  activeSources: readonly string[] | undefined,
+): ReadonlySet<string> | undefined {
+  if (!activeSources) {
+    return undefined;
+  }
 
-  return new Set(sources.map(normalizeSourceCode));
+  const sourceSet = new Set(activeSources.map(normalizeSourceCode));
+  sourceSet.add(BASE_SOURCE_CODE);
+
+  return sourceSet;
 }
 
 export function isSourceActive(
@@ -23,7 +30,9 @@ export function isSourceActive(
     return true;
   }
 
-  return getActiveSourceSet(activeSources).has(normalizeSourceCode(source));
+  const activeSourceSet = getActiveSourceSet(activeSources);
+
+  return !activeSourceSet || activeSourceSet.has(normalizeSourceCode(source));
 }
 
 export function filterByActiveSources<T extends SourceTaggedEntry>(
@@ -33,6 +42,10 @@ export function filterByActiveSources<T extends SourceTaggedEntry>(
 ): T[] {
   const activeSourceSet = getActiveSourceSet(activeSources);
   const preservedIdSet = new Set(preservedIds.filter(Boolean));
+
+  if (!activeSourceSet) {
+    return [...entries];
+  }
 
   return entries.filter(
     (entry) =>
@@ -45,6 +58,10 @@ export function getInactiveSourceEntries<T extends SourceTaggedEntry>(
   activeSources: readonly string[] | undefined,
 ): T[] {
   const activeSourceSet = getActiveSourceSet(activeSources);
+
+  if (!activeSourceSet) {
+    return [];
+  }
 
   return entries.filter((entry) => !activeSourceSet.has(normalizeSourceCode(entry.source)));
 }

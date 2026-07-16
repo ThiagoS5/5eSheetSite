@@ -158,7 +158,7 @@ export function LevelUpFlow({ open, onClose }: LevelUpFlowProps) {
       return (
         <SpellCatalogPicker
           className={characterClass!.name}
-          activeSources={state.creationPreferences?.activeSources ?? ["XPHB"]}
+          activeSources={state.creationPreferences?.activeSources}
           value={state.spellcasting}
           cantripLimit={cantripLimit}
           spellLimit={spellLimit}
@@ -210,7 +210,7 @@ export function LevelUpFlow({ open, onClose }: LevelUpFlowProps) {
     const currentFeatId = value?.mode === "feat" ? value.featId : "";
     const allFeats = filterByActiveSources(
       getFeats(),
-      state.creationPreferences?.activeSources ?? ["XPHB"],
+      state.creationPreferences?.activeSources,
       [currentFeatId],
     );
     const ctx = {

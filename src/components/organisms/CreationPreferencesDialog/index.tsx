@@ -3,14 +3,17 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
 import { useMemo, useState } from "react";
-import { getItemCatalog } from "@/src/services/itemCatalogService";
 import { readGlobalPreferences, writeGlobalPreferences } from "@/src/services/preferencesService";
+import {
+  BASE_SOURCE_CODE,
+  getAvailableSourcePreferenceOptions,
+  normalizeActiveSourceSelection,
+} from "@/src/services/sourcePreferenceService";
 import { useCharacterStore } from "@/src/store/useCharacterStore";
 import type { ProgressionMode } from "@/src/types/characterBuild";
 
 import type { CreationPreferencesDialogProps } from "./index.types";
 export type { CreationPreferencesDialogProps } from "./index.types";
-const BASE_SOURCE = "XPHB";
 
 export function CreationPreferencesDialog({
   open,
@@ -21,40 +24,43 @@ export function CreationPreferencesDialog({
 
   const [activeSources, setActiveSources] = useState<string[]>([]);
   const [progressionMode, setProgressionMode] = useState<ProgressionMode>("xp");
-
-
-
-
-
-
-
-
+  const sourceOptions = useMemo(() => getAvailableSourcePreferenceOptions(), []);
   const [snapshotTaken, setSnapshotTaken] = useState(false);
   if (open && !snapshotTaken) {
     setSnapshotTaken(true);
     const saved = creationPreferences ?? readGlobalPreferences().creationDefaults;
-    setActiveSources(saved.activeSources);
+    setActiveSources(normalizeActiveSourceSelection(saved.activeSources));
     setProgressionMode(saved.progressionMode);
   } else if (!open && snapshotTaken) {
     setSnapshotTaken(false);
   }
 
-  const otherSources = useMemo(() => {
-    const sources = new Set(getItemCatalog().map((item) => item.source));
-    sources.delete(BASE_SOURCE);
-    return [...sources].sort((a, b) => a.localeCompare(b));
-  }, []);
-
   function toggleSource(source: string, checked: boolean) {
     setActiveSources((current) =>
-      checked ? [...current, source] : current.filter((s) => s !== source),
+      normalizeActiveSourceSelection(
+        checked ? [...current, source] : current.filter((s) => s !== source),
+      ),
     );
   }
 
+  function selectAllSources() {
+    setActiveSources(sourceOptions.map((option) => option.code));
+  }
+
+  function deselectOptionalSources() {
+    setActiveSources([BASE_SOURCE_CODE]);
+  }
+
   function handleSave() {
-    const prefs = { activeSources, progressionMode };
+    const prefs = {
+      activeSources: normalizeActiveSourceSelection(activeSources),
+      progressionMode,
+    };
     setCreationPreferences(prefs);
-    writeGlobalPreferences({ creationDefaults: prefs });
+    writeGlobalPreferences({
+      ...readGlobalPreferences(),
+      creationDefaults: prefs,
+    });
     onClose();
   }
 
@@ -88,27 +94,39 @@ export function CreationPreferencesDialog({
                 <legend className="mb-1 text-xs font-bold uppercase tracking-widest text-subdued">
                   Active Sources
                 </legend>
-                <label className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <input
-                    type="checkbox"
-                    checked
-                    disabled
-                    className="h-4 w-4 accent-primary"
-                  />
-                  <span translate="no" className="notranslate">{BASE_SOURCE}</span> (base)
-                </label>
-                {otherSources.map((source) => (
+                <div className="mb-3 flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={selectAllSources}
+                    className="rounded-md border border-border px-3 py-1.5 text-xs font-semibold text-subdued outline-none transition hover:text-foreground focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70"
+                  >
+                    Select all sources
+                  </button>
+                  <button
+                    type="button"
+                    onClick={deselectOptionalSources}
+                    className="rounded-md border border-border px-3 py-1.5 text-xs font-semibold text-subdued outline-none transition hover:text-foreground focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70"
+                  >
+                    Deselect optional sources
+                  </button>
+                </div>
+                {sourceOptions.map((source) => (
                   <label
-                    key={source}
-                    className="flex items-center gap-2 text-sm text-foreground"
+                    key={source.code}
+                    className={`flex items-center gap-2 text-sm ${
+                      source.locked ? "text-muted-foreground" : "text-foreground"
+                    }`}
                   >
                     <input
                       type="checkbox"
-                      checked={activeSources.includes(source)}
-                      onChange={(e) => toggleSource(source, e.target.checked)}
+                      checked={activeSources.includes(source.code)}
+                      disabled={source.locked}
+                      onChange={(e) => toggleSource(source.code, e.target.checked)}
                       className="h-4 w-4 accent-primary"
                     />
-                    <span translate="no" className="notranslate">{source}</span>
+                    <span translate="no" className="notranslate">
+                      {source.label}
+                    </span>
                   </label>
                 ))}
               </fieldset>
