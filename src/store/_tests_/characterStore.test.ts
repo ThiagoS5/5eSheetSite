@@ -415,6 +415,24 @@ describe("character store spellcasting and play mode", () => {
     expect(store.getState().playState!.resourceUses).toEqual({});
   });
 
+  it("preserves non-rest play state data on a long rest", () => {
+    const store = createCharacterStore();
+
+    store.getState().toggleCondition("Poisoned");
+    store.getState().setOverride("armorClass", 18);
+    store.getState().addCampaignLogEntry({
+      title: "Session 1",
+      date: "2026-07-12",
+      body: "Found the ruin.",
+    });
+
+    store.getState().longRest();
+
+    expect(store.getState().playState!.conditions).toEqual(["Poisoned"]);
+    expect(store.getState().playState!.overrides).toEqual({ armorClass: 18 });
+    expect(store.getState().playState!.campaignLog).toHaveLength(1);
+  });
+
   it("clamps damage, healing, temp HP, inspiration, and rests", () => {
     const store = createCharacterStore();
     store.getState().selectClass("fighter-xphb");

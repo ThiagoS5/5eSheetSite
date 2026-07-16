@@ -29,6 +29,47 @@ describe("armor class rules", () => {
     ]);
   });
 
+  it("adds magic bonuses to worn body armor values", () => {
+    const result = deriveArmorClass({
+      dexterityScore: 18,
+      selectedEquipment: [
+        {
+          id: "dragon-scale-mail-xdmg",
+          name: "Dragon Scale Mail",
+          armorClass: 14,
+          armorClassBonus: 1,
+          armorType: "medium",
+        },
+      ],
+    });
+
+    expect(result.armorClass).toBe(17);
+    expect(result.breakdown).toStrictEqual([
+      { label: "Dragon Scale Mail", value: 17 },
+    ]);
+  });
+
+  it("adds magic bonuses to shield values", () => {
+    const result = deriveArmorClass({
+      dexterityScore: 10,
+      selectedEquipment: [
+        {
+          id: "sentinel-shield-xdmg",
+          name: "Sentinel Shield",
+          armorClass: 2,
+          armorClassBonus: 1,
+          armorType: "shield",
+        },
+      ],
+    });
+
+    expect(result.armorClass).toBe(13);
+    expect(result.breakdown).toStrictEqual([
+      { label: "Base sem armadura", value: 10 },
+      { label: "Sentinel Shield", value: 3 },
+    ]);
+  });
+
   it("caps Dexterity bonus for medium armor", () => {
     expect(
       deriveArmorClass({

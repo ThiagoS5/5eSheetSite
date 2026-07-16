@@ -36,4 +36,24 @@ describe("spellService", () => {
 
     expect(filtered.map((spell) => spell.id)).toEqual(["arcane-gate-xphb"]);
   });
+
+  it("preserves selected spells from disabled sources", () => {
+    const legacySpell = getSpellCatalogForClass({
+      className: "Wizard",
+      activeSources: ["PHB"],
+    }).find((spell) => spell.source === "PHB");
+
+    expect(legacySpell).toBeDefined();
+
+    const spells = getSpellCatalogForClass({
+      className: "Wizard",
+      activeSources: ["XPHB"],
+      preservedSpellIds: [legacySpell!.id],
+    });
+
+    expect(spells.map((spell) => spell.id)).toContain(legacySpell!.id);
+    expect(
+      spells.every((spell) => spell.source === "XPHB" || spell.id === legacySpell!.id),
+    ).toBe(true);
+  });
 });

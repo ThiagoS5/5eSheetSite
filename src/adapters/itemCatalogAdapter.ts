@@ -93,6 +93,37 @@ function parseStrengthMinimum(value: Raw5eItem["strength"]): number | undefined 
   return Number.isFinite(parsed) ? parsed : undefined;
 }
 
+function parseSignedBonus(value: string | number | undefined): number | undefined {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value;
+  }
+  if (typeof value !== "string") {
+    return undefined;
+  }
+  const match = value.match(/[+-]?\d+/);
+  if (!match) {
+    return undefined;
+  }
+  const parsed = Number(match[0]);
+  return Number.isFinite(parsed) ? parsed : undefined;
+}
+
+function normalizeDamageModifiers(values: unknown[] | undefined): string[] {
+  return (values ?? [])
+    .flatMap((value) => {
+      if (typeof value === "string") {
+        return value;
+      }
+      if (typeof value === "object" && value !== null && "resist" in value) {
+        const nested = (value as { resist?: unknown }).resist;
+        return Array.isArray(nested) ? normalizeDamageModifiers(nested) : [];
+      }
+      return [];
+    })
+    .map((value) => value.trim())
+    .filter(Boolean);
+}
+
 export function normalizeCatalogItem(rawItem: Raw5eItem): CatalogItem {
   const rarity = rawItem.rarity;
   const code = (rawItem.type ?? "").split("|")[0];
@@ -108,9 +139,14 @@ export function normalizeCatalogItem(rawItem: Raw5eItem): CatalogItem {
     isContainer: rawItem.containerCapacity != null,
     weightKg: poundsToKg(rawItem.weight),
     armorClass: rawItem.ac,
+    armorClassBonus: parseSignedBonus(rawItem.bonusAc),
     armorType: resolveArmorType(rawItem),
     armor: resolveArmorProfile(rawItem),
     shieldBonus: resolveArmorType(rawItem) === "shield" ? rawItem.ac : undefined,
+    savingThrowBonus: parseSignedBonus(rawItem.bonusSavingThrow),
+    weaponBonus: parseSignedBonus(rawItem.bonusWeapon),
+    resistances: normalizeDamageModifiers(rawItem.resist),
+    attunementRequired: rawItem.reqAttune !== undefined,
     weaponCategory: rawItem.weaponCategory,
     weaponRangeType: code === "R" ? "ranged" : code === "M" ? "melee" : undefined,
     weaponProperties: normalizeWeaponProperties(rawItem.property),

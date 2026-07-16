@@ -103,16 +103,19 @@ export function applyLongRestToPlayState(
   state: CharacterBuildPlayState,
   input: { maxHp: number },
 ): CharacterBuildPlayState {
-  return {
-    ...state,
-    currentHp: Math.max(0, input.maxHp),
-    tempHp: 0,
-    hitDiceSpent: 0,
-    usedSpellSlots: {},
-    resourceUses: {},
-    resourceRecoveries: {},
-    deathSaves: { successes: 0, failures: 0 },
-  };
+  return normalizePlayState(
+    {
+      ...state,
+      currentHp: Math.max(0, input.maxHp),
+      tempHp: 0,
+      hitDiceSpent: 0,
+      usedSpellSlots: {},
+      resourceUses: {},
+      resourceRecoveries: {},
+      deathSaves: { successes: 0, failures: 0 },
+    },
+    input.maxHp,
+  );
 }
 
 export function toggleConditionInPlayState(

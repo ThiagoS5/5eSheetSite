@@ -35,20 +35,28 @@ export function SpellCatalogPicker({
   const [school, setSchool] = useState("all");
   const [source, setSource] = useState("all");
 
-  const requestKey = `${className}:${activeSources.join("|")}`;
+  const preservedSpellIds = useMemo(
+    () => [
+      ...choices.cantripIds,
+      ...choices.knownSpellIds,
+      ...choices.preparedSpellIds,
+    ],
+    [choices.cantripIds, choices.knownSpellIds, choices.preparedSpellIds],
+  );
+  const requestKey = `${className}:${activeSources.join("|")}:${preservedSpellIds.join("|")}`;
   const loading = loadedKey !== requestKey;
 
   useEffect(() => {
     let cancelled = false;
     void import("@/src/services/spellService").then((module) => {
       if (cancelled) return;
-      setSpells(module.getSpellCatalogForClass({ className, activeSources }));
+      setSpells(module.getSpellCatalogForClass({ className, activeSources, preservedSpellIds }));
       setLoadedKey(requestKey);
     });
     return () => {
       cancelled = true;
     };
-  }, [className, activeSources, requestKey]);
+  }, [className, activeSources, preservedSpellIds, requestKey]);
 
   const filtered = useMemo(() => {
     const queryText = query.trim().toLowerCase();

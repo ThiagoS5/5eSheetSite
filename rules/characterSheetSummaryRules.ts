@@ -11,6 +11,7 @@ import {
   deriveCarriedLoadKg,
   deriveSelectedEquipment,
 } from "@/rules/inventoryRules";
+import { deriveStartingGoldPo } from "@/rules/startingGoldRules";
 import { deriveChosenFeatSummaries } from "@/rules/levelProgression";
 import { deriveBuilderPendencies } from "@/rules/pendencyRules";
 import { deriveSpeciesImmunities, deriveSpeciesResistances, deriveSpeciesVulnerabilities } from "@/rules/speciesDefenseRules";
@@ -19,6 +20,11 @@ import {
   computeSavingThrows,
   normalizeSavingThrowAttributes,
 } from "@/rules/savingThrowRules";
+import {
+  combineDefenseLabels,
+  deriveEquipmentResistances,
+  deriveEquipmentSavingThrowBonus,
+} from "@/rules/equipmentEffectRules";
 import {
   EPIC_BOON_ABILITY_CAP,
   calculateFinalAttributes,
@@ -54,44 +60,6 @@ const XP_BY_LEVEL = [
   0, 300, 900, 2700, 6500, 14000, 23000, 34000, 48000, 64000,
   85000, 100000, 120000, 140000, 165000, 195000, 225000, 265000, 305000, 355000,
 ];
-
-const BACKGROUND_KIT_OPTION_ID = "background-kit";
-
-export function deriveStartingGoldPo(state: CharacterBuilderState): number {
-  const characterClass = getBuilderClasses().find(
-    (entry) => entry.id === state.selectedClassId,
-  );
-  const background = getBuilderBackgrounds().find(
-    (entry) => entry.id === state.selectedBackgroundId,
-  );
-  const goldLabelBySource: Partial<Record<string, string | undefined>> = {
-    class: characterClass?.startingEquipmentGold,
-    background: background?.equipmentGold,
-  };
-
-  return Object.entries(state.equipmentChoicesBySource).reduce((total, [key, choice]) => {
-    if (!choice) return total;
-    if (choice.mode === "gold") {
-      return total + parseLeadingGoldInteger(goldLabelBySource[key]);
-    }
-    if (choice.mode !== "items") return total;
-    if (key === "class") {
-      const selectedPackage = characterClass?.startingEquipmentPackages.find(
-        (entry) => entry.id === choice.selectedOptionId,
-      );
-      return total + copperToGold(selectedPackage?.goldValue ?? 0);
-    }
-    if (key === "background" && choice.selectedOptionId === BACKGROUND_KIT_OPTION_ID) {
-      return total + copperToGold(
-        (background?.equipmentItemsA ?? []).reduce(
-          (sum, item) => sum + (isGoldPackageItem(item) ? item.value ?? 0 : 0),
-          0,
-        ),
-      );
-    }
-    return total;
-  }, 0);
-}
 
 export function selectCharacterSheetSummary(
   state: CharacterBuilderState,
@@ -130,6 +98,8 @@ export function selectCharacterSheetSummary(
     dexterityScore: finalAttributes.destreza,
     selectedEquipment,
   });
+  const equipmentSavingThrowBonus = deriveEquipmentSavingThrowBonus(selectedEquipment);
+  const equipmentResistances = deriveEquipmentResistances(selectedEquipment);
   const effectivePlay = deriveEffectivePlayState({
     state,
     maxHitPoints,
@@ -201,12 +171,16 @@ export function selectCharacterSheetSummary(
       finalAttributes,
       proficientSaveAttributes: normalizeSavingThrowAttributes(characterClass?.savingThrows),
       proficiencyBonus,
+      savingThrowBonus: equipmentSavingThrowBonus,
     }),
     passives: computePassives(skills),
     senses: species?.senses ?? [],
     languages: [...state.speciesLanguages, ...featEffects.languageProficiencies],
     toolProficiencies: [...new Set(featEffects.toolProficiencies)],
-    resistances: deriveSpeciesResistances(species, state.speciesChoices),
+    resistances: combineDefenseLabels(
+      deriveSpeciesResistances(species, state.speciesChoices),
+      equipmentResistances,
+    ),
     immunities: deriveSpeciesImmunities(species),
     vulnerabilities: deriveSpeciesVulnerabilities(species),
     features: deriveFeatures({ classFeaturesUpToLevel, characterClass, state, species, background }),
@@ -347,19 +321,4 @@ function xpThresholdForNextLevel(level: number): number {
 
 function feetToMeters(feet: number): number {
   return Math.round(feet * 0.3);
-}
-
-function parseLeadingGoldInteger(label: string | undefined): number {
-  const match = label?.match(/-?\d+/);
-  if (!match) return 0;
-  const parsed = parseInt(match[0], 10);
-  return Number.isNaN(parsed) ? 0 : parsed;
-}
-
-function copperToGold(value: number): number {
-  return value / 100;
-}
-
-function isGoldPackageItem(item: { id: string; label: string }): boolean {
-  return item.label.toLowerCase() === "gold" || item.id.startsWith("gold");
 }

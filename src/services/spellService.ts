@@ -15,6 +15,7 @@ import xgeData from "@/public/data/spells/spells-xge.json";
 import xphbData from "@/public/data/spells/spells-xphb.json";
 import spellSourcesData from "@/public/data/spells/sources.json";
 import { normalizeSpell, type RawSpell } from "@/src/adapters/spellAdapter";
+import { getActiveSourceSet, normalizeSourceCode } from "@/src/utils/sourceFiltering";
 import type { BuilderSpell, SpellCatalogFilter } from "@/src/types/spells";
 
 interface SpellFile {
@@ -72,17 +73,15 @@ export function getSpellById(spellId: string): BuilderSpell | undefined {
 export function getSpellCatalogForClass(input: {
   className: string;
   activeSources?: string[];
+  preservedSpellIds?: string[];
 }): BuilderSpell[] {
-  const activeSources = new Set(
-    (input.activeSources?.length ? input.activeSources : ["XPHB"]).map((source) =>
-      source.toUpperCase(),
-    ),
-  );
+  const activeSources = getActiveSourceSet(input.activeSources);
+  const preservedSpellIds = new Set(input.preservedSpellIds ?? []);
   const className = input.className.toLowerCase();
 
   return getSpellCatalog().filter(
     (spell) =>
-      activeSources.has(spell.source.toUpperCase()) &&
+      (activeSources.has(normalizeSourceCode(spell.source)) || preservedSpellIds.has(spell.id)) &&
       spell.classNames.some((name) => name.toLowerCase() === className),
   );
 }

@@ -9,6 +9,7 @@ import "../public/fontawesome/css/regular.css";
 import "../public/fontawesome/css/brands.css";
 
 
+const analyticsEnabled = process.env.NODE_ENV === "production";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -43,7 +44,7 @@ export default function RootLayout({
       >
         {children}
         <Toaster theme="dark" position="top-right" richColors />
-        <Analytics />
+        {analyticsEnabled ? <Analytics /> : null}
       </body>
     </html>
   );

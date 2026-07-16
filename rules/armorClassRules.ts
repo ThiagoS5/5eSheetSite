@@ -5,6 +5,7 @@ type ArmorClassEquipment = {
   id: string;
   name?: string;
   armorClass?: number;
+  armorClassBonus?: number;
   armorType?: ArmorType;
   shieldBonus?: number;
 };
@@ -18,8 +19,11 @@ export function deriveArmorClass(input: {
   const shieldBonus = input.selectedEquipment
     .filter((item) => isShield(item))
     .reduce((total, item) => total + shieldValue(item), 0);
+  const passiveBonus = input.selectedEquipment
+    .filter((item) => !item.armorType && typeof item.armorClassBonus === "number")
+    .reduce((total, item) => total + (item.armorClassBonus ?? 0), 0);
 
-  const armorClass = bodyArmor.value + shieldBonus;
+  const armorClass = bodyArmor.value + shieldBonus + passiveBonus;
   const breakdown = [
     bodyArmor.breakdown,
     ...input.selectedEquipment
@@ -27,6 +31,12 @@ export function deriveArmorClass(input: {
       .map((item) => ({
         label: item.name ?? item.id,
         value: shieldValue(item),
+      })),
+    ...input.selectedEquipment
+      .filter((item) => !item.armorType && typeof item.armorClassBonus === "number")
+      .map((item) => ({
+        label: item.name ?? item.id,
+        value: item.armorClassBonus ?? 0,
       })),
   ];
 
@@ -89,9 +99,10 @@ function bodyArmorValue(
   dexterityModifier: number,
 ): number {
   const armorClass = item.armorClass ?? 0;
-  if (item.armorType === "light") return armorClass + dexterityModifier;
-  if (item.armorType === "medium") return armorClass + Math.min(dexterityModifier, 2);
-  return armorClass;
+  const magicBonus = item.armorClassBonus ?? 0;
+  if (item.armorType === "light") return armorClass + dexterityModifier + magicBonus;
+  if (item.armorType === "medium") return armorClass + Math.min(dexterityModifier, 2) + magicBonus;
+  return armorClass + magicBonus;
 }
 
 function isShield(item: ArmorClassEquipment): boolean {
@@ -99,5 +110,5 @@ function isShield(item: ArmorClassEquipment): boolean {
 }
 
 function shieldValue(item: ArmorClassEquipment): number {
-  return item.shieldBonus ?? item.armorClass ?? 0;
+  return (item.shieldBonus ?? item.armorClass ?? 0) + (item.armorClassBonus ?? 0);
 }

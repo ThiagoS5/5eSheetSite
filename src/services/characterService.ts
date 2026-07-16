@@ -1,7 +1,7 @@
 import {
   createSaveId,
   getStepHref,
-  normalizeCharacterBuild,
+  migrateCharacterBuild,
 } from "@/src/store/characterBuildModel";
 import {
   getBuilderBackgrounds,
@@ -60,13 +60,13 @@ export function hasCharacterSync(saveId: string): boolean {
 
 export async function saveCharacter(character: CharacterBuild): Promise<CharacterBuild> {
   const now = new Date().toISOString();
-  const normalizedCharacter = normalizeCharacterBuild({
+  const normalizedCharacter = migrateCharacterBuild({
     ...character,
     exportMetadata: {
       ...character.exportMetadata,
       updatedAt: now,
     },
-  });
+  }, character.exportMetadata.schemaVersion);
   const saves = readSaveMap();
 
   saves[normalizedCharacter.exportMetadata.saveId] = normalizedCharacter;
@@ -86,7 +86,7 @@ export async function duplicateCharacter(
   }
 
   const now = new Date().toISOString();
-  const duplicate = normalizeCharacterBuild({
+  const duplicate = migrateCharacterBuild({
     ...original,
     draft: {
       ...original.draft,
@@ -101,7 +101,7 @@ export async function duplicateCharacter(
       createdAt: now,
       updatedAt: now,
     },
-  });
+  }, original.exportMetadata.schemaVersion);
 
   saves[duplicate.exportMetadata.saveId] = duplicate;
   writeSaveMap(saves);
@@ -135,7 +135,11 @@ function parseSaveMap(rawValue: string | null): CharacterSaveMap {
     return Object.entries(parsedValue).reduce<CharacterSaveMap>(
       (saves, [saveId, value]) => {
         if (isRecord(value)) {
-          const character = normalizeCharacterBuild(value as Partial<CharacterBuild>);
+          const rawCharacter = value as Partial<CharacterBuild>;
+          const character = migrateCharacterBuild(
+            rawCharacter,
+            rawCharacter.exportMetadata?.schemaVersion,
+          );
 
           saves[saveId] = character;
         }

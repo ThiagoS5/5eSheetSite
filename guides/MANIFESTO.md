@@ -42,7 +42,7 @@ Any new feature should plug into that lifecycle instead of becoming an isolated 
 
 ## 4. Current Implemented Baseline
 
-This is the current audited baseline as of 2026-07-15.
+This is the current audited baseline as of 2026-07-16.
 
 ### Product Surfaces
 
@@ -58,7 +58,7 @@ This is the current audited baseline as of 2026-07-15.
 
 - `CharacterBuild` is the canonical persisted model at schema v14.
 - The persisted shape is split into `draft`, `progression`, `choices`, `playState`, `derivedSheet`, and `exportMetadata`.
-- Store persistence and Vault reads normalize old saves through the canonical build model.
+- Store persistence, Vault reads, and canonical import normalize old saves through the shared `migrateCharacterBuild(raw, fromVersion)` path.
 - Schema migrations are covered for the important historical shapes, with fixture-based tests.
 
 ### Rules Engine
@@ -79,12 +79,12 @@ This is the current audited baseline as of 2026-07-15.
 - Subclasses are modeled with a dedicated builder step and through level-up requirements.
 - Feats and ASI are mutually exclusive at the choice point, with categories, prerequisites, attribute caps, and curated mechanical effects.
 - Spellcasting has normalized spells, class spell lists, filters, slot derivation, save DC, spell attack, cantrip/known/prepared limits, and sheet/export visibility.
-- Inventory has quantities, equip/unequip, item catalog search/filtering, armor/shield AC effects, weapon attacks, carried load, and carried inventory rendering.
+- Inventory has quantities, equip/unequip, item catalog search/filtering, armor/shield AC effects, magic AC/save/weapon bonuses, weapon attacks, carried load, and carried inventory rendering.
 
 ### Exports
 
 - Foundry VTT export consumes `CharacterSheetSummary` and includes identity, abilities, skills, tools, traits, inventory, equipment, weapons, spells, and class/species/background items.
-- Canonical Forge & Fate JSON export/import exists in `src/utils/canonicalExport.ts` with a versioned envelope and lossless round-trip tests.
+- Canonical Forge & Fate JSON export/import exists in `src/utils/canonicalExport.ts` with a versioned envelope, first-class export actions in the Vault/sheet/conclusion surfaces, and lossless round-trip tests.
 - Dashboard import writes imported characters into the Vault with a new save id.
 - Printable PDF generation exists through `@react-pdf/renderer`, with matrix tests for martial, spellcaster, high-level, rich-description, inventory, portrait, and long-notes cases.
 
@@ -94,10 +94,11 @@ The next work should focus on closing product gaps, not rebuilding completed fou
 
 ### P0: Finish Portable Export UX
 
-- Add an explicit Forge & Fate canonical JSON export action to the Vault, conclusion, and sheet surfaces.
-- Keep Foundry labeled as Foundry, not generic JSON.
-- Make import/export copy explain format differences without adding instructional clutter inside the main sheet.
-- Preserve `ForgeFateExportV1` as the internal round-trip format and Foundry/PDF as external adapters.
+Status: complete for v1 closure on 2026-07-16.
+
+- Forge & Fate canonical JSON is an explicit first-class export action in the Vault, conclusion, and sheet surfaces.
+- Foundry VTT JSON remains a separate action from Forge & Fate JSON.
+- `ForgeFateExportV1` remains the internal round-trip format; Foundry/PDF remain external adapters.
 
 ### P0: Launch-Hardening Pass
 
@@ -110,7 +111,7 @@ The next work should focus on closing product gaps, not rebuilding completed fou
 
 - Derive `resistances`, `immunities`, and `vulnerabilities` from species, feats, class features, spells, items, and manual overrides where appropriate.
 - Expand feat mechanical effects beyond the current curated subset.
-- Model magic item effects without leaking ad-hoc calculations into UI.
+- Model magic item effects without leaking ad-hoc calculations into UI. The v1 closure covers structured item AC, saving throw, weapon bonus, and resistance fields; broader item effects remain ongoing.
 - Connect feature/resource usage more tightly to short-rest and long-rest recovery rules.
 
 ### P1: Source Preferences And Catalog Scope
@@ -121,13 +122,13 @@ The next work should focus on closing product gaps, not rebuilding completed fou
 
 ### P1: Migration Consolidation
 
-- Extract a shared `migrateCharacterBuild(raw, fromVersion)` path used by the builder store, Vault normalization, and canonical import.
+- Shared `migrateCharacterBuild(raw, fromVersion)` is the migration entry point for the builder store, Vault normalization, and canonical import.
 - Keep fixture coverage for every supported schema family.
 - Never change `CharacterBuild` shape without a schema bump, migration, and tests.
 
 ### P2: Multiclass Design Then Implementation
 
-- Write the multiclass ADR before code changes.
+- Use [`ADR-001-multiclass.md`](ADR-001-multiclass.md) before code changes.
 - Plan the migration from `choices.selectedClassId` to `classLevels: { classId, level, subclassId }[]`.
 - Define total-level proficiency, per-class features, multiclass spell slots, proficiencies, starter equipment limits, and Foundry/PDF mapping.
 - Implement only after the export and launch-hardening gaps are closed.

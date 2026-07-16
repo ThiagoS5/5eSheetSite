@@ -12,6 +12,7 @@ const mocks = vi.hoisted(() => ({
   pdf: vi.fn(() => ({
     toBlob: vi.fn(async () => new Blob(["%PDF"], { type: "application/pdf" })),
   })),
+  serializeCharacterExport: vi.fn(() => "{\"format\":\"forge-fate.character\"}"),
 }));
 
 afterEach(() => {
@@ -35,6 +36,10 @@ vi.mock("@/src/utils/foundryAdapter", () => ({
   createFoundryCharacterExport: mocks.createFoundryCharacterExport,
 }));
 
+vi.mock("@/src/utils/canonicalExport", () => ({
+  serializeCharacterExport: mocks.serializeCharacterExport,
+}));
+
 vi.mock("@/src/store/useCharacterBuilderState", () => ({
   useCharacterBuilderState: () => ({ selectedClassId: "wizard-xphb", selectedBackgroundId: "sage-xphb" }),
 }));
@@ -42,7 +47,7 @@ vi.mock("@/src/store/useCharacterStore", () => ({
   useCharacterStore: (selector: (s: unknown) => unknown) =>
     selector({
       description: { notas: "", nome: "Thalindra", historia: "" },
-      characterBuild: { schemaVersion: 13 },
+      characterBuild: { exportMetadata: { saveId: "sheet-test" } },
       setDescriptionField: () => {},
     }),
 }));
@@ -110,9 +115,25 @@ describe("CharacterSheetView", () => {
     vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => {});
 
     render(<CharacterSheetView />);
-    fireEvent.click(screen.getByRole("button", { name: "Export JSON (Foundry)" }));
+    fireEvent.click(screen.getByRole("button", { name: "Export Foundry VTT JSON" }));
 
     expect(mocks.createFoundryCharacterExport).toHaveBeenCalled();
+    expect(click).toHaveBeenCalledTimes(1);
+  });
+
+  it("downloads canonical Forge & Fate JSON from the canonical export action", () => {
+    const click = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(function (this: HTMLAnchorElement) {
+      expect(this.download).toBe("thalindra-forge-fate.json");
+    });
+    vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:forge-fate");
+    vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => {});
+
+    render(<CharacterSheetView />);
+    fireEvent.click(screen.getByRole("button", { name: "Export Forge & Fate JSON" }));
+
+    expect(mocks.serializeCharacterExport).toHaveBeenCalledWith(
+      expect.objectContaining({ exportMetadata: { saveId: "sheet-test" } }),
+    );
     expect(click).toHaveBeenCalledTimes(1);
   });
 });

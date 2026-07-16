@@ -6,7 +6,11 @@ import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/re
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { saveCharacter } from "@/src/services/characterService";
 import { readGlobalPreferences } from "@/src/services/preferencesService";
-import { createEmptyCharacterBuild } from "@/src/store/characterBuildModel";
+import { getBuilderBackgrounds, getBuilderClasses, getBuilderLanguages } from "@/src/services/ruleService";
+import {
+  createCharacterBuildFromLegacyState,
+  createEmptyCharacterBuild,
+} from "@/src/store/characterBuildModel";
 import { CharacterStoreProvider } from "@/src/store/useCharacterStore";
 import { Dashboard } from "@/src/components/pages/Dashboard";
 import type { CharacterBuild } from "@/src/types/characterBuild";
@@ -162,6 +166,33 @@ describe("Dashboard", () => {
     expect(screen.getByText("Brienne (Copy)")).toBeInTheDocument();
   });
 
+  it("exports a ready character as Forge & Fate JSON directly from the Vault", async () => {
+    const click = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(function (this: HTMLAnchorElement) {
+      expect(this.download).toBe("brienne-forge-fate.json");
+    });
+    const createObjectURL = vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:forge-fate");
+    vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => {});
+    await saveCharacter(createExportReadyDashboardBuild());
+
+    render(
+      <CharacterStoreProvider>
+        <Dashboard />
+      </CharacterStoreProvider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("Brienne")).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Export Forge & Fate JSON for Brienne" }));
+
+    await waitFor(() => {
+      expect(click).toHaveBeenCalledTimes(1);
+    });
+    expect(createObjectURL).toHaveBeenCalledWith(expect.any(Blob));
+    expect(push).not.toHaveBeenCalledWith("/sheet");
+  });
+
   it("asks for the creation mode before creating a character without saved beginner defaults", async () => {
     render(
       <CharacterStoreProvider>
@@ -250,4 +281,82 @@ function createDashboardBuild(): CharacterBuild {
       },
     },
   };
+}
+
+function createExportReadyDashboardBuild(): CharacterBuild {
+  const build = createEmptyCharacterBuild({
+    now: "2026-06-13T10:00:00.000Z",
+    saveId: "save-brienne-ready",
+  });
+  const fighter = getBuilderClasses().find((entry) => entry.id === "fighter-xphb");
+  const guard = getBuilderBackgrounds().find((entry) => entry.id === "guard-xphb");
+  const languages = getBuilderLanguages().map((language) => language.name);
+
+  if (!fighter || !guard) {
+    throw new Error("expected fighter and guard fixtures to exist");
+  }
+
+  return createCharacterBuildFromLegacyState(
+    {
+      characterBuild: build,
+      selectedClassId: fighter.id,
+      selectedSpeciesId: "human-xphb",
+      selectedBackgroundId: guard.id,
+      maxUnlockedStepIndex: 9,
+      selectedSubclassId: fighter.subclasses[0]?.id,
+      classSkillProficiencies: fighter.skillChoices.chooseFrom.slice(0, fighter.skillChoices.count),
+      classFeatureChoices: Object.fromEntries(
+        fighter.featureChoiceGroups.map((group) => [
+          group.id,
+          group.options.slice(0, group.count).map((option) => option.value),
+        ]),
+      ),
+      speciesLanguages: languages.slice(0, 2 + fighter.languageChoiceCount + guard.languageChoiceCount),
+      attributeGenerationMethod: "standard-array",
+      baseAttributes: {
+        forca: 15,
+        destreza: 14,
+        constituicao: 13,
+        inteligencia: 12,
+        sabedoria: 10,
+        carisma: 8,
+      },
+      backgroundAbilityBonuses: getTestBackgroundAbilityBonuses(guard),
+      equipmentChoicesBySource: fighter.startingEquipmentPackages[0]
+        ? {
+            class: {
+              mode: "items",
+              selectedOptionId: fighter.startingEquipmentPackages[0].id,
+            },
+          }
+        : {},
+      description: {
+        ...build.draft.description,
+        nome: "Brienne",
+      },
+    },
+    {
+      createdAt: build.exportMetadata.createdAt,
+      currentStepSlug: "conclusao",
+      saveId: build.exportMetadata.saveId,
+      updatedAt: build.exportMetadata.updatedAt,
+    },
+  );
+}
+
+function getTestBackgroundAbilityBonuses(
+  background: ReturnType<typeof getBuilderBackgrounds>[number],
+) {
+  const option = background.abilityOptions[0];
+
+  if (!option) {
+    return {};
+  }
+
+  return Object.fromEntries(
+    option.attributes.slice(0, option.mode === "+2/+1" ? 2 : 3).map((attribute, index) => [
+      attribute,
+      option.mode === "+2/+1" && index === 0 ? 2 : 1,
+    ]),
+  );
 }

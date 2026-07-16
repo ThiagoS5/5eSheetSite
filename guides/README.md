@@ -18,6 +18,7 @@ Read 1–3 before **any** change. Read the rest based on what you are touching.
 | 6 | [`DESIGN.md`](DESIGN.md) | Visual grammar: tokens, typography, motion, layout, anti-patterns, a11y | Any UI/visual change |
 | 7 | [`PRODUCT.md`](PRODUCT.md) | Users, product purpose, brand personality, anti-references | Product/UX decisions and copy |
 | 8 | [`forge-fate-master-plan.md`](forge-fate-master-plan.md) | Full phase-by-phase roadmap (F1–F10) with per-phase scope, acceptance and status. Partly historical — see its header | Deep context on a specific phase or contract |
+| 9 | [`ADR-001-multiclass.md`](ADR-001-multiclass.md) | Post-v1 multiclass architecture decision, schema direction, migration constraints | Before any multiclass implementation or class-progression schema work |
 
 ## Conflict Resolution Order
 

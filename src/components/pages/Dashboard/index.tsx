@@ -1,13 +1,11 @@
 "use client";
 
 import {
-  Bell,
   Copy,
   FileDown,
   Eye,
   Plus,
   Search,
-  Settings,
   Shield,
   Star,
   Trash2,
@@ -45,6 +43,7 @@ import {
 } from "@/src/services/ruleService";
 import { quickBuildProfiles, type QuickBuildProfile } from "@/src/data/quickBuildProfiles";
 import { useCharacterStore } from "@/src/store/useCharacterStore";
+import { serializeCharacterExport } from "@/src/utils/canonicalExport";
 import type { CharacterBuild } from "@/src/types/characterBuild";
 import type { BuilderBackground } from "@/src/types/builder";
 import type { AttributeBonuses, AttributeKey } from "@/src/types/dnd";
@@ -53,10 +52,6 @@ import type { Character } from "@/src/types/Character";
 const builderStartHref = "/builder/classe";
 const sheetHref = "/sheet";
 const emptyCharactersSnapshot: readonly Character[] = [];
-const logoUrl =
-  "https://lh3.googleusercontent.com/aida/AP1WRLs6nBKMZFXZPQWc3Dz44sd79kupXgFWy3_yGtyD_0pCoeQxNVqB_QUwSfqIpLA1hl-IVPXhnNf5ilC7E2rHE77Byl-_k6fE1pWeVQ34b3ewaoU9cNIx7DA-qNPTeftY3LpW8BX4__-HMQIu3eMmr335p7fBUXDeifo1qzI8SfHC96x6ONDvLU926xzzi2pHr4IYop0-hizeYiiLJ-KpoI-7yuXhvXl1jakw-iUuIWMbzYR2Fc440hKXTyw";
-const profileUrl =
-  "https://lh3.googleusercontent.com/aida-public/AB6AXuCPKVEQ-mHIcoHy24XPfpu3mf4Bcm836Y_tQSZ2L6gRoKP8XVR71TdBH8n7r9wL3UUmGYAI5_xPOS5RjWTnzLCAYPm62RM1PW-Z0lhEhTs2oTkQEUkRgf85kFIrc4escY8aA0vL2ewW1hwkEczeVZkp-2Co4_x6r34rngTf4PrkfrOCCRR1N3Rov0PaKESs4opO2MFVFNddvZOh8M6J5p3H-CtJijvLR2voTvqx9tnSKzY5O-qNy8S4AqTVYOSC9c2F_bdwZHZx1S0-";
 const missingCharacterName = "Unnamed Character";
 const missingSpeciesLabel = "Species pending";
 const missingClassLabel = "Class pending";
@@ -64,6 +59,7 @@ const missingBackgroundLabel = "Background pending";
 const builderStepOrder = [
   "classe",
   "recursos-classe",
+  "subclasse",
   "antecedente",
   "especie",
   "detalhes-especie",
@@ -77,14 +73,12 @@ const primaryNavigation = [
   { label: "Vault", href: "/", active: true },
   { label: "Create", href: builderStartHref, active: false },
   { label: "Sheet", href: sheetHref, active: false },
-  { label: "Codex", href: null, active: false, status: "Coming soon" },
 ] as const;
 
 const mobileNavigation = [
   { label: "Vault", href: "/", active: true, icon: Shield },
   { label: "Create", href: builderStartHref, active: false, icon: WandSparkles },
   { label: "Sheet", href: sheetHref, active: false, icon: Eye },
-  { label: "Profile", href: null, active: false, icon: UserCircle },
 ] as const;
 
 export function Dashboard() {
@@ -154,6 +148,21 @@ export function Dashboard() {
     });
   }
 
+  function exportCharacter(character: Character) {
+    void getCharacter(character.id).then((build) => {
+      if (!build) {
+        return;
+      }
+
+      const characterName = getCharacterName(character);
+
+      downloadJson(
+        `${sanitizeFileName(characterName)}-forge-fate.json`,
+        serializeCharacterExport(build),
+      );
+    });
+  }
+
   function toggleFavorite(character: Character) {
     setFavoriteCharacterIds((currentIds) => {
       const nextIds = new Set(currentIds);
@@ -201,6 +210,7 @@ export function Dashboard() {
             onContinue={continueCharacter}
             onDelete={deleteSavedCharacter}
             onDuplicate={duplicateSavedCharacter}
+            onExport={exportCharacter}
             onFavorite={toggleFavorite}
             onView={viewCharacter}
           />
@@ -463,58 +473,29 @@ function DashboardTopNav() {
       </div>
 
       <nav aria-label="Primary navigation" className="hidden items-center gap-6 md:flex">
-        {primaryNavigation.map((item) =>
-          item.href ? (
-            <Link
-              key={item.label}
-              href={item.href}
-              aria-current={item.active ? "page" : undefined}
-              className={`font-serif text-2xl font-semibold transition-colors ${
-                item.active
-                  ? "border-b-2 border-primary pb-1 text-foreground"
-                  : "text-subdued hover:text-foreground"
-              }`}
-            >
-              {item.label}
-            </Link>
-          ) : (
-            <button
-              key={item.label}
-              type="button"
-              aria-disabled="true"
-              title={`${item.label}: ${item.status}`}
-              className="cursor-not-allowed font-serif text-2xl font-semibold text-faint"
-            >
-              {item.label}
-            </button>
-          ),
-        )}
+        {primaryNavigation.map((item) => (
+          <Link
+            key={item.label}
+            href={item.href}
+            aria-current={item.active ? "page" : undefined}
+            className={`font-serif text-2xl font-semibold transition-colors ${
+              item.active
+                ? "border-b-2 border-primary pb-1 text-foreground"
+                : "text-subdued hover:text-foreground"
+            }`}
+          >
+            {item.label}
+          </Link>
+        ))}
       </nav>
 
       <div className="flex items-center gap-4">
-        <IconButton
-          disabled
-          label="Notifications coming soon"
-          icon={<Bell className="h-5 w-5" />}
-        />
-        <IconButton
-          disabled
-          label="Settings coming soon"
-          icon={<Settings className="h-5 w-5" />}
-        />
         <button
           type="button"
           aria-label="Profile"
-          className="h-10 w-10 overflow-hidden rounded-full border border-white/[0.1] outline-none transition-transform active:scale-95 focus-visible:ring-2 focus-visible:ring-primary"
+          className="flex h-10 w-10 items-center justify-center rounded-full border border-white/[0.1] bg-surface-base text-subdued outline-none transition-transform active:scale-95 focus-visible:ring-2 focus-visible:ring-primary"
         >
-          <Image
-            unoptimized
-            src={profileUrl}
-            alt=""
-            width={40}
-            height={40}
-            className="h-full w-full object-cover"
-          />
+          <UserCircle aria-hidden="true" className="h-6 w-6" />
         </button>
       </div>
     </header>
@@ -591,6 +572,7 @@ function PopulatedState({
   onContinue,
   onDelete,
   onDuplicate,
+  onExport,
   onFavorite,
   onView,
 }: {
@@ -600,6 +582,7 @@ function PopulatedState({
   onContinue: (character: Character) => void;
   onDelete: (character: Character) => void;
   onDuplicate: (character: Character) => void;
+  onExport: (character: Character) => void;
   onFavorite: (character: Character) => void;
   onView: (character: Character) => void;
 }) {
@@ -688,7 +671,7 @@ function PopulatedState({
               onContinue={() => onContinue(character)}
               onDelete={() => onDelete(character)}
               onDuplicate={() => onDuplicate(character)}
-              onExport={() => onView(character)}
+              onExport={() => onExport(character)}
               onFavorite={() => onFavorite(character)}
               onView={() => onView(character)}
             />
@@ -850,10 +833,10 @@ function DashboardCharacterCard({
         </button>
         <div className="grid grid-cols-4 gap-2">
           <QuickActionButton
-            label={`Export ${characterName}`}
+            label={`Export Forge & Fate JSON for ${characterName}`}
             disabled={!readyToExport}
             onClick={onExport}
-            title={readyToExport ? "Open sheet to export" : "Complete creation to export"}
+            title={readyToExport ? "Export Forge & Fate JSON" : "Complete creation to export"}
           >
             <FileDown className="h-4 w-4" />
           </QuickActionButton>
@@ -947,7 +930,7 @@ function MobileNavItem({
   label,
 }: {
   active?: boolean;
-  href: string | null;
+  href: string;
   icon: LucideIcon;
   label: string;
 }) {
@@ -957,47 +940,11 @@ function MobileNavItem({
       : "text-subdued hover:text-foreground"
   }`;
 
-  if (href) {
-    return (
-      <Link href={href} aria-current={active ? "page" : undefined} className={className}>
-        <Icon aria-hidden="true" className="h-5 w-5" />
-        <span>{label}</span>
-      </Link>
-    );
-  }
-
   return (
-    <button
-      type="button"
-      aria-disabled="true"
-      title={`${label}: coming soon`}
-      className={`${className} cursor-not-allowed opacity-60`}
-    >
+    <Link href={href} aria-current={active ? "page" : undefined} className={className}>
       <Icon aria-hidden="true" className="h-5 w-5" />
       <span>{label}</span>
-    </button>
-  );
-}
-
-function IconButton({
-  label,
-  icon,
-  disabled = false,
-}: {
-  label: string;
-  icon: ReactNode;
-  disabled?: boolean;
-}) {
-  return (
-    <button
-      type="button"
-      aria-label={label}
-      disabled={disabled}
-      title={label}
-      className="text-subdued outline-none transition-colors hover:text-foreground active:scale-95 focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:text-subdued"
-    >
-      {icon}
-    </button>
+    </Link>
   );
 }
 
@@ -1088,6 +1035,26 @@ function getCompletionLabel(character: Character): string {
   return `${completion}% complete`;
 }
 
+function sanitizeFileName(value: string): string {
+  return (
+    value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "character"
+  );
+}
+
+function downloadJson(fileName: string, json: string): void {
+  const blob = new Blob([json], { type: "application/json" });
+  downloadBlob(blob, fileName);
+}
+
+function downloadBlob(blob: Blob, fileName: string): void {
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = fileName;
+  anchor.click();
+  URL.revokeObjectURL(url);
+}
+
 function formatNullableNumber(value: number | undefined): string {
   return Number.isFinite(value) ? String(value) : "—";
 }
@@ -1120,6 +1087,8 @@ function getCurrentStepLabel(currentStepHref: string | undefined): string {
   switch (step) {
     case "recursos-classe":
       return "Class Features";
+    case "subclasse":
+      return "Subclass";
     case "antecedente":
       return "Background";
     case "especie":
@@ -1158,31 +1127,13 @@ function ForgeFateLogo({
   className: string;
   decorative?: boolean;
 }) {
-  const [hasImageError, setHasImageError] = useState(false);
-
-  if (hasImageError) {
-    return (
-      <span
-        aria-hidden={decorative}
-        aria-label={decorative ? undefined : "Forge & Fate"}
-        className={`${className} flex items-center justify-center rounded-full border border-white/[0.08] bg-surface-base text-primary`}
-      >
-        <WandSparkles className="h-1/2 w-1/2" />
-      </span>
-    );
-  }
-
   return (
-    <Image
-      unoptimized
-      src={logoUrl}
-      alt={decorative ? "" : "Forge & Fate"}
-      width={256}
-      height={256}
-      loading="lazy"
-      fetchPriority="low"
-      className={`${className} object-contain`}
-      onError={() => setHasImageError(true)}
-    />
+    <span
+      aria-hidden={decorative}
+      aria-label={decorative ? undefined : "Forge & Fate"}
+      className={`${className} flex items-center justify-center rounded-full border border-white/[0.08] bg-surface-base text-primary`}
+    >
+      <WandSparkles className="h-1/2 w-1/2" />
+    </span>
   );
 }

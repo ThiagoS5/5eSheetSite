@@ -273,15 +273,6 @@ export function InventoryManager({
             ) : null}
 
             <div className="mb-3 flex flex-wrap gap-4">
-              <label className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-not-allowed">
-                <input
-                  type="checkbox"
-                  disabled
-                  title="Coming soon"
-                  className="accent-brand-crimson-alt"
-                />
-                Proficient
-              </label>
               <label className="flex items-center gap-1.5 text-xs text-subdued cursor-pointer">
                 <input
                   type="checkbox"

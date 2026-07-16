@@ -14,6 +14,7 @@ import {
 import { RulesTextView } from "@/src/components/molecules/RulesTextView";
 import { WizardStepHeader } from "@/src/components/molecules/WizardStepHeader";
 import { getLevelRequirements } from "@/rules/levelProgression";
+import { isSourceActive } from "@/src/utils/sourceFiltering";
 import type { BuilderClass, BuilderSubclass } from "@/src/types/builder";
 
 import type { SubclassStepScreenProps } from "./index.types";
@@ -47,7 +48,7 @@ export function SubclassStepScreen({
         (subclass) =>
           // Fontes fora das preferências ficam ocultas, exceto uma subclasse
           // já escolhida — o jogador nunca deve perder de vista a seleção atual.
-          (activeSources.includes(subclass.source) ||
+          (isSourceActive(subclass.source, activeSources) ||
             subclass.id === selectedSubclassId) &&
           matchesSubclassSearch(subclass, searchQuery),
       ),

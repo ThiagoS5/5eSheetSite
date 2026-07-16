@@ -160,6 +160,23 @@ export function normalizeCharacterBuild(
   );
 }
 
+export function migrateCharacterBuild(
+  raw: Partial<CharacterBuild>,
+  fromVersion: number | undefined = raw.exportMetadata?.schemaVersion,
+): CharacterBuild {
+  if (fromVersion === undefined) {
+    return normalizeCharacterBuild(raw);
+  }
+
+  return normalizeCharacterBuild({
+    ...raw,
+    exportMetadata: {
+      ...raw.exportMetadata,
+      schemaVersion: fromVersion,
+    } as CharacterBuild["exportMetadata"],
+  });
+}
+
 export function createStoreStateFromBuild(
   build: CharacterBuild,
 ): CharacterBuilderState & { characterBuild: CharacterBuild } {

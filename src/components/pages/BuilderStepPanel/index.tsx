@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useCallback, useMemo, useState, type ReactNode } from "react";
+import { memo, useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -44,7 +44,16 @@ import { ClassChangeDiffDialog } from "@/src/components/organisms/ClassChangeDif
 import { useCharacterBuilderState } from "@/src/store/useCharacterBuilderState";
 import { useCharacterStore } from "@/src/store/useCharacterStore";
 import type { CharacterBuilderState, SkillTrainingLevel } from "@/src/store/characterStore.types";
-import type { BuilderBackground, BuilderClass, BuilderClassFeatureChoiceGroup, BuilderLanguage, BuilderSpecies, BuilderStepSlug } from "@/src/types/builder";
+import type {
+  BuilderBackground,
+  BuilderClass,
+  BuilderClassFeatureChoiceGroup,
+  BuilderLanguage,
+  BuilderSpecies,
+  BuilderStepSlug,
+  BuilderSubclass,
+  CatalogItem,
+} from "@/src/types/builder";
 import type { AttributeBonuses, AttributeKey } from "@/src/types/dnd";
 import type { CharacterSpellcastingChoices } from "@/src/types/spells";
 import { ActionBtn } from "@/src/components/atoms/ActionBtn";
@@ -92,6 +101,11 @@ import { builderStepNavigation } from "@/src/components/templates/builderStepNav
 import { deriveBuilderPendencies } from "@/rules/pendencyRules";
 import type { Pendency } from "@/src/types/builder";
 import { CharacterSheetView } from "@/src/components/pages/CharacterSheetView";
+import { getFeats } from "@/src/services/ruleService";
+import {
+  filterByActiveSources,
+  isSourceActive,
+} from "@/src/utils/sourceFiltering";
 
 import type { BuilderStepPanelProps } from "./index.types";
 export type { BuilderStepPanelProps } from "./index.types";
@@ -114,6 +128,208 @@ interface PendingReplacement {
   description: string;
   changes: string[];
   onConfirm: () => void;
+}
+
+interface InactiveSourceWarning {
+  id: string;
+  kind: string;
+  label: string;
+  source: string;
+}
+
+function SourceAvailabilityWarning({
+  warnings,
+}: {
+  warnings: readonly InactiveSourceWarning[];
+}) {
+  if (warnings.length === 0) {
+    return null;
+  }
+
+  return (
+    <section
+      aria-label="Disabled source choices"
+      role="status"
+      className="rounded-lg border border-brand-gold-alt/35 bg-brand-gold-alt/10 px-4 py-3 text-sm leading-6 text-foreground"
+    >
+      <p className="font-semibold">Some saved choices use disabled sources.</p>
+      <p className="mt-1 text-subdued">
+        Forge & Fate keeps those choices intact. Re-enable the source or replace the choice
+        when you are ready.
+      </p>
+      <ul className="mt-2 grid gap-1">
+        {warnings.map((warning) => (
+          <li key={warning.id}>
+            <span className="font-semibold">{warning.kind}:</span>{" "}
+            <span translate="no" className="notranslate">
+              {warning.label} ({warning.source})
+            </span>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+function getInactiveSourceWarnings({
+  activeSources,
+  itemCatalog,
+  preservedItemIds,
+  selectedFeatIds,
+  selectedBackground,
+  selectedClass,
+  selectedSpecies,
+  selectedSubclass,
+}: {
+  activeSources: readonly string[];
+  itemCatalog: readonly CatalogItem[];
+  preservedItemIds: readonly string[];
+  selectedFeatIds: readonly string[];
+  selectedBackground?: BuilderBackground;
+  selectedClass?: BuilderClass;
+  selectedSpecies?: BuilderSpecies;
+  selectedSubclass?: BuilderSubclass;
+}): InactiveSourceWarning[] {
+  const warnings = new Map<string, InactiveSourceWarning>();
+
+  addInactiveSourceWarning(warnings, activeSources, {
+    id: selectedClass?.id,
+    kind: "Class",
+    label: selectedClass?.name,
+    source: selectedClass?.source,
+  });
+  addInactiveSourceWarning(warnings, activeSources, {
+    id: selectedSubclass?.id,
+    kind: "Subclass",
+    label: selectedSubclass?.name,
+    source: selectedSubclass?.source,
+  });
+  addInactiveSourceWarning(warnings, activeSources, {
+    id: selectedBackground?.id,
+    kind: "Background",
+    label: selectedBackground?.name,
+    source: selectedBackground?.source,
+  });
+  addInactiveSourceWarning(warnings, activeSources, {
+    id: selectedSpecies?.id,
+    kind: "Species",
+    label: selectedSpecies?.name,
+    source: selectedSpecies?.source,
+  });
+
+  const itemById = new Map(itemCatalog.map((item) => [item.id, item]));
+
+  for (const itemId of new Set(preservedItemIds)) {
+    const item = itemById.get(itemId);
+
+    addInactiveSourceWarning(warnings, activeSources, {
+      id: item?.id,
+      kind: "Inventory",
+      label: item?.name,
+      source: item?.source,
+    });
+  }
+
+  const featById = new Map(getFeats().map((feat) => [feat.id, feat]));
+
+  for (const featId of new Set(selectedFeatIds)) {
+    const feat = featById.get(featId);
+
+    addInactiveSourceWarning(warnings, activeSources, {
+      id: feat?.id ?? featId,
+      kind: "Feat",
+      label: feat?.name ?? getLabelFromSourceTaggedId(featId),
+      source: feat?.source ?? getSourceFromTaggedId(featId),
+    });
+  }
+
+  return Array.from(warnings.values());
+}
+
+function getInactiveSpellSourceWarnings({
+  activeSources,
+  selectedSpellIds,
+  getSpellById,
+}: {
+  activeSources: readonly string[];
+  selectedSpellIds: readonly string[];
+  getSpellById: typeof import("@/src/services/spellService").getSpellById;
+}): InactiveSourceWarning[] {
+  const warnings = new Map<string, InactiveSourceWarning>();
+
+  for (const spellId of new Set(selectedSpellIds)) {
+    const spell = getSpellById(spellId);
+
+    addInactiveSourceWarning(warnings, activeSources, {
+      id: spell?.id ?? spellId,
+      kind: "Spell",
+      label: spell?.name ?? getLabelFromSourceTaggedId(spellId),
+      source: spell?.source ?? getSourceFromTaggedId(spellId),
+    });
+  }
+
+  return Array.from(warnings.values());
+}
+
+function addInactiveSourceWarning(
+  warnings: Map<string, InactiveSourceWarning>,
+  activeSources: readonly string[],
+  entry: {
+    id?: string;
+    kind: string;
+    label?: string;
+    source?: string;
+  },
+) {
+  if (!entry.id || !entry.label || !entry.source || isSourceActive(entry.source, activeSources)) {
+    return;
+  }
+
+  warnings.set(`${entry.kind}:${entry.id}`, {
+    id: `${entry.kind}:${entry.id}`,
+    kind: entry.kind,
+    label: entry.label,
+    source: entry.source,
+  });
+}
+
+function getSelectedFeatIds(
+  choices: CharacterBuilderState["asiOrFeatByLevel"],
+): string[] {
+  return Object.values(choices)
+    .filter((choice) => choice?.mode === "feat")
+    .map((choice) => choice.featId);
+}
+
+function getSelectedSpellIds(
+  choices?: CharacterSpellcastingChoices,
+): string[] {
+  if (!choices) {
+    return [];
+  }
+
+  return Array.from(
+    new Set([
+      ...choices.cantripIds,
+      ...choices.knownSpellIds,
+      ...choices.preparedSpellIds,
+    ]),
+  );
+}
+
+function getSourceFromTaggedId(id: string): string | undefined {
+  return id.match(/-([a-z0-9]+)$/i)?.[1]?.toUpperCase();
+}
+
+function getLabelFromSourceTaggedId(id: string): string | undefined {
+  const source = getSourceFromTaggedId(id);
+  const baseId = source ? id.slice(0, -(source.length + 1)) : id;
+  const words = baseId
+    .split("-")
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1));
+
+  return words.length ? words.join(" ") : undefined;
 }
 
 export function BuilderStepPanel({
@@ -159,6 +375,110 @@ export function BuilderStepPanel({
   );
   const selectedSpecies = species.find(
     (entry) => entry.id === characterState.selectedSpeciesId,
+  );
+  const activeSources = characterState.creationPreferences?.activeSources ?? DEFAULT_ACTIVE_SOURCES;
+  const selectedSubclass = selectedClass?.subclasses.find(
+    (entry) => entry.id === characterState.selectedSubclassId,
+  );
+  const visibleClasses = useMemo(
+    () => filterByActiveSources(classes, activeSources, [characterState.selectedClassId]),
+    [classes, activeSources, characterState.selectedClassId],
+  );
+  const visibleBackgrounds = useMemo(
+    () => filterByActiveSources(backgrounds, activeSources, [characterState.selectedBackgroundId]),
+    [backgrounds, activeSources, characterState.selectedBackgroundId],
+  );
+  const visibleSpecies = useMemo(
+    () => filterByActiveSources(species, activeSources, [characterState.selectedSpeciesId]),
+    [species, activeSources, characterState.selectedSpeciesId],
+  );
+  const preservedItemIds = useMemo(
+    () => [
+      ...characterState.inventory.map((entry) => entry.itemId),
+      ...characterState.equippedItemIds,
+    ],
+    [characterState.inventory, characterState.equippedItemIds],
+  );
+  const visibleItemCatalog = useMemo(
+    () => filterByActiveSources(itemCatalog, activeSources, preservedItemIds),
+    [itemCatalog, activeSources, preservedItemIds],
+  );
+  const selectedFeatIds = useMemo(
+    () => getSelectedFeatIds(characterState.asiOrFeatByLevel),
+    [characterState.asiOrFeatByLevel],
+  );
+  const selectedSpellIds = useMemo(
+    () => getSelectedSpellIds(characterState.spellcasting),
+    [characterState.spellcasting],
+  );
+  const baseInactiveSourceWarnings = useMemo(
+    () =>
+      getInactiveSourceWarnings({
+        activeSources,
+        itemCatalog,
+        preservedItemIds,
+        selectedFeatIds,
+        selectedBackground,
+        selectedClass,
+        selectedSpecies,
+        selectedSubclass,
+      }),
+    [
+      activeSources,
+      itemCatalog,
+      preservedItemIds,
+      selectedFeatIds,
+      selectedBackground,
+      selectedClass,
+      selectedSpecies,
+      selectedSubclass,
+    ],
+  );
+  const spellSourceWarningKey = useMemo(
+    () => `${activeSources.join("|")}::${selectedSpellIds.join("|")}`,
+    [activeSources, selectedSpellIds],
+  );
+  const [spellSourceWarningResult, setSpellSourceWarningResult] = useState<{
+    key: string;
+    warnings: InactiveSourceWarning[];
+  }>({ key: "", warnings: [] });
+  useEffect(() => {
+    let cancelled = false;
+
+    if (selectedSpellIds.length === 0) {
+      return undefined;
+    }
+
+    void import("@/src/services/spellService").then((module) => {
+      if (cancelled) {
+        return;
+      }
+
+      setSpellSourceWarningResult({
+        key: spellSourceWarningKey,
+        warnings: getInactiveSpellSourceWarnings({
+          activeSources,
+          selectedSpellIds,
+          getSpellById: module.getSpellById,
+        }),
+      });
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeSources, selectedSpellIds, spellSourceWarningKey]);
+  const spellSourceWarnings = useMemo(
+    () =>
+      selectedSpellIds.length > 0 &&
+      spellSourceWarningResult.key === spellSourceWarningKey
+        ? spellSourceWarningResult.warnings
+        : [],
+    [selectedSpellIds.length, spellSourceWarningKey, spellSourceWarningResult],
+  );
+  const inactiveSourceWarnings = useMemo(
+    () => [...baseInactiveSourceWarnings, ...spellSourceWarnings],
+    [baseInactiveSourceWarnings, spellSourceWarnings],
   );
   const languageLimit = getRequiredLanguageCount(characterState);
 
@@ -290,9 +610,11 @@ export function BuilderStepPanel({
         />
       ) : null}
 
+      <SourceAvailabilityWarning warnings={inactiveSourceWarnings} />
+
       {step === "classe" ? (
         <ClassStep
-          classes={classes}
+          classes={visibleClasses}
           selectedClassId={characterState.selectedClassId}
           beginnerMode={Boolean(characterState.beginnerMode)}
           disabled={!canUseCurrentStep}
@@ -307,7 +629,7 @@ export function BuilderStepPanel({
           selectedSkills={characterState.classSkillProficiencies}
           selectedFeatureChoices={characterState.classFeatureChoices}
           spellcastingChoices={characterState.spellcasting}
-          activeSources={characterState.creationPreferences?.activeSources ?? DEFAULT_ACTIVE_SOURCES}
+          activeSources={activeSources}
           disabled={!canUseCurrentStep}
           onSelectedSkillsChange={actions.setClassSkillProficiencies}
           onSkillTrainingChange={actions.setSkillTraining}
@@ -321,7 +643,7 @@ export function BuilderStepPanel({
           characterClass={selectedClass}
           level={characterState.level}
           selectedSubclassId={characterState.selectedSubclassId}
-          activeSources={characterState.creationPreferences?.activeSources ?? DEFAULT_ACTIVE_SOURCES}
+          activeSources={activeSources}
           disabled={!canUseCurrentStep}
           onSelect={(subclassId) => {
             actions.selectSubclass(subclassId);
@@ -332,7 +654,7 @@ export function BuilderStepPanel({
 
       {step === "antecedente" ? (
         <BackgroundStep
-          backgrounds={backgrounds}
+          backgrounds={visibleBackgrounds}
           selectedBackgroundId={characterState.selectedBackgroundId}
           selectedBonuses={characterState.backgroundAbilityBonuses}
           beginnerMode={Boolean(characterState.beginnerMode)}
@@ -347,7 +669,7 @@ export function BuilderStepPanel({
 
       {step === "especie" ? (
         <SpeciesStep
-          species={species}
+          species={visibleSpecies}
           selectedSpeciesId={characterState.selectedSpeciesId}
           beginnerMode={Boolean(characterState.beginnerMode)}
           disabled={!canUseCurrentStep}
@@ -398,7 +720,7 @@ export function BuilderStepPanel({
             onSourceOptionChange={actions.setEquipmentSourceOption}
           />
           <InventoryManager
-            catalog={itemCatalog}
+            catalog={visibleItemCatalog}
             inventory={characterState.inventory}
             equippedItemIds={characterState.equippedItemIds}
             onAddItem={actions.addInventoryItem}
@@ -1871,9 +2193,13 @@ function BackgroundStep({
   const quizRecommendation = useMemo(
     () =>
       quizQuestions
-        ? getBackgroundQuizRecommendation(quizQuestions, quizAnswers)
+        ? getBackgroundQuizRecommendation(
+            quizQuestions,
+            quizAnswers,
+            backgrounds.map((background) => background.id),
+          )
         : null,
-    [quizQuestions, quizAnswers],
+    [backgrounds, quizQuestions, quizAnswers],
   );
   const resultCountLabel =
     filteredBackgrounds.length === 1
@@ -2043,9 +2369,13 @@ function SpeciesStep({
   const quizRecommendation = useMemo(
     () =>
       quizQuestions
-        ? getSpeciesQuizRecommendation(quizQuestions, quizAnswers)
+        ? getSpeciesQuizRecommendation(
+            quizQuestions,
+            quizAnswers,
+            species.map((entry) => entry.id),
+          )
         : null,
-    [quizQuestions, quizAnswers],
+    [species, quizQuestions, quizAnswers],
   );
   const resultCountLabel =
     filteredSpecies.length === 1

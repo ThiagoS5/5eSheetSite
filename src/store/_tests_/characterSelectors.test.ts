@@ -5,6 +5,7 @@ import {
 } from "@/src/store/createCharacterStore";
 import { selectCharacterSheetSummary } from "@/src/store/characterSelectors";
 import { getBuilderClasses } from "@/src/services/ruleService";
+import { getItemCatalog } from "@/src/services/itemCatalogService";
 import { calculateMaxHitPoints } from "@/src/adapters/characterDerivedAdapter";
 
 describe("character selectors", () => {
@@ -216,6 +217,98 @@ describe("character selectors", () => {
 
     store.getState().toggleEquippedItem("shield-xphb");
     expect(selectCharacterSheetSummary(store.getState()).armorClass).toBe(16);
+  });
+
+  it("applies equipped magic item bonuses to AC and saving throws", () => {
+    const store = createCharacterStore();
+    const ring = getItemCatalog().find((item) => item.id === "ring-of-protection-xdmg");
+
+    expect(ring).toMatchObject({
+      armorClassBonus: 1,
+      savingThrowBonus: 1,
+    });
+
+    store.getState().setDestreza(10);
+    store.getState().addInventoryItem("ring-of-protection-xdmg");
+    const unequipped = selectCharacterSheetSummary(store.getState());
+
+    store.getState().toggleEquippedItem("ring-of-protection-xdmg");
+    const equipped = selectCharacterSheetSummary(store.getState());
+
+    expect(equipped.armorClass).toBe(unequipped.armorClass + 1);
+    expect(equipped.savingThrows.map((save) => save.modifier)).toEqual(
+      unequipped.savingThrows.map((save) => save.modifier + 1),
+    );
+  });
+
+  it("applies real catalog magic armor bonuses to worn armor AC", () => {
+    const store = createCharacterStore();
+    const armor = getItemCatalog().find(
+      (item) => item.name === "Black Dragon Scale Mail" && item.source === "XDMG",
+    );
+
+    expect(armor).toMatchObject({
+      armorClass: 14,
+      armorClassBonus: 1,
+      armorType: "medium",
+    });
+
+    store.getState().setDestreza(18);
+    store.getState().addInventoryItem(armor!.id);
+    store.getState().toggleEquippedItem(armor!.id);
+
+    expect(selectCharacterSheetSummary(store.getState()).armorClass).toBe(17);
+  });
+
+  it("applies real catalog magic shield bonuses to shield AC", () => {
+    const store = createCharacterStore();
+    const shield = getItemCatalog().find(
+      (item) => item.name === "Arrow-Catching Shield" && item.source === "XDMG",
+    );
+
+    expect(shield).toMatchObject({
+      armorClass: 2,
+      armorClassBonus: 2,
+      armorType: "shield",
+    });
+
+    store.getState().setDestreza(10);
+    store.getState().addInventoryItem(shield!.id);
+    store.getState().toggleEquippedItem(shield!.id);
+
+    expect(selectCharacterSheetSummary(store.getState()).armorClass).toBe(14);
+  });
+
+  it("applies equipped magic weapon bonuses to attacks", () => {
+    const store = createCharacterStore();
+    const weapon = getItemCatalog().find(
+      (item) => item.name === "+1 Moon Sickle" && item.source === "TCE",
+    );
+
+    expect(weapon).toMatchObject({
+      category: "Weapon",
+      weaponBonus: 1,
+      damageDice: "1d4",
+    });
+
+    store.getState().selectClass("fighter-xphb");
+    store.getState().setForca(14);
+    store.getState().addInventoryItem(weapon!.id);
+    store.getState().toggleEquippedItem(weapon!.id);
+
+    const attack = selectCharacterSheetSummary(store.getState()).weapons.find(
+      (entry) => entry.name === "+1 Moon Sickle",
+    );
+
+    expect(attack).toMatchObject({
+      attackBonus: "+5",
+      damage: "1d4+3 Slashing",
+      notes: expect.stringContaining("+1 magic weapon"),
+    });
+    expect(attack?.damageBreakdown).toContainEqual({
+      label: "Magic bonus",
+      value: "+1",
+    });
   });
 
   it("applies ASI bonuses to final attributes and recomputes HP", () => {

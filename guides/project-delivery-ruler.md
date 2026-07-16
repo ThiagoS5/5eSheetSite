@@ -37,7 +37,7 @@ Next.js 16 has breaking changes. Before touching routes, layouts, metadata, or f
 ### Complete
 
 - `CharacterBuild` schema v14 with `draft`, `progression`, `choices`, `playState`, `derivedSheet`, and `exportMetadata`.
-- Local Vault with create/resume/duplicate/delete/search/import/status.
+- Local Vault with create/resume/duplicate/delete/search/import/status and direct Forge & Fate JSON export for ready characters.
 - 10-step builder with validation and protected navigation.
 - Guided/standard/quick-build creation modes.
 - Beginner guidance, recommendation quizzes, inline help, class/species/background guidance, and personal-details help.
@@ -47,21 +47,21 @@ Next.js 16 has breaking changes. Before touching routes, layouts, metadata, or f
 - ASI/feat exclusivity, feat categories, prerequisites, attribute caps, and curated feat effects.
 - Spell catalog, spell choices, derived spellcasting, slot spending, and rest recovery.
 - Play state: HP, temp HP, damage/heal, rests, slots, resources, death saves, inspiration, conditions, overrides, notes, and campaign log.
-- Real inventory: quantities, item catalog, equip/unequip, armor/shield AC, weapon attacks, carry load.
+- Real inventory: quantities, item catalog, equip/unequip, armor/shield AC, magic AC/save/weapon bonuses, weapon attacks, carry load.
 - Rules text AST plus React/plain-text rendering.
 - Foundry VTT export.
 - Canonical JSON export/import utilities with round-trip and legacy-schema tests.
+- First-class Forge & Fate JSON export actions in the Vault, conclusion, and sheet surfaces.
 - Dashboard import for canonical JSON.
 - Printable PDF generation and PDF matrix tests.
 - Dense sheet/conclusion layout.
 
 ### Partial
 
-- Canonical JSON export is implemented in utilities but not exposed as a first-class UI action everywhere it should be.
-- Source preferences exist but need consistent filtering across every catalog.
+- Source preferences are enforced across the main class, subclass, species, background, feat, spell, and item catalogs while preserving disabled-source legacy choices with warnings.
 - Feat and feature mechanical effects are not exhaustive.
 - `resistances`, `immunities`, and `vulnerabilities` exist on the summary and exports, but derivation needs broader source coverage.
-- Migration logic is split across builder persistence and normalization paths; it should converge into a shared migration module.
+- Migration logic uses the shared `migrateCharacterBuild(raw, fromVersion)` path across builder persistence, Vault normalization, and canonical import.
 - Full v1 launch verification still needs a manual end-to-end pass.
 
 ### Not Started / Future
@@ -76,7 +76,7 @@ Next.js 16 has breaking changes. Before touching routes, layouts, metadata, or f
 Do not jump to multiclass before the v1 portability and hardening gaps are closed.
 
 1. **Portable export UX**
-   - Add explicit canonical Forge & Fate JSON export UI.
+   - Status: complete for v1 closure on 2026-07-16.
    - Keep Foundry export and canonical JSON export as separate actions.
    - Ensure import/export errors are readable and accessible.
 
@@ -90,14 +90,15 @@ Do not jump to multiclass before the v1 portability and hardening gaps are close
    - Tighten resource usage and recovery rules.
 
 4. **Source preference enforcement**
-   - Apply active sources to class, species, background, feat, spell, and item catalogs.
-   - Warn when a save references a disabled source.
+   - Status: complete for the main v1 catalogs on 2026-07-16.
+   - Preserve disabled-source legacy choices and warn instead of deleting data.
 
 5. **Migration consolidation**
-   - Create a shared migration path for builder persistence, Vault normalization, and canonical import.
-   - Add fixture coverage for every supported schema family.
+   - Status: shared migration entry point added on 2026-07-16.
+   - Add fixture coverage for every supported schema family as new schemas are introduced.
 
 6. **Multiclass ADR**
+   - Status: ADR-001 written on 2026-07-16; implementation remains post-v1.
    - Design `classLevels[]`, total-level proficiency, per-class features, spell slots, proficiencies, equipment, and exports before implementation.
 
 ## Public Evolution Contracts

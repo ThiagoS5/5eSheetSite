@@ -9,7 +9,7 @@ import {
   createEmptyCharacterBuild,
   createStoreStateFromBuild,
   getDefaultFlatState,
-  normalizeCharacterBuild,
+  migrateCharacterBuild,
 } from "@/src/store/characterBuildModel";
 import { deriveStartingGoldPo } from "@/src/store/characterSelectors";
 import {
@@ -535,7 +535,7 @@ export function createCharacterStore(
       return build;
     },
     loadCharacterBuild: (build) => {
-      set(createStoreStateFromBuild(normalizeCharacterBuild(build)));
+      set(createStoreStateFromBuild(migrateCharacterBuild(build, build.exportMetadata.schemaVersion)));
     },
     commitCurrentBuild: async (nextStepSlug, nextStepIndex) => {
       const currentState = get();
@@ -762,7 +762,10 @@ function normalizeInitialState(
 ): CharacterBuilderState & { characterBuild: CharacterBuild } {
   if (initialState.characterBuild) {
     return createStoreStateFromBuild(
-      normalizeCharacterBuild(initialState.characterBuild),
+      migrateCharacterBuild(
+        initialState.characterBuild,
+        initialState.characterBuild.exportMetadata.schemaVersion,
+      ),
     );
   }
 
@@ -779,7 +782,10 @@ function migratePersistedState(
 
   if (isRecord(persistedBuild)) {
     return createStoreStateFromBuild(
-      normalizeCharacterBuild(persistedBuild as Partial<CharacterBuild>),
+      migrateCharacterBuild(
+        persistedBuild as Partial<CharacterBuild>,
+        (persistedBuild as Partial<CharacterBuild>).exportMetadata?.schemaVersion,
+      ),
     );
   }
 

@@ -41,6 +41,7 @@ describe("InventoryManager", () => {
     render(<InventoryManager catalog={catalog} inventory={[]} equippedItemIds={[]} onAddItem={vi.fn()} onSetQuantity={vi.fn()} onRemoveItem={vi.fn()} onToggleEquipped={vi.fn()} />);
     openSection(/Add Items/);
     expect(screen.queryByRole("button", { name: "Source DMG" })).not.toBeInTheDocument();
+    expect(screen.queryByText("Proficient")).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Filter item sources" }));
     expect(screen.getByRole("button", { name: "Filter item sources" })).toHaveAttribute("aria-expanded", "true");
