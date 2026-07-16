@@ -162,6 +162,7 @@ export interface Raw5eItem {
   stealth?: boolean;
   value?: number;
   entries?: unknown[];
+  hasFluffImages?: boolean;
   builderSourceType?: "class" | "background" | "manual";
   rarity?: string;
   wondrous?: boolean;

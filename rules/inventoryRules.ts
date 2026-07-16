@@ -97,6 +97,7 @@ function mapCatalogItemToEquipmentOption(
     category: item.category,
     type: item.type,
     detail: item.detail,
+    hasFluffImages: item.hasFluffImages,
     rarity: item.rarity,
     isMagical: item.isMagical,
     isCommon: item.isCommon,

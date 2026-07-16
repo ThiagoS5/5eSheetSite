@@ -24,6 +24,7 @@ export interface BuilderSpell {
   duration: string;
   components: string;
   description: string;
+  hasFluffImages?: boolean;
 }
 
 export interface SpellCatalogFilter {

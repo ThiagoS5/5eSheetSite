@@ -1,8 +1,11 @@
 import foundryReference from "@/src/_references/foundry-reference.json";
+import { getItemCatalog } from "@/src/services/itemCatalogService";
 import { getBuilderClasses } from "@/src/services/ruleService";
+import { getSpellCatalog } from "@/src/services/spellService";
 import type { CharacterBuilderState } from "@/src/store/characterStore.types";
 import type {
   BuilderEquipmentOption,
+  CatalogItem,
   CharacterSheetSummary,
   SheetFeature,
 } from "@/src/types/builder";
@@ -58,6 +61,16 @@ interface FoundrySpellSlot {
 type FoundrySpellSlots = Record<`spell${1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9}`, FoundrySpellSlot> & {
   pact: FoundrySpellSlot;
 };
+
+interface CatalogLookup<T extends { id: string; name: string }> {
+  byId: Map<string, T>;
+  byName: Map<string, T[]>;
+}
+
+interface FoundryExportContext {
+  itemLookup?: CatalogLookup<CatalogItem>;
+  spellLookup?: CatalogLookup<BuilderSpell>;
+}
 
 export interface FoundryActorExport {
   name: string;
@@ -140,6 +153,45 @@ const ATTRIBUTE_TO_FOUNDRY: Record<AttributeKey, AbilityAbbreviation> = {
 };
 
 const FOUNDRY_SOURCE = "Forge & Fate Character Builder";
+const FIVEETOOLS_IMAGE_BASE_URL =
+  "https://raw.githubusercontent.com/5etools-mirror-3/5etools-img/main/";
+
+const SOURCE_BOOK_NAMES: Record<string, string> = {
+  XPHB: "PHB 2024",
+  XDMG: "DMG 2024",
+};
+
+function createFoundryExportContext(): FoundryExportContext {
+  return {};
+}
+
+function getItemLookup(context: FoundryExportContext): CatalogLookup<CatalogItem> {
+  context.itemLookup ??= createCatalogLookup(getItemCatalog());
+  return context.itemLookup;
+}
+
+function getSpellLookup(context: FoundryExportContext): CatalogLookup<BuilderSpell> {
+  context.spellLookup ??= createCatalogLookup(getSpellCatalog());
+  return context.spellLookup;
+}
+
+function createCatalogLookup<T extends { id: string; name: string }>(entries: T[]): CatalogLookup<T> {
+  const byId = new Map<string, T>();
+  const byName = new Map<string, T[]>();
+
+  for (const entry of entries) {
+    byId.set(entry.id, entry);
+    const key = entry.name.toLowerCase();
+    const matches = byName.get(key);
+    if (matches) {
+      matches.push(entry);
+    } else {
+      byName.set(key, [entry]);
+    }
+  }
+
+  return { byId, byName };
+}
 
 const SKILL_TO_FOUNDRY: Record<string, string> = {
   acrobatics: "acr",
@@ -235,7 +287,8 @@ export function createFoundryCharacterExport(
 ): FoundryActorExport {
   const actor = cloneReference();
   const characterName = state.description.nome.trim() || summary.name.trim() || "Character";
-  const items = createFoundryItems(state, summary);
+  const context = createFoundryExportContext();
+  const items = createFoundryItems(state, summary, context);
   const identity = getIdentityItemIds(summary);
 
   actor.name = characterName;
@@ -484,6 +537,7 @@ function mapTraitList(current: unknown, values: string[]) {
 function createFoundryItems(
   state: CharacterBuilderState,
   summary: CharacterSheetSummary,
+  context: FoundryExportContext,
 ): FoundryItemExport[] {
   const identity = createIdentityItems(state, summary);
   // summary.features already carries class, subclass, species, and origin-feat
@@ -495,9 +549,9 @@ function createFoundryItems(
     ),
   ];
   const inventoryItems = summary.inventory.map((entry) =>
-    createInventoryItem(entry.item, entry.quantity, state.equippedItemIds.includes(entry.item.id)),
+    createInventoryItem(entry.item, entry.quantity, state.equippedItemIds.includes(entry.item.id), context),
   );
-  const spellItems = createSpellItems(summary);
+  const spellItems = createSpellItems(summary, context);
 
   const usedIds = new Set<string>();
   return [...identity, ...featureItems, ...inventoryItems, ...spellItems].map((item, index) => {
@@ -640,36 +694,41 @@ function createInventoryItem(
   item: BuilderEquipmentOption,
   quantity: number,
   equipped: boolean,
+  context: FoundryExportContext,
 ): FoundryItemExport {
-  if (item.type === "weapon" || item.category === "Weapon") {
-    return createWeaponItem(item, quantity, equipped);
+  const data = createFoundryEquipmentData(item, context);
+  const foundryItem = data.item;
+
+  if (foundryItem.type === "weapon" || foundryItem.category === "Weapon") {
+    return createWeaponItem(data, quantity, equipped);
   }
-  if (item.type === "tool") {
-    return createToolItem(item, quantity);
+  if (foundryItem.type === "tool") {
+    return createToolItem(data, quantity);
   }
-  if (item.type === "consumable" || item.category === "Potion") {
-    return createConsumableItem(item, quantity);
+  if (foundryItem.type === "consumable" || foundryItem.category === "Potion") {
+    return createConsumableItem(data, quantity);
   }
-  if (item.type === "pack") {
-    return createContainerItem(item, quantity, equipped);
+  if (foundryItem.type === "pack") {
+    return createContainerItem(data, quantity, equipped);
   }
-  if (item.type === "armor" || item.type === "shield" || item.category === "Armor") {
-    return createEquipmentItem(item, quantity, equipped);
+  if (foundryItem.type === "armor" || foundryItem.type === "shield" || foundryItem.category === "Armor") {
+    return createEquipmentItem(data, quantity, equipped);
   }
-  return createLootItem(item, quantity);
+  return createLootItem(data, quantity);
 }
 
 function createWeaponItem(
-  item: BuilderEquipmentOption,
+  data: FoundryEquipmentExportData,
   quantity: number,
   equipped: boolean,
 ): FoundryItemExport {
+  const item = data.item;
   const damage = parseDamage(item.damageDice, item.damageType);
   return createBaseItem({
     id: createFoundryId(`weapon:${item.id}`),
     name: item.name,
     type: "weapon",
-    img: "icons/svg/sword.svg",
+    img: createFoundryImage("items", item.name, data.imageSource, "icons/svg/sword.svg"),
     system: {
       ...createPhysicalItemSystem(item, quantity, equipped),
       cover: null,
@@ -698,7 +757,7 @@ function createWeaponItem(
       proficient: 1,
       type: { value: mapWeaponType(item), baseItem: toIdentifier(item.name) },
       magicalBonus: null,
-      activities: {},
+      activities: createWeaponActivities(item, damage),
       ammunition: {},
       mastery: "",
     },
@@ -706,15 +765,16 @@ function createWeaponItem(
 }
 
 function createEquipmentItem(
-  item: BuilderEquipmentOption,
+  data: FoundryEquipmentExportData,
   quantity: number,
   equipped: boolean,
 ): FoundryItemExport {
+  const item = data.item;
   return createBaseItem({
     id: createFoundryId(`equipment:${item.id}`),
     name: item.name,
     type: "equipment",
-    img: "icons/svg/shield.svg",
+    img: createFoundryImage("items", item.name, data.imageSource, "icons/svg/shield.svg"),
     system: {
       ...createPhysicalItemSystem(item, quantity, equipped),
       cover: null,
@@ -736,13 +796,14 @@ function createEquipmentItem(
   });
 }
 
-function createToolItem(item: BuilderEquipmentOption, quantity: number): FoundryItemExport {
+function createToolItem(data: FoundryEquipmentExportData, quantity: number): FoundryItemExport {
+  const item = data.item;
   const baseItem = TOOL_TO_FOUNDRY[item.name.toLowerCase()] ?? toIdentifier(item.name);
   return createBaseItem({
     id: createFoundryId(`tool:${item.id}`),
     name: item.name,
     type: "tool",
-    img: "icons/svg/tools.svg",
+    img: createFoundryImage("items", item.name, data.imageSource, "icons/svg/tools.svg"),
     system: {
       ...createPhysicalItemSystem(item, quantity, false),
       type: { value: "art", baseItem },
@@ -754,12 +815,13 @@ function createToolItem(item: BuilderEquipmentOption, quantity: number): Foundry
   });
 }
 
-function createConsumableItem(item: BuilderEquipmentOption, quantity: number): FoundryItemExport {
+function createConsumableItem(data: FoundryEquipmentExportData, quantity: number): FoundryItemExport {
+  const item = data.item;
   return createBaseItem({
     id: createFoundryId(`consumable:${item.id}`),
     name: item.name,
     type: "consumable",
-    img: "icons/svg/potion.svg",
+    img: createFoundryImage("items", item.name, data.imageSource, "icons/svg/potion.svg"),
     system: {
       ...createPhysicalItemSystem(item, quantity, false),
       type: { value: item.category === "Potion" ? "potion" : "", subtype: "" },
@@ -770,20 +832,22 @@ function createConsumableItem(item: BuilderEquipmentOption, quantity: number): F
         base: { types: [], custom: { enabled: false, formula: "" }, scaling: { mode: "", number: null, formula: "" } },
         replace: false,
       },
+      activities: createConsumableActivities(item),
     },
   });
 }
 
 function createContainerItem(
-  item: BuilderEquipmentOption,
+  data: FoundryEquipmentExportData,
   quantity: number,
   equipped: boolean,
 ): FoundryItemExport {
+  const item = data.item;
   return createBaseItem({
     id: createFoundryId(`container:${item.id}`),
     name: item.name,
     type: "container",
-    img: "icons/svg/chest.svg",
+    img: createFoundryImage("items", item.name, data.imageSource, "icons/svg/chest.svg"),
     system: {
       ...createPhysicalItemSystem(item, quantity, equipped),
       capacity: {
@@ -797,15 +861,16 @@ function createContainerItem(
   });
 }
 
-function createLootItem(item: BuilderEquipmentOption, quantity: number): FoundryItemExport {
+function createLootItem(data: FoundryEquipmentExportData, quantity: number): FoundryItemExport {
+  const item = data.item;
   return createBaseItem({
     id: createFoundryId(`loot:${item.id}`),
     name: item.name,
     type: "loot",
-    img: "icons/svg/item-bag.svg",
+    img: createFoundryImage("items", item.name, data.imageSource, "icons/svg/item-bag.svg"),
     system: {
       source: createSource(item.source),
-      description: createDescription(""),
+      description: createDescription(createEquipmentDescription(item)),
       quantity,
       weight: { value: kgToLb(item.weightKg), units: "lb" },
       price: createPrice(item.value),
@@ -827,7 +892,7 @@ function createPhysicalItemSystem(
 ) {
   return {
     source: createSource(item.source),
-    description: createDescription(""),
+    description: createDescription(createEquipmentDescription(item)),
     quantity,
     weight: { value: kgToLb(item.weightKg), units: "lb" },
     price: createPrice(item.value),
@@ -842,7 +907,244 @@ function createPhysicalItemSystem(
   };
 }
 
-function createSpellItems(summary: CharacterSheetSummary): FoundryItemExport[] {
+interface FoundryEquipmentExportData {
+  item: BuilderEquipmentOption;
+  imageSource?: string;
+}
+
+function createFoundryEquipmentData(
+  item: BuilderEquipmentOption,
+  context: FoundryExportContext,
+): FoundryEquipmentExportData {
+  const catalogItem = findCatalogItemForFoundry(item, context);
+  const shouldUseCatalogIdentity = Boolean(
+    catalogItem && isLegacySource(item.source) && isModernRulesSource(catalogItem.source),
+  );
+  const foundryItem = catalogItem
+    ? mergeEquipmentWithCatalog(item, catalogItem, {
+        useCatalogIdentity: shouldUseCatalogIdentity,
+      })
+    : item;
+
+  return {
+    item: foundryItem,
+    imageSource: resolveEquipmentImageSource(item, catalogItem, foundryItem, shouldUseCatalogIdentity),
+  };
+}
+
+function resolveEquipmentImageSource(
+  originalItem: BuilderEquipmentOption,
+  catalogItem: CatalogItem | undefined,
+  foundryItem: BuilderEquipmentOption,
+  useCatalogIdentity: boolean,
+): string | undefined {
+  if (useCatalogIdentity) {
+    return foundryItem.hasFluffImages ? foundryItem.source : undefined;
+  }
+  if (originalItem.hasFluffImages) {
+    return originalItem.source;
+  }
+  return catalogItem?.hasFluffImages ? catalogItem.source : undefined;
+}
+
+function findCatalogItemForFoundry(
+  item: BuilderEquipmentOption,
+  context: FoundryExportContext,
+): CatalogItem | undefined {
+  const lookup = getItemLookup(context);
+  const sameNameItems = lookup.byName.get(item.name.toLowerCase()) ?? [];
+  const preferred2024 = sameNameItems.find((entry) => entry.source === "XPHB")
+    ?? sameNameItems.find((entry) => entry.source === "XDMG");
+
+  if (item.source.toUpperCase() === "PHB") {
+    return preferred2024 ?? sameNameItems[0];
+  }
+
+  return lookup.byId.get(item.id)
+    ?? sameNameItems.find((entry) => entry.source === item.source)
+    ?? preferred2024
+    ?? sameNameItems[0];
+}
+
+function mergeEquipmentWithCatalog(
+  item: BuilderEquipmentOption,
+  catalogItem: CatalogItem,
+  options: { useCatalogIdentity?: boolean } = {},
+): BuilderEquipmentOption {
+  return {
+    ...item,
+    id: options.useCatalogIdentity ? catalogItem.id : item.id,
+    source: options.useCatalogIdentity ? catalogItem.source : item.source || catalogItem.source,
+    category: item.category ?? catalogItem.category,
+    type: item.type ?? catalogItem.type,
+    detail: preferDetailedText(item.detail, catalogItem.detail),
+    hasFluffImages: item.hasFluffImages ?? catalogItem.hasFluffImages,
+    rarity: item.rarity ?? catalogItem.rarity,
+    isMagical: item.isMagical ?? catalogItem.isMagical,
+    isCommon: item.isCommon ?? catalogItem.isCommon,
+    isContainer: item.isContainer ?? catalogItem.isContainer,
+    weightKg: item.weightKg ?? catalogItem.weightKg,
+    armorClass: item.armorClass ?? catalogItem.armorClass,
+    armorClassBonus: item.armorClassBonus ?? catalogItem.armorClassBonus,
+    armorType: item.armorType ?? catalogItem.armorType,
+    armor: item.armor ?? catalogItem.armor,
+    shieldBonus: item.shieldBonus ?? catalogItem.shieldBonus,
+    savingThrowBonus: item.savingThrowBonus ?? catalogItem.savingThrowBonus,
+    weaponBonus: item.weaponBonus ?? catalogItem.weaponBonus,
+    resistances: item.resistances ?? catalogItem.resistances,
+    attunementRequired: item.attunementRequired ?? catalogItem.attunementRequired,
+    weaponCategory: item.weaponCategory ?? catalogItem.weaponCategory,
+    weaponRangeType: item.weaponRangeType ?? catalogItem.weaponRangeType,
+    weaponProperties: item.weaponProperties ?? catalogItem.weaponProperties,
+    damageDice: item.damageDice ?? catalogItem.damageDice,
+    damageType: item.damageType ?? catalogItem.damageType,
+    range: item.range ?? catalogItem.range,
+    value: item.value ?? catalogItem.value,
+  };
+}
+
+function createEquipmentDescription(item: BuilderEquipmentOption): string {
+  if (item.detail?.trim()) {
+    return item.detail;
+  }
+
+  const details = [`${item.name} (${item.category}).`];
+  if (item.armorClass ?? item.armor?.baseAC) {
+    details.push(`Armor Class ${item.armor?.baseAC ?? item.armorClass}.`);
+  }
+  if (item.armor?.strengthMin) {
+    details.push(`Strength ${item.armor.strengthMin} required.`);
+  }
+  if (item.armor?.stealthDisadvantage) {
+    details.push("Imposes disadvantage on Stealth checks.");
+  }
+  if (item.damageDice) {
+    const damageType = item.damageType ? (DAMAGE_TYPES[item.damageType] ?? item.damageType) : "";
+    details.push(`Damage ${item.damageDice}${damageType ? ` ${damageType}` : ""}.`);
+  }
+  if (item.range) {
+    details.push(`Range ${item.range} feet.`);
+  }
+  if (item.weaponCategory || item.weaponRangeType) {
+    details.push(
+      [
+        item.weaponCategory ? `${item.weaponCategory} weapon` : "Weapon",
+        item.weaponRangeType ? item.weaponRangeType : "",
+      ].filter(Boolean).join(", ") + ".",
+    );
+  }
+  if (item.weaponProperties?.length) {
+    details.push(`Properties ${item.weaponProperties.join(", ")}.`);
+  }
+  if (item.rarity && item.rarity !== "none") {
+    details.push(`Rarity ${item.rarity}.`);
+  }
+
+  return details.join(" ");
+}
+
+function createWeaponActivities(
+  item: BuilderEquipmentOption,
+  damage: ReturnType<typeof parseDamage>,
+): Record<string, unknown> {
+  const id = createFoundryId(`activity:weapon:${item.id}:attack`);
+  const range = parseRange(item.range, item.weaponRangeType);
+  return {
+    [id]: {
+      _id: id,
+      type: "attack",
+      name: "Attack",
+      activation: { type: "action", value: 1, condition: "", override: false },
+      consumption: {
+        targets: [],
+        scaling: { allowed: false, max: "" },
+        spellSlot: false,
+      },
+      description: { chatFlavor: "" },
+      duration: { units: "inst", concentration: false, override: false },
+      effects: [],
+      range: { ...range, special: "", override: false },
+      target: createActivityTarget({ count: "1", type: "creature" }),
+      attack: {
+        ability: "",
+        bonus: "",
+        critical: { threshold: null },
+        flat: false,
+        type: {
+          value: item.weaponRangeType === "ranged" ? "ranged" : "melee",
+          classification: "weapon",
+        },
+      },
+      damage: {
+        critical: { bonus: "" },
+        includeBase: true,
+        parts: [{
+          number: damage.number,
+          denomination: damage.denomination,
+          bonus: "",
+          types: damage.types,
+          custom: { enabled: false, formula: "" },
+          scaling: { mode: "", number: null, formula: "" },
+        }],
+      },
+      uses: { spent: 0, recovery: [] },
+      sort: 0,
+      flags: {},
+      visibility: {
+        level: {},
+        requireAttunement: false,
+        requireIdentification: false,
+        requireMagic: false,
+      },
+    },
+  };
+}
+
+function createConsumableActivities(item: BuilderEquipmentOption): Record<string, unknown> {
+  if (item.type !== "consumable" && item.category !== "Potion") {
+    return {};
+  }
+
+  const id = createFoundryId(`activity:consumable:${item.id}:use`);
+  const isHealing = item.name.toLowerCase().includes("healing") || item.detail?.toLowerCase().includes("hit points");
+  return {
+    [id]: {
+      _id: id,
+      type: "utility",
+      name: "Use",
+      activation: {
+        type: item.detail?.toLowerCase().includes("bonus action") ? "bonus" : "action",
+        value: 1,
+        condition: "",
+        override: false,
+      },
+      consumption: {
+        targets: [{ type: "itemUses", target: "", value: "1", scaling: { mode: "", formula: "" } }],
+        scaling: { allowed: false, max: "" },
+        spellSlot: false,
+      },
+      description: {},
+      duration: { units: "inst", concentration: false, override: false },
+      effects: [],
+      range: { value: isHealing ? "5" : "", units: isHealing ? "ft" : "self", special: "", override: false },
+      target: createActivityTarget({ count: isHealing ? "1" : "", type: isHealing ? "creature" : "" }),
+      uses: { spent: 0, recovery: [] },
+      sort: 0,
+      flags: {},
+      visibility: {
+        level: {},
+        requireAttunement: false,
+        requireIdentification: false,
+        requireMagic: false,
+      },
+    },
+  };
+}
+
+function createSpellItems(
+  summary: CharacterSheetSummary,
+  context: FoundryExportContext,
+): FoundryItemExport[] {
   const spells = new Map<string, { spell: BuilderSpell; prepared: number }>();
 
   for (const spell of summary.spellcasting?.cantrips ?? []) {
@@ -855,39 +1157,137 @@ function createSpellItems(summary: CharacterSheetSummary): FoundryItemExport[] {
     spells.set(spell.id, { spell, prepared: 2 });
   }
 
-  return [...spells.values()].map(({ spell, prepared }) => createSpellItem(spell, prepared, summary));
+  return [...spells.values()].map(({ spell, prepared }) =>
+    createSpellItem(spell, prepared, summary, context),
+  );
 }
 
 function createSpellItem(
   spell: BuilderSpell,
   prepared: number,
   summary: CharacterSheetSummary,
+  context: FoundryExportContext,
 ): FoundryItemExport {
+  const foundrySpell = createFoundrySpellData(spell, context);
+  const target = parseSpellTarget(foundrySpell);
   return createBaseItem({
-    id: createFoundryId(`spell:${spell.id}`),
-    name: spell.name,
+    id: createFoundryId(`spell:${foundrySpell.id}`),
+    name: foundrySpell.name,
     type: "spell",
-    img: "icons/svg/spell.svg",
+    img: createFoundryImage("spells", foundrySpell.name, foundrySpell.imageSource, "icons/svg/spell.svg"),
     system: {
-      source: createSource(spell.source),
-      description: createDescription(spell.description),
-      level: spell.level,
-      school: toFoundrySpellSchool(spell),
-      properties: parseSpellProperties(spell.components, spell.duration),
+      source: createSource(foundrySpell.source),
+      description: createDescription(foundrySpell.description),
+      level: foundrySpell.level,
+      school: toFoundrySpellSchool(foundrySpell),
+      properties: parseSpellProperties(foundrySpell.components, foundrySpell.duration),
       ability: summary.spellcasting ? ATTRIBUTE_TO_FOUNDRY[summary.spellcasting.ability] : "",
-      materials: { value: parseMaterialComponent(spell.components), consumed: false, cost: 0, supply: 0 },
-      target: { template: { count: "", contiguous: false, type: "", size: "", width: "", height: "", units: "" }, affects: { count: "", type: "", choice: false, special: "" } },
-      range: parseSpellRange(spell.range),
-      activation: parseActivation(spell.castingTime),
-      duration: parseDuration(spell.duration),
+      materials: { value: parseMaterialComponent(foundrySpell.components), consumed: false, cost: 0, supply: 0 },
+      target,
+      range: parseSpellRange(foundrySpell.range),
+      activation: parseActivation(foundrySpell.castingTime),
+      duration: parseDuration(foundrySpell.duration),
       uses: { max: "", recovery: [], spent: 0 },
       method: "spell",
       prepared,
       sourceClass: toIdentifier(summary.className),
-      identifier: toIdentifier(spell.name),
-      activities: {},
+      identifier: toIdentifier(foundrySpell.name),
+      activities: createSpellActivities(foundrySpell, target),
     },
   });
+}
+
+type FoundrySpellExportData = BuilderSpell & {
+  imageSource?: string;
+};
+
+function createFoundrySpellData(
+  spell: BuilderSpell,
+  context: FoundryExportContext,
+): FoundrySpellExportData {
+  const catalogSpell = findSpellForFoundry(spell, context);
+  const shouldUseCatalogIdentity = spell.source.toUpperCase() === "PHB" && catalogSpell?.source === "XPHB";
+  const mergedSpell = catalogSpell
+    ? {
+        ...catalogSpell,
+        ...spell,
+        id: shouldUseCatalogIdentity ? catalogSpell.id : spell.id,
+        source: shouldUseCatalogIdentity ? catalogSpell.source : spell.source,
+        description: preferDetailedText(spell.description, catalogSpell.description) ?? spell.description,
+        hasFluffImages: spell.hasFluffImages ?? catalogSpell.hasFluffImages,
+      }
+    : spell;
+
+  return {
+    ...mergedSpell,
+    imageSource: mergedSpell.hasFluffImages ? mergedSpell.source : undefined,
+  };
+}
+
+function findSpellForFoundry(
+  spell: BuilderSpell,
+  context: FoundryExportContext,
+): BuilderSpell | undefined {
+  const lookup = getSpellLookup(context);
+  const exact = lookup.byId.get(spell.id);
+  const sameName = lookup.byName.get(spell.name.toLowerCase()) ?? [];
+  const xphb = sameName.find((entry) => entry.source === "XPHB");
+
+  if (spell.source.toUpperCase() === "PHB") {
+    return xphb ?? exact ?? sameName[0];
+  }
+
+  return exact
+    ?? sameName.find((entry) => entry.source === spell.source)
+    ?? xphb
+    ?? sameName[0];
+}
+
+function createSpellActivities(
+  spell: BuilderSpell,
+  target: ReturnType<typeof parseSpellTarget>,
+): Record<string, unknown> {
+  const id = createFoundryId(`activity:spell:${spell.id}:cast`);
+  const duration = parseDuration(spell.duration);
+  const activation = parseActivation(spell.castingTime);
+  return {
+    [id]: {
+      _id: id,
+      type: "utility",
+      name: "Cast",
+      activation: { ...activation, override: false },
+      consumption: {
+        scaling: { allowed: false },
+        spellSlot: spell.level > 0,
+        targets: [],
+      },
+      description: {},
+      duration: {
+        ...duration,
+        concentration: spell.duration.toLowerCase().includes("concentration"),
+        override: false,
+      },
+      effects: [],
+      range: { ...parseSpellRange(spell.range), override: false },
+      target: createActivityTarget({
+        count: target.affects.count,
+        type: target.affects.type,
+        special: target.affects.special,
+        template: target.template,
+      }),
+      uses: { spent: 0, recovery: [] },
+      roll: { prompt: false, visible: false },
+      sort: 0,
+      flags: {},
+      img: "systems/dnd5e/icons/svg/activity/cast.svg",
+      visibility: {
+        level: {},
+        requireAttunement: false,
+        requireIdentification: false,
+        requireMagic: false,
+      },
+    },
+  };
 }
 
 function createBaseItem(input: {
@@ -915,20 +1315,74 @@ function createBaseItem(input: {
 
 function createDescription(value: string) {
   return {
-    value,
+    value: toFoundryDescriptionHtml(value),
     chat: "",
   };
 }
 
 function createSource(source?: string) {
+  const normalizedSource = source?.toUpperCase() ?? "";
   return {
     custom: FOUNDRY_SOURCE,
-    book: source ?? "",
+    book: SOURCE_BOOK_NAMES[normalizedSource] ?? source ?? "",
     page: "",
     license: "",
-    rules: "2024",
+    rules: normalizedSource === "PHB" ? "2014" : "2024",
     revision: 1,
   };
+}
+
+function createFoundryImage(
+  folder: "items" | "spells",
+  name: string,
+  source: string | undefined,
+  fallback: string,
+): string {
+  if (!source) {
+    return fallback;
+  }
+
+  return `${FIVEETOOLS_IMAGE_BASE_URL}${folder}/${encodeURIComponent(source)}/${encodeURIComponent(`${name}.webp`)}`;
+}
+
+function toFoundryDescriptionHtml(value: string): string {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return "";
+  }
+  if (/<[a-z][\s\S]*>/i.test(trimmed)) {
+    return trimmed;
+  }
+
+  return trimmed
+    .split(/\n{2,}/)
+    .map((paragraph) => `<p>${escapeHtml(paragraph).replace(/\n/g, "<br />")}</p>`)
+    .join("");
+}
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function preferDetailedText(first: string | undefined, second: string | undefined): string | undefined {
+  const firstText = first?.trim() ?? "";
+  const secondText = second?.trim() ?? "";
+  if (!firstText) return secondText || undefined;
+  if (!secondText) return firstText;
+  return secondText.length > firstText.length ? secondText : firstText;
+}
+
+function isLegacySource(source?: string): boolean {
+  return source?.toUpperCase() === "PHB";
+}
+
+function isModernRulesSource(source?: string): boolean {
+  return source === "XPHB" || source === "XDMG";
 }
 
 function createBiography(state: CharacterBuilderState): string {
@@ -1011,6 +1465,114 @@ function parseSpellRange(range: string) {
   if (normalized.includes("touch")) return { value: "0", units: "touch", special: "" };
   const value = normalized.match(/\d+/)?.[0] ?? "";
   return { value, units: normalized.includes("mile") ? "mi" : "ft", special: "" };
+}
+
+function parseSpellTarget(spell: BuilderSpell) {
+  const text = spell.description.toLowerCase();
+  const template = parseSpellTemplate(text);
+  const isSelfOnly = spell.range.toLowerCase().includes("self") && !template.type;
+  const affectsType = isSelfOnly ? "" : inferSpellAffectsType(text);
+
+  return {
+    template: {
+      count: "",
+      contiguous: false,
+      type: template.type,
+      size: template.size,
+      width: "",
+      height: "",
+      units: template.type ? "ft" : "",
+    },
+    affects: {
+      count: isSelfOnly ? "" : inferSpellAffectsCount(text),
+      type: affectsType,
+      choice: false,
+      special: isSelfOnly ? "Self" : affectsType ? "" : inferSpellSpecialTarget(spell),
+    },
+  };
+}
+
+function createActivityTarget(input: {
+  count?: string;
+  type?: string;
+  special?: string;
+  template?: {
+    count?: string;
+    contiguous?: boolean;
+    type?: string;
+    size?: string;
+    width?: string;
+    height?: string;
+    units?: string;
+  };
+}) {
+  return {
+    template: {
+      count: input.template?.count ?? "",
+      contiguous: input.template?.contiguous ?? false,
+      type: input.template?.type ?? "",
+      size: input.template?.size ?? "",
+      width: input.template?.width ?? "",
+      height: input.template?.height ?? "",
+      units: input.template?.units ?? "ft",
+    },
+    affects: {
+      count: input.count ?? "",
+      type: input.type ?? "",
+      choice: false,
+      special: input.special ?? "",
+    },
+    prompt: true,
+    override: false,
+  };
+}
+
+function parseSpellTemplate(text: string): { type: string; size: string } {
+  const shapePatterns: Array<[string, RegExp]> = [
+    ["cone", /(\d+)-foot\s+cone/],
+    ["cube", /(\d+)-foot\s+cube/],
+    ["cylinder", /(\d+)-foot(?:-[a-z]+)?\s+cylinder/],
+    ["sphere", /(\d+)-foot(?:-[a-z]+)?\s+sphere/],
+    ["emanation", /(\d+)-foot(?:-[a-z]+)?\s+emanation/],
+    ["line", /(\d+)-foot(?:-[a-z]+)?\s+line/],
+  ];
+
+  for (const [type, pattern] of shapePatterns) {
+    const match = text.match(pattern);
+    if (match) {
+      return { type, size: match[1] };
+    }
+  }
+
+  return { type: "", size: "" };
+}
+
+function inferSpellAffectsCount(text: string): string {
+  if (/\b(up to )?three\b/.test(text)) return "3";
+  if (/\b(up to )?two\b/.test(text)) return "2";
+  if (/\bone(?:\s+\w+){0,4}\s+(creature|object|humanoid|beast)\b/.test(text)) return "1";
+  if (/\b(one|a|the target)\s+(creature|object|humanoid|beast)\b/.test(text)) return "1";
+  return "";
+}
+
+function inferSpellAffectsType(text: string): string {
+  if (text.includes("creature") || text.includes("humanoid") || text.includes("beast")) {
+    return "creature";
+  }
+  if (text.includes("object")) {
+    return "object";
+  }
+  return "";
+}
+
+function inferSpellSpecialTarget(spell: BuilderSpell): string {
+  if (spell.range.toLowerCase().includes("self")) {
+    return "Self";
+  }
+  if (spell.range.toLowerCase().includes("touch")) {
+    return "Touched target";
+  }
+  return "";
 }
 
 function parseActivation(castingTime: string) {
