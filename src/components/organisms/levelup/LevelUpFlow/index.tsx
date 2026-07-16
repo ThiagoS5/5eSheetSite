@@ -18,6 +18,10 @@ import { SpellCatalogPicker } from "@/src/components/organisms/spells/SpellCatal
 import { getAbilityModifier } from "@/src/adapters/characterDerivedAdapter";
 import { filterByActiveSources } from "@/src/utils/sourceFiltering";
 import {
+  getDefaultCreationPreferences,
+  normalizeActiveSourceSelection,
+} from "@/src/services/sourcePreferenceService";
+import {
   getHighestSpellLevelAvailable,
   isSpellcastingSelectionComplete,
 } from "@/rules/spellcastingRules";
@@ -43,6 +47,14 @@ export function LevelUpFlow({ open, onClose }: LevelUpFlowProps) {
   const characterClass = useMemo(
     () => getBuilderClasses().find((c) => c.id === state.selectedClassId),
     [state.selectedClassId],
+  );
+  const activeSources = useMemo(
+    () =>
+      normalizeActiveSourceSelection(
+        state.creationPreferences?.activeSources ??
+          getDefaultCreationPreferences().activeSources,
+      ),
+    [state.creationPreferences?.activeSources],
   );
 
   const [stepIds, setStepIds] = useState<string[]>([]);
@@ -158,7 +170,7 @@ export function LevelUpFlow({ open, onClose }: LevelUpFlowProps) {
       return (
         <SpellCatalogPicker
           className={characterClass!.name}
-          activeSources={state.creationPreferences?.activeSources}
+          activeSources={activeSources}
           value={state.spellcasting}
           cantripLimit={cantripLimit}
           spellLimit={spellLimit}
@@ -210,7 +222,7 @@ export function LevelUpFlow({ open, onClose }: LevelUpFlowProps) {
     const currentFeatId = value?.mode === "feat" ? value.featId : "";
     const allFeats = filterByActiveSources(
       getFeats(),
-      state.creationPreferences?.activeSources,
+      activeSources,
       [currentFeatId],
     );
     const ctx = {

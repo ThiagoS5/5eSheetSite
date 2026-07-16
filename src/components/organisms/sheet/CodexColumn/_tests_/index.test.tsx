@@ -44,4 +44,20 @@ describe("CodexColumn", () => {
     expect(screen.getByText("Silver hair and ink-stained robes.")).toBeInTheDocument();
     expect(screen.getByText("Keeps a coded travel journal.")).toBeInTheDocument();
   });
+
+  it("uses historia as the Backstory source with legacy tracos as fallback", () => {
+    render(
+      <CodexColumn
+        description={{
+          ...description,
+          tracos: "Legacy traits text.",
+          historia: "Saved backstory text.",
+        }}
+        summary={{} as CharacterSheetSummary}
+      />,
+    );
+
+    expect(screen.getByText("Saved backstory text.")).toBeInTheDocument();
+    expect(screen.queryByText("Legacy traits text.")).not.toBeInTheDocument();
+  });
 });

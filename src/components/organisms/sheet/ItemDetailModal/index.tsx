@@ -68,12 +68,24 @@ export function ItemDetailModal({ item, onClose }: ItemDetailModalProps) {
                   )}
 
                   {item.kind === "equipment" && (
-                    <div className="flex flex-wrap gap-[9px]">
-                      <Tile label="Quantity" value={String(item.qty)} />
-                      {item.cost && <Tile label="Cost" value={item.cost} />}
-                      {item.armorClass != null && <Tile label="AC" value={String(item.armorClass)} />}
-                      <Tile label="Source" value={item.source} />
-                    </div>
+                    <>
+                      <div className="flex flex-wrap gap-[9px]">
+                        <Tile label="Quantity" value={String(item.qty)} />
+                        {item.category && <Tile label="Category" value={item.category} />}
+                        {item.type && <Tile label="Type" value={item.type} />}
+                        {item.cost && <Tile label="Cost" value={item.cost} />}
+                        {item.weight && <Tile label="Weight" value={item.weight} />}
+                        {item.armorClass != null && <Tile label="AC" value={String(item.armorClass)} />}
+                        {item.rarity && <Tile label="Rarity" value={item.rarity} />}
+                        {item.properties && <Tile label="Properties" value={item.properties} />}
+                        {item.damage && <Tile label="Damage" value={item.damage} />}
+                        {item.range && <Tile label="Range" value={item.range} />}
+                        <Tile label="Source" value={item.source} />
+                      </div>
+                      {item.description && (
+                        <p className="m-0 text-[13px] leading-relaxed text-subdued">{item.description}</p>
+                      )}
+                    </>
                   )}
 
                   {item.kind === "spell" && (

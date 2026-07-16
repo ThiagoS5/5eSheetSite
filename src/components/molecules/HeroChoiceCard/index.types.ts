@@ -1,5 +1,10 @@
 import type { ReactNode } from "react";
 
+export interface HeroChoiceBadge {
+  label: string;
+  title?: string;
+}
+
 export interface HeroChoiceTheme {
   /** Cor base do card (fundo do banner, gradiente e badges). */
   theme: string;
@@ -9,7 +14,7 @@ export interface HeroChoiceTheme {
 
 export interface HeroChoiceCardProps {
   title: string;
-  badges: string[];
+  badges: Array<string | HeroChoiceBadge>;
   description: string;
   imageSrc?: string;
   imageAlt?: string;

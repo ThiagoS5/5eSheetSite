@@ -19,13 +19,19 @@ export function SheetHero({
   return (
     <div className="flex flex-col items-center gap-[18px] rounded-2xl border border-border bg-surface-nested px-5 py-[22px] [background:radial-gradient(120%_90%_at_50%_0%,color-mix(in_oklab,var(--primary)_9%,transparent),transparent_60%),var(--surface-nested)]">
 
-      <div className="flex w-full flex-wrap items-center justify-between gap-[14px]">
-        <div className="flex flex-wrap items-center gap-2">
+      <div
+        data-testid="sheet-hero-topbar"
+        className="grid w-full grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-[14px] max-md:grid-cols-1"
+      >
+        <div className="flex min-w-0 flex-wrap items-center justify-center gap-2 md:justify-self-start">
           <ExportButton label="Export Forge & Fate JSON" icon="fa-file-code" onClick={onExportForgeFate} />
           <ExportButton label="Export Foundry VTT JSON" icon="fa-file-export" onClick={onExportFoundry} />
           <ExportButton label="Export PDF" icon="fa-file-pdf" onClick={onExportPdf} />
         </div>
-        <div className="min-w-[200px] flex-1 text-center">
+        <div
+          data-testid="sheet-hero-identity"
+          className="min-w-0 justify-self-center text-center md:min-w-[200px]"
+        >
           <h1 translate="no" className="notranslate m-0 font-serif text-[28px] font-extrabold leading-[1.02] text-foreground">
             {summary.name || "Unnamed Character"}
           </h1>
@@ -43,11 +49,16 @@ export function SheetHero({
               .join("")}
           </p>
         </div>
-        <LevelUpButton />
+        <div className="justify-self-center md:justify-self-end">
+          <LevelUpButton />
+        </div>
       </div>
 
 
-      <div className="flex flex-wrap items-center justify-center gap-[22px]">
+      <div
+        data-testid="sheet-hero-combat-stats"
+        className="grid grid-cols-1 items-center justify-items-center gap-[22px] min-[440px]:grid-cols-[88px_172px_88px]"
+      >
         <CombatStatFrame variant="square" accentColor="var(--brand-crimson-alt)">
           <i aria-hidden="true" className="fa-solid fa-bolt text-[13px] text-primary" />
           <span className="text-[8.5px] uppercase tracking-[0.05em] text-muted-foreground">Initiative</span>

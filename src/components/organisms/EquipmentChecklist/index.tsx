@@ -32,10 +32,24 @@ function splitOptions(summary: string): { a: string; b: string } | null {
 }
 
 
-function parseItemList(text: string): { qty?: number; label: string }[] {
+function stripGoldFromItemFallback(piece: string): string {
+  const withoutTrailingGold = piece.replace(
+    /\s+(?:and|plus)\s+\d+(?:[.,]\d+)?\s*(?:GP|PO)\b.*$/i,
+    "",
+  );
+
+  return /^\d+(?:[.,]\d+)?\s*(?:GP|PO)$/i.test(withoutTrailingGold)
+    ? ""
+    : withoutTrailingGold;
+}
+
+function parseItemList(
+  text: string,
+  { omitGold = false }: { omitGold?: boolean } = {},
+): { qty?: number; label: string }[] {
   return text
     .split(",")
-    .map((piece) => piece.trim())
+    .map((piece) => (omitGold ? stripGoldFromItemFallback(piece.trim()) : piece.trim()))
     .filter(Boolean)
     .map((piece) => {
       const match = piece.match(/^(\d+)\s+(.+)$/);
@@ -169,8 +183,9 @@ export function EquipmentChecklist({
                         </ul>
                       ) : (
                         <ul className="grid gap-1 text-base text-subdued">
-                          {parseItemList(splitOptions(source.summary)?.a ?? kit.summary).map(
-                            (entry, index) => (
+                          {parseItemList(splitOptions(source.summary)?.a ?? kit.summary, {
+                            omitGold: source.key === "class",
+                          }).map((entry, index) => (
                               <li key={`${kit.id}-a-${index}`} className="flex gap-2">
                                 {entry.qty ? (
                                   <span translate="no" className="notranslate font-semibold text-foreground">
@@ -179,8 +194,7 @@ export function EquipmentChecklist({
                                 ) : null}
                                 <span translate="no" className="notranslate">{entry.label}</span>
                               </li>
-                            ),
-                          )}
+                            ))}
                         </ul>
                       )}
                     </div>

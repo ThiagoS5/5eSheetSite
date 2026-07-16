@@ -25,11 +25,20 @@ describe("sourcePreferenceService", () => {
       bookTitle: "Player's Handbook 2024",
       label: "XPHB (Player's Handbook 2024)",
       locked: true,
+      inactive: false,
     });
     expect(options.find((option) => option.code === "EFA")).toMatchObject({
       bookTitle: "Eberron: Forge of the Artificer",
       label: "EFA (Eberron: Forge of the Artificer)",
       locked: false,
+      inactive: false,
+    });
+    expect(options.find((option) => option.code === "PHB")).toMatchObject({
+      bookTitle: "Player's Handbook",
+      label: "PHB (Player's Handbook)",
+      locked: false,
+      inactive: true,
+      disabledReason: "Legacy D&D 2014 source is inactive in Forge & Fate.",
     });
   });
 
@@ -41,20 +50,20 @@ describe("sourcePreferenceService", () => {
     expect(fallbackOptions).toEqual([]);
   });
 
-  it("uses every available source as the default creation preference", () => {
+  it("uses every active source as the default creation preference", () => {
     const defaultSources = getDefaultCreationPreferences().activeSources;
-    const availableSources = getAvailableSourcePreferenceOptions().map(
-      (option) => option.code,
-    );
+    const availableSources = getAvailableSourcePreferenceOptions()
+      .filter((option) => !option.inactive)
+      .map((option) => option.code);
 
     expect(defaultSources).toEqual(availableSources);
+    expect(defaultSources).not.toContain("PHB");
   });
 
-  it("normalizes source selections by deduping and forcing XPHB", () => {
+  it("normalizes source selections by deduping, forcing XPHB, and dropping inactive PHB", () => {
     expect(normalizeActiveSourceSelection(["efa", "EFA", "PHB"])).toEqual([
       "XPHB",
       "EFA",
-      "PHB",
     ]);
   });
 });

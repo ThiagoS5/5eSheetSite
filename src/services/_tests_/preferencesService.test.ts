@@ -36,7 +36,7 @@ describe("preferencesService", () => {
     );
   });
 
-  it("upgrades legacy XPHB-only defaults to every source", () => {
+  it("upgrades legacy XPHB-only defaults to every active source", () => {
     localStorage.setItem(
       "forge-fate-preferences:v1",
       JSON.stringify({
@@ -47,6 +47,7 @@ describe("preferencesService", () => {
     expect(readGlobalPreferences().creationDefaults).toEqual(
       getDefaultCreationPreferences("milestone"),
     );
+    expect(readGlobalPreferences().creationDefaults.activeSources).not.toContain("PHB");
   });
 
   it("preserves unversioned custom source preferences while forcing XPHB", () => {
@@ -84,6 +85,21 @@ describe("preferencesService", () => {
       JSON.stringify({
         preferencesVersion: CURRENT_GLOBAL_PREFERENCES_VERSION,
         creationDefaults: { activeSources: ["EFA"], progressionMode: "xp" },
+      }),
+    );
+
+    expect(readGlobalPreferences().creationDefaults.activeSources).toEqual([
+      "XPHB",
+      "EFA",
+    ]);
+  });
+
+  it("removes inactive PHB from saved source preferences", () => {
+    localStorage.setItem(
+      "forge-fate-preferences:v1",
+      JSON.stringify({
+        preferencesVersion: CURRENT_GLOBAL_PREFERENCES_VERSION,
+        creationDefaults: { activeSources: ["PHB", "XPHB", "EFA"], progressionMode: "xp" },
       }),
     );
 

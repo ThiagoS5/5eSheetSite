@@ -13,6 +13,7 @@ import type {
 } from "@/src/types/characterBuild";
 import {
   BASE_SOURCE_CODE,
+  isInactiveSourceCode,
   normalizeSourceCode,
 } from "@/src/utils/sourceFiltering";
 
@@ -23,6 +24,8 @@ export interface SourcePreferenceOption {
   label: string;
   bookTitle: string;
   locked: boolean;
+  inactive: boolean;
+  disabledReason?: string;
 }
 
 const SOURCE_BOOK_TITLES: Record<string, string> = {
@@ -120,7 +123,9 @@ export function getDefaultCreationPreferences(
   progressionMode: ProgressionMode = "xp",
 ): CreationPreferences {
   return {
-    activeSources: getAvailableSourcePreferenceOptions().map((option) => option.code),
+    activeSources: getAvailableSourcePreferenceOptions()
+      .filter((option) => !option.inactive)
+      .map((option) => option.code),
     progressionMode,
   };
 }
@@ -129,7 +134,9 @@ export function normalizeActiveSourceSelection(
   activeSources: readonly string[] | undefined,
 ): string[] {
   const knownSources = new Set(
-    getAvailableSourcePreferenceOptions().map((option) => option.code),
+    getAvailableSourcePreferenceOptions()
+      .filter((option) => !option.inactive)
+      .map((option) => option.code),
   );
   const normalizedSources = [
     BASE_SOURCE_CODE,
@@ -208,11 +215,16 @@ function buildAvailableSourcePreferenceOptions(): SourcePreferenceOption[] {
     })
     .map((code) => {
       const bookTitle = getSourceBookTitle(code);
+      const inactive = isInactiveSourceCode(code);
       return {
         code,
         bookTitle,
         label: `${code} (${bookTitle})`,
         locked: code === BASE_SOURCE_CODE,
+        inactive,
+        disabledReason: inactive
+          ? "Legacy D&D 2014 source is inactive in Forge & Fate."
+          : undefined,
       };
     });
 }
@@ -225,7 +237,7 @@ function addSource(codes: Set<string>, source: string | undefined): void {
   codes.add(normalizeSourceCode(source));
 }
 
-function getSourceBookTitle(code: string): string {
+export function getSourceBookTitle(code: string): string {
   const directTitle = SOURCE_BOOK_TITLES[code];
   if (directTitle) {
     return directTitle;

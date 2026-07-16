@@ -6,7 +6,7 @@ import {
 } from "@/src/services/sourcePreferenceService";
 
 const STORAGE_KEY = "forge-fate-preferences:v1";
-export const CURRENT_GLOBAL_PREFERENCES_VERSION = 2;
+export const CURRENT_GLOBAL_PREFERENCES_VERSION = 3;
 
 export interface GlobalPreferences {
   preferencesVersion?: number;

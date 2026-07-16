@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   filterSpellCatalog,
+  getSpellCatalog,
   getSpellCatalogForClass,
 } from "@/src/services/spellService";
 
@@ -37,11 +38,21 @@ describe("spellService", () => {
     expect(filtered.map((spell) => spell.id)).toEqual(["arcane-gate-xphb"]);
   });
 
-  it("preserves selected spells from disabled sources", () => {
-    const legacySpell = getSpellCatalogForClass({
+  it("keeps PHB inactive even when a legacy source selection includes it", () => {
+    const spells = getSpellCatalogForClass({
       className: "Wizard",
-      activeSources: ["PHB"],
-    }).find((spell) => spell.source === "PHB");
+      activeSources: ["XPHB", "PHB"],
+    });
+
+    expect(spells.some((spell) => spell.source === "PHB")).toBe(false);
+    expect(spells.filter((spell) => spell.name === "Arcane Gate")).toHaveLength(1);
+    expect(spells.find((spell) => spell.name === "Arcane Gate")?.source).toBe("XPHB");
+  });
+
+  it("preserves selected spells from disabled sources", () => {
+    const legacySpell = getSpellCatalog().find(
+      (spell) => spell.name === "Arcane Gate" && spell.source === "PHB",
+    );
 
     expect(legacySpell).toBeDefined();
 

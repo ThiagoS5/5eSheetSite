@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Save, Settings } from "lucide-react";
 import { BuilderSidebar } from "@/src/components/organisms/BuilderSidebar";
@@ -16,14 +16,23 @@ import {
 } from "@/src/components/ui/sheet";
 import { SidebarProvider } from "@/src/components/ui/sidebar";
 import { useIsMobile } from "@/src/hooks/use-mobile";
-import { builderStepNavigation } from "@/src/components/templates/builderStepNavigation";
+import {
+  builderStepNavigation,
+  getHiddenBuilderStepRedirect,
+  getNextVisibleBuilderStep,
+  getPreviousVisibleBuilderStep,
+  getVisibleBuilderStepNavigation,
+} from "@/src/components/templates/builderStepNavigation";
 import { deriveBuilderPendencies } from "@/rules/pendencyRules";
 import { validateBuilderStep } from "@/rules/builderValidation";
 import { getBuilderClasses } from "@/src/services/ruleService";
 import { readGlobalPreferences, writeGlobalPreferences } from "@/src/services/preferencesService";
 import { selectDerivedSheet } from "@/src/store/characterSelectors";
 import { useCharacterBuilderState } from "@/src/store/useCharacterBuilderState";
-import { useCharacterStore } from "@/src/store/useCharacterStore";
+import {
+  useCharacterStore,
+  useCharacterStoreHydrated,
+} from "@/src/store/useCharacterStore";
 
 import type { BuilderShellProps } from "./index.types";
 export type { BuilderShellProps } from "./index.types";
@@ -34,10 +43,12 @@ export function BuilderShell({ children }: BuilderShellProps) {
   const updatedAt = useCharacterStore(
     (state) => state.characterBuild.exportMetadata.updatedAt,
   );
+  const storeHydrated = useCharacterStoreHydrated();
   const characterState = useCharacterBuilderState();
   const commitCurrentBuild = useCharacterStore(
     (state) => state.commitCurrentBuild,
   );
+  const [routeGuardReady, setRouteGuardReady] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [sheetCollapsed, setSheetCollapsed] = useState(false);
   const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
@@ -50,14 +61,47 @@ export function BuilderShell({ children }: BuilderShellProps) {
     showSheetPreview,
   );
 
+  const visibilityInput = useMemo(
+    () => ({ level: characterState.level }),
+    [characterState.level],
+  );
+  const visibleSteps = getVisibleBuilderStepNavigation(visibilityInput);
   const currentStepIndex = builderStepNavigation.findIndex(
     (step) => step.href === pathname,
   );
   const currentStep =
     builderStepNavigation[currentStepIndex] ?? builderStepNavigation[0];
-  const previousStep = builderStepNavigation[currentStepIndex - 1];
-  const nextStep = builderStepNavigation[currentStepIndex + 1];
-  const totalSteps = builderStepNavigation.length;
+  const visibleStepIndex = visibleSteps.findIndex((step) => step.slug === currentStep.slug);
+  const previousStep = getPreviousVisibleBuilderStep(currentStep.slug, visibilityInput);
+  const nextStep = getNextVisibleBuilderStep(currentStep.slug, visibilityInput);
+  const totalSteps = visibleSteps.length;
+
+  useEffect(() => {
+    if (!storeHydrated) {
+      return undefined;
+    }
+
+    const timer = setTimeout(() => setRouteGuardReady(true), 0);
+    return () => clearTimeout(timer);
+  }, [storeHydrated]);
+
+  useEffect(() => {
+    if (!routeGuardReady) {
+      return;
+    }
+
+    const redirectStep = getHiddenBuilderStepRedirect(currentStep.slug, visibilityInput);
+    if (redirectStep && pathname === currentStep.href) {
+      router.replace(redirectStep.href);
+    }
+  }, [
+    currentStep.href,
+    currentStep.slug,
+    pathname,
+    routeGuardReady,
+    router,
+    visibilityInput,
+  ]);
 
   const summary = useCharacterStore(selectDerivedSheet);
   const builderClasses = useMemo(() => getBuilderClasses(), []);
@@ -94,7 +138,11 @@ export function BuilderShell({ children }: BuilderShellProps) {
       return;
     }
 
-    void commitCurrentBuild(nextStep.slug, currentStepIndex + 1).then(() => {
+    const nextCanonicalIndex = builderStepNavigation.findIndex(
+      (step) => step.slug === nextStep.slug,
+    );
+
+    void commitCurrentBuild(nextStep.slug, nextCanonicalIndex).then(() => {
       router.push(nextStep.href);
     });
   }
@@ -143,7 +191,7 @@ export function BuilderShell({ children }: BuilderShellProps) {
 
         {isMobile ? (
           <MobileBuilderBar
-            currentStepIndex={Math.max(currentStepIndex, 0)}
+            currentStepIndex={Math.max(visibleStepIndex, 0)}
             totalSteps={totalSteps}
             onBack={handleBack}
             onNext={handleNext}

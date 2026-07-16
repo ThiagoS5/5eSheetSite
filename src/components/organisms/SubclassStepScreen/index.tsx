@@ -14,6 +14,7 @@ import {
 import { RulesTextView } from "@/src/components/molecules/RulesTextView";
 import { WizardStepHeader } from "@/src/components/molecules/WizardStepHeader";
 import { getLevelRequirements } from "@/rules/levelProgression";
+import { getSourceBookTitle } from "@/src/services/sourcePreferenceService";
 import { isSourceActive } from "@/src/utils/sourceFiltering";
 import type { BuilderClass, BuilderSubclass } from "@/src/types/builder";
 
@@ -162,7 +163,10 @@ const SubclassOptionCard = memo(function SubclassOptionCard({
     <>
       <HeroChoiceCard
         title={subclass.name}
-        badges={[subclass.source, characterClass.name]}
+        badges={[
+          { label: subclass.source, title: getSourceBookTitle(subclass.source) },
+          characterClass.name,
+        ]}
         description={getSubclassSummary(subclass)}
         icon={
           <FontAwesomeIcon iconClassName={getClassBannerIconClass(characterClass)} />

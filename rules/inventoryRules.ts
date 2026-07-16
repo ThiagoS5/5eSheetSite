@@ -45,16 +45,20 @@ export function deriveCarriedEquipment(input: {
   }
 
   const catalogById = new Map(getItemCatalog().map((item) => [item.id, item]));
+  const packageItemById = new Map(
+    [...classKitItems, ...backgroundKitItems].map((item) => [item.id, item]),
+  );
 
   return [...quantitiesById.entries()].map(([itemId, quantity]) => {
     const catalogItem = catalogById.get(itemId);
+    const packageItem = packageItemById.get(itemId);
     const sourceType = resolveSourceType(itemId, classKitItemIdSet, backgroundKitItemIdSet);
 
     return {
       item: catalogItem
-        ? mapCatalogItemToEquipmentOption(catalogItem, sourceType)
+        ? mapCatalogItemToEquipmentOption(catalogItem, sourceType, packageItem)
         : mapPackageItemToEquipmentOption(
-            [...classKitItems, ...backgroundKitItems].find((entry) => entry.id === itemId),
+            packageItem,
             sourceType,
           ),
       quantity,
@@ -83,14 +87,20 @@ export function deriveCarriedLoadKg(carriedEquipment: CarriedEquipmentEntry[]): 
 function mapCatalogItemToEquipmentOption(
   item: ReturnType<typeof getItemCatalog>[number],
   sourceType: BuilderEquipmentOption["sourceType"],
+  packageItem?: BuilderEquipmentPackageItem,
 ): BuilderEquipmentOption {
   return {
     id: item.id,
-    name: item.name,
+    name: packageItem?.label ?? item.name,
     source: item.source,
     sourceType,
     category: item.category,
     type: item.type,
+    detail: item.detail,
+    rarity: item.rarity,
+    isMagical: item.isMagical,
+    isCommon: item.isCommon,
+    isContainer: item.isContainer,
     weightKg: item.weightKg,
     armorClass: item.armorClass,
     armorClassBonus: item.armorClassBonus,

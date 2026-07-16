@@ -97,10 +97,20 @@ import {
   getHeroClassTheme,
 } from "@/src/components/molecules/heroClassTheme";
 import { SubclassStepScreen } from "@/src/components/organisms/SubclassStepScreen";
-import { builderStepNavigation } from "@/src/components/templates/builderStepNavigation";
+import {
+  builderStepNavigation,
+  getNextVisibleBuilderStep,
+  getPreviousVisibleBuilderStep,
+  getVisibleBuilderStepNavigation,
+} from "@/src/components/templates/builderStepNavigation";
 import { deriveBuilderPendencies } from "@/rules/pendencyRules";
 import type { Pendency } from "@/src/types/builder";
 import { CharacterSheetView } from "@/src/components/pages/CharacterSheetView";
+import {
+  getDefaultCreationPreferences,
+  getSourceBookTitle,
+  normalizeActiveSourceSelection,
+} from "@/src/services/sourcePreferenceService";
 import { getFeats } from "@/src/services/ruleService";
 import {
   filterByActiveSources,
@@ -352,8 +362,9 @@ export function BuilderStepPanel({
     [step, characterState],
   );
   const currentStepIndex = getStepIndex(step);
-  const nextStep = builderStepNavigation[currentStepIndex + 1];
-  const previousStep = builderStepNavigation[currentStepIndex - 1];
+  const stepVisibility = { level: characterState.level };
+  const nextStep = getNextVisibleBuilderStep(step, stepVisibility);
+  const previousStep = getPreviousVisibleBuilderStep(step, stepVisibility);
   const isStepUnlocked = currentStepIndex <= characterState.maxUnlockedStepIndex;
   const previousStepsValid = useMemo(
     () => arePreviousStepsValid(step, characterState),
@@ -374,7 +385,14 @@ export function BuilderStepPanel({
   const selectedSpecies = species.find(
     (entry) => entry.id === characterState.selectedSpeciesId,
   );
-  const activeSources = characterState.creationPreferences?.activeSources;
+  const activeSources = useMemo(
+    () =>
+      normalizeActiveSourceSelection(
+        characterState.creationPreferences?.activeSources ??
+          getDefaultCreationPreferences().activeSources,
+      ),
+    [characterState.creationPreferences?.activeSources],
+  );
   const selectedSubclass = selectedClass?.subclasses.find(
     (entry) => entry.id === characterState.selectedSubclassId,
   );
@@ -764,7 +782,7 @@ export function BuilderStepPanel({
                 }
                 disabled={!canAdvance}
                 onClick={() => {
-                  void unlockAndGo(currentStepIndex + 1);
+                  void unlockAndGo(getStepIndex(nextStep.slug));
                 }}
               >
                 Next
@@ -1130,12 +1148,12 @@ function ClassStep({
       </div>
 
       {filteredClasses.length ? (
-        <div className="grid min-w-0 grid-cols-1 gap-3 md:gap-4 md:grid-cols-2 2xl:grid-cols-3">
+        <div className="grid min-w-0 auto-rows-[1fr] grid-cols-1 items-stretch gap-3 md:gap-4 md:grid-cols-2 2xl:grid-cols-3">
           {filteredClasses.map((entry) => {
             const tier = getRecommendationTier(entry.id);
 
             return (
-              <div key={entry.id} className="relative">
+              <div key={entry.id} className="relative flex h-full min-w-0">
                 {tier ? <ChoiceRecommendationFrame tier={tier} /> : null}
                 {tier ? <RecommendationFlag tier={tier} /> : null}
                 <ClassOptionCard
@@ -1705,7 +1723,11 @@ const ClassOptionCard = memo(function ClassOptionCard({
     <>
       <HeroChoiceCard
         title={classEntry.name}
-        badges={[classEntry.source, tags[0], primaryAbility].filter(Boolean)}
+        badges={[
+          { label: classEntry.source, title: getSourceBookTitle(classEntry.source) },
+          ...(tags[0] ? [tags[0]] : []),
+          ...(primaryAbility ? [primaryAbility] : []),
+        ]}
         description={classEntry.summary}
         imageSrc={classEntry.image?.src}
         imageAlt={classEntry.image?.alt}
@@ -1720,7 +1742,7 @@ const ClassOptionCard = memo(function ClassOptionCard({
         onClickDetails={() => setDetailsOpen(true)}
         onClickSelect={handleSelect}
       >
-        <div className="grid gap-2 rounded-lg bg-black/40 p-3 backdrop-blur-[2px]">
+        <div className="grid min-h-[178px] max-h-[178px] gap-2 overflow-hidden rounded-lg bg-black/40 p-3 backdrop-blur-[2px]">
           <div className="flex items-center justify-between gap-3">
             <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/70">
               Hit Die
@@ -2257,12 +2279,12 @@ function BackgroundStep({
       ) : null}
 
       {filteredBackgrounds.length ? (
-        <div className="grid w-full min-w-0 grid-cols-1 gap-3 md:gap-4 md:grid-cols-2 2xl:grid-cols-3">
+        <div className="grid w-full min-w-0 auto-rows-[1fr] grid-cols-1 items-stretch gap-3 md:gap-4 md:grid-cols-2 2xl:grid-cols-3">
           {filteredBackgrounds.map((entry) => {
             const tier = getRecommendationTier(quizRecommendation, entry.id);
 
             return (
-              <div key={entry.id} className="relative">
+              <div key={entry.id} className="relative flex h-full min-w-0">
                 {tier ? <ChoiceRecommendationFrame tier={tier} /> : null}
                 {tier ? (
                   <ScopedRecommendationFlag scope="background" tier={tier} />
@@ -2433,12 +2455,12 @@ function SpeciesStep({
       ) : null}
 
       {filteredSpecies.length ? (
-        <div className="grid min-w-0 grid-cols-1 gap-3 md:gap-4 md:grid-cols-2 2xl:grid-cols-3">
+        <div className="grid min-w-0 auto-rows-[1fr] grid-cols-1 items-stretch gap-3 md:gap-4 md:grid-cols-2 2xl:grid-cols-3">
           {filteredSpecies.map((entry) => {
             const tier = getRecommendationTier(quizRecommendation, entry.id);
 
             return (
-              <div key={entry.id} className="relative">
+              <div key={entry.id} className="relative flex h-full min-w-0">
                 {tier ? <ChoiceRecommendationFrame tier={tier} /> : null}
                 {tier ? (
                   <ScopedRecommendationFlag scope="species" tier={tier} />
@@ -2485,7 +2507,11 @@ const SpeciesOptionCard = memo(function SpeciesOptionCard({
     <>
       <HeroChoiceCard
         title={species.name}
-        badges={[species.source].filter(Boolean)}
+        badges={
+          species.source
+            ? [{ label: species.source, title: getSourceBookTitle(species.source) }]
+            : []
+        }
         description={species.summary}
         imageSrc={species.image?.src}
         imageAlt={species.image?.alt}
@@ -2496,21 +2522,23 @@ const SpeciesOptionCard = memo(function SpeciesOptionCard({
         onClickDetails={() => setDetailsOpen(true)}
         onClickSelect={handleSelect}
       >
-        <div className="grid gap-2 rounded-lg bg-black/40 p-3 backdrop-blur-[2px]">
+        <div className="grid min-h-[178px] max-h-[178px] gap-2 overflow-hidden rounded-lg bg-black/40 p-3 backdrop-blur-[2px]">
           <HeroCardDetailLine label="Size" value={species.size} />
           <HeroCardDetailLine
             label="Speed"
             value={`${species.speed} ft.`}
           />
-          <div>
+          <div className="min-h-0 overflow-hidden">
             <h4 className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-white/70">
               Species Traits
             </h4>
-            <FeatureTagList
-              features={species.traits}
-              emptyLabel="No species trait"
-              ariaLabel="Species Traits"
-            />
+            <div className="max-h-[74px] overflow-hidden">
+              <FeatureTagList
+                features={species.traits}
+                emptyLabel="No species trait"
+                ariaLabel="Species Traits"
+              />
+            </div>
           </div>
         </div>
       </HeroChoiceCard>
@@ -2610,10 +2638,17 @@ function SpeciesDetailsSidebar({
         />
         <div className="absolute bottom-0 left-0 right-0 p-4">
           <div className="mb-2 flex flex-wrap gap-2">
-            <span className="rounded border border-border bg-black/45 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-subdued backdrop-blur">
+            <span
+              title={getSourceBookTitle(species.source)}
+              translate="no"
+              className="notranslate rounded border border-border bg-black/45 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-subdued backdrop-blur"
+            >
               {species.source}
             </span>
-            <span className="rounded border border-border bg-black/45 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-subdued backdrop-blur">
+            <span
+              translate="no"
+              className="notranslate rounded border border-border bg-black/45 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-subdued backdrop-blur"
+            >
               {species.ruleset}
             </span>
           </div>
@@ -3397,8 +3432,12 @@ function arePreviousStepsValid(
   step: BuilderStepSlug,
   state: CharacterBuilderState,
 ): boolean {
-  const currentIndex = getStepIndex(step);
-  const previousSteps = builderStepNavigation.slice(0, currentIndex);
+  const visibleSteps = getVisibleBuilderStepNavigation({ level: state.level });
+  const currentIndex = visibleSteps.findIndex((entry) => entry.slug === step);
+  const previousSteps =
+    currentIndex >= 0
+      ? visibleSteps.slice(0, currentIndex)
+      : builderStepNavigation.slice(0, getStepIndex(step));
 
   return previousSteps.every(
     (entry) => validateBuilderStep(entry.slug, state).length === 0,

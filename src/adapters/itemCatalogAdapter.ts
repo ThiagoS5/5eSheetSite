@@ -1,4 +1,4 @@
-import { toSlug } from "@/src/adapters/fiveEToolsAdapter";
+import { formatTaggedTextAsPlain, stringifyEntries, toSlug } from "@/src/adapters/fiveEToolsAdapter";
 import type {
   ArmorType,
   CatalogItem,
@@ -127,6 +127,7 @@ function normalizeDamageModifiers(values: unknown[] | undefined): string[] {
 export function normalizeCatalogItem(rawItem: Raw5eItem): CatalogItem {
   const rarity = rawItem.rarity;
   const code = (rawItem.type ?? "").split("|")[0];
+  const detail = formatTaggedTextAsPlain(stringifyEntries(rawItem.entries));
 
   return {
     id: toSlug(rawItem.name, rawItem.source),
@@ -134,6 +135,8 @@ export function normalizeCatalogItem(rawItem: Raw5eItem): CatalogItem {
     source: rawItem.source,
     category: resolveCategory(rawItem),
     type: resolveInventoryType(rawItem),
+    detail: detail || undefined,
+    rarity,
     isMagical: Boolean(rarity) && rarity !== "none",
     isCommon: rarity === "common",
     isContainer: rawItem.containerCapacity != null,

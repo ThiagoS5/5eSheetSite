@@ -31,7 +31,20 @@ const summary = {
   inventory: [
     { item: { id: "grimoire", name: "Spellbook", source: "Wizard", sourceType: "class", value: 50, category: "Wondrous" }, quantity: 1 },
     { item: { id: "sword", name: "Longsword", source: "Manual", sourceType: "manual", value: 15, category: "Weapon" }, quantity: 2 },
-    { item: { id: "rope", name: "Hempen Rope", source: "Adventuring Gear", sourceType: "background", value: 1, category: "Other Gear" }, quantity: 1 },
+    {
+      item: {
+        id: "rope",
+        name: "Hempen Rope",
+        source: "Adventuring Gear",
+        sourceType: "background",
+        value: 100,
+        category: "Other Gear",
+        type: "gear",
+        weightKg: 4.54,
+        detail: "A sturdy 50-foot coil of hempen rope.",
+      },
+      quantity: 1,
+    },
   ],
   features: [
     { name: "Spellcasting", description: "...", source: "class" },
@@ -120,5 +133,17 @@ describe("ContentTabs", () => {
     expect(screen.getByText("Hempen Rope")).toBeInTheDocument();
     expect(screen.queryByText("Longsword")).not.toBeInTheDocument();
     expect(screen.queryByText("Spellbook")).not.toBeInTheDocument();
+  });
+
+  it("opens inventory item details with real item metadata", () => {
+    fireEvent.click(screen.getByRole("tab", { name: /Inventory/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Hempen Rope/ }));
+
+    const dialog = screen.getByRole("dialog");
+    expect(within(dialog).getByText("Other Gear")).toBeInTheDocument();
+    expect(within(dialog).getByText("Gear")).toBeInTheDocument();
+    expect(within(dialog).getByText("1 GP")).toBeInTheDocument();
+    expect(within(dialog).getByText("4.54 kg")).toBeInTheDocument();
+    expect(within(dialog).getByText("A sturdy 50-foot coil of hempen rope.")).toBeInTheDocument();
   });
 });
