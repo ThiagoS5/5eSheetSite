@@ -12,6 +12,7 @@ function fmt(n: number): string {
 
 export function SheetHero({
   summary,
+  onExportForgeFate,
   onExportFoundry,
   onExportPdf,
 }: SheetHeroProps) {
@@ -20,8 +21,9 @@ export function SheetHero({
 
       <div className="flex w-full flex-wrap items-center justify-between gap-[14px]">
         <div className="flex flex-wrap items-center gap-2">
+          <ExportButton label="Export Forge & Fate JSON" icon="fa-file-code" onClick={onExportForgeFate} />
+          <ExportButton label="Export Foundry VTT JSON" icon="fa-file-export" onClick={onExportFoundry} />
           <ExportButton label="Export PDF" icon="fa-file-pdf" onClick={onExportPdf} />
-          <ExportButton label="Export JSON (Foundry)" icon="fa-file-export" onClick={onExportFoundry} />
         </div>
         <div className="min-w-[200px] flex-1 text-center">
           <h1 translate="no" className="notranslate m-0 font-serif text-[28px] font-extrabold leading-[1.02] text-foreground">
@@ -65,7 +67,7 @@ export function SheetHero({
           </div>
         </div>
 
-        <CombatStatFrame variant="square" accentColor="#8a8fb0">
+        <CombatStatFrame variant="square" accentColor="var(--muted-foreground)">
           <i aria-hidden="true" className="fa-solid fa-shoe-prints text-[13px] text-muted-foreground" />
           <span className="text-[8.5px] uppercase tracking-[0.05em] text-muted-foreground">Speed</span>
           <span translate="no" className="notranslate font-serif text-[22px] font-extrabold text-foreground">

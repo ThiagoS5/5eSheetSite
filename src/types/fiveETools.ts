@@ -151,6 +151,9 @@ export interface Raw5eItem {
   property?: string[];
   mastery?: string | string[];
   ac?: number;
+  bonusAc?: string;
+  bonusSavingThrow?: string;
+  bonusWeapon?: string;
   dmg1?: string;
   dmgType?: string;
   range?: string;
@@ -165,6 +168,7 @@ export interface Raw5eItem {
   staff?: boolean;
   containerCapacity?: unknown;
   reqAttune?: boolean | string;
+  resist?: unknown[];
   reprintedAs?: string[];
 }
 

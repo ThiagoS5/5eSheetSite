@@ -6,6 +6,7 @@ import { selectDerivedSheet } from "@/src/store/characterSelectors";
 import { useCharacterStore } from "@/src/store/useCharacterStore";
 import { useCharacterBuilderState } from "@/src/store/useCharacterBuilderState";
 import { cn } from "@/src/lib/utils";
+import { serializeCharacterExport } from "@/src/utils/canonicalExport";
 import { createFoundryCharacterExport } from "@/src/utils/foundryAdapter";
 import { SHEET_THEME_VARS } from "@/src/components/organisms/sheet/sheetTheme";
 import { SheetHero } from "@/src/components/organisms/sheet/SheetHero";
@@ -15,8 +16,13 @@ import type { CharacterSheetViewProps } from "./index.types";
 export type { CharacterSheetViewProps } from "./index.types";
 export function CharacterSheetView({ embedded = false }: CharacterSheetViewProps) {
   const state = useCharacterBuilderState();
+  const characterBuild = useCharacterStore((s) => s.characterBuild);
   const description = useCharacterStore((s) => s.description);
   const summary = useCharacterStore(selectDerivedSheet);
+
+  function handleForgeFateExport() {
+    downloadJson(`${sanitizeFileName(summary.name)}-forge-fate.json`, serializeCharacterExport(characterBuild));
+  }
 
   function handleFoundryExport() {
     const exportData = createFoundryCharacterExport(state, summary);
@@ -32,6 +38,7 @@ export function CharacterSheetView({ embedded = false }: CharacterSheetViewProps
     <div className="flex flex-col gap-[14px]" style={SHEET_THEME_VARS}>
       <SheetHero
         summary={summary}
+        onExportForgeFate={handleForgeFateExport}
         onExportFoundry={handleFoundryExport}
         onExportPdf={handlePdfExport}
       />

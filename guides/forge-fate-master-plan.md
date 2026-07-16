@@ -751,7 +751,7 @@ Etapa 9 (Conclusão) e `CharacterSheetPage` ganham: Exportar JSON · Exportar Fo
 - **Arquivos:** `src/utils/canonicalExport.ts`, `types/export.ts`, UI no Dashboard/Conclusão/ficha; `CharacterDescription` + `personalDetailsSchema.ts` estendidos (**bump v11**: alinhamento, fé, altura, peso, idade, olhos, cabelo, pele, `portraitId` — todos opcionais); sugestões de personalidade por antecedente (dados de `backgrounds.json`) com botão "sugerir"; galeria local de retratos autorais em `public/portraits/` (seleção na etapa 8, exibição no `CharacterCard` e no PDF); gerador de nome aleatório por espécie (`src/data/nameGenerator.ts`).
 - **Aceite:** round-trip sem perda (incluindo os campos novos); import de schema antigo migra; import inválido falha com mensagem clara; retrato aparece no Dashboard; sugestão de personalidade respeita o antecedente selecionado e permanece editável.
 - **Dependências:** contrato estável (após F5b/F6 — ou seja, bumps v6–v10 aterrissados). Upload de retrato próprio: pós-v1.
-- **✅ Status — núcleo concluído:** `canonicalExport.ts` + `types/export.ts` com envelope versionado e round-trip testado (inclusive schemas legados); import no Dashboard grava no Vault com `saveId` novo; descrição rica (detalhes físicos, personalidade sugerida, galeria de retratos, gerador de nomes) entregue. **Pendente (P0 no ruler):** ação de export JSON canônico como UI de primeira classe em Vault/conclusão/ficha.
+- **✅ Status — concluída:** `canonicalExport.ts` + `types/export.ts` com envelope versionado e round-trip testado (inclusive schemas legados); import no Dashboard grava no Vault com `saveId` novo; descrição rica (detalhes físicos, personalidade sugerida, galeria de retratos, gerador de nomes) entregue; export JSON canônico é ação de primeira classe em Vault/conclusão/ficha.
 
 ### Fase 9 — PDF
 - **Objetivo:** seção 19.3. **Arquivos:** `src/adapters/pdfAdapter.ts` (+dep `@react-pdf/renderer`).
@@ -762,6 +762,7 @@ Etapa 9 (Conclusão) e `CharacterSheetPage` ganham: Exportar JSON · Exportar Fo
 - **Objetivo:** garantir que nada das fases anteriores impeça `classLevels[]`.
 - **Tarefas:** ADR documentando a migração futura (`selectedClassId` → `classLevels[{classId, level, subclassId}]`, PB = nível total, slots multiclasse); revisar que engine recebe "classe+nível" como parâmetro (não lê estado global singular).
 - **Aceite:** ADR aprovado; nenhuma função nova das fases 1–9 assume classe única em assinatura onde poderia receber lista.
+- **✅ Status 2026-07-16:** ADR-001 criado em `guides/ADR-001-multiclass.md`; implementação de multiclasse segue fora da v1.
 
 ---
 

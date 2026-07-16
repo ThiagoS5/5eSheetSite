@@ -23,9 +23,9 @@ change is wrong, no matter how well it works:
    `selectCharacterSheetSummary` (or the cached `characterBuild.derivedSheet` through
    selectors). Never recompute sheet values ad hoc.
 3. **`CharacterBuild` is the canonical persisted contract.** Any persisted-shape change
-   requires: schema version bump + migration on **both** persistence paths (builder
-   `migrate` and Vault `normalizeCharacterBuild`) + fixture-based migration tests, in the
-   same PR. Old saves must remain readable forever.
+   requires: schema version bump + shared `migrateCharacterBuild(raw, fromVersion)` coverage
+   for builder persistence, Vault normalization, and canonical import + fixture-based
+   migration tests, in the same PR. Old saves must remain readable forever.
 4. **Source isolation is sacred.** Class, species, background, equipment, feats, and spells
    own independent state; one source never mutates or erases another source's choices.
 5. **External formats never dictate the internal model.** Foundry VTT and PDF are adapters

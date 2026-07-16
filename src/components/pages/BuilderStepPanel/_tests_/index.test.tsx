@@ -15,10 +15,12 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   getBuilderBackgrounds,
   getBuilderClasses,
+  getFeats,
   getBuilderLanguages,
   getBuilderSpecies,
 } from "@/src/services/ruleService";
 import { getItemCatalog } from "@/src/services/itemCatalogService";
+import { getSpellById } from "@/src/services/spellService";
 import { CharacterStoreProvider, useCharacterStore } from "@/src/store/useCharacterStore";
 import { BuilderStepPanel } from "@/src/components/pages/BuilderStepPanel";
 
@@ -225,6 +227,98 @@ describe("BuilderStepPanel", () => {
     expect(screen.getByText("1 class found")).toBeInTheDocument();
   });
 
+  it("filters class options by active sources", () => {
+    const legacyClass = {
+      ...builderData.classes[0],
+      id: "legacy-fighter-phb",
+      name: "Legacy Fighter",
+      source: "PHB",
+    };
+
+    render(
+      <CharacterStoreProvider>
+        <BuilderStepPanel
+          step="classe"
+          {...builderData}
+          classes={[legacyClass, ...builderData.classes]}
+        />
+      </CharacterStoreProvider>,
+    );
+
+    expect(
+      screen.queryByRole("heading", { name: "Legacy Fighter" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("preserves selected choices from disabled sources with a warning", async () => {
+    const legacyClass = {
+      ...builderData.classes[0],
+      id: "legacy-fighter-phb",
+      name: "Legacy Fighter",
+      source: "PHB",
+    };
+
+    render(
+      <CharacterStoreProvider>
+        <LegacySourceSelectionInitializer />
+        <BuilderStepPanel
+          step="classe"
+          {...builderData}
+          classes={[legacyClass, ...builderData.classes]}
+        />
+      </CharacterStoreProvider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Legacy Fighter" })).toBeInTheDocument();
+    });
+    expect(screen.getByLabelText("Disabled source choices")).toHaveTextContent(
+      "Class: Legacy Fighter (PHB)",
+    );
+  });
+
+  it("warns when a saved feat choice uses a disabled source", async () => {
+    const disabledFeat = getFeats().find((feat) => feat.source === "XPHB");
+
+    if (!disabledFeat) {
+      throw new Error("expected at least one XPHB feat");
+    }
+
+    render(
+      <CharacterStoreProvider>
+        <DisabledSourceFeatInitializer featId={disabledFeat.id} />
+        <BuilderStepPanel step="classe" {...builderData} />
+      </CharacterStoreProvider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByLabelText("Disabled source choices")).toHaveTextContent(
+        `Feat: ${disabledFeat.name} (${disabledFeat.source})`,
+      );
+    });
+  });
+
+  it("warns when a saved spell choice uses a disabled source", async () => {
+    const disabledSpell = getSpellById("acid-splash-xphb");
+
+    if (!disabledSpell) {
+      throw new Error("expected Acid Splash from XPHB in the spell catalog");
+    }
+
+    render(
+      <CharacterStoreProvider>
+        <DisabledSourceSpellInitializer spellId={disabledSpell.id} />
+        <BuilderStepPanel step="classe" {...builderData} />
+      </CharacterStoreProvider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByLabelText("Disabled source choices")).toHaveTextContent(
+        `Spell: ${disabledSpell.name} (${disabledSpell.source})`,
+      );
+    });
+  });
+
   it("renders an accessible empty state when no class matches the search", () => {
     render(
       <CharacterStoreProvider>
@@ -244,7 +338,11 @@ describe("BuilderStepPanel", () => {
   });
 
   it("opens class details in the new class modal layout", () => {
-    const firstClass = builderData.classes[0];
+    const firstClass = builderData.classes.find((entry) => entry.source === "XPHB");
+
+    if (!firstClass) {
+      throw new Error("expected at least one active 2024 class");
+    }
 
     render(
       <CharacterStoreProvider>
@@ -790,6 +888,56 @@ function SelectedClassInitializer() {
     setClassFeatureChoice("weapon-mastery", getFighterWeaponMasteries());
     unlockStep(1);
   }, [selectClass, setClassSkillProficiencies, setClassFeatureChoice, unlockStep]);
+
+  return null;
+}
+
+function LegacySourceSelectionInitializer() {
+  const selectClass = useCharacterStore((state) => state.selectClass);
+  const setCreationPreferences = useCharacterStore(
+    (state) => state.setCreationPreferences,
+  );
+
+  useEffect(() => {
+    setCreationPreferences({ activeSources: ["XPHB"], progressionMode: "xp" });
+    selectClass("legacy-fighter-phb");
+  }, [selectClass, setCreationPreferences]);
+
+  return null;
+}
+
+function DisabledSourceFeatInitializer({ featId }: { featId: string }) {
+  const setCreationPreferences = useCharacterStore(
+    (state) => state.setCreationPreferences,
+  );
+  const setLevel = useCharacterStore((state) => state.setLevel);
+  const setLevelAsiOrFeat = useCharacterStore((state) => state.setLevelAsiOrFeat);
+
+  useEffect(() => {
+    setCreationPreferences({ activeSources: ["PHB"], progressionMode: "xp" });
+    setLevel(4);
+    setLevelAsiOrFeat(4, { mode: "feat", featId });
+  }, [featId, setCreationPreferences, setLevel, setLevelAsiOrFeat]);
+
+  return null;
+}
+
+function DisabledSourceSpellInitializer({ spellId }: { spellId: string }) {
+  const setCreationPreferences = useCharacterStore(
+    (state) => state.setCreationPreferences,
+  );
+  const setSpellcastingChoices = useCharacterStore(
+    (state) => state.setSpellcastingChoices,
+  );
+
+  useEffect(() => {
+    setCreationPreferences({ activeSources: ["PHB"], progressionMode: "xp" });
+    setSpellcastingChoices({
+      cantripIds: [spellId],
+      knownSpellIds: [],
+      preparedSpellIds: [],
+    });
+  }, [setCreationPreferences, setSpellcastingChoices, spellId]);
 
   return null;
 }

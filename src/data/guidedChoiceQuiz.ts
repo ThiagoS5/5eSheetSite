@@ -672,6 +672,7 @@ function getRecommendation(
   answerOptionIds: readonly string[],
   limit: number,
   tieBreakOrder: readonly string[],
+  availableItemIds?: readonly string[],
 ): GuidedChoiceQuizRecommendation | null {
   if (
     questions.length < GUIDED_CHOICE_QUESTION_COUNT ||
@@ -706,7 +707,14 @@ function getRecommendation(
     return tieBreakOrder.indexOf(a[0]) - tieBreakOrder.indexOf(b[0]);
   });
 
-  const recommendedIds = ranked.slice(0, limit).map(([id]) => id);
+  const availableIdSet = availableItemIds?.length ? new Set(availableItemIds) : null;
+  const availableRanked = availableIdSet
+    ? ranked.filter(([id]) => availableIdSet.has(id))
+    : ranked;
+  const recommendedIds = availableRanked.slice(0, limit).map(([id]) => id);
+  if (recommendedIds.length === 0) {
+    return null;
+  }
   const buildReasons = (id: string): string[] =>
     (reasons.get(id) ?? [])
       .sort((a, b) => b.weight - a.weight)
@@ -736,18 +744,21 @@ export function createBackgroundQuizSession(
 export function getSpeciesQuizRecommendation(
   questions: readonly GuidedChoiceQuizQuestion[],
   answerOptionIds: readonly string[],
+  availableItemIds?: readonly string[],
 ): GuidedChoiceQuizRecommendation | null {
-  return getRecommendation(questions, answerOptionIds, 1, speciesTieBreakOrder);
+  return getRecommendation(questions, answerOptionIds, 1, speciesTieBreakOrder, availableItemIds);
 }
 
 export function getBackgroundQuizRecommendation(
   questions: readonly GuidedChoiceQuizQuestion[],
   answerOptionIds: readonly string[],
+  availableItemIds?: readonly string[],
 ): GuidedChoiceQuizRecommendation | null {
   return getRecommendation(
     questions,
     answerOptionIds,
     3,
     backgroundTieBreakOrder,
+    availableItemIds,
   );
 }

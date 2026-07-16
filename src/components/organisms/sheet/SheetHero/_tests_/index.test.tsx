@@ -34,6 +34,7 @@ describe("SheetHero", () => {
     render(
       <SheetHero
         summary={summary}
+        onExportForgeFate={() => {}}
         onExportFoundry={() => {}}
         onExportPdf={() => {}}
       />,
@@ -45,11 +46,13 @@ describe("SheetHero", () => {
   });
 
   it("calls the matching export action when an export button is pressed", () => {
+    const onExportForgeFate = vi.fn();
     const onExportFoundry = vi.fn();
     const onExportPdf = vi.fn();
     render(
       <SheetHero
         summary={summary}
+        onExportForgeFate={onExportForgeFate}
         onExportFoundry={onExportFoundry}
         onExportPdf={onExportPdf}
       />,
@@ -57,9 +60,11 @@ describe("SheetHero", () => {
 
     expect(screen.queryByRole("button", { name: /^Export JSON$/ })).not.toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "Export JSON (Foundry)" }));
+    fireEvent.click(screen.getByRole("button", { name: "Export Forge & Fate JSON" }));
+    fireEvent.click(screen.getByRole("button", { name: "Export Foundry VTT JSON" }));
     fireEvent.click(screen.getByRole("button", { name: "Export PDF" }));
 
+    expect(onExportForgeFate).toHaveBeenCalledTimes(1);
     expect(onExportFoundry).toHaveBeenCalledTimes(1);
     expect(onExportPdf).toHaveBeenCalledTimes(1);
   });

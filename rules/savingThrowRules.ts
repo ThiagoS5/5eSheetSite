@@ -66,11 +66,13 @@ export function computeSavingThrows(input: {
   finalAttributes: CharacterAttributes;
   proficientSaveAttributes: AttributeKey[];
   proficiencyBonus: number;
+  savingThrowBonus?: number;
 }): SheetSavingThrow[] {
   const {
     finalAttributes,
     proficientSaveAttributes,
     proficiencyBonus,
+    savingThrowBonus = 0,
   } = input;
   const proficientSaves = new Set(proficientSaveAttributes);
 
@@ -82,7 +84,7 @@ export function computeSavingThrows(input: {
       attributeKey: key,
       label: ATTRIBUTE_LABELS[key],
       abbr: ATTRIBUTE_ABBR[key],
-      modifier: baseMod + (isProficient ? proficiencyBonus : 0),
+      modifier: baseMod + (isProficient ? proficiencyBonus : 0) + savingThrowBonus,
       isProficient,
     };
   });

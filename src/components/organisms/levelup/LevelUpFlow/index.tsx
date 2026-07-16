@@ -16,6 +16,7 @@ import { AsiOrFeatStep } from "@/src/components/organisms/levelup/AsiOrFeatStep"
 import { HitPointsStep } from "@/src/components/organisms/levelup/HitPointsStep";
 import { SpellCatalogPicker } from "@/src/components/organisms/spells/SpellCatalogPicker";
 import { getAbilityModifier } from "@/src/adapters/characterDerivedAdapter";
+import { filterByActiveSources } from "@/src/utils/sourceFiltering";
 import {
   getHighestSpellLevelAvailable,
   isSpellcastingSelectionComplete,
@@ -202,11 +203,16 @@ export function LevelUpFlow({ open, onClose }: LevelUpFlowProps) {
       label: ATTRIBUTE_LABELS[key],
       current: summary.finalAttributes[key] - (contribution[key] ?? 0),
     }));
-    const allFeats = getFeats();
     const featCategory = req.level >= 19 ? "epic-boon" : "general";
     const chosenFeatIds = Object.entries(state.asiOrFeatByLevel)
       .filter(([level, c]) => Number(level) !== req.level && c.mode === "feat")
       .map(([, c]) => (c as { featId: string }).featId);
+    const currentFeatId = value?.mode === "feat" ? value.featId : "";
+    const allFeats = filterByActiveSources(
+      getFeats(),
+      state.creationPreferences?.activeSources ?? ["XPHB"],
+      [currentFeatId],
+    );
     const ctx = {
       level: req.level,
       finalAttributes: summary.finalAttributes,

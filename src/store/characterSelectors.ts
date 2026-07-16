@@ -2,12 +2,12 @@ import type { CharacterBuild } from "@/src/types/characterBuild";
 import type { CharacterSheetSummary } from "@/src/types/builder";
 
 export {
-  deriveStartingGoldPo,
   selectCharacterSheetSummary,
 } from "@/rules/characterSheetSummaryRules";
+export { deriveStartingGoldPo } from "@/rules/startingGoldRules";
 
-// Ficha derivada já computada em cada transição de estado (patchCharacterState).
-// Consumidores de UI devem preferir este selector a recomputar selectCharacterSheetSummary.
+// The derived sheet is already recomputed on each patchCharacterState transition.
+// UI consumers should prefer this selector over recalculating the full summary.
 export function selectDerivedSheet(state: {
   characterBuild: CharacterBuild;
 }): CharacterSheetSummary {

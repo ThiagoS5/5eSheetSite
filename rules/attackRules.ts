@@ -18,6 +18,7 @@ type AttackWeapon = Pick<
   | "damageDice"
   | "damageType"
   | "range"
+  | "weaponBonus"
 >;
 
 const DAMAGE_TYPE_LABELS: Record<string, string> = {
@@ -82,6 +83,7 @@ function deriveWeaponAttack(
   const abilityModifier = getAbilityModifier(input.finalAttributes[abilityKey]);
   const isProficient = hasWeaponProficiency(weapon, input.weaponProficiencies);
   const proficiencyModifier = isProficient ? input.proficiencyBonus : 0;
+  const weaponBonus = weapon.weaponBonus ?? 0;
   const damageDice = weapon.damageDice ?? "1";
   const propertyNotes = (weapon.weaponProperties ?? [])
     .map((property) => PROPERTY_LABELS[property] ?? property)
@@ -89,19 +91,21 @@ function deriveWeaponAttack(
 
   return {
     name: weapon.name,
-    attackBonus: formatSigned(abilityModifier + proficiencyModifier),
-    damage: `${damageDice}${formatSigned(abilityModifier)} ${formatDamageType(weapon.damageType)}`,
+    attackBonus: formatSigned(abilityModifier + proficiencyModifier + weaponBonus),
+    damage: `${damageDice}${formatSigned(abilityModifier + weaponBonus)} ${formatDamageType(weapon.damageType)}`,
     notes: [
       abilityLabel(abilityKey),
       isProficient ? "proficient" : "not proficient",
       ...propertyNotes,
       weapon.range ? `range ${weapon.range}` : undefined,
+      weaponBonus ? `${formatSigned(weaponBonus)} magic weapon` : undefined,
     ].filter((note): note is string => Boolean(note)).join(", "),
     abilityKey,
     isProficient,
     damageBreakdown: [
       { label: "Weapon die", value: damageDice },
       { label: abilityLabel(abilityKey), value: formatSigned(abilityModifier) },
+      ...(weaponBonus ? [{ label: "Magic bonus", value: formatSigned(weaponBonus) }] : []),
     ],
   };
 }

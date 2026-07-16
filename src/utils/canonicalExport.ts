@@ -10,7 +10,7 @@ import {
 } from "@/src/types/export";
 import {
   createSaveId,
-  normalizeCharacterBuild,
+  migrateCharacterBuild,
 } from "@/src/store/characterBuildModel";
 
 export function exportCharacter(
@@ -49,12 +49,12 @@ export type ImportCharacterResult =
   | { ok: false; error: string };
 
 /**
- * Import canônico: valida o envelope com zod e delega migração de schemas
- * antigos ao ponto único `normalizeCharacterBuild`. Sempre gera saveId novo —
- * import nunca sobrescreve um save existente por colisão.
+ * Canonical import validates the envelope with zod and delegates legacy schema
+ * migration to `migrateCharacterBuild`. It always creates a fresh saveId, so
+ * import never overwrites an existing save by collision.
  */
-// Chaves que permitiriam poluição de protótipo se sobrevivessem ao merge do
-// import; um build legítimo nunca as usa, então são descartadas ao desserializar.
+// Keys that could pollute prototypes if they survived import merging. Legitimate
+// character builds never use them, so the JSON reviver drops them while parsing.
 const DANGEROUS_KEYS = new Set(["__proto__", "constructor", "prototype"]);
 
 function parseImportJson(rawJson: string): unknown {
@@ -93,15 +93,19 @@ export function importCharacter(rawJson: string): ImportCharacterResult {
   }
 
   const now = new Date().toISOString();
-  const build = normalizeCharacterBuild({
-    ...(envelope.data.build as Partial<CharacterBuild>),
+  const importedBuild = envelope.data.build as Partial<CharacterBuild>;
+  const legacySchemaVersion =
+    envelope.data.app.schemaVersion as CharacterBuild["exportMetadata"]["schemaVersion"];
+  const build = migrateCharacterBuild({
+    ...importedBuild,
     exportMetadata: {
-      schemaVersion: CHARACTER_BUILD_SCHEMA_VERSION,
+      ...importedBuild.exportMetadata,
+      schemaVersion: legacySchemaVersion,
       saveId: createSaveId(),
       createdAt: now,
       updatedAt: now,
     },
-  });
+  }, envelope.data.app.schemaVersion);
 
   return { ok: true, build };
 }
