@@ -504,6 +504,7 @@ export function getPersonalDetailsRecommendations({
       background,
       characterClass,
       speciesPattern,
+      backgroundPattern,
       classPattern,
       alignment: resolvedAlignment,
       base: { appearance, personality, backstory, notes },
@@ -516,6 +517,7 @@ function buildSuggestionSet({
   background,
   characterClass,
   speciesPattern,
+  backgroundPattern,
   classPattern,
   alignment,
   base,
@@ -524,6 +526,7 @@ function buildSuggestionSet({
   background?: BuilderBackground;
   characterClass?: BuilderClass;
   speciesPattern: SpeciesPattern;
+  backgroundPattern: BackgroundPattern;
   classPattern?: ClassPattern;
   alignment: string;
   base: {
@@ -537,59 +540,454 @@ function buildSuggestionSet({
   const backgroundName = background?.name ?? "chosen background";
   const className = characterClass?.name ?? "adventuring role";
   const speciesGuard = getSpeciesGuard(species);
-  const classNote = classPattern?.notes ?? "Their current goal should give the DM one usable hook.";
+  const context: SuggestionContext = {
+    speciesName,
+    backgroundName,
+    className,
+    alignment,
+    speciesGuard,
+    speciesHooks: getSpeciesLoreHooks(species, speciesPattern),
+    backgroundHooks: getBackgroundLoreHooks(background, backgroundPattern),
+    classHooks: getClassLoreHooks(characterClass, classPattern),
+    alignmentHooks: getAlignmentHooks(alignment),
+  };
 
   return {
-    aparencia: expandSuggestions(base.appearance, (tone, detail) =>
-      `${tone} Show the ${speciesName} profile through ${detail}: ${speciesPattern.appearance} Their ${backgroundName} past should still be readable at first glance.`,
+    aparencia: composeSuggestions(base.appearance, context, appearanceDetails, (part) =>
+      `${part.opening}, ${part.speciesHook} shapes the silhouette through ${part.detail}. Let the ${part.backgroundName} past show as ${part.backgroundHook}, while ${part.alignmentHook}.`,
     ),
-    personalidade: expandSuggestions(base.personality, (tone, detail) =>
-      `${tone} As a ${backgroundName}, they reveal ${detail}; as a ${speciesName}, ${speciesGuard} Their ${alignment} choices guide what they protect, refuse, or risk.`,
+    personalidade: composeSuggestions(base.personality, context, personalityDetails, (part) =>
+      `${part.opening}, ${part.backgroundHook} becomes a habit: ${part.detail}. As a ${part.speciesName}, ${part.speciesGuard} Under ${part.alignment} pressure, ${part.alignmentHook}.`,
     ),
-    historia: expandSuggestions(base.backstory, (tone, detail) =>
-      `${tone} Their ${backgroundName} life left ${detail}, and their ${speciesName} history changes how the wound is carried. A ${alignment} decision put them on the road as a ${className}.`,
+    historia: composeSuggestions(base.backstory, context, historyDetails, (part) =>
+      `${part.opening}, ${part.backgroundHook} did more than mark the past; it taught them ${part.detail}. Their ${part.speciesName} history adds ${part.speciesHook}, and the ${part.className} path adds ${part.classHook}. A ${part.alignment} choice decides what they now protect, exploit, or refuse.`,
     ),
-    notas: expandSuggestions(base.notes, (tone, detail) =>
-      `${tone} Keep one table-ready note about ${detail}. ${classNote} Tie it to ${backgroundName}, ${speciesName} lore, and the pressure of ${alignment}.`,
+    notas: composeSuggestions(base.notes, context, noteDetails, (part) =>
+      `${part.opening}, write one table-ready note about ${part.detail}. Connect ${part.classHook} to ${part.backgroundName}, anchor it in ${part.speciesHook}, and let ${part.alignmentHook}.`,
     ),
   };
 }
 
-function expandSuggestions(
+interface SuggestionContext {
+  speciesName: string;
+  backgroundName: string;
+  className: string;
+  alignment: string;
+  speciesGuard: string;
+  speciesHooks: string[];
+  backgroundHooks: string[];
+  classHooks: string[];
+  alignmentHooks: string[];
+}
+
+interface SuggestionPart extends SuggestionContext {
+  opening: string;
+  detail: string;
+  speciesHook: string;
+  backgroundHook: string;
+  classHook: string;
+  alignmentHook: string;
+}
+
+const suggestionOpenings = [
+  "At first glance",
+  "Under torchlight",
+  "In crowded rooms",
+  "Before danger",
+  "After mercy",
+  "When cornered",
+  "On festival nights",
+  "During negotiations",
+  "Near old ruins",
+  "Around children",
+  "With bitter rivals",
+  "Among trusted allies",
+  "Beside shrines",
+  "Inside taverns",
+  "On watch",
+  "Under hard rain",
+  "Across market stalls",
+  "Before spellwork",
+  "After betrayal",
+  "When praised",
+  "Facing nobles",
+  "Near graves",
+  "Crossing borders",
+  "During repairs",
+  "Before oaths",
+  "After failures",
+  "In careful silence",
+  "At crossroads",
+  "When accused",
+  "Beside campfires",
+  "During storms",
+  "At city gates",
+  "Among strangers",
+  "When wounded",
+  "After bargains",
+  "Inside libraries",
+  "At sea",
+  "In wild country",
+  "Near closed doors",
+  "Over shared meals",
+  "Before dawn",
+  "Past midnight",
+  "With old friends",
+  "Around authority",
+  "During celebrations",
+  "After lost causes",
+  "When challenged",
+  "At the threshold",
+  "Behind a smile",
+  "Without witnesses",
+];
+
+const appearanceDetails = [
+  "one unmistakable feature no disguise or armor quite hides",
+  "a carefully chosen color, tool, scar, or keepsake",
+  "a posture learned from danger rather than fashion",
+  "a visible contradiction between polish and survival",
+  "small ritual marks that make strangers look twice",
+  "equipment arranged like a memory palace",
+  "a silhouette that tells the table what they fear losing",
+  "a travel habit that has become part of the body",
+  "hands, eyes, or voice carrying the first clue",
+  "clothes that reveal who paid, who lied, or who left",
+];
+
+const personalityDetails = [
+  "answering kindness with suspicion before choosing trust",
+  "testing every promise for hidden cost",
+  "making jokes only when the room becomes dangerous",
+  "protecting one taboo even when it costs advantage",
+  "collecting names, exits, and favors in the same breath",
+  "turning shame into preparation instead of confession",
+  "refusing comfort that feels like a trap",
+  "showing mercy in a way that still looks practical",
+  "letting one person see the fear behind the performance",
+  "treating beauty, truth, and leverage as separate tools",
+];
+
+const historyDetails = [
+  "which lie became useful, which truth became expensive, and who still remembers",
+  "why the road is safer than the place that should have been home",
+  "what price they paid before they understood the contract",
+  "how one rescued stranger became a liability or a vow",
+  "why a respectable name is more dangerous than a criminal one",
+  "which object, omen, or witness can still expose the old wound",
+  "what they learned to fake before learning what they actually wanted",
+  "how survival became a philosophy instead of a habit",
+  "why the next job feels like freedom and punishment at once",
+  "which mercy ruined a perfect plan",
+];
+
+const noteDetails = [
+  "a recurring phrase the DM can hand back under pressure",
+  "a contact who knows the old version of the character",
+  "a taboo that blocks one easy solution",
+  "a physical tell that appears before a risky choice",
+  "a keepsake with a practical use and an emotional cost",
+  "a public rumor that is half true for the wrong reason",
+  "a private rule that explains one brave mistake",
+  "a place name that should make the player sit forward",
+  "a debt that can be called in without warning",
+  "a harmless habit that becomes evidence later",
+];
+
+function composeSuggestions(
   first: string,
-  build: (tone: string, detail: string) => string,
+  context: SuggestionContext,
+  details: string[],
+  build: (part: SuggestionPart) => string,
 ): string[] {
-  const tones = [
-    "Quietly",
-    "Openly",
-    "Under pressure",
-    "Around strangers",
-    "With allies",
-    "When afraid",
-    "After a victory",
-  ];
-  const details = [
-    "a debt that still has a name",
-    "a ritual they repeat before danger",
-    "a keepsake they never explain fully",
-    "a boundary they will not cross",
-    "a lesson learned from loss",
-    "a skill that once saved someone",
-    "a contradiction they try to hide",
-  ];
   const suggestions = [first];
 
-  for (const tone of tones) {
-    for (const detail of details) {
-      if (suggestions.length >= SUGGESTION_COUNT) {
-        return suggestions;
-      }
-
-      suggestions.push(build(tone, detail));
-    }
+  for (let index = 0; suggestions.length < SUGGESTION_COUNT; index += 1) {
+    suggestions.push(
+      build({
+        ...context,
+        opening: pick(suggestionOpenings, index),
+        detail: pick(details, index, 2),
+        speciesHook: pick(context.speciesHooks, index, 1),
+        backgroundHook: pick(context.backgroundHooks, index, 3),
+        classHook: pick(context.classHooks, index, 5),
+        alignmentHook: pick(context.alignmentHooks, index, 7),
+      }),
+    );
   }
 
   return suggestions;
+}
+
+function pick<T>(items: T[], index: number, offset = 0): T {
+  return items[(index + offset) % items.length];
+}
+
+function getSpeciesLoreHooks(
+  species: BuilderSpecies | undefined,
+  pattern: SpeciesPattern,
+): string[] {
+  switch (species?.id) {
+    case "elf-xphb":
+      return [
+        "Trance memories making old grief feel freshly polished",
+        "long-lived patience that treats mortal urgency as a warning sign",
+        "ancestral art, wild magic, or court etiquette carried in tiny gestures",
+        "ageless poise cracked only by beauty, insult, or unfinished duty",
+      ];
+    case "hexblood-rhw":
+      return [
+        "their living crown tightening near broken promises",
+        "an old fey bargain leaving omens in mirrors, milk, or rainwater",
+        "hag-touched beauty making kindness feel slightly dangerous",
+        "a briar mark blooming whenever a confident lie enters the room",
+        "the scent of moss, iron, and a bargain not yet paid",
+      ];
+    case "changeling-efa":
+      return [
+        "one unchanged feature acting as a private anchor",
+        "a borrowed face chosen for safety rather than vanity",
+        "the habit of rehearsing identity before entering a room",
+        "a true voice kept for people who have earned the risk",
+      ];
+    case "reborn-rhw":
+      return [
+        "returned memories arriving as fragments instead of answers",
+        "ritual scars that make the body read like a sealed document",
+        "stillness that unnerves healers, priests, and former friends",
+        "a missing death story that keeps demanding witnesses",
+      ];
+    case "warforged-efa":
+      return [
+        "maker marks placed where a heartbeat would be expected",
+        "repair lines treated like biography rather than damage",
+        "the question of whether adornment is camouflage or selfhood",
+        "a constructed body learning which comforts are chosen, not installed",
+      ];
+    case "kalashtar-efa":
+      return [
+        "a second presence guiding instinct before words arrive",
+        "dream-memory discipline visible in posture and restraint",
+        "quiet resistance to invasive thoughts, bargains, or easy certainty",
+        "a calm gaze that seems to consult someone just out of sight",
+      ];
+    case "dragonborn-xphb":
+      return [
+        "scale patterns turning ancestry into a visible declaration",
+        "elemental tells escaping through breath, temper, or ritual",
+        "clan pride balanced against the need to become more than a name",
+        "a draconic silhouette that makes reputation arrive first",
+      ];
+    case "dwarf-xphb":
+      return [
+        "craft marks and clan memory carried with stubborn precision",
+        "a grudge polished into practical caution",
+        "stone-sense shaping how they judge homes, promises, and people",
+        "jewelry or braids recording debts no ledger could hold",
+      ];
+    case "gnome-xphb":
+      return [
+        "restless curiosity turning every quiet moment into a tiny experiment",
+        "ink stains and clever gadgets betraying the next question",
+        "a bright laugh used to test danger before naming it",
+        "small hands always mapping hinges, seams, locks, and exits",
+      ];
+    case "goliath-xphb":
+      return [
+        "trophy scars measured against climbs, contests, and storms",
+        "a mountain-born respect for effort over title",
+        "stone-like markings that make endurance visible",
+        "the habit of turning challenge into introduction",
+      ];
+    case "halfling-xphb":
+      return [
+        "ordinary courage worn so casually strangers underestimate it",
+        "road dust, hospitality, and a hard line about bullies",
+        "small comforts protected with startling ferocity",
+        "luck treated as a relationship rather than a miracle",
+      ];
+    case "tiefling-xphb":
+      return [
+        "horns, tail, or infernal marks answered with practiced composure",
+        "a dramatic silhouette built before strangers can define them",
+        "old suspicion converted into social armor",
+        "a private answer to every public superstition",
+      ];
+    default:
+      return [
+        pattern.appearance,
+        "species lore changing posture, taboos, and first impressions",
+        "family, homeland, or body history making one ordinary habit specific",
+        "a visible feature that creates story before dialogue begins",
+      ];
+  }
+}
+
+function getBackgroundLoreHooks(
+  background: BuilderBackground | undefined,
+  pattern: BackgroundPattern,
+): string[] {
+  switch (background?.id) {
+    case "charlatan-xphb":
+      return [
+        "a false identity with its own friends, enemies, and unpaid rooms",
+        "the mark who believed the con too sincerely",
+        "an alias registered in a city they cannot safely revisit",
+        "debts hidden under perfume, forged seals, and perfect handwriting",
+        "the habit of hearing what a room wants before deciding what to sell",
+      ];
+    case "acolyte-xphb":
+      return [
+        "a temple lesson that still interrupts easy choices",
+        "a sacred duty complicated by doubt rather than erased by it",
+        "a ritual phrase that survives even when faith wavers",
+        "a community they protect, disappoint, or secretly question",
+      ];
+    case "criminal-xphb":
+      return [
+        "an underworld contact who knows the old name",
+        "a rule from the street that matters more than law",
+        "one job that ended with mercy where profit should have been",
+        "a hidden route, fence, or favor that can become trouble",
+      ];
+    case "haunted-one-rhw":
+      return [
+        "a surviving horror with a sign the character cannot ignore",
+        "warding habits learned from fear and refined into discipline",
+        "compassion for victims sharpened by private dread",
+        "a voice, symbol, or threshold that still changes the room",
+      ];
+    case "wayfarer-xphb":
+      return [
+        "a road lesson about kindness that never felt sentimental",
+        "the instinct to leave before comfort becomes a cage",
+        "a bridge, alley, or shrine that feels more honest than home",
+        "a survival habit that now reads as quiet generosity",
+      ];
+    default:
+      return [
+        pattern.backstory,
+        pattern.personality,
+        "a past profession leaving useful contacts, debts, and habits",
+        "one ordinary routine made sharp by the life they came from",
+      ];
+  }
+}
+
+function getClassLoreHooks(
+  characterClass: BuilderClass | undefined,
+  pattern: ClassPattern | undefined,
+): string[] {
+  switch (characterClass?.id) {
+    case "artificer-efa":
+      return [
+        "a prototype that only works when the stakes become personal",
+        "a repair scar etched into their favorite tool",
+        "maker logic turning fear into schematics",
+        "an invention named after the first person it failed to save",
+        "tool marks revealing what they value before they say it",
+      ];
+    case "rogue-xphb":
+      return [
+        "a rule they never break unless one person is in danger",
+        "lockpicks, exits, and motives checked in the same glance",
+        "timing learned from hunger, pursuit, or impossible odds",
+        "a clean getaway they regret more than a failed one",
+      ];
+    case "cleric-xphb":
+      return [
+        "a rite performed before danger even when doubt is louder",
+        "a holy symbol treated like burden and shelter at once",
+        "mercy measured against doctrine instead of convenience",
+        "a prayer that changes meaning after every hard choice",
+      ];
+    case "druid-xphb":
+      return [
+        "seasonal thinking that judges actions by what they make possible later",
+        "an animal sign or natural law they refuse to betray",
+        "a place remembered as teacher rather than property",
+        "wild patience that can look like indifference until it moves",
+      ];
+    case "wizard-xphb":
+      return [
+        "a margin note that became more dangerous than the spell",
+        "study habits built from awe, fear, and pride",
+        "a forbidden question that makes ignorance feel unbearable",
+        "prepared magic organized like an argument with the future",
+      ];
+    default:
+      return [
+        pattern?.notes ?? "their current goal giving the DM one usable hook",
+        pattern?.personality ?? "their adventuring role changing how they solve pressure",
+        "a class feature expressed as habit before it becomes mechanics",
+        "training, talent, or power leaving a visible table cue",
+      ];
+  }
+}
+
+function getAlignmentHooks(alignment: string): string[] {
+  const lower = alignment.toLowerCase();
+
+  if (lower.includes("chaotic") && lower.includes("neutral")) {
+    return [
+      "freedom matters more than reputation",
+      "loyalty stays personal instead of institutional",
+      "rules become tools, warnings, or targets depending on who is harmed",
+      "curiosity wins whenever safety and control start sounding alike",
+    ];
+  }
+
+  if (lower.includes("chaotic") && lower.includes("good")) {
+    return [
+      "mercy outruns procedure when someone vulnerable is cornered",
+      "authority proves itself before receiving obedience",
+      "personal kindness matters more than clean approval",
+      "a broken rule feels justified only when it protects someone real",
+    ];
+  }
+
+  if (lower.includes("lawful") && lower.includes("good")) {
+    return [
+      "duty and compassion argue until both become sharper",
+      "promises remain binding even when no one is watching",
+      "mercy seeks structure instead of impulse",
+      "a hard order demands conscience before obedience",
+    ];
+  }
+
+  if (lower.includes("lawful")) {
+    return [
+      "order becomes the tool they trust when emotions run hot",
+      "contracts, oaths, or traditions reveal what they will not cheapen",
+      "procedure protects them from becoming the threat",
+      "reputation matters because it keeps promises legible",
+    ];
+  }
+
+  if (lower.includes("evil")) {
+    return [
+      "need, pride, or revenge justify costs they still notice",
+      "mercy appears only when it buys leverage or protects an obsession",
+      "trust becomes a scarce resource spent with calculation",
+      "power feels safer than being understood",
+    ];
+  }
+
+  if (lower.includes("good")) {
+    return [
+      "kindness remains practical instead of naive",
+      "risk makes sense when another person would otherwise pay it",
+      "compassion survives suspicion, hunger, and fear",
+      "a small mercy becomes the clearest proof of who they are",
+    ];
+  }
+
+  return [
+    `${alignment} instincts make survival, loyalty, and curiosity negotiate every choice`,
+    `${alignment} pressure turn certainty into a question the table can test`,
+    `${alignment} choices show what they protect when reward and safety split`,
+    `${alignment} priorities decide which debt, truth, or person comes first`,
+  ];
 }
 
 function getSpeciesGuard(species: BuilderSpecies | undefined): string {

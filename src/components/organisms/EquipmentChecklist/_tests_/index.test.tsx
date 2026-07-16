@@ -180,6 +180,35 @@ describe("EquipmentChecklist", () => {
     expect(screen.getByText("Dagger")).toBeInTheDocument();
   });
 
+  it("does not render class starting gold from an unselected offered-items fallback", () => {
+    const classWithFallbackGold: BuilderClass = {
+      ...selectedClass,
+      startingEquipmentPackages: [
+        {
+          id: "A",
+          label: "Option A",
+          summary:
+            "Studded Leather Armor, Dagger, Thieves' Tools, Tinker's Tools, Dungeoneer's Pack and 150 GP",
+          goldValue: 15000,
+          items: [],
+        },
+      ],
+    };
+
+    render(
+      <EquipmentChecklist
+        selectedClass={classWithFallbackGold}
+        choicesBySource={{ class: { mode: "items", selectedOptionId: null } }}
+        onSourceModeChange={vi.fn()}
+        onSourceOptionChange={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByText("Studded Leather Armor")).toBeInTheDocument();
+    expect(screen.getByText(/Dungeoneer's Pack/)).toBeInTheDocument();
+    expect(screen.queryByText(/150 GP/)).toBeNull();
+  });
+
   const selectedBackground: BuilderBackground = {
     id: "aberrant-heir-xphb",
     name: "Aberrant Heir",

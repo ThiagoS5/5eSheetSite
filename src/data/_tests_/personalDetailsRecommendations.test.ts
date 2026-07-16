@@ -6,6 +6,10 @@ import {
   getBuilderSpecies,
 } from "@/src/services/ruleService";
 
+function uniqueOpeningCount(entries: string[]): number {
+  return new Set(entries.map((entry) => entry.split(/\s+/).slice(0, 2).join(" "))).size;
+}
+
 describe("personalDetailsRecommendations", () => {
   it("creates distinct name and roleplay patterns for an Elf Acolyte", () => {
     const species = getBuilderSpecies().find((entry) => entry.id === "elf-xphb");
@@ -112,5 +116,29 @@ describe("personalDetailsRecommendations", () => {
     const joined = recommendations.suggestions.personalidade.join(" ").toLowerCase();
     expect(joined).not.toMatch(/sleep|slept|sleepwalk|sleepwalking|dreamless sleep/);
     expect(recommendations.suggestions.historia.join(" ")).toContain("Chaotic Good");
+  });
+
+  it("creates varied, lore-aware narrative suggestions", () => {
+    const species = getBuilderSpecies().find((entry) => entry.id === "hexblood-rhw");
+    const background = getBuilderBackgrounds().find(
+      (entry) => entry.id === "charlatan-xphb",
+    );
+    const characterClass = getBuilderClasses().find(
+      (entry) => entry.id === "artificer-efa",
+    );
+
+    const recommendations = getPersonalDetailsRecommendations({
+      species,
+      background,
+      characterClass,
+      alignment: "Chaotic Neutral",
+    });
+    const joinedHistory = recommendations.suggestions.historia.join(" ");
+
+    expect(uniqueOpeningCount(recommendations.suggestions.historia)).toBeGreaterThanOrEqual(20);
+    expect(joinedHistory).toMatch(/fey|bargain|living crown|omen/i);
+    expect(joinedHistory).toMatch(/false identity|alias|con|mark|debt/i);
+    expect(joinedHistory).toMatch(/prototype|invention|repair|tool|maker/i);
+    expect(joinedHistory).toContain("Chaotic Neutral");
   });
 });

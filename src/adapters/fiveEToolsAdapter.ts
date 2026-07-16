@@ -775,14 +775,12 @@ function normalizeEquipmentPackages(
       .filter((item) => item.value === undefined)
       .map((item) => `${item.quantity > 1 ? `${item.quantity} ` : ""}${item.label}`)
       .join(", ");
-    const goldSummary = goldValue > 0 ? `${formatCopperAsGold(goldValue)} GP` : "";
-
     return {
       id,
       label: `Option ${id}`,
       items: normalizedItems,
       goldValue,
-      summary: [itemSummary, goldSummary].filter(Boolean).join(" and "),
+      summary: itemSummary,
     };
   });
 }

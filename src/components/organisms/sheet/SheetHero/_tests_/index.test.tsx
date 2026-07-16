@@ -45,6 +45,29 @@ describe("SheetHero", () => {
     expect(screen.getByText("27")).toBeInTheDocument();
   });
 
+  it("keeps the identity centered in the same axis as Armor Class", () => {
+    render(
+      <SheetHero
+        summary={summary}
+        onExportForgeFate={() => {}}
+        onExportFoundry={() => {}}
+        onExportPdf={() => {}}
+      />,
+    );
+
+    expect(screen.getByTestId("sheet-hero-topbar")).toHaveClass(
+      "grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]",
+    );
+    expect(screen.getByTestId("sheet-hero-identity")).toHaveClass(
+      "justify-self-center",
+      "text-center",
+    );
+    expect(screen.getByTestId("sheet-hero-combat-stats")).toHaveClass(
+      "grid-cols-1",
+      "min-[440px]:grid-cols-[88px_172px_88px]",
+    );
+  });
+
   it("calls the matching export action when an export button is pressed", () => {
     const onExportForgeFate = vi.fn();
     const onExportFoundry = vi.fn();
