@@ -27,7 +27,7 @@ describe("ImportCharacterButton", () => {
     build.draft.description.nome = "Imported Hero";
     render(<ImportCharacterButton />);
 
-    const input = screen.getByLabelText(/import character file/i);
+    const input = screen.getByLabelText(/import foundry character file/i);
     await user.upload(input, makeFile(serializeCharacterExport(build)));
 
     await waitFor(async () => {
@@ -38,12 +38,31 @@ describe("ImportCharacterButton", () => {
     });
   });
 
+  it("imports a Foundry actor export into the vault", async () => {
+    const user = userEvent.setup();
+    render(<ImportCharacterButton />);
+
+    const input = screen.getByLabelText(/import foundry character file/i);
+    await user.upload(input, makeFile(JSON.stringify(createFoundryActorFixture())));
+
+    await waitFor(async () => {
+      const characters = await listCharacters();
+      const imported = characters.find(
+        (entry) => entry.nome === "Hatrian Heaven (O Comerciante)",
+      );
+
+      expect(imported).toBeDefined();
+      expect(imported?.classe).toBe("Sorcerer");
+      expect(imported?.species).toBe("Human");
+    });
+  });
+
   it("shows the import error and does not write to the vault on invalid files", async () => {
     const user = userEvent.setup();
     render(<ImportCharacterButton />);
     const before = (await listCharacters()).length;
 
-    const input = screen.getByLabelText(/import character file/i);
+    const input = screen.getByLabelText(/import foundry character file/i);
     await user.upload(input, makeFile("{not json"));
 
     await waitFor(() =>
@@ -62,7 +81,7 @@ describe("ImportCharacterButton", () => {
     const huge = makeFile("{}");
     Object.defineProperty(huge, "size", { value: 3 * 1024 * 1024 });
 
-    const input = screen.getByLabelText(/import character file/i);
+    const input = screen.getByLabelText(/import foundry character file/i);
     await user.upload(input, huge);
 
     await waitFor(() =>
@@ -71,3 +90,44 @@ describe("ImportCharacterButton", () => {
     expect((await listCharacters()).length).toBe(before);
   });
 });
+
+function createFoundryActorFixture() {
+  return {
+    name: "Hatrian Heaven (O Comerciante)",
+    type: "character",
+    system: {
+      details: {
+        race: "race-id",
+        background: "background-id",
+        originalClass: "class-id",
+      },
+      abilities: {
+        str: { value: 8 },
+        dex: { value: 13 },
+        con: { value: 12 },
+        int: { value: 16 },
+        wis: { value: 10 },
+        cha: { value: 20 },
+      },
+      attributes: { hp: { value: 62, max: null, temp: 0 } },
+      currency: { cp: 0, sp: 0, ep: 0, gp: 50, pp: 0 },
+      skills: {},
+      traits: { languages: { value: ["common", "elvish"] } },
+    },
+    items: [
+      { _id: "race-id", name: "Human", type: "race", system: { identifier: "human" } },
+      {
+        _id: "class-id",
+        name: "Sorcerer",
+        type: "class",
+        system: { identifier: "sorcerer", levels: 10 },
+      },
+      {
+        _id: "background-id",
+        name: "Merchant",
+        type: "background",
+        system: { identifier: "merchant" },
+      },
+    ],
+  };
+}

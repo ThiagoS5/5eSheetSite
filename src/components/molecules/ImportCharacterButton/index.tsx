@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { Upload } from "lucide-react";
 import { toast } from "sonner";
 import { importCharacter } from "@/src/utils/canonicalExport";
+import { importFoundryCharacter } from "@/src/adapters/foundryImportAdapter";
 import { saveCharacter } from "@/src/services/characterService";
 import { ActionBtn } from "@/src/components/atoms/ActionBtn";
 
@@ -20,16 +21,16 @@ export function ImportCharacterButton() {
 
     setError(null);
 
-    // Um build normal tem poucos KB; recusar arquivos enormes antes de ler evita
-    // travar a aba com JSON.parse de centenas de MB (DoS de memória no cliente).
+    // Normal builds are small; reject huge files before reading to avoid
+    // blocking the tab with a multi-hundred-MB JSON.parse.
     if (file.size > MAX_IMPORT_BYTES) {
-      const message = "This file is too large to be a Forge & Fate character.";
+      const message = "This file is too large to be a character export.";
       setError(message);
       toast.error(message);
       return;
     }
 
-    const result = importCharacter(await file.text());
+    const result = importCharacterFile(await file.text());
 
     if (!result.ok) {
       setError(result.error);
@@ -49,7 +50,7 @@ export function ImportCharacterButton() {
         ref={inputRef}
         type="file"
         accept="application/json,.json"
-        aria-label="Import character file"
+        aria-label="Import Foundry character file"
         className="sr-only"
         onChange={(event) => {
           void handleFile(event.target.files?.[0]);
@@ -58,7 +59,7 @@ export function ImportCharacterButton() {
       />
       <ActionBtn intent="secondary" onClick={() => inputRef.current?.click()}>
         <Upload aria-hidden="true" className="mr-2 h-4 w-4" />
-        Import Character
+        Import Sheet (Foundry)
       </ActionBtn>
       {error ? (
         <p role="alert" className="text-xs leading-5 text-accent">
@@ -67,4 +68,25 @@ export function ImportCharacterButton() {
       ) : null}
     </div>
   );
+}
+
+function importCharacterFile(rawJson: string) {
+  const canonicalResult = importCharacter(rawJson);
+  if (canonicalResult.ok) {
+    return canonicalResult;
+  }
+
+  const foundryResult = importFoundryCharacter(rawJson);
+  if (foundryResult.ok) {
+    return foundryResult;
+  }
+
+  if (canonicalResult.error === "The file is not valid JSON.") {
+    return canonicalResult;
+  }
+
+  return {
+    ok: false as const,
+    error: "The file is not a Forge & Fate or Foundry VTT character export.",
+  };
 }

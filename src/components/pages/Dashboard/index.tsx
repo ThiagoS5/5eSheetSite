@@ -22,6 +22,7 @@ import { useState, useSyncExternalStore, type ReactNode } from "react";
 import { Button } from "@/src/components/ui/button";
 import { Card, CardContent } from "@/src/components/ui/card";
 import { ImportCharacterButton } from "@/src/components/molecules/ImportCharacterButton";
+import { builderStepNavigation } from "@/src/components/templates/builderStepNavigation";
 import {
   CHARACTER_SAVES_CHANGED_EVENT,
   deleteCharacter,
@@ -45,7 +46,7 @@ import { quickBuildProfiles, type QuickBuildProfile } from "@/src/data/quickBuil
 import { useCharacterStore } from "@/src/store/useCharacterStore";
 import { serializeCharacterExport } from "@/src/utils/canonicalExport";
 import type { CharacterBuild, CreationPreferences } from "@/src/types/characterBuild";
-import type { BuilderBackground } from "@/src/types/builder";
+import type { BuilderBackground, BuilderStepSlug } from "@/src/types/builder";
 import type { AttributeBonuses, AttributeKey } from "@/src/types/dnd";
 import type { Character } from "@/src/types/Character";
 
@@ -56,18 +57,7 @@ const missingCharacterName = "Unnamed Character";
 const missingSpeciesLabel = "Species pending";
 const missingClassLabel = "Class pending";
 const missingBackgroundLabel = "Background pending";
-const builderStepOrder = [
-  "classe",
-  "recursos-classe",
-  "subclasse",
-  "antecedente",
-  "especie",
-  "detalhes-especie",
-  "atributos",
-  "equipamento",
-  "descricao",
-  "conclusao",
-] as const;
+const builderStepOrder = builderStepNavigation.map((step) => step.slug);
 
 const primaryNavigation = [
   { label: "Vault", href: "/", active: true },
@@ -1124,7 +1114,7 @@ function getCurrentStepLabel(currentStepHref: string | undefined): string {
 
 function getCurrentStepSlug(
   currentStepHref: string | undefined,
-): (typeof builderStepOrder)[number] | undefined {
+): BuilderStepSlug | undefined {
   if (!currentStepHref) {
     return undefined;
   }

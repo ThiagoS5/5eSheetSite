@@ -71,7 +71,10 @@ describe("Dashboard", () => {
         screen.getByRole("heading", { name: "Create your first character" }),
       ).toBeInTheDocument();
     });
-    expect(screen.getByLabelText(/import character file/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/import foundry character file/i)).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /Import Sheet \(Foundry\)/i }),
+    ).toBeInTheDocument();
   });
 
   it("renders saved local characters and the add-new card when populated", async () => {
@@ -108,7 +111,10 @@ describe("Dashboard", () => {
     await waitFor(() => {
       expect(screen.getByRole("heading", { name: "Character Vault" })).toBeInTheDocument();
     });
-    expect(screen.getByLabelText(/import character file/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/import foundry character file/i)).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /Import Sheet \(Foundry\)/i }),
+    ).toBeInTheDocument();
   });
 
   it("creates a new local save and routes continue actions to the saved step", async () => {
