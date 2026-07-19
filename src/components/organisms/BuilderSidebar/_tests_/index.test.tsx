@@ -17,6 +17,7 @@ vi.mock("@/src/store/useCharacterStore", () => ({
     selector({
       ruleset: "2024",
       level: 1,
+      externalLevelChoiceBaseline: 0,
       selectedSpeciesId: "",
       selectedClassId: "fighter-xphb",
       selectedSubclassId: "",

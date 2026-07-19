@@ -10,10 +10,12 @@ import type {
 } from "@/src/types/dnd";
 import type { CharacterSpellcastingChoices } from "@/src/types/spells";
 
-// v13: draft.description ganhou historia; playState ganhou campaignLog (defaulted migration).
-// v14: novo step "subclasse" inserido após "recursos-classe"; maxUnlockedStepIndex de builds
-//      antigos é deslocado +1 quando já passava do ponto de inserção.
-export const CHARACTER_BUILD_SCHEMA_VERSION = 14;
+// v13: draft.description added historia; playState added campaignLog (defaulted migration).
+// v14: added the "subclasse" step after "recursos-classe"; maxUnlockedStepIndex from
+//      older builds shifts +1 when it already passed the insertion point.
+// v15: progression can mark externally imported level choices as resolved through
+//      a baseline level without inventing Forge & Fate ASI/feat history.
+export const CHARACTER_BUILD_SCHEMA_VERSION = 15;
 
 export interface CoinPouch {
   pc: number;
@@ -84,6 +86,7 @@ export interface CharacterBuildLevelChoiceState {
 
 export interface CharacterBuildProgression {
   level: number;
+  externalLevelChoiceBaseline: number;
   levelChoices: Record<string, CharacterBuildLevelChoiceState>;
 }
 

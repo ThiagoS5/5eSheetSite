@@ -31,7 +31,7 @@ change is wrong, no matter how well it works:
 5. **External formats never dictate the internal model.** Foundry VTT and PDF are adapters
    consuming `CharacterSheetSummary`; canonical JSON (`ForgeFateExportV1`) is the only
    round-trip format.
-6. **The builder step sequence is canonical** (10 steps as of schema v14: classe,
+6. **The builder step sequence is canonical** (10 canonical steps; dedicated subclass step introduced in schema v14: classe,
    recursos-classe, subclasse, antecedente, especie, detalhes-especie, atributos,
    equipamento, descricao, conclusao). Never remove, reorder, or bypass steps; adding one
    requires updating `builderStepNavigation.ts`, validation, and these guides together.

@@ -128,6 +128,10 @@ function isRequirementResolved(
   state: CharacterBuilderState,
   validSubclassIds: Set<string>,
 ): boolean {
+  if (isExternallyResolvedLevelRequirement(req, state)) {
+    return true;
+  }
+
   if (req.kind === "subclass") {
     return state.selectedSubclassId !== "" && validSubclassIds.has(state.selectedSubclassId);
   }
@@ -141,6 +145,15 @@ function isRequirementResolved(
   return (state.classFeatureChoices[req.id] ?? []).length === req.count;
 }
 
+export function isExternallyResolvedLevelRequirement(
+  req: LevelChoiceRequirement,
+  state: CharacterBuilderState,
+): boolean {
+  return (
+    req.kind !== "subclass" &&
+    req.level <= Math.min(state.level, state.externalLevelChoiceBaseline)
+  );
+}
 
 export function getPendingRequirements(
   state: CharacterBuilderState,

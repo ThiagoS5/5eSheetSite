@@ -36,7 +36,7 @@ Next.js 16 has breaking changes. Before touching routes, layouts, metadata, or f
 
 ### Complete
 
-- `CharacterBuild` schema v14 with `draft`, `progression`, `choices`, `playState`, `derivedSheet`, and `exportMetadata`.
+- `CharacterBuild` schema v15 with `draft`, `progression`, `choices`, `playState`, `derivedSheet`, and `exportMetadata`.
 - Local Vault with create/resume/duplicate/delete/search/import/status and direct Forge & Fate JSON export for ready characters.
 - 10-step builder with validation and protected navigation.
 - Guided/standard/quick-build creation modes.
@@ -50,6 +50,7 @@ Next.js 16 has breaking changes. Before touching routes, layouts, metadata, or f
 - Real inventory: quantities, item catalog, equip/unequip, armor/shield AC, magic AC/save/weapon bonuses, weapon attacks, carry load.
 - Rules text AST plus React/plain-text rendering.
 - Foundry VTT export.
+- Foundry VTT import with external level-choice baselines so imported snapshots do not reopen historical non-subclass level choices.
 - Canonical JSON export/import utilities with round-trip and legacy-schema tests.
 - First-class Forge & Fate JSON export actions in the Vault, conclusion, and sheet surfaces.
 - Dashboard import for canonical JSON.
@@ -115,7 +116,7 @@ Do not jump to multiclass before the v1 portability and hardening gaps are close
 
 Every delivery must preserve:
 
-- The builder step sequence (10 steps as of schema v14).
+- The builder step sequence (10 canonical steps; dedicated subclass step introduced in schema v14).
 - Character creation, resume, saving, import, and Vault persistence.
 - Single derived truth through `CharacterSheetSummary`.
 - Source isolation.

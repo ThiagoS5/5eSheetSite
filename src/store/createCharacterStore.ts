@@ -77,25 +77,33 @@ export function createCharacterStore(
       set((state) =>
         resetPlayStateToMaxHp(
           patchCharacterState(state, {
-          selectedClassId,
-          classSkillProficiencies:
-            state.selectedClassId === selectedClassId
-              ? state.classSkillProficiencies
-              : [],
-          skillTraining:
-            state.selectedClassId === selectedClassId ? state.skillTraining : {},
-          classFeatureChoices:
-            state.selectedClassId === selectedClassId
-              ? state.classFeatureChoices
-              : {},
-          selectedSubclassId:
-            state.selectedClassId === selectedClassId ? state.selectedSubclassId : "",
-          equipmentChoicesBySource:
-            state.selectedClassId === selectedClassId
-              ? state.equipmentChoicesBySource
-              : omitEquipmentSource(state.equipmentChoicesBySource, "class"),
-          spellcasting:
-            state.selectedClassId === selectedClassId ? state.spellcasting : undefined,
+            selectedClassId,
+            externalLevelChoiceBaseline:
+              state.selectedClassId === selectedClassId
+                ? state.externalLevelChoiceBaseline
+                : 0,
+            classSkillProficiencies:
+              state.selectedClassId === selectedClassId
+                ? state.classSkillProficiencies
+                : [],
+            skillTraining:
+              state.selectedClassId === selectedClassId ? state.skillTraining : {},
+            classFeatureChoices:
+              state.selectedClassId === selectedClassId
+                ? state.classFeatureChoices
+                : {},
+            selectedSubclassId:
+              state.selectedClassId === selectedClassId
+                ? state.selectedSubclassId
+                : "",
+            equipmentChoicesBySource:
+              state.selectedClassId === selectedClassId
+                ? state.equipmentChoicesBySource
+                : omitEquipmentSource(state.equipmentChoicesBySource, "class"),
+            spellcasting:
+              state.selectedClassId === selectedClassId
+                ? state.spellcasting
+                : undefined,
           }),
         ),
       ),
@@ -800,6 +808,7 @@ function extractFlatState(state: FlatCharacterBuilderState): FlatCharacterBuilde
   return {
     ruleset: state.ruleset,
     level: state.level,
+    externalLevelChoiceBaseline: state.externalLevelChoiceBaseline,
     selectedSpeciesId: state.selectedSpeciesId,
     selectedClassId: state.selectedClassId,
     selectedSubclassId: state.selectedSubclassId,

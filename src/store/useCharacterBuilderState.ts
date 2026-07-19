@@ -7,6 +7,9 @@ import type { CharacterBuilderState } from "@/src/store/characterStore.types";
 export function useCharacterBuilderState(): CharacterBuilderState {
   const ruleset = useCharacterStore((s) => s.ruleset);
   const level = useCharacterStore((s) => s.level);
+  const externalLevelChoiceBaseline = useCharacterStore(
+    (s) => s.externalLevelChoiceBaseline,
+  );
   const selectedSpeciesId = useCharacterStore((s) => s.selectedSpeciesId);
   const selectedClassId = useCharacterStore((s) => s.selectedClassId);
   const selectedSubclassId = useCharacterStore((s) => s.selectedSubclassId);
@@ -40,6 +43,7 @@ export function useCharacterBuilderState(): CharacterBuilderState {
     () => ({
       ruleset,
       level,
+      externalLevelChoiceBaseline,
       selectedSpeciesId,
       selectedClassId,
       selectedSubclassId,
@@ -72,6 +76,7 @@ export function useCharacterBuilderState(): CharacterBuilderState {
     [
       ruleset,
       level,
+      externalLevelChoiceBaseline,
       selectedSpeciesId,
       selectedClassId,
       selectedSubclassId,

@@ -12,6 +12,7 @@ afterEach(() => {
 const state: CharacterBuilderState = {
   ruleset: "2024",
   level: 6,
+  externalLevelChoiceBaseline: 0,
   selectedSpeciesId: "aasimar-xphb",
   selectedClassId: "fighter-xphb",
   selectedSubclassId: "champion-xphb",

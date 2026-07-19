@@ -220,6 +220,8 @@ export function flattenCharacterBuild(
   return {
     ruleset: build.choices?.ruleset,
     level: build.progression?.level,
+    externalLevelChoiceBaseline:
+      build.progression?.externalLevelChoiceBaseline,
     selectedSpeciesId: build.choices?.selectedSpeciesId,
     selectedClassId: build.choices?.selectedClassId,
     selectedSubclassId: build.choices?.selectedSubclassId,
@@ -294,6 +296,7 @@ export function getDefaultFlatState(): FlatCharacterBuilderState {
   return {
     ruleset: "2024",
     level: 1,
+    externalLevelChoiceBaseline: 0,
     selectedSpeciesId: "",
     selectedClassId: "",
     selectedSubclassId: "",
@@ -407,6 +410,7 @@ function createBuildFromFlatState(
     },
     progression: {
       level: normalizedState.level,
+      externalLevelChoiceBaseline: normalizedState.externalLevelChoiceBaseline,
       levelChoices,
     },
     choices: {
@@ -486,6 +490,9 @@ function normalizeFlatState(
   return {
     ruleset: state.ruleset ?? defaults.ruleset,
     level: state.level ?? defaults.level,
+    externalLevelChoiceBaseline: sanitizeLevel(
+      state.externalLevelChoiceBaseline ?? defaults.externalLevelChoiceBaseline,
+    ),
     selectedSpeciesId: state.selectedSpeciesId ?? defaults.selectedSpeciesId,
     selectedClassId: state.selectedClassId ?? defaults.selectedClassId,
     selectedSubclassId: state.selectedSubclassId ?? defaults.selectedSubclassId,
@@ -553,6 +560,11 @@ function normalizeSpellcastingChoices(
     knownSpellIds: [...(choices.knownSpellIds ?? [])],
     preparedSpellIds: [...(choices.preparedSpellIds ?? [])],
   };
+}
+
+function sanitizeLevel(level: number): number {
+  if (!Number.isFinite(level)) return 0;
+  return Math.max(0, Math.min(20, Math.trunc(level)));
 }
 
 function normalizeInventory(inventory: InventoryEntry[]): InventoryEntry[] {

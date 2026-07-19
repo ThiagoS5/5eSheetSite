@@ -2,7 +2,7 @@
 
 > Current audit snapshot: 2026-07-16. Basis: guide docs, `package.json`, domain types, rules, adapters, store, components, browser smoke QA, and focused/full tests found in the repository.
 >
-> Since the 2026-07-11 snapshot: dedicated subclass builder step + level-up modal with state-integrity fixes (schema v14), security hardening (CSP/headers, sanitized notes, import hardening, no external CDN), species defenses and level-up feat fixes, Foundry export compliance, data pruning, first-class Forge & Fate JSON export actions, source filtering coverage, shared migration entry point, structured magic-item bonuses, and the multiclass ADR. Guide docs were consolidated into `guides/`.
+> Since the 2026-07-11 snapshot: dedicated subclass builder step + level-up modal with state-integrity fixes (schema v14), Foundry import level-choice baselines (schema v15), security hardening (CSP/headers, sanitized notes, import hardening, no external CDN), species defenses and level-up feat fixes, Foundry export compliance, data pruning, first-class Forge & Fate JSON export actions, source filtering coverage, shared migration entry point, structured magic-item bonuses, and the multiclass ADR. Guide docs were consolidated into `guides/`.
 
 ## 1. Phase Status
 
@@ -22,7 +22,7 @@
 
 ## 2. Evidence
 
-- Canonical persisted contract: `src/types/characterBuild.ts`, schema v14.
+- Canonical persisted contract: `src/types/characterBuild.ts`, schema v15.
 - Derived truth boundary: `src/store/characterSelectors.ts` delegates to `rules/characterSheetSummaryRules.ts`.
 - Vault: `src/services/characterService.ts`.
 - Creation modes and quick build: `src/components/pages/Dashboard.tsx`, `src/data/quickBuildProfiles.ts`.

@@ -39,6 +39,7 @@ export type {
 export interface FlatCharacterBuilderState {
   ruleset: Ruleset;
   level: number;
+  externalLevelChoiceBaseline: number;
   selectedSpeciesId: string;
   selectedClassId: string;
   selectedSubclassId: string;

@@ -56,10 +56,11 @@ This is the current audited baseline as of 2026-07-16.
 
 ### Domain And Persistence
 
-- `CharacterBuild` is the canonical persisted model at schema v14.
+- `CharacterBuild` is the canonical persisted model at schema v15.
 - The persisted shape is split into `draft`, `progression`, `choices`, `playState`, `derivedSheet`, and `exportMetadata`.
 - Store persistence, Vault reads, and canonical import normalize old saves through the shared `migrateCharacterBuild(raw, fromVersion)` path.
 - Schema migrations are covered for the important historical shapes, with fixture-based tests.
+- Imported external sheet snapshots can mark historical non-subclass level choices as resolved through the imported level, without fabricating Forge & Fate ASI/feat history.
 
 ### Rules Engine
 

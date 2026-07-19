@@ -28,8 +28,8 @@ Implemented:
 - Local Character Vault with create, resume, duplicate, delete, search, import, and export-ready status.
 - 10-step builder with guided, standard, and quick-build entry paths.
 - Beginner-mode recommendation quizzes and inline contextual help.
-- Schema v14 canonical `CharacterBuild`, including `playState`.
-- Pure rules/adapters for derived sheet math, level progression, HP, AC, attacks, inventory, spellcasting, rests, pendencies, rules-text AST, Foundry, canonical export/import, and PDF.
+- Schema v15 canonical `CharacterBuild`, including `playState` and external import level-choice baselines.
+- Pure rules/adapters for derived sheet math, level progression, HP, AC, attacks, inventory, spellcasting, rests, pendencies, rules-text AST, Foundry import/export, canonical export/import, and PDF.
 - Living sheet with level-up, play-state panels, notes, conditions, campaign log, Foundry export, and PDF export.
 
 Current product gaps:

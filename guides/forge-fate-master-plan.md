@@ -2,9 +2,9 @@
 
 > **Documento mestre do projeto.** Este arquivo consolida visão, estado atual, arquitetura-alvo, contratos de domínio, roadmap por fases e critérios de aceite do Forge & Fate. Ele complementa (não substitui) o `MANIFESTO.md`: o Manifesto define a estrela-guia; este plano define **o caminho ordenado até ela**. Ao concluir uma fase, atualize a seção 2 (Estado Atual) e a tabela da seção 22.
 >
-> **⚠️ Nota de atualização (2026-07-15):** as **Fases 1–9 estão concluídas** (status por fase na seção 22) e o schema atual é `CHARACTER_BUILD_SCHEMA_VERSION = 14`. As seções 2–21 descrevem a auditoria de planejamento de 2026-07-06 (schema v10) e permanecem como **registro histórico e racional das decisões** — para o estado atual consolidado, leia `AUDITORIA.md` e `project-delivery-ruler.md` nesta mesma pasta (`guides/`). Em conflito, vale a ordem: `MANIFESTO.md` → `project-delivery-ruler.md` → este plano.
+> **⚠️ Nota de atualização (2026-07-15):** as **Fases 1–9 estão concluídas** (status por fase na seção 22) e o schema atual é `CHARACTER_BUILD_SCHEMA_VERSION = 15`. As seções 2–21 descrevem a auditoria de planejamento de 2026-07-06 (schema v10) e permanecem como **registro histórico e racional das decisões** — para o estado atual consolidado, leia `AUDITORIA.md` e `project-delivery-ruler.md` nesta mesma pasta (`guides/`). Em conflito, vale a ordem: `MANIFESTO.md` → `project-delivery-ruler.md` → este plano.
 >
-> **Data da auditoria original:** 2026-07-06 · **Schema na época:** v10 · **Schema atual:** v14
+> **Data da auditoria original:** 2026-07-06 · **Schema na época:** v10 · **Schema atual:** v15
 
 ---
 
@@ -150,7 +150,7 @@ src/utils/           adapters de saída: foundryAdapter, [novos] canonicalExport
 
 ## 5. Contrato de Domínio
 
-### 5.1 `CharacterBuild` (auditado na época em schema v5 — hoje v14; as "extensões planejadas" abaixo já aterrissaram)
+### 5.1 `CharacterBuild` (auditado na época em schema v5 — hoje v15; as "extensões planejadas" abaixo já aterrissaram)
 
 O contrato existente já tem os cinco blocos exigidos. Abaixo, o papel de cada um e as extensões planejadas (cada extensão = bump de schema + migração):
 

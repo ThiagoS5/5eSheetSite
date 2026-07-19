@@ -98,6 +98,59 @@ describe("getUnresolvedLevelChoices", () => {
     const unresolved = getUnresolvedLevelChoices(store.getState(), fighterClass());
     expect(unresolved.some((u) => u.kind === "asi-or-feat" && u.level === 4)).toBe(true);
   });
+
+  it("treats non-subclass choices through an external baseline as already resolved", () => {
+    const store = createCharacterStore();
+    store.getState().selectClass("fighter-xphb");
+    store.getState().setLevel(8);
+    store.getState().selectSubclass("battle-master-xphb");
+
+    const unresolved = getUnresolvedLevelChoices(
+      {
+        ...store.getState(),
+        externalLevelChoiceBaseline: 8,
+      },
+      fighterClass(),
+    );
+
+    expect(unresolved.some((u) => u.kind === "asi-or-feat")).toBe(false);
+    expect(unresolved.some((u) => u.kind === "feature-option")).toBe(false);
+  });
+
+  it("keeps subclass choices pending across an external baseline", () => {
+    const store = createCharacterStore();
+    store.getState().selectClass("fighter-xphb");
+    store.getState().setLevel(8);
+
+    const unresolved = getUnresolvedLevelChoices(
+      {
+        ...store.getState(),
+        externalLevelChoiceBaseline: 8,
+      },
+      fighterClass(),
+    );
+
+    expect(unresolved.some((u) => u.kind === "subclass")).toBe(true);
+  });
+
+  it("requires choices above the external baseline during future level-up", () => {
+    const store = createCharacterStore();
+    store.getState().selectClass("fighter-xphb");
+    store.getState().setLevel(12);
+    store.getState().selectSubclass("battle-master-xphb");
+
+    const unresolved = getUnresolvedLevelChoices(
+      {
+        ...store.getState(),
+        externalLevelChoiceBaseline: 8,
+      },
+      fighterClass(),
+    );
+
+    expect(unresolved.some((u) => u.kind === "asi-or-feat" && u.level === 12)).toBe(
+      true,
+    );
+  });
 });
 
 describe("getActiveSubclassFeatures", () => {

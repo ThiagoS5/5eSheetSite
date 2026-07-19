@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { importFoundryCharacter } from "@/src/adapters/foundryImportAdapter";
+import { getBuilderClasses } from "@/src/services/ruleService";
+import { createStoreStateFromBuild } from "@/src/store/characterBuildModel";
+import { getPendingRequirements } from "@/src/store/levelChoiceResolver";
 
 const importOptions = {
   now: "2026-07-18T12:00:00.000Z",
@@ -27,6 +30,7 @@ describe("foundryImportAdapter", () => {
     expect(build.draft.description.alinhamento).toBe("Chaotic Neutral");
     expect(build.draft.description.historia).toBe("Deals in secrets.");
     expect(build.progression.level).toBe(10);
+    expect(build.progression.externalLevelChoiceBaseline).toBe(10);
     expect(build.choices.selectedClassId).toBe("sorcerer-xphb");
     expect(build.choices.selectedSpeciesId).toBe("human-xphb");
     expect(build.choices.selectedBackgroundId).toBe("merchant-xphb");
@@ -79,6 +83,16 @@ describe("foundryImportAdapter", () => {
       "Unmapped Foundry subclass: Shadow Magic",
     );
     expect(build.draft.description.notas).toContain("Trade Ledger of Doom");
+
+    const characterClass = getBuilderClasses().find(
+      (entry) => entry.id === build.choices.selectedClassId,
+    );
+    expect(characterClass).toBeDefined();
+    if (!characterClass) return;
+
+    expect(
+      getPendingRequirements(createStoreStateFromBuild(build), characterClass),
+    ).toEqual([]);
   });
 
   it("rejects files that are not Foundry dnd5e character actors", () => {
@@ -90,6 +104,41 @@ describe("foundryImportAdapter", () => {
       ok: false,
       error: "The file is not a Foundry VTT character actor.",
     });
+  });
+
+  it("keeps an unmapped Foundry subclass pending despite the external baseline", () => {
+    const actor = createFoundryActorFixture();
+    const subclassItem = actor.items.find((item) => item.type === "subclass");
+    if (!subclassItem) throw new Error("Foundry fixture subclass missing");
+
+    subclassItem.name = "Custom Shadow Market";
+    subclassItem.system.identifier = "custom-shadow-market";
+
+    const result = importFoundryCharacter(JSON.stringify(actor), importOptions);
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    const build = result.build;
+    const characterClass = getBuilderClasses().find(
+      (entry) => entry.id === build.choices.selectedClassId,
+    );
+    expect(characterClass).toBeDefined();
+    if (!characterClass) return;
+
+    const pendingRequirements = getPendingRequirements(
+      createStoreStateFromBuild(build),
+      characterClass,
+    );
+
+    expect(build.draft.currentStepSlug).toBe("subclasse");
+    expect(build.draft.description.notas).toContain(
+      "Unmapped Foundry subclass: Custom Shadow Market",
+    );
+    expect(pendingRequirements.some((req) => req.kind === "subclass")).toBe(true);
+    expect(pendingRequirements.some((req) => req.kind === "asi-or-feat")).toBe(
+      false,
+    );
   });
 
   it("treats Foundry prepared value 1 as prepared for prepared casters", () => {

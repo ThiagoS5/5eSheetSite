@@ -38,8 +38,16 @@ export function validateBuilderStep(
     const selectedClass = getBuilderClasses().find(
       (entry) => entry.id === state.selectedClassId,
     );
+    const externallyResolvedFeatureIds = getExternallyResolvedFeatureOptionIds(
+      selectedClass,
+      state,
+    );
     const featureMessages =
       selectedClass?.featureChoiceGroups.flatMap((group) => {
+        if (externallyResolvedFeatureIds.has(group.id)) {
+          return [];
+        }
+
         const selectedValues = state.classFeatureChoices[group.id] ?? [];
         const validValues = new Set(group.options.map((option) => option.value));
         const hasInvalidValue = selectedValues.some((value) => !validValues.has(value));
@@ -233,5 +241,24 @@ export function getRequiredLanguageCount(state: CharacterBuilderState): number {
     2 +
     (selectedClass?.languageChoiceCount ?? 0) +
     (selectedBackground?.languageChoiceCount ?? 0)
+  );
+}
+
+function getExternallyResolvedFeatureOptionIds(
+  selectedClass: ReturnType<typeof getBuilderClasses>[number] | undefined,
+  state: CharacterBuilderState,
+): Set<string> {
+  if (!selectedClass || state.externalLevelChoiceBaseline <= 0) {
+    return new Set();
+  }
+
+  return new Set(
+    getLevelRequirements(
+      selectedClass,
+      0,
+      Math.min(state.level, state.externalLevelChoiceBaseline),
+    )
+      .filter((requirement) => requirement.kind === "feature-option")
+      .map((requirement) => requirement.id),
   );
 }

@@ -154,6 +154,7 @@ export function importFoundryCharacter(
     {
       characterBuild: baseBuild,
       level,
+      externalLevelChoiceBaseline: level,
       selectedClassId: identity.characterClass?.id ?? "",
       selectedSubclassId: identity.subclassId,
       selectedSpeciesId: identity.species?.id ?? "",
