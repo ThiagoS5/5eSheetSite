@@ -30,6 +30,11 @@ export function deriveCarriedEquipment(input: {
   const classKitItemIdSet = new Set(classKitItems.map((item) => item.id));
   const backgroundKitItemIdSet = new Set(backgroundKitItems.map((item) => item.id));
   const quantitiesById = new Map<string, number>();
+  const customItemsById = new Map(
+    input.state.inventory
+      .filter((entry) => entry.customItem)
+      .map((entry) => [entry.itemId, entry.customItem!]),
+  );
 
   for (const entry of input.state.inventory) {
     quantitiesById.set(
@@ -52,11 +57,14 @@ export function deriveCarriedEquipment(input: {
   return [...quantitiesById.entries()].map(([itemId, quantity]) => {
     const catalogItem = catalogById.get(itemId);
     const packageItem = packageItemById.get(itemId);
+    const customItem = customItemsById.get(itemId);
     const sourceType = resolveSourceType(itemId, classKitItemIdSet, backgroundKitItemIdSet);
 
     return {
       item: catalogItem
         ? mapCatalogItemToEquipmentOption(catalogItem, sourceType, packageItem)
+        : customItem
+          ? mapCustomItemToEquipmentOption(itemId, customItem)
         : mapPackageItemToEquipmentOption(
             packageItem,
             sourceType,
@@ -119,6 +127,28 @@ function mapCatalogItemToEquipmentOption(
     damageType: item.damageType,
     range: item.range,
     value: item.value,
+  };
+}
+
+function mapCustomItemToEquipmentOption(
+  itemId: string,
+  item: NonNullable<CharacterBuilderState["inventory"][number]["customItem"]>,
+): BuilderEquipmentOption {
+  return {
+    id: itemId,
+    name: item.name,
+    source: item.source,
+    sourceType: "manual",
+    category: item.category,
+    type: item.type,
+    detail: item.detail,
+    rarity: item.rarity,
+    isMagical: item.isMagical,
+    isContainer: item.isContainer,
+    attunementRequired: item.attunementRequired,
+    weightKg: item.weightKg,
+    value: item.value,
+    charges: item.charges,
   };
 }
 

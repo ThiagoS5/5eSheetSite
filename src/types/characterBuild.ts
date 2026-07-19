@@ -2,6 +2,9 @@ import type {
   BuilderStepSlug,
   CharacterDescription,
   CharacterSheetSummary,
+  EquipmentCharges,
+  InventoryItemType,
+  ItemCategory,
 } from "@/src/types/builder";
 import type {
   AttributeBonuses,
@@ -15,7 +18,9 @@ import type { CharacterSpellcastingChoices } from "@/src/types/spells";
 //      older builds shifts +1 when it already passed the insertion point.
 // v15: progression can mark externally imported level choices as resolved through
 //      a baseline level without inventing Forge & Fate ASI/feat history.
-export const CHARACTER_BUILD_SCHEMA_VERSION = 15;
+// v16: inventory entries can preserve imported custom item metadata when no
+//      5eTools/Plutonium catalog match exists.
+export const CHARACTER_BUILD_SCHEMA_VERSION = 16;
 
 export interface CoinPouch {
   pc: number;
@@ -46,7 +51,26 @@ export type AttributeGenerationMethod =
 export type EquipmentAcquisitionMode = "items" | "gold";
 export type SkillTrainingLevel = "none" | "half" | "proficient" | "expertise";
 
-export interface InventoryEntry { itemId: string; quantity: number; }
+export interface ImportedInventoryItem {
+  name: string;
+  source: string;
+  category: ItemCategory;
+  type?: InventoryItemType;
+  detail?: string;
+  rarity?: string;
+  isMagical?: boolean;
+  isContainer?: boolean;
+  attunementRequired?: boolean;
+  weightKg?: number;
+  value?: number;
+  charges?: EquipmentCharges;
+}
+
+export interface InventoryEntry {
+  itemId: string;
+  quantity: number;
+  customItem?: ImportedInventoryItem;
+}
 
 export type EquipmentSourceKey = "class" | "background" | "species";
 

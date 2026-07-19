@@ -9,6 +9,7 @@ export type DetailItem =
       type?: string;
       cost?: string;
       weight?: string;
+      charges?: string;
       armorClass?: number;
       rarity?: string;
       properties?: string;

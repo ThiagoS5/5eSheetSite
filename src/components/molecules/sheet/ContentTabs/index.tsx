@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { ItemCategory } from "@/src/types/builder";
+import type { CharacterSheetSummary, ItemCategory } from "@/src/types/builder";
 import type { BuilderSpell } from "@/src/types/spells";
 import { useCharacterStore } from "@/src/store/useCharacterStore";
 import { cn } from "@/src/lib/utils";
@@ -69,6 +69,7 @@ export function ContentTabs({ summary, description }: ContentTabsProps) {
   const [detail, setDetail] = useState<DetailItem | null>(null);
   const adjustCoin = useCharacterStore((s) => s.adjustCoin);
   const setCarriedLoadKg = useCharacterStore((s) => s.setCarriedLoadKg);
+  const setInventoryQuantity = useCharacterStore((s) => s.setInventoryQuantity);
   const spendSlot = useCharacterStore((s) => s.spendSlot);
 
   const realWeapons = summary.weapons.filter((w) => w.name.trim() !== "");
@@ -271,13 +272,40 @@ export function ContentTabs({ summary, description }: ContentTabsProps) {
                   ))}
                 </div>
               </section>
-              <SpellList title="Cantrips" spells={summary.spellcasting.cantrips} />
+              <SpellList
+                title="Cantrips"
+                spells={summary.spellcasting.cantrips}
+                onSelect={(spell) =>
+                  setDetail({
+                    kind: "spell",
+                    name: spell.name,
+                    castingTime: spell.castingTime,
+                    range: spell.range,
+                    duration: spell.duration,
+                    components: spell.components,
+                    classes: spell.classNames.join(", "),
+                    description: spell.description,
+                  })
+                }
+              />
               <SpellList
                 title="Spells"
                 spells={[
                   ...summary.spellcasting.knownSpells,
                   ...summary.spellcasting.preparedSpells,
                 ]}
+                onSelect={(spell) =>
+                  setDetail({
+                    kind: "spell",
+                    name: spell.name,
+                    castingTime: spell.castingTime,
+                    range: spell.range,
+                    duration: spell.duration,
+                    components: spell.components,
+                    classes: spell.classNames.join(", "),
+                    description: spell.description,
+                  })
+                }
               />
             </div>
           ) : (
@@ -322,46 +350,29 @@ export function ContentTabs({ summary, description }: ContentTabsProps) {
               </div>
             </div>
             {equipment.length > 0 ? (
-              <ul className="grid list-none grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-1.5 p-0">
-                {equipment.map(({ item, quantity }, index) => {
-                  const color = item.sourceType === "class" ? "text-brand-gold-alt" : "text-muted-foreground";
-                  const sourceLabel = item.sourceType === "class"
-                    ? "Class"
-                    : item.sourceType === "background"
-                      ? "Background"
-                      : "Manual";
-                  return (
-                    <li key={`${item.id}-${index}`}>
-                      <button
-                        type="button"
-                        onClick={() => setDetail({
-                          kind: "equipment",
-                          name: item.name,
-                          qty: quantity,
-                          source: sourceLabel,
-                          category: item.category,
-                          type: formatInventoryType(item.type),
-                          cost: formatItemValue(item.value),
-                          weight: formatItemWeight(item.weightKg),
-                          armorClass: item.armorClass ?? undefined,
-                          rarity: formatRarity(item.rarity),
-                          properties: item.weaponProperties?.length ? item.weaponProperties.join(", ") : undefined,
-                          damage: formatItemDamage(item.damageDice, item.damageType),
-                          range: item.range,
-                          description: item.detail,
-                        })}
-                        className={cn(
-                          "flex w-full items-baseline gap-[9px] rounded-lg border border-border bg-surface-nested px-[11px] py-2 text-left text-[12.5px] text-subdued transition-colors hover:bg-card",
-                          focusRing,
-                        )}
-                      >
-                        <span translate="no" className={cn("notranslate font-bold", color)}>x{quantity}</span>
-                        <span translate="no" className="notranslate">{item.name}</span>
-                      </button>
-                    </li>
-                  );
-                })}
-              </ul>
+              <InventoryTable
+                items={equipment}
+                onSetQuantity={setInventoryQuantity}
+                onSelect={(item, quantity) =>
+                  setDetail({
+                    kind: "equipment",
+                    name: item.name,
+                    qty: quantity,
+                    source: formatInventorySource(item.source, item.sourceType),
+                    category: item.category,
+                    type: formatInventoryType(item.type),
+                    cost: formatItemValue(item.value),
+                    weight: formatItemWeight(item.weightKg),
+                    charges: formatItemCharges(item.charges),
+                    armorClass: item.armorClass ?? undefined,
+                    rarity: formatRarity(item.rarity),
+                    properties: item.weaponProperties?.length ? item.weaponProperties.join(", ") : undefined,
+                    damage: formatItemDamage(item.damageDice, item.damageType),
+                    range: item.range,
+                    description: item.detail,
+                  })
+                }
+              />
             ) : (
               <EmptyState label="No item from this origin." />
             )}
@@ -419,7 +430,15 @@ function EmptyState({ label }: { label: string }) {
   );
 }
 
-function SpellList({ title, spells }: { title: string; spells: BuilderSpell[] }) {
+function SpellList({
+  title,
+  spells,
+  onSelect,
+}: {
+  title: string;
+  spells: BuilderSpell[];
+  onSelect: (spell: BuilderSpell) => void;
+}) {
   if (spells.length === 0) {
     return <EmptyState label={`No ${title.toLowerCase()} selected.`} />;
   }
@@ -429,33 +448,194 @@ function SpellList({ title, spells }: { title: string; spells: BuilderSpell[] })
       <h3 className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
         {title}
       </h3>
-      <div className="grid gap-2">
-        {spells.map((spell) => (
-          <article
-            key={spell.id}
-            className="rounded-lg border border-border bg-surface-nested p-3"
-          >
-            <div className="flex flex-wrap items-start justify-between gap-2">
-              <div>
-                <h4 translate="no" className="notranslate font-serif text-base font-bold text-foreground">
-                  {spell.name}
-                </h4>
-                <p className="text-xs text-muted-foreground">
-                  {spell.level === 0 ? "Cantrip" : `Level ${spell.level}`} · {spell.school} · {spell.castingTime}
-                </p>
-              </div>
-              <span className="rounded border border-border bg-background px-2 py-0.5 text-[10px] font-bold uppercase text-muted-foreground">
-                {spell.source}
-              </span>
-            </div>
-            <p className="mt-2 line-clamp-3 text-xs leading-5 text-subdued">
-              {spell.description}
-            </p>
-          </article>
-        ))}
+      <div className="overflow-x-auto rounded-lg border border-border bg-surface-nested">
+        <table className="w-full min-w-[560px] border-collapse text-left">
+          <thead className="bg-primary/20 text-[9px] font-bold uppercase tracking-[0.12em] text-muted-foreground">
+            <tr>
+              <th scope="col" className="px-3 py-2">Spell</th>
+              <th scope="col" className="px-3 py-2">Level</th>
+              <th scope="col" className="px-3 py-2">Casting</th>
+              <th scope="col" className="px-3 py-2">Range</th>
+              <th scope="col" className="px-3 py-2">Source</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border">
+            {spells.map((spell) => (
+              <tr key={spell.id} className="transition-colors hover:bg-card">
+                <td className="px-3 py-2">
+                  <button
+                    type="button"
+                    onClick={() => onSelect(spell)}
+                    className={cn("flex min-w-0 items-center gap-2 text-left", focusRing)}
+                  >
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded border border-border bg-card text-brand-crimson-alt">
+                      <i aria-hidden="true" className="fa-solid fa-wand-sparkles text-xs" />
+                    </span>
+                    <span className="min-w-0">
+                      <span translate="no" className="notranslate block truncate text-[13px] font-bold text-foreground">
+                        {spell.name}
+                      </span>
+                      <span className="block truncate text-[11px] text-muted-foreground">
+                        {spell.school}
+                      </span>
+                    </span>
+                  </button>
+                </td>
+                <td className="px-3 py-2 text-[12px] text-subdued">
+                  {spell.level === 0 ? "Cantrip" : spell.level}
+                </td>
+                <td className="px-3 py-2 text-[12px] text-subdued">{spell.castingTime}</td>
+                <td className="px-3 py-2 text-[12px] text-subdued">{spell.range}</td>
+                <td translate="no" className="notranslate px-3 py-2 text-[11px] font-semibold text-muted-foreground">
+                  {spell.source}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </section>
   );
+}
+
+function InventoryTable({
+  items,
+  onSelect,
+  onSetQuantity,
+}: {
+  items: CharacterSheetSummary["inventory"];
+  onSelect: (item: CharacterSheetSummary["inventory"][number]["item"], quantity: number) => void;
+  onSetQuantity: (itemId: string, quantity: number) => void;
+}) {
+  return (
+    <div className="overflow-x-auto rounded-lg border border-border bg-surface-nested">
+      <table className="w-full min-w-[620px] border-collapse text-left">
+        <thead className="bg-primary/20 text-[9px] font-bold uppercase tracking-[0.12em] text-muted-foreground">
+          <tr>
+            <th scope="col" className="px-3 py-2">Equipment</th>
+            <th scope="col" className="px-3 py-2">Weight</th>
+            <th scope="col" className="px-3 py-2 text-center">Quantity</th>
+            <th scope="col" className="px-3 py-2">Charges</th>
+            <th scope="col" className="px-3 py-2 text-right">Flags</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-border">
+          {items.map(({ item, quantity }, index) => {
+            const canAdjustQuantity = item.sourceType === "manual";
+
+            return (
+              <tr key={`${item.id}-${index}`} className="transition-colors hover:bg-card">
+                <td className="px-3 py-2">
+                  <button
+                    type="button"
+                    aria-label={`Open ${item.name}`}
+                    onClick={() => onSelect(item, quantity)}
+                    className={cn("flex min-w-0 items-center gap-2 text-left", focusRing)}
+                  >
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded border border-border bg-card text-muted-foreground">
+                      <i aria-hidden="true" className={`fa-solid ${getInventoryIcon(item.category)} text-sm`} />
+                    </span>
+                    <span className="min-w-0">
+                      <span translate="no" className="notranslate block truncate text-[13px] font-bold text-foreground">
+                        {item.name}
+                      </span>
+                      <span className="block truncate text-[11px] text-muted-foreground">
+                        {formatInventorySubtitle(item)}
+                      </span>
+                    </span>
+                  </button>
+                </td>
+                <td translate="no" className="notranslate px-3 py-2 text-[12px] text-subdued">
+                  {formatItemWeight(item.weightKg) ?? "-"}
+                </td>
+                <td className="px-3 py-2">
+                  <div className="flex items-center justify-center gap-2">
+                    <button
+                      type="button"
+                      aria-label={`Decrease ${item.name} quantity`}
+                      disabled={!canAdjustQuantity}
+                      onClick={() => onSetQuantity(item.id, quantity - 1)}
+                      className={cn(
+                        "h-6 w-6 rounded-md border border-border text-muted-foreground hover:text-foreground disabled:opacity-35",
+                        focusRing,
+                      )}
+                    >
+                      -
+                    </button>
+                    <span translate="no" className="notranslate min-w-5 text-center text-[13px] font-bold text-foreground">
+                      {quantity}
+                    </span>
+                    <button
+                      type="button"
+                      aria-label={`Increase ${item.name} quantity`}
+                      disabled={!canAdjustQuantity}
+                      onClick={() => onSetQuantity(item.id, quantity + 1)}
+                      className={cn(
+                        "h-6 w-6 rounded-md border border-border text-muted-foreground hover:text-foreground disabled:opacity-35",
+                        focusRing,
+                      )}
+                    >
+                      +
+                    </button>
+                  </div>
+                </td>
+                <td translate="no" className="notranslate px-3 py-2 text-[12px] font-semibold text-subdued">
+                  {formatItemCharges(item.charges) ?? "-"}
+                </td>
+                <td className="px-3 py-2">
+                  <div className="flex justify-end gap-2 text-muted-foreground">
+                    {item.isMagical ? (
+                      <i role="img" aria-label="Magical" className="fa-solid fa-sparkles text-xs text-brand-gold-alt" />
+                    ) : null}
+                    {item.armorClass || item.armorClassBonus || item.shieldBonus ? (
+                      <i role="img" aria-label="Defensive" className="fa-solid fa-shield-halved text-xs" />
+                    ) : null}
+                    {item.attunementRequired ? (
+                      <i role="img" aria-label="Attunement" className="fa-solid fa-link text-xs" />
+                    ) : null}
+                  </div>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function getInventoryIcon(category: ItemCategory): string {
+  if (category === "Weapon") return "fa-khanda";
+  if (category === "Armor") return "fa-shield-halved";
+  if (category === "Potion") return "fa-flask";
+  if (category === "Ring") return "fa-ring";
+  if (category === "Scroll") return "fa-scroll";
+  if (category === "Wand" || category === "Staff" || category === "Rod") {
+    return "fa-wand-sparkles";
+  }
+  if (category === "Wondrous") return "fa-sparkles";
+  return "fa-box";
+}
+
+function formatInventorySubtitle(
+  item: CharacterSheetSummary["inventory"][number]["item"],
+): string {
+  return [
+    formatInventoryType(item.type) ?? item.category,
+    formatInventorySource(item.source, item.sourceType),
+  ]
+    .filter(Boolean)
+    .join(" - ");
+}
+
+function formatInventorySource(
+  source: string,
+  sourceType: CharacterSheetSummary["inventory"][number]["item"]["sourceType"],
+): string {
+  if (source === "Foundry VTT") return "Imported";
+  if (sourceType === "class") return "Class";
+  if (sourceType === "background") return "Background";
+  return "Manual";
 }
 
 function formatInventoryType(type: string | undefined): string | undefined {
@@ -494,6 +674,16 @@ function formatItemWeight(value: number | undefined): string | undefined {
   }
 
   return `${value} kg`;
+}
+
+function formatItemCharges(
+  charges: CharacterSheetSummary["inventory"][number]["item"]["charges"],
+): string | undefined {
+  if (!charges) {
+    return undefined;
+  }
+
+  return `${charges.current} / ${charges.max}`;
 }
 
 function formatRarity(value: string | undefined): string | undefined {

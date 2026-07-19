@@ -199,6 +199,11 @@ export type InventoryItemType =
   | "gear"
   | "consumable";
 
+export interface EquipmentCharges {
+  current: number;
+  max: number;
+}
+
 export interface InventoryArmorProfile {
   baseAC: number;
   category: Exclude<ArmorType, "shield">;
@@ -236,6 +241,7 @@ export interface CatalogItem {
   damageType?: string;
   range?: string;
   value?: number;
+  charges?: EquipmentCharges;
 }
 
 export interface BuilderEquipmentOption {
@@ -268,6 +274,7 @@ export interface BuilderEquipmentOption {
   damageType?: string;
   range?: string;
   value?: number;
+  charges?: EquipmentCharges;
 }
 
 export interface BuilderLanguage {

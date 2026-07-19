@@ -10,6 +10,7 @@ import type { CharacterSheetSummary, CharacterDescription } from "@/src/types/bu
 const adjustCoin = vi.fn();
 const setCoin = vi.fn();
 const setCarriedLoadKg = vi.fn();
+const setInventoryQuantity = vi.fn();
 
 vi.mock("@/src/store/useCharacterStore", () => ({
   useCharacterStore: (selector: (s: unknown) => unknown) =>
@@ -19,6 +20,7 @@ vi.mock("@/src/store/useCharacterStore", () => ({
       adjustCoin,
       setCoin,
       setCarriedLoadKg,
+      setInventoryQuantity,
     }),
 }));
 
@@ -117,10 +119,13 @@ describe("ContentTabs", () => {
 
   it("filters inventory to weapons only via the Weapons chip", () => {
     fireEvent.click(screen.getByRole("tab", { name: /Inventory/ }));
+    expect(screen.getByRole("columnheader", { name: "Equipment" })).toBeInTheDocument();
+    expect(screen.getByRole("columnheader", { name: "Weight" })).toBeInTheDocument();
+    expect(screen.getByRole("columnheader", { name: "Quantity" })).toBeInTheDocument();
     expect(screen.getByText("Spellbook")).toBeInTheDocument();
     expect(screen.getByText("Longsword")).toBeInTheDocument();
     expect(screen.getByText("Hempen Rope")).toBeInTheDocument();
-    expect(screen.getByText("x2")).toBeInTheDocument();
+    expect(within(screen.getByRole("row", { name: /Longsword/ })).getByText("2")).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Weapons" }));
     expect(screen.queryByText("Spellbook")).not.toBeInTheDocument();
     expect(screen.queryByText("Hempen Rope")).not.toBeInTheDocument();
@@ -137,7 +142,7 @@ describe("ContentTabs", () => {
 
   it("opens inventory item details with real item metadata", () => {
     fireEvent.click(screen.getByRole("tab", { name: /Inventory/ }));
-    fireEvent.click(screen.getByRole("button", { name: /Hempen Rope/ }));
+    fireEvent.click(screen.getByRole("button", { name: "Open Hempen Rope" }));
 
     const dialog = screen.getByRole("dialog");
     expect(within(dialog).getByText("Other Gear")).toBeInTheDocument();

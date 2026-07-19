@@ -18,6 +18,7 @@ import {
   type EquipmentAcquisitionMode,
   type EquipmentChoicesBySource,
   type HpRollChoice,
+  type ImportedInventoryItem,
   type InventoryEntry,
 } from "@/src/types/characterBuild";
 import { createDefaultPlayState, normalizePlayState } from "@/rules/restRules";
@@ -570,10 +571,40 @@ function sanitizeLevel(level: number): number {
 function normalizeInventory(inventory: InventoryEntry[]): InventoryEntry[] {
   return inventory
     .filter((entry) => entry.itemId && entry.quantity > 0)
-    .map((entry) => ({
-      itemId: entry.itemId,
-      quantity: Math.max(1, Math.floor(entry.quantity)),
-    }));
+    .map((entry) => {
+      const customItem = normalizeImportedInventoryItem(entry.customItem);
+
+      return {
+        itemId: entry.itemId,
+        quantity: Math.max(1, Math.floor(entry.quantity)),
+        ...(customItem ? { customItem } : {}),
+      };
+    });
+}
+
+function normalizeImportedInventoryItem(
+  item: ImportedInventoryItem | undefined,
+): ImportedInventoryItem | undefined {
+  if (!item?.name?.trim()) {
+    return undefined;
+  }
+
+  return {
+    name: item.name.trim(),
+    source: item.source?.trim() || "Imported",
+    category: item.category ?? "Other Gear",
+    ...(item.type ? { type: item.type } : {}),
+    ...(item.detail ? { detail: item.detail } : {}),
+    ...(item.rarity ? { rarity: item.rarity } : {}),
+    ...(item.isMagical != null ? { isMagical: item.isMagical } : {}),
+    ...(item.isContainer != null ? { isContainer: item.isContainer } : {}),
+    ...(item.attunementRequired != null
+      ? { attunementRequired: item.attunementRequired }
+      : {}),
+    ...(item.weightKg != null ? { weightKg: item.weightKg } : {}),
+    ...(item.value != null ? { value: item.value } : {}),
+    ...(item.charges ? { charges: item.charges } : {}),
+  };
 }
 
 function normalizeEquippedItemIds(

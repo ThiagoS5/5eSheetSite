@@ -56,11 +56,12 @@ This is the current audited baseline as of 2026-07-16.
 
 ### Domain And Persistence
 
-- `CharacterBuild` is the canonical persisted model at schema v15.
+- `CharacterBuild` is the canonical persisted model at schema v16.
 - The persisted shape is split into `draft`, `progression`, `choices`, `playState`, `derivedSheet`, and `exportMetadata`.
 - Store persistence, Vault reads, and canonical import normalize old saves through the shared `migrateCharacterBuild(raw, fromVersion)` path.
 - Schema migrations are covered for the important historical shapes, with fixture-based tests.
 - Imported external sheet snapshots can mark historical non-subclass level choices as resolved through the imported level, without fabricating Forge & Fate ASI/feat history.
+- Imported inventory can preserve Foundry-only item metadata when no 5eTools/Plutonium catalog match exists, instead of converting carried items into review notes.
 
 ### Rules Engine
 
@@ -80,7 +81,7 @@ This is the current audited baseline as of 2026-07-16.
 - Subclasses are modeled with a dedicated builder step and through level-up requirements.
 - Feats and ASI are mutually exclusive at the choice point, with categories, prerequisites, attribute caps, and curated mechanical effects.
 - Spellcasting has normalized spells, class spell lists, filters, slot derivation, save DC, spell attack, cantrip/known/prepared limits, and sheet/export visibility.
-- Inventory has quantities, equip/unequip, item catalog search/filtering, armor/shield AC effects, magic AC/save/weapon bonuses, weapon attacks, carried load, and carried inventory rendering.
+- Inventory has quantities, equip/unequip, item catalog search/filtering, imported custom items, armor/shield AC effects, magic AC/save/weapon bonuses, weapon attacks, carried load, and carried inventory rendering.
 
 ### Exports
 

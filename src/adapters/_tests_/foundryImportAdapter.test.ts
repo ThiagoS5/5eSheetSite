@@ -69,6 +69,27 @@ describe("foundryImportAdapter", () => {
         { itemId: "rapier-xphb", quantity: 1 },
         { itemId: "dagger-xphb", quantity: 2 },
         { itemId: "backpack-xphb", quantity: 1 },
+        {
+          itemId: "foundry-trade-ledger-of-doom",
+          quantity: 1,
+          customItem: expect.objectContaining({
+            name: "Trade Ledger of Doom",
+            source: "Foundry VTT",
+            category: "Wondrous",
+            isMagical: true,
+            attunementRequired: true,
+            charges: { current: 2, max: 3 },
+          }),
+        },
+        {
+          itemId: "foundry-3-plate-armor",
+          quantity: 1,
+          customItem: expect.objectContaining({
+            name: "+3 Plate Armor",
+            category: "Armor",
+            isMagical: true,
+          }),
+        },
       ]),
     );
     expect(build.draft.equippedItemIds).toEqual(
@@ -82,7 +103,10 @@ describe("foundryImportAdapter", () => {
     expect(build.draft.description.notas).not.toContain(
       "Unmapped Foundry subclass: Shadow Magic",
     );
-    expect(build.draft.description.notas).toContain("Trade Ledger of Doom");
+    expect(build.draft.description.notas).not.toContain("Unmapped Foundry items");
+    expect(build.derivedSheet.inventory.map((entry) => entry.item.name)).toContain(
+      "Trade Ledger of Doom",
+    );
 
     const characterClass = getBuilderClasses().find(
       (entry) => entry.id === build.choices.selectedClassId,
@@ -288,7 +312,27 @@ function createFoundryActorFixture() {
         _id: "custom-ledger-id",
         name: "Trade Ledger of Doom",
         type: "loot",
-        system: { identifier: "trade-ledger-of-doom", quantity: 1 },
+        system: {
+          identifier: "trade-ledger-of-doom",
+          quantity: 1,
+          rarity: "rare",
+          properties: ["mgc"],
+          attunement: "required",
+          uses: { max: 3, spent: 1 },
+        },
+      },
+      {
+        _id: "custom-plate-id",
+        name: "+3 Plate Armor",
+        type: "equipment",
+        system: {
+          identifier: "3-plate-armor",
+          quantity: 1,
+          rarity: "legendary",
+          properties: ["mgc"],
+          type: { value: "heavy", baseItem: "plate" },
+          armor: { value: 18, magicalBonus: 3 },
+        },
       },
       {
         _id: "mage-hand-id",

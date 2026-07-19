@@ -123,7 +123,7 @@ export function validateBuilderStep(
 
       const requiredLanguages = getRequiredLanguageCount(state);
 
-      if (state.speciesLanguages.length !== requiredLanguages) {
+      if (state.speciesLanguages.length < requiredLanguages) {
         messages.push(`Choose ${requiredLanguages} species languages.`);
       }
 
@@ -132,7 +132,7 @@ export function validateBuilderStep(
 
     const requiredLanguages = getRequiredLanguageCount(state);
 
-    if (state.speciesLanguages.length !== requiredLanguages) {
+    if (state.speciesLanguages.length < requiredLanguages) {
       return [`Choose ${requiredLanguages} species languages.`];
     }
   }

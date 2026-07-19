@@ -24,6 +24,8 @@ import type {
   BuilderClass,
   BuilderEquipmentOption,
   BuilderStepSlug,
+  InventoryItemType,
+  ItemCategory,
 } from "@/src/types/builder";
 import type { AttributeBonuses, AttributeKey, CharacterAttributes } from "@/src/types/dnd";
 import type { CharacterSpellcastingChoices } from "@/src/types/spells";
@@ -66,8 +68,6 @@ export type ImportFoundryCharacterOptions = Pick<
 >;
 
 const DANGEROUS_KEYS = new Set(["__proto__", "constructor", "prototype"]);
-const FOUNDRY_IMPORT_NOTE = "Imported from Foundry VTT. Review any custom or non-2024 content.";
-
 const ABILITY_FROM_FOUNDRY: Record<string, AttributeKey> = {
   str: "forca",
   dex: "destreza",
@@ -143,7 +143,6 @@ export function importFoundryCharacter(
   const notes = createImportNotes({
     baseNotes: readDetailsString(actor.system, "notes"),
     identity,
-    inventory,
     items,
     spells,
   });
@@ -394,7 +393,6 @@ function resolveLanguages(system: Record<string, unknown> | undefined): string[]
 function resolveInventory(items: FoundryItemLike[]): {
   entries: InventoryEntry[];
   equippedItemIds: string[];
-  unmappedNames: string[];
 } {
   const inventoryTypes = new Set<FoundryItemType>([
     "consumable",
@@ -405,9 +403,8 @@ function resolveInventory(items: FoundryItemLike[]): {
     "weapon",
   ]);
   const itemBySlug = createEquipmentLookup();
-  const quantityById = new Map<string, number>();
+  const entriesById = new Map<string, InventoryEntry>();
   const equippedIds = new Set<string>();
-  const unmappedNames: string[] = [];
 
   for (const item of items) {
     if (!inventoryTypes.has(item.type as FoundryItemType)) continue;
@@ -416,26 +413,205 @@ function resolveInventory(items: FoundryItemLike[]): {
       .map((slug) => itemBySlug.get(slug))
       .find((entry): entry is BuilderEquipmentOption => Boolean(entry));
 
-    if (!option) {
-      const name = readString(item.name);
-      if (name && name !== "Unarmed Strike") unmappedNames.push(name);
+    const name = readString(item.name);
+    if (!option && name === "Unarmed Strike") {
       continue;
     }
 
-    const quantity = Math.max(1, Math.floor(readNumber(readRecord(item.system).quantity) ?? 1));
-    quantityById.set(option.id, (quantityById.get(option.id) ?? 0) + quantity);
+    const itemId = option?.id ?? createImportedItemId(item);
+    const customItem = option ? undefined : createImportedInventoryItem(item);
+    if (!option && !customItem) {
+      continue;
+    }
+
+    const existing = entriesById.get(itemId);
+    entriesById.set(itemId, {
+      itemId,
+      quantity: (existing?.quantity ?? 0) + readFoundryItemQuantity(item),
+      ...(customItem
+        ? { customItem }
+        : existing?.customItem
+          ? { customItem: existing.customItem }
+          : {}),
+    });
+
     if (readRecord(item.system).equipped === true) {
-      equippedIds.add(option.id);
+      equippedIds.add(itemId);
     }
   }
 
   return {
-    entries: [...quantityById.entries()].map(([itemId, quantity]) => ({
-      itemId,
-      quantity,
-    })),
+    entries: [...entriesById.values()],
     equippedItemIds: [...equippedIds],
-    unmappedNames,
+  };
+}
+
+function readFoundryItemQuantity(item: FoundryItemLike): number {
+  return Math.max(1, Math.floor(readNumber(readRecord(item.system).quantity) ?? 1));
+}
+
+function createImportedItemId(item: FoundryItemLike): string {
+  const system = readRecord(item.system);
+  const slug = normalizeSlug(
+    readString(system.identifier) ||
+      stripParenthetical(readString(item.name)) ||
+      readString(item._id),
+  );
+
+  return `foundry-${slug || "item"}`;
+}
+
+function createImportedInventoryItem(
+  item: FoundryItemLike,
+): InventoryEntry["customItem"] | undefined {
+  const name = readString(item.name);
+  if (!name) {
+    return undefined;
+  }
+
+  const system = readRecord(item.system);
+  const description = stripHtml(
+    readString(readRecord(system.description).value) ||
+      readString(readRecord(system.description).chat),
+  );
+  const category = resolveFoundryItemCategory(item);
+  const weightKg = readFoundryWeightKg(system);
+  const value = readFoundryValueCp(system);
+  const charges = resolveFoundryItemCharges(system);
+  const rarity = readString(system.rarity);
+
+  return {
+    name,
+    source: "Foundry VTT",
+    category,
+    type: resolveFoundryInventoryType(item, category),
+    ...(description ? { detail: description } : {}),
+    ...(rarity ? { rarity } : {}),
+    isMagical: isFoundryItemMagical(item, category, rarity),
+    isContainer: item.type === "container",
+    attunementRequired: normalizeSlug(readString(system.attunement)) === "required",
+    ...(weightKg != null ? { weightKg } : {}),
+    ...(value != null ? { value } : {}),
+    ...(charges ? { charges } : {}),
+  };
+}
+
+function resolveFoundryItemCategory(item: FoundryItemLike): ItemCategory {
+  const system = readRecord(item.system);
+  const type = readRecord(system.type);
+  const typeValue = normalizeSlug(readString(type.value));
+  const baseItem = normalizeSlug(readString(type.baseItem));
+  const name = normalizeSlug(readString(item.name));
+  const armor = readRecord(system.armor);
+
+  if (item.type === "weapon") return "Weapon";
+  if (
+    item.type === "equipment" &&
+    (typeValue.includes("armor") ||
+      typeValue === "light" ||
+      typeValue === "medium" ||
+      typeValue === "heavy" ||
+      typeValue === "shield" ||
+      baseItem === "plate" ||
+      readNumber(armor.value) != null)
+  ) {
+    return "Armor";
+  }
+  if (item.type === "consumable" && name.includes("potion")) return "Potion";
+  if (typeValue.includes("ring")) return "Ring";
+  if (typeValue.includes("rod")) return "Rod";
+  if (typeValue.includes("scroll")) return "Scroll";
+  if (typeValue.includes("staff")) return "Staff";
+  if (typeValue.includes("wand")) return "Wand";
+  if (
+    typeValue.includes("wondrous") ||
+    readString(system.rarity) ||
+    resolveFoundryItemCharges(system)
+  ) {
+    return "Wondrous";
+  }
+
+  return "Other Gear";
+}
+
+function resolveFoundryInventoryType(
+  item: FoundryItemLike,
+  category: ItemCategory,
+): InventoryItemType {
+  const typeValue = normalizeSlug(readString(readRecord(readRecord(item.system).type).value));
+
+  if (item.type === "weapon") return "weapon";
+  if (category === "Armor") return typeValue === "shield" ? "shield" : "armor";
+  if (item.type === "tool") return "tool";
+  if (item.type === "container") return "pack";
+  if (item.type === "consumable") return "consumable";
+  return "gear";
+}
+
+function isFoundryItemMagical(
+  item: FoundryItemLike,
+  category: ItemCategory,
+  rarity: string,
+): boolean {
+  const system = readRecord(item.system);
+  const properties = readStringArray(system.properties).map(normalizeSlug);
+  const magicalBonus =
+    readNumber(system.magicalBonus) ?? readNumber(readRecord(system.armor).magicalBonus);
+
+  return (
+    properties.includes("mgc") ||
+    Boolean(rarity && rarity !== "none") ||
+    Boolean(magicalBonus && magicalBonus > 0) ||
+    category === "Potion" ||
+    category === "Ring" ||
+    category === "Rod" ||
+    category === "Scroll" ||
+    category === "Staff" ||
+    category === "Wand" ||
+    category === "Wondrous" ||
+    /^\+\d+\b/.test(readString(item.name))
+  );
+}
+
+function readFoundryWeightKg(system: Record<string, unknown>): number | undefined {
+  const weight = readRecord(system.weight);
+  const value = readNumber(weight.value);
+  if (value == null) return undefined;
+
+  const units = normalizeSlug(readString(weight.units));
+  const kilograms = units === "lb" || units === "lbs" ? value * 0.45359237 : value;
+  return Math.round(kilograms * 100) / 100;
+}
+
+function readFoundryValueCp(system: Record<string, unknown>): number | undefined {
+  const price = readRecord(system.price);
+  const value = readNumber(price.value);
+  if (value == null) return undefined;
+
+  const denomination = normalizeSlug(readString(price.denomination) || "gp");
+  const multiplier =
+    denomination === "pp" || denomination === "pl"
+      ? 1000
+      : denomination === "gp" || denomination === "po"
+        ? 100
+        : denomination === "ep" || denomination === "pe"
+          ? 50
+          : denomination === "sp"
+            ? 10
+            : 1;
+
+  return Math.round(value * multiplier);
+}
+
+function resolveFoundryItemCharges(system: Record<string, unknown>) {
+  const uses = readRecord(system.uses);
+  const max = readNumber(uses.max);
+  if (!max || max <= 0) return undefined;
+
+  const spent = Math.max(0, readNumber(uses.spent) ?? 0);
+  return {
+    current: Math.max(0, max - spent),
+    max,
   };
 }
 
@@ -654,11 +830,10 @@ function isSubclassRequired(characterClass: BuilderClass, level: number): boolea
 function createImportNotes(input: {
   baseNotes: string;
   identity: ReturnType<typeof resolveIdentity>;
-  inventory: ReturnType<typeof resolveInventory>;
   items: FoundryItemLike[];
   spells: ReturnType<typeof resolveSpellcasting>;
 }): string {
-  const notes = [input.baseNotes, FOUNDRY_IMPORT_NOTE].filter(Boolean);
+  const notes = [input.baseNotes].filter(Boolean);
 
   if (input.identity.subclassItem && !input.identity.subclassId) {
     notes.push(`Unmapped Foundry subclass: ${readString(input.identity.subclassItem.name)}`);
@@ -671,7 +846,6 @@ function createImportNotes(input: {
     );
   }
 
-  appendUnmappedNote(notes, "items", input.inventory.unmappedNames);
   appendUnmappedNote(notes, "spells", input.spells.unmappedNames);
 
   return notes.join("\n\n");
@@ -785,6 +959,10 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function readString(value: unknown): string {
   return typeof value === "string" ? value.trim() : "";
+}
+
+function readStringArray(value: unknown): string[] {
+  return Array.isArray(value) ? value.map(readString).filter(Boolean) : [];
 }
 
 function readNumber(value: unknown): number | undefined {

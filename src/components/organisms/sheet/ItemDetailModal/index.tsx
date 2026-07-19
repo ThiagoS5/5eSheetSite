@@ -75,6 +75,7 @@ export function ItemDetailModal({ item, onClose }: ItemDetailModalProps) {
                         {item.type && <Tile label="Type" value={item.type} />}
                         {item.cost && <Tile label="Cost" value={item.cost} />}
                         {item.weight && <Tile label="Weight" value={item.weight} />}
+                        {item.charges && <Tile label="Charges" value={item.charges} />}
                         {item.armorClass != null && <Tile label="AC" value={String(item.armorClass)} />}
                         {item.rarity && <Tile label="Rarity" value={item.rarity} />}
                         {item.properties && <Tile label="Properties" value={item.properties} />}

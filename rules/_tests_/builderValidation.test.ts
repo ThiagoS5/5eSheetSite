@@ -31,6 +31,17 @@ describe("builder validation", () => {
     expect(validateBuilderStep("equipamento", initialCharacterState)).toHaveLength(1);
   });
 
+  it("accepts bonus languages beyond the standard required count", () => {
+    expect(
+      validateBuilderStep("detalhes-especie", {
+        ...initialCharacterState,
+        selectedSpeciesId: "dragonborn-xphb",
+        speciesChoices: { "draconic-ancestry": "Black" },
+        speciesLanguages: ["Common", "Draconic", "Infernal", "Primordial"],
+      }),
+    ).toStrictEqual([]);
+  });
+
   it("clears the equipment error once the class source has a resolved choice", () => {
     expect(
       validateBuilderStep("equipamento", {

@@ -46,7 +46,7 @@ Rules modules will receive normalized class progression data and derive:
 
 ## Migration Plan
 
-The future schema bump should migrate the current v15 single-class fields into:
+The future schema bump should migrate the current v16 single-class fields into:
 
 ```ts
 classLevels: [
@@ -80,5 +80,5 @@ Feature work that touches classes before multiclass should keep function signatu
 
 - Implementing multiclass UI.
 - Migrating `CharacterBuild` to `classLevels`.
-- Supporting multiclass spell-slot calculation in the current v15 schema.
+- Supporting multiclass spell-slot calculation in the current v16 schema.
 - Changing canonical export format for multiclass before the schema bump exists.

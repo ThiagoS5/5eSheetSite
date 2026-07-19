@@ -4,7 +4,7 @@ import { CHARACTER_BUILD_SCHEMA_VERSION } from "@/src/types/characterBuild";
 
 describe("schema v15 migration - external level-choice baseline", () => {
   it("pins the current schema version", () => {
-    expect(CHARACTER_BUILD_SCHEMA_VERSION).toBe(15);
+    expect(CHARACTER_BUILD_SCHEMA_VERSION).toBe(16);
   });
 
   it("defaults old builds to no external level-choice baseline", () => {

@@ -813,7 +813,10 @@ function extractFlatState(state: FlatCharacterBuilderState): FlatCharacterBuilde
     selectedClassId: state.selectedClassId,
     selectedSubclassId: state.selectedSubclassId,
     selectedBackgroundId: state.selectedBackgroundId,
-    inventory: state.inventory.map((entry) => ({ ...entry })),
+    inventory: state.inventory.map((entry) => ({
+      ...entry,
+      customItem: entry.customItem ? { ...entry.customItem } : undefined,
+    })),
     equippedItemIds: [...state.equippedItemIds],
     equipmentChoicesBySource: { ...state.equipmentChoicesBySource },
     maxUnlockedStepIndex: state.maxUnlockedStepIndex,

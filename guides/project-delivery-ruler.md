@@ -36,7 +36,7 @@ Next.js 16 has breaking changes. Before touching routes, layouts, metadata, or f
 
 ### Complete
 
-- `CharacterBuild` schema v15 with `draft`, `progression`, `choices`, `playState`, `derivedSheet`, and `exportMetadata`.
+- `CharacterBuild` schema v16 with `draft`, `progression`, `choices`, `playState`, `derivedSheet`, and `exportMetadata`.
 - Local Vault with create/resume/duplicate/delete/search/import/status and direct Forge & Fate JSON export for ready characters.
 - 10-step builder with validation and protected navigation.
 - Guided/standard/quick-build creation modes.
@@ -47,10 +47,10 @@ Next.js 16 has breaking changes. Before touching routes, layouts, metadata, or f
 - ASI/feat exclusivity, feat categories, prerequisites, attribute caps, and curated feat effects.
 - Spell catalog, spell choices, derived spellcasting, slot spending, and rest recovery.
 - Play state: HP, temp HP, damage/heal, rests, slots, resources, death saves, inspiration, conditions, overrides, notes, and campaign log.
-- Real inventory: quantities, item catalog, equip/unequip, armor/shield AC, magic AC/save/weapon bonuses, weapon attacks, carry load.
+- Real inventory: quantities, item catalog, imported custom items, equip/unequip, armor/shield AC, magic AC/save/weapon bonuses, weapon attacks, carry load.
 - Rules text AST plus React/plain-text rendering.
 - Foundry VTT export.
-- Foundry VTT import with external level-choice baselines so imported snapshots do not reopen historical non-subclass level choices.
+- Foundry VTT import with external level-choice baselines and custom item preservation so imported snapshots do not reopen historical non-subclass level choices or drop carried items.
 - Canonical JSON export/import utilities with round-trip and legacy-schema tests.
 - First-class Forge & Fate JSON export actions in the Vault, conclusion, and sheet surfaces.
 - Dashboard import for canonical JSON.
