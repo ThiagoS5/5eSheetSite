@@ -8,7 +8,7 @@ import { importFoundryCharacter } from "@/src/adapters/foundryImportAdapter";
 import { saveCharacter } from "@/src/services/characterService";
 import { ActionBtn } from "@/src/components/atoms/ActionBtn";
 
-const MAX_IMPORT_BYTES = 2 * 1024 * 1024; // 2 MB
+const MAX_IMPORT_BYTES = 5 * 1024 * 1024;
 
 export function ImportCharacterButton() {
   const inputRef = useRef<HTMLInputElement>(null);

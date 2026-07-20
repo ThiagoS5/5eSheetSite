@@ -29,3 +29,25 @@ export function getItemCatalog(): CatalogItem[] {
   return cachedCatalog;
 }
 
+export interface ToolProficiencyOption {
+  id: string;
+  name: string;
+  source: string;
+}
+
+/** Normalized 2024 tool catalog used by flexible proficiency choices. */
+export function getStandardToolProficiencies(): ToolProficiencyOption[] {
+  const byName = new Map<string, ToolProficiencyOption>();
+
+  for (const item of getItemCatalog()) {
+    if (item.type !== "tool" || item.source !== "XPHB") continue;
+    const key = item.name.trim().toLowerCase();
+    if (!key || byName.has(key)) continue;
+    byName.set(key, { id: item.id, name: item.name.trim(), source: item.source });
+  }
+
+  return [...byName.values()].sort((first, second) =>
+    first.name.localeCompare(second.name),
+  );
+}
+

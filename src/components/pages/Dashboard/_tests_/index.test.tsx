@@ -174,6 +174,7 @@ describe("Dashboard", () => {
       expect(savedBuild?.choices.creationPreferences).toEqual({
         activeSources: ["XPHB"],
         progressionMode: "milestone",
+        choiceLimits: "rules",
       });
     });
     expect(push).toHaveBeenCalledWith("/builder/classe");
@@ -198,7 +199,7 @@ describe("Dashboard", () => {
     );
 
     fireEvent.click(screen.getByRole("button", { name: /Create Character/i }));
-    fireEvent.click(screen.getByRole("button", { name: "Guerreiro marcial" }));
+    fireEvent.click(screen.getByRole("button", { name: "Martial Fighter" }));
 
     await waitFor(() => {
       const saves = JSON.parse(localStorage.getItem("forge-fate-character-saves:v1") ?? "{}");
@@ -206,6 +207,7 @@ describe("Dashboard", () => {
       expect(savedBuild?.choices.creationPreferences).toEqual({
         activeSources: ["XPHB"],
         progressionMode: "milestone",
+        choiceLimits: "rules",
       });
     });
     expect(push).toHaveBeenCalledWith("/builder/descricao");

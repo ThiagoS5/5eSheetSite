@@ -73,7 +73,7 @@ describe("CreationPreferencesDialog", () => {
 
   it("seeds from global defaults when the character has no per-character prefs", () => {
     writeGlobalPreferences({
-      creationDefaults: { activeSources: ["XPHB"], progressionMode: "milestone" },
+      creationDefaults: { activeSources: ["XPHB"], progressionMode: "milestone", choiceLimits: "rules" },
     });
 
     render(
@@ -87,11 +87,11 @@ describe("CreationPreferencesDialog", () => {
 
   it("prefers per-character prefs over global defaults", () => {
     writeGlobalPreferences({
-      creationDefaults: { activeSources: ["XPHB"], progressionMode: "milestone" },
+      creationDefaults: { activeSources: ["XPHB"], progressionMode: "milestone", choiceLimits: "rules" },
     });
 
     const store = createCharacterStore();
-    store.getState().setCreationPreferences({ activeSources: ["XPHB"], progressionMode: "xp" });
+    store.getState().setCreationPreferences({ activeSources: ["XPHB"], progressionMode: "xp", choiceLimits: "rules" });
 
     render(
       <CharacterStoreProvider store={store}>
@@ -170,7 +170,7 @@ describe("CreationPreferencesDialog", () => {
   it("preserves the saved beginner-mode preference when saving creation preferences", () => {
     writeGlobalPreferences({
       beginnerMode: true,
-      creationDefaults: { activeSources: ["XPHB"], progressionMode: "xp" },
+      creationDefaults: { activeSources: ["XPHB"], progressionMode: "xp", choiceLimits: "rules" },
     });
 
     render(
@@ -183,5 +183,26 @@ describe("CreationPreferencesDialog", () => {
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
 
     expect(readGlobalPreferences().beginnerMode).toBe(true);
+  });
+
+  it("persists the per-character flexible choices switch", () => {
+    function ChoiceLimitsProbe() {
+      const choiceLimits = useCharacterStore(
+        (state) => state.creationPreferences?.choiceLimits ?? "rules",
+      );
+      return <span data-testid="choice-limits">{choiceLimits}</span>;
+    }
+
+    render(
+      <CharacterStoreProvider>
+        <ChoiceLimitsProbe />
+        <CreationPreferencesDialog open onClose={() => {}} />
+      </CharacterStoreProvider>,
+    );
+
+    fireEvent.click(screen.getByRole("switch", { name: "Flexible choices" }));
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+
+    expect(screen.getByTestId("choice-limits")).toHaveTextContent("flexible");
   });
 });

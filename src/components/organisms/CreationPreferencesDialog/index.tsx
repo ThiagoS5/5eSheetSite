@@ -10,7 +10,7 @@ import {
   normalizeActiveSourceSelection,
 } from "@/src/services/sourcePreferenceService";
 import { useCharacterStore } from "@/src/store/useCharacterStore";
-import type { ProgressionMode } from "@/src/types/characterBuild";
+import type { ChoiceLimits, ProgressionMode } from "@/src/types/characterBuild";
 
 import type { CreationPreferencesDialogProps } from "./index.types";
 export type { CreationPreferencesDialogProps } from "./index.types";
@@ -24,6 +24,7 @@ export function CreationPreferencesDialog({
 
   const [activeSources, setActiveSources] = useState<string[]>([]);
   const [progressionMode, setProgressionMode] = useState<ProgressionMode>("xp");
+  const [choiceLimits, setChoiceLimits] = useState<ChoiceLimits>("rules");
   const sourceOptions = useMemo(() => getAvailableSourcePreferenceOptions(), []);
   const [snapshotTaken, setSnapshotTaken] = useState(false);
   if (open && !snapshotTaken) {
@@ -31,6 +32,7 @@ export function CreationPreferencesDialog({
     const saved = creationPreferences ?? readGlobalPreferences().creationDefaults;
     setActiveSources(normalizeActiveSourceSelection(saved.activeSources));
     setProgressionMode(saved.progressionMode);
+    setChoiceLimits(saved.choiceLimits);
   } else if (!open && snapshotTaken) {
     setSnapshotTaken(false);
   }
@@ -57,6 +59,7 @@ export function CreationPreferencesDialog({
     const prefs = {
       activeSources: normalizeActiveSourceSelection(activeSources),
       progressionMode,
+      choiceLimits,
     };
     setCreationPreferences(prefs);
     writeGlobalPreferences({
@@ -75,13 +78,13 @@ export function CreationPreferencesDialog({
               Creation Preferences
             </Dialog.Title>
             <Dialog.Description className="sr-only">
-              Choose active sources and the character progression mode.
+              Choose active sources, progression, and whether additional choices are allowed.
             </Dialog.Description>
             <Dialog.Close asChild>
               <button
                 type="button"
                 aria-label="Close"
-                className="absolute right-3 top-3 z-40 inline-flex h-9 w-9 items-center justify-center rounded-full border border-border bg-muted/85 text-subdued outline-none transition hover:text-foreground focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70"
+                className="absolute right-3 top-3 z-40 inline-flex h-10 w-10 items-center justify-center rounded-full border border-border bg-muted/85 text-subdued outline-none transition hover:text-foreground focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70"
               >
                 <X aria-hidden="true" className="h-5 w-5" />
               </button>
@@ -163,20 +166,60 @@ export function CreationPreferencesDialog({
                   Milestone
                 </label>
               </fieldset>
+
+              <section aria-labelledby="choice-limits-heading" className="space-y-2">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <h2
+                      id="choice-limits-heading"
+                      className="text-xs font-bold uppercase tracking-widest text-subdued"
+                    >
+                      Flexible Choices
+                    </h2>
+                    <p className="mt-1 max-w-sm text-sm leading-6 text-muted-foreground">
+                      Normal requirements stay visible and minimums still apply, but you may add
+                      extra skills, tools, languages, feats, options, cantrips, and spells.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={choiceLimits === "flexible"}
+                    aria-label="Flexible choices"
+                    onClick={() =>
+                      setChoiceLimits((current) =>
+                        current === "flexible" ? "rules" : "flexible",
+                      )
+                    }
+                    className={`relative mt-0.5 h-7 w-12 shrink-0 rounded-full border outline-none transition focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70 ${
+                      choiceLimits === "flexible"
+                        ? "border-primary bg-primary"
+                        : "border-border bg-muted"
+                    }`}
+                  >
+                    <span
+                      aria-hidden="true"
+                      className={`absolute top-1 h-[18px] w-[18px] rounded-full bg-foreground shadow-sm transition-transform motion-reduce:transition-none ${
+                        choiceLimits === "flexible" ? "translate-x-6" : "translate-x-1"
+                      }`}
+                    />
+                  </button>
+                </div>
+              </section>
             </div>
 
             <div className="flex items-center justify-end gap-2 border-t border-white/[0.07] px-5 py-3">
               <button
                 type="button"
                 onClick={onClose}
-                className="rounded-md border border-white/[0.12] px-4 py-2 text-sm font-semibold text-subdued outline-none transition hover:text-foreground focus-visible:ring-2 focus-visible:ring-brand-crimson-alt/70"
+                className="min-h-10 rounded-md border border-white/[0.12] px-4 py-2 text-sm font-semibold text-subdued outline-none transition hover:text-foreground focus-visible:ring-2 focus-visible:ring-brand-crimson-alt/70"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={handleSave}
-                className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-foreground outline-none transition focus-visible:ring-2 focus-visible:ring-brand-crimson-alt/70"
+                className="min-h-10 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-foreground outline-none transition focus-visible:ring-2 focus-visible:ring-brand-crimson-alt/70"
               >
                 Save
               </button>

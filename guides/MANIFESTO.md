@@ -42,7 +42,7 @@ Any new feature should plug into that lifecycle instead of becoming an isolated 
 
 ## 4. Current Implemented Baseline
 
-This is the current audited baseline as of 2026-07-16.
+This is the current audited baseline as of 2026-07-19.
 
 ### Product Surfaces
 
@@ -50,18 +50,20 @@ This is the current audited baseline as of 2026-07-16.
 - 10-step builder: class, class features, subclass, background, species, species details, ability scores, equipment, description, conclusion. (The dedicated subclass step landed with schema v14; older docs may still say "9-step".)
 - Creation modes: guided mode, standard mode, and quick build.
 - Dedicated subclass builder step and level-up modal with state-integrity guarantees (cancel reverts).
-- Security hardening: CSP + headers in `next.config.ts`, sanitized notes preview (DOMPurify), import hardening with anti-prototype-pollution reviver and 2 MB size limit, no external CDN assets.
+- Security hardening: CSP + headers in `next.config.ts`, sanitized notes preview (DOMPurify), anti-prototype-pollution import parsing, a 5 MiB canonical envelope, a sanitized 2 MiB Foundry-origin snapshot, and no external CDN assets.
 - Beginner guidance with recommendation quizzes and inline contextual help.
 - Dense `/sheet` and builder conclusion surfaces that share `CharacterSheetView`.
 
 ### Domain And Persistence
 
-- `CharacterBuild` is the canonical persisted model at schema v16.
+- `CharacterBuild` is the canonical persisted model at schema v17.
 - The persisted shape is split into `draft`, `progression`, `choices`, `playState`, `derivedSheet`, and `exportMetadata`.
 - Store persistence, Vault reads, and canonical import normalize old saves through the shared `migrateCharacterBuild(raw, fromVersion)` path.
 - Schema migrations are covered for the important historical shapes, with fixture-based tests.
 - Imported external sheet snapshots can mark historical non-subclass level choices as resolved through the imported level, without fabricating Forge & Fate ASI/feat history.
 - Imported inventory can preserve Foundry-only item metadata when no 5eTools/Plutonium catalog match exists, instead of converting carried items into review notes.
+- Per-character creation preferences support strict rules or opt-in flexible choices. Flexible extras remain source-isolated and persisted when strict limits are restored; minimum requirements and structural exclusivity still apply.
+- A sanitized opaque Foundry-origin snapshot preserves unknown metadata for canonical round trips without making the external format internal truth.
 
 ### Rules Engine
 
@@ -73,11 +75,11 @@ This is the current audited baseline as of 2026-07-16.
 
 - Level-aware proficiency, HP, hit dice, class features, subclass requirements, ASI/feat requirements, feature choices, and spellcasting exist.
 - `LevelUpFlow` supports HP choice, subclass choice, ASI/feat choice, feature-option choice, and spell choices for spellcasters.
-- Play state supports damage, healing, temporary HP, short rest, long rest, spent spell slots, resource uses, conditions, death saves, inspiration, HP/AC overrides, notes, and campaign log.
+- Play state supports damage, healing, temporary HP, short rest, long rest, spent spell slots, resource uses, conditions, death saves, inspiration, HP/AC overrides, notes, and an independent Session Log.
 
 ### Character Options
 
-- Classes, species, backgrounds, languages, feats, spells, and item catalogs are normalized from local 5e data.
+- Classes, species, backgrounds, languages, tools, feats, spells, and item catalogs are normalized from local 5e data.
 - Subclasses are modeled with a dedicated builder step and through level-up requirements.
 - Feats and ASI are mutually exclusive at the choice point, with categories, prerequisites, attribute caps, and curated mechanical effects.
 - Spellcasting has normalized spells, class spell lists, filters, slot derivation, save DC, spell attack, cantrip/known/prepared limits, and sheet/export visibility.
@@ -85,10 +87,10 @@ This is the current audited baseline as of 2026-07-16.
 
 ### Exports
 
-- Foundry VTT export consumes `CharacterSheetSummary` and includes identity, abilities, skills, tools, traits, inventory, equipment, weapons, spells, and class/species/background items.
+- Foundry VTT import/export supports explicit `dnd5e-5.2` and `dnd5e-5.3` profiles. It uses a shared semantic projection for identity, abilities, skills, languages, tools, defenses, senses, currencies, play state, slots, spells, features, and inventory, then merges current values over preserved snapshot metadata on re-export.
 - Canonical Forge & Fate JSON export/import exists in `src/utils/canonicalExport.ts` with a versioned envelope, first-class export actions in the Vault/sheet/conclusion surfaces, and lossless round-trip tests.
 - Dashboard import writes imported characters into the Vault with a new save id.
-- Printable PDF generation exists through `@react-pdf/renderer`, with matrix tests for martial, spellcaster, high-level, rich-description, inventory, portrait, and long-notes cases.
+- Printable PDF generation exists through `@react-pdf/renderer`, shares the semantic export projection and spell grouping, and covers A4/Letter martial, high-level spellcaster, rich-description, inventory, portrait, play-state, notes, and Session Log cases.
 
 ## 5. Real Gaps And Next Features
 

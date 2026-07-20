@@ -6,7 +6,6 @@ import { useCharacterStore } from "@/src/store/useCharacterStore";
 import { cn } from "@/src/lib/utils";
 import { focusRing } from "@/src/lib/styles";
 import { MarkdownEditor } from "@/src/components/molecules/MarkdownEditor";
-import { SessionLogPanel } from "@/src/components/organisms/sheet/SessionLogPanel";
 
 type NoteField = Extract<keyof CharacterDescription, "tracos" | "personalidade" | "historia" | "notas">;
 
@@ -25,8 +24,7 @@ export function NotesPanel() {
   const activeLabel = SUB_TABS.find((t) => t.id === active)!.label;
 
   return (
-    <div className="flex flex-wrap items-start gap-[14px]">
-      <div className="flex min-w-[300px] flex-[2_1_380px] flex-col gap-3">
+    <div className="flex min-w-0 flex-col gap-3">
         <div className="flex flex-wrap gap-2">
           {SUB_TABS.map((t) => (
             <button
@@ -86,11 +84,6 @@ export function NotesPanel() {
             onChange={(v) => setDescriptionField(active, v)}
           />
         </section>
-      </div>
-
-      <div className="min-w-[220px] flex-1 basis-[250px]">
-        <SessionLogPanel />
-      </div>
     </div>
   );
 }

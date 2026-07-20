@@ -2,6 +2,7 @@ import type { CharacterDescription } from "@/src/types/builder";
 import type {
   CharacterBuild,
   CharacterBuildPlayState,
+  CharacterBuildAdditionalChoices,
   CoinPouch,
 } from "@/src/types/characterBuild";
 import type { CharacterSpellcastingChoices } from "@/src/types/spells";
@@ -65,6 +66,7 @@ export interface FlatCharacterBuilderState {
   skillModifierOverrides: Record<string, number>;
   hpRollByLevel: Record<string, HpRollChoice>;
   spellcasting?: CharacterSpellcastingChoices;
+  additionalChoices: CharacterBuildAdditionalChoices;
   playState?: CharacterBuildPlayState;
   creationPreferences?: CreationPreferences;
   beginnerMode?: boolean;
@@ -102,6 +104,7 @@ export interface CharacterBuilderActions {
   setLevelAsiOrFeat: (level: number, choice: AsiOrFeatChoice | undefined) => void;
   setLevelHpRoll: (level: number, roll: HpRollChoice | undefined) => void;
   setSpellcastingChoices: (choices: CharacterSpellcastingChoices) => void;
+  setAdditionalChoices: (choices: CharacterBuildAdditionalChoices) => void;
   applyDamage: (amount: number) => void;
   heal: (amount: number) => void;
   setTempHp: (amount: number) => void;

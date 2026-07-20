@@ -66,4 +66,30 @@ describe("HeroChoiceCard", () => {
 
     expect(container.querySelector("article")).toHaveClass("h-full");
   });
+
+  it("keeps SVG definition ids unique across multiple cards", () => {
+    const { container } = render(
+      <>
+        <HeroChoiceCard
+          title="Fighter"
+          badges={["XPHB"]}
+          description="A martial expert."
+          isActive={false}
+          onClickDetails={vi.fn()}
+          onClickSelect={vi.fn()}
+        />
+        <HeroChoiceCard
+          title="Wizard"
+          badges={["XPHB"]}
+          description="An arcane scholar."
+          isActive={false}
+          onClickDetails={vi.fn()}
+          onClickSelect={vi.fn()}
+        />
+      </>,
+    );
+
+    const ids = Array.from(container.querySelectorAll("[id]"), (node) => node.id);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
 });

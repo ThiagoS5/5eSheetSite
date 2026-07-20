@@ -2,9 +2,9 @@ import { describe, expect, it } from "vitest";
 import { normalizeCharacterBuild } from "@/src/store/characterBuildModel";
 import { CHARACTER_BUILD_SCHEMA_VERSION } from "@/src/types/characterBuild";
 
-describe("schema v16 migration - imported inventory metadata", () => {
+describe("schema v17 migration - flexible choices and Foundry origin", () => {
   it("pins the current schema version", () => {
-    expect(CHARACTER_BUILD_SCHEMA_VERSION).toBe(16);
+    expect(CHARACTER_BUILD_SCHEMA_VERSION).toBe(17);
   });
 
   it("defaults old inventory entries to catalog-backed items", () => {
@@ -90,5 +90,77 @@ describe("schema v16 migration - imported inventory metadata", () => {
         },
       },
     ]);
+  });
+
+  it("defaults v16 characters to rules mode with empty additional choices", () => {
+    const build = normalizeCharacterBuild({
+      choices: {
+        creationPreferences: {
+          activeSources: ["XPHB"],
+          progressionMode: "xp",
+        },
+      },
+      exportMetadata: {
+        schemaVersion: 16,
+        saveId: "schema-v16-flexible-default",
+        createdAt: "a",
+        updatedAt: "b",
+      },
+    } as never);
+
+    expect(build.choices.creationPreferences?.choiceLimits).toBe("rules");
+    expect(build.choices.additionalChoices).toMatchObject({
+      skillProficiencies: [],
+      toolProficiencies: [],
+      languages: [],
+      featIds: [],
+      customSpells: [],
+      customFeatures: [],
+    });
+  });
+
+  it("preserves additional choices and a sanitized Foundry snapshot", () => {
+    const build = normalizeCharacterBuild({
+      choices: {
+        additionalChoices: {
+          skillProficiencies: ["Arcana", "Arcana"],
+          toolProficiencies: ["Thieves' Tools"],
+          languages: ["Draconic"],
+          featIds: ["custom-feat"],
+          classFeatureChoices: { mastery: ["whip"] },
+          spellcasting: {
+            cantripIds: ["custom-light"],
+            knownSpellIds: [],
+            preparedSpellIds: [],
+          },
+          customSpells: [],
+          customFeatures: [],
+        },
+        creationPreferences: {
+          activeSources: ["XPHB"],
+          progressionMode: "milestone",
+          choiceLimits: "flexible",
+        },
+      },
+      exportMetadata: {
+        schemaVersion: 17,
+        saveId: "schema-v17",
+        createdAt: "a",
+        updatedAt: "b",
+        foundryOrigin: {
+          profile: "dnd5e-5.3",
+          systemVersion: "5.3.3",
+          actor: JSON.parse('{"name":"Snapshot Hero","__proto__":{"polluted":true}}'),
+        },
+      },
+    } as never);
+
+    expect(build.choices.creationPreferences?.choiceLimits).toBe("flexible");
+    expect(build.choices.additionalChoices.skillProficiencies).toEqual(["Arcana"]);
+    expect(build.exportMetadata.foundryOrigin).toMatchObject({
+      profile: "dnd5e-5.3",
+      systemVersion: "5.3.3",
+      actor: { name: "Snapshot Hero" },
+    });
   });
 });

@@ -7,7 +7,8 @@ export function ChoiceCounter({
   total,
   label,
 }: ChoiceCounterProps) {
-  const complete = selected === total;
+  const complete = selected >= total;
+  const extra = Math.max(0, selected - total);
 
   return (
     <span
@@ -15,7 +16,8 @@ export function ChoiceCounter({
       className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground"
     >
       <span>
-        {selected} of {total} {label}
+        {Math.min(selected, total)} of {total} {label}
+        {extra > 0 ? ` + ${extra} extra` : ""}
       </span>
       {complete ? (
         <span className="inline-flex items-center gap-1 text-brand-green">

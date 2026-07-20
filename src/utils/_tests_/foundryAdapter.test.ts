@@ -1,13 +1,35 @@
+import { mkdir, writeFile } from "node:fs/promises";
+import { join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import * as itemCatalogService from "@/src/services/itemCatalogService";
 import * as spellService from "@/src/services/spellService";
-import { createFoundryCharacterExport } from "@/src/utils/foundryAdapter";
+import { createFoundryCharacterExport as createProfiledFoundryExport } from "@/src/utils/foundryAdapter";
 import type { CharacterBuilderState } from "@/src/store/characterStore.types";
+import { createEmptyAdditionalChoices } from "@/src/store/characterBuildModel";
 import type { CharacterSheetSummary } from "@/src/types/builder";
 
 afterEach(() => {
   vi.restoreAllMocks();
 });
+
+function createFoundryCharacterExport(
+  builderState: CharacterBuilderState,
+  sheetSummary: CharacterSheetSummary,
+) {
+  return createProfiledFoundryExport(builderState, sheetSummary, {
+    profile: "dnd5e-5.2",
+  });
+}
+
+async function maybeWriteFoundryFixture(
+  fileName: string,
+  actor: ReturnType<typeof createProfiledFoundryExport>,
+): Promise<void> {
+  if (process.env.WRITE_FOUNDRY_FIXTURES !== "1") return;
+  const root = join(process.cwd(), "output", "foundry");
+  await mkdir(root, { recursive: true });
+  await writeFile(join(root, fileName), `${JSON.stringify(actor, null, 2)}\n`, "utf8");
+}
 
 const state: CharacterBuilderState = {
   ruleset: "2024",
@@ -80,6 +102,7 @@ const state: CharacterBuilderState = {
     knownSpellIds: ["shield-xphb"],
     preparedSpellIds: ["magic-missile-xphb"],
   },
+  additionalChoices: createEmptyAdditionalChoices(),
 };
 
 const summary: CharacterSheetSummary = {
@@ -329,8 +352,54 @@ const summary: CharacterSheetSummary = {
 };
 
 describe("foundryAdapter", () => {
-  it("maps builder state and sheet summary into a dnd5e 5.2.4 actor export", () => {
+  it("exports the dnd5e 5.3 profile with ranged senses and matching stats", async () => {
+    const actor = createProfiledFoundryExport(state, summary, {
+      profile: "dnd5e-5.3",
+    });
+    await maybeWriteFoundryFixture("brienne-dnd5e-5.3.3.json", actor);
+
+    expect(actor._stats).toMatchObject({
+      coreVersion: "14.0",
+      systemId: "dnd5e",
+      systemVersion: "5.3.3",
+    });
+    expect(actor.system.attributes.senses).toMatchObject({
+      ranges: {
+        darkvision: 60,
+      },
+    });
+    expect(actor.system.attributes.senses).not.toHaveProperty("darkvision");
+    expect(actor.items.every((item) => item._stats)).toBe(true);
+  });
+
+  it("merges current sheet fields over an origin snapshot without dropping unknown metadata", () => {
+    const original = createProfiledFoundryExport(state, summary, {
+      profile: "dnd5e-5.2",
+    });
+    original.flags = { "homebrew-module": { keep: true } };
+    original.ownership = { default: 3, gm: 3 };
+    original.system.homebrew = { customResource: 7 };
+    original.items[0]!.flags = { "homebrew-module": { itemNote: "keep" } };
+
+    const converted = createProfiledFoundryExport(state, summary, {
+      profile: "dnd5e-5.3",
+      originSnapshot: {
+        profile: "dnd5e-5.2",
+        systemVersion: "5.2.4",
+        actor: original,
+      },
+    });
+
+    expect(converted.flags).toEqual({ "homebrew-module": { keep: true } });
+    expect(converted.ownership).toEqual({ default: 3, gm: 3 });
+    expect(converted.system.homebrew).toEqual({ customResource: 7 });
+    expect(converted._stats?.systemVersion).toBe("5.3.3");
+    expect(converted.items.find((item) => item.name === original.items[0]!.name)?.flags)
+      .toEqual({ "homebrew-module": { itemNote: "keep" } });
+  });
+  it("maps builder state and sheet summary into a dnd5e 5.2.4 actor export", async () => {
     const actor = createFoundryCharacterExport(state, summary);
+    await maybeWriteFoundryFixture("brienne-dnd5e-5.2.4.json", actor);
 
     expect(actor.type).toBe("character");
     expect(actor.name).toBe("Brienne");

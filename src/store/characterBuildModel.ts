@@ -14,12 +14,14 @@ import {
   EMPTY_COIN_POUCH,
   type AsiOrFeatChoice,
   type CharacterBuild,
+  type CharacterBuildAdditionalChoices,
   type CharacterBuildPlayState,
   type EquipmentAcquisitionMode,
   type EquipmentChoicesBySource,
   type HpRollChoice,
   type ImportedInventoryItem,
   type InventoryEntry,
+  type FoundryOriginSnapshot,
 } from "@/src/types/characterBuild";
 import { createDefaultPlayState, normalizePlayState } from "@/rules/restRules";
 import type {
@@ -93,11 +95,11 @@ export function createCharacterBuildFromLegacyState(
   const now = options.now ?? new Date().toISOString();
   const maxUnlockedStepIndex =
     state.maxUnlockedStepIndex ??
-    previousBuild?.draft.maxUnlockedStepIndex ??
+    previousBuild?.draft?.maxUnlockedStepIndex ??
     getDefaultFlatState().maxUnlockedStepIndex;
   const currentStepSlug =
     options.currentStepSlug ??
-    previousBuild?.draft.currentStepSlug ??
+    previousBuild?.draft?.currentStepSlug ??
     getStepSlugByIndex(maxUnlockedStepIndex);
   const flatState = normalizeFlatState({
     ...getDefaultFlatState(),
@@ -110,12 +112,12 @@ export function createCharacterBuildFromLegacyState(
     flatState,
     {
       createdAt:
-        options.createdAt ?? previousBuild?.exportMetadata.createdAt ?? now,
+        options.createdAt ?? previousBuild?.exportMetadata?.createdAt ?? now,
       currentStepSlug,
       saveId:
-        options.saveId ?? previousBuild?.exportMetadata.saveId ?? createSaveId(),
+        options.saveId ?? previousBuild?.exportMetadata?.saveId ?? createSaveId(),
       updatedAt:
-        options.updatedAt ?? previousBuild?.exportMetadata.updatedAt ?? now,
+        options.updatedAt ?? previousBuild?.exportMetadata?.updatedAt ?? now,
     },
     previousBuild,
   );
@@ -248,6 +250,7 @@ export function flattenCharacterBuild(
     carriedLoadKg: build.choices?.carriedLoadKg,
     skillModifierOverrides: build.choices?.skillModifierOverrides,
     spellcasting: build.choices?.spellcasting,
+    additionalChoices: build.choices?.additionalChoices,
     playState: build.playState,
     hpRollByLevel: extractHpRollByLevel(build.progression?.levelChoices),
     creationPreferences: build.choices?.creationPreferences,
@@ -322,6 +325,7 @@ export function getDefaultFlatState(): FlatCharacterBuilderState {
     carriedLoadKg: 0,
     skillModifierOverrides: {},
     spellcasting: undefined,
+    additionalChoices: createEmptyAdditionalChoices(),
     playState: createDefaultPlayState(0),
     hpRollByLevel: {},
     creationPreferences: undefined,
@@ -433,6 +437,7 @@ function createBuildFromFlatState(
       carriedLoadKg: normalizedState.carriedLoadKg,
       skillModifierOverrides: normalizedState.skillModifierOverrides,
       spellcasting: normalizedState.spellcasting,
+      additionalChoices: normalizedState.additionalChoices,
       creationPreferences: normalizedState.creationPreferences,
       beginnerMode: normalizedState.beginnerMode ?? false,
     },
@@ -443,6 +448,13 @@ function createBuildFromFlatState(
       saveId: metadata.saveId,
       createdAt: metadata.createdAt,
       updatedAt: metadata.updatedAt,
+      ...(normalizeFoundryOrigin(previousBuild?.exportMetadata?.foundryOrigin)
+        ? {
+            foundryOrigin: normalizeFoundryOrigin(
+              previousBuild?.exportMetadata?.foundryOrigin,
+            ),
+          }
+        : {}),
     },
   } satisfies CharacterBuild;
 
@@ -541,6 +553,7 @@ function normalizeFlatState(
     skillModifierOverrides:
       state.skillModifierOverrides ?? defaults.skillModifierOverrides,
     spellcasting: normalizeSpellcastingChoices(state.spellcasting),
+    additionalChoices: normalizeAdditionalChoices(state.additionalChoices),
     playState: normalizeLegacyPlayState(state.playState),
     hpRollByLevel: sanitizeHpRollByLevel(
       state.hpRollByLevel ?? defaults.hpRollByLevel,
@@ -561,6 +574,112 @@ function normalizeSpellcastingChoices(
     knownSpellIds: [...(choices.knownSpellIds ?? [])],
     preparedSpellIds: [...(choices.preparedSpellIds ?? [])],
   };
+}
+
+export function createEmptyAdditionalChoices(): CharacterBuildAdditionalChoices {
+  return {
+    skillProficiencies: [],
+    toolProficiencies: [],
+    languages: [],
+    featIds: [],
+    classFeatureChoices: {},
+    spellcasting: {
+      cantripIds: [],
+      knownSpellIds: [],
+      preparedSpellIds: [],
+    },
+    customSpells: [],
+    customFeatures: [],
+    senses: [],
+    resistances: [],
+    immunities: [],
+    vulnerabilities: [],
+  };
+}
+
+function normalizeAdditionalChoices(
+  choices: FlatCharacterBuilderState["additionalChoices"] | undefined,
+): CharacterBuildAdditionalChoices {
+  const defaults = createEmptyAdditionalChoices();
+  if (!choices) return defaults;
+
+  return {
+    skillProficiencies: normalizeStringList(choices.skillProficiencies),
+    toolProficiencies: normalizeStringList(choices.toolProficiencies),
+    languages: normalizeStringList(choices.languages),
+    featIds: normalizeStringList(choices.featIds),
+    classFeatureChoices: Object.fromEntries(
+      Object.entries(choices.classFeatureChoices ?? {}).map(([key, values]) => [
+        key,
+        normalizeStringList(values),
+      ]),
+    ),
+    spellcasting: normalizeSpellcastingChoices(choices.spellcasting) ?? defaults.spellcasting,
+    customSpells: (choices.customSpells ?? []).filter(
+      (spell) => Boolean(spell?.id?.trim() && spell?.name?.trim()),
+    ),
+    customFeatures: (choices.customFeatures ?? [])
+      .filter((feature) => Boolean(feature?.id?.trim() && feature?.name?.trim()))
+      .map((feature) => ({
+        id: feature.id.trim(),
+        name: feature.name.trim(),
+        description: feature.description ?? "",
+        source: feature.source?.trim() || "Imported",
+      })),
+    senses: (choices.senses ?? [])
+      .filter((sense) => Boolean(sense?.name?.trim()))
+      .map((sense) => ({
+        name: sense.name.trim(),
+        ...(sense.rangeFeet !== undefined
+          ? { rangeFeet: Math.max(0, Math.trunc(sense.rangeFeet)) }
+          : {}),
+      })),
+    resistances: normalizeStringList(choices.resistances),
+    immunities: normalizeStringList(choices.immunities),
+    vulnerabilities: normalizeStringList(choices.vulnerabilities),
+  };
+}
+
+function normalizeStringList(values: readonly string[] | undefined): string[] {
+  return [...new Set((values ?? []).map((value) => value.trim()).filter(Boolean))];
+}
+
+const MAX_FOUNDRY_ORIGIN_BYTES = 2 * 1024 * 1024;
+const DANGEROUS_OBJECT_KEYS = new Set(["__proto__", "prototype", "constructor"]);
+
+function normalizeFoundryOrigin(
+  origin: FoundryOriginSnapshot | undefined,
+): FoundryOriginSnapshot | undefined {
+  if (!origin || (origin.profile !== "dnd5e-5.2" && origin.profile !== "dnd5e-5.3")) {
+    return undefined;
+  }
+
+  const actor = sanitizeOpaqueObject(origin.actor);
+  if (!actor) return undefined;
+  const byteLength = new TextEncoder().encode(JSON.stringify(actor)).byteLength;
+  if (byteLength > MAX_FOUNDRY_ORIGIN_BYTES) return undefined;
+
+  return {
+    profile: origin.profile,
+    systemVersion: String(origin.systemVersion ?? ""),
+    actor,
+  };
+}
+
+function sanitizeOpaqueObject(value: unknown): Record<string, unknown> | undefined {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return undefined;
+  return sanitizeOpaqueValue(value) as Record<string, unknown>;
+}
+
+function sanitizeOpaqueValue(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(sanitizeOpaqueValue);
+  if (!value || typeof value !== "object") return value;
+
+  return Object.fromEntries(
+    Object.entries(value as Record<string, unknown>)
+      .filter(([key]) => !DANGEROUS_OBJECT_KEYS.has(key))
+      .map(([key, nested]) => [key, sanitizeOpaqueValue(nested)]),
+  );
 }
 
 function sanitizeLevel(level: number): number {

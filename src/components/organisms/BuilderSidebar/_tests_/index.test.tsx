@@ -7,6 +7,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { BuilderSidebar } from "@/src/components/organisms/BuilderSidebar";
 import { SidebarProvider } from "@/src/components/ui/sidebar";
 import type { CharacterBuilderState } from "@/src/store/characterStore.types";
+import { createEmptyAdditionalChoices } from "@/src/store/characterBuildModel";
 
 vi.mock("next/navigation", () => ({
   usePathname: () => "/builder/recursos-classe",
@@ -67,6 +68,7 @@ vi.mock("@/src/store/useCharacterStore", () => ({
       carriedLoadKg: 0,
       skillModifierOverrides: {},
       hpRollByLevel: {},
+      additionalChoices: createEmptyAdditionalChoices(),
     }),
 }));
 

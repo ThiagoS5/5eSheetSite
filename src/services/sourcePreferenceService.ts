@@ -8,6 +8,7 @@ import {
 } from "@/src/services/ruleService";
 import { getSpellCatalog } from "@/src/services/spellService";
 import type {
+  ChoiceLimits,
   CreationPreferences,
   ProgressionMode,
 } from "@/src/types/characterBuild";
@@ -121,12 +122,14 @@ export function getAvailableSourcePreferenceOptions(): SourcePreferenceOption[] 
 
 export function getDefaultCreationPreferences(
   progressionMode: ProgressionMode = "xp",
+  choiceLimits: ChoiceLimits = "rules",
 ): CreationPreferences {
   return {
     activeSources: getAvailableSourcePreferenceOptions()
       .filter((option) => !option.inactive)
       .map((option) => option.code),
     progressionMode,
+    choiceLimits,
   };
 }
 
@@ -164,6 +167,7 @@ export function normalizeCreationPreferences(
   return {
     activeSources: normalizeActiveSourceSelection(preferences.activeSources),
     progressionMode: preferences.progressionMode,
+    choiceLimits: preferences.choiceLimits === "flexible" ? "flexible" : "rules",
   };
 }
 

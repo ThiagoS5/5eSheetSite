@@ -3,6 +3,7 @@ import { importFoundryCharacter } from "@/src/adapters/foundryImportAdapter";
 import { getBuilderClasses } from "@/src/services/ruleService";
 import { createStoreStateFromBuild } from "@/src/store/characterBuildModel";
 import { getPendingRequirements } from "@/src/store/levelChoiceResolver";
+import { createFoundryCharacterExport } from "@/src/utils/foundryAdapter";
 
 const importOptions = {
   now: "2026-07-18T12:00:00.000Z",
@@ -49,15 +50,19 @@ describe("foundryImportAdapter", () => {
       Intimidation: "expertise",
       Persuasion: "proficient",
     });
-    expect(build.choices.classSkillProficiencies).toEqual(
-      expect.arrayContaining(["Animal Handling", "Intimidation", "Persuasion"]),
-    );
+    expect(build.choices.classSkillProficiencies).toEqual(["Intimidation"]);
+    expect(build.choices.additionalChoices.skillProficiencies).toEqual([]);
     expect(build.choices.speciesLanguages).toEqual([
       "Common",
       "Elvish",
+    ]);
+    expect(build.choices.additionalChoices.languages).toEqual([
       "Infernal",
       "Primordial",
     ]);
+    expect(build.derivedSheet.languages).toEqual(
+      expect.arrayContaining(["Common", "Elvish", "Infernal", "Primordial"]),
+    );
     expect(build.choices.money).toEqual({ pc: 24, pp: 1, pe: 0, po: 50, pl: 0 });
     expect(build.playState).toMatchObject({
       currentHp: 62,
@@ -97,9 +102,15 @@ describe("foundryImportAdapter", () => {
     );
     expect(build.choices.spellcasting).toMatchObject({
       cantripIds: ["mage-hand-xphb"],
-      knownSpellIds: ["shield-xphb"],
+      knownSpellIds: [],
       preparedSpellIds: ["magic-missile-xphb"],
     });
+    expect(build.choices.additionalChoices.spellcasting.knownSpellIds).toEqual([
+      "shield-xphb",
+    ]);
+    expect(build.derivedSheet.spellcasting?.knownSpells.map((spell) => spell.name)).toContain(
+      "Shield",
+    );
     expect(build.draft.description.notas).not.toContain(
       "Unmapped Foundry subclass: Shadow Magic",
     );
@@ -107,6 +118,13 @@ describe("foundryImportAdapter", () => {
     expect(build.derivedSheet.inventory.map((entry) => entry.item.name)).toContain(
       "Trade Ledger of Doom",
     );
+    expect(build.derivedSheet.classSkillProficiencies).toEqual(
+      expect.arrayContaining(["Animal Handling", "Intimidation", "Persuasion"]),
+    );
+    expect(build.exportMetadata.foundryOrigin).toMatchObject({
+      profile: "dnd5e-5.2",
+      actor: { name: "Hatrian Heaven (O Comerciante)" },
+    });
 
     const characterClass = getBuilderClasses().find(
       (entry) => entry.id === build.choices.selectedClassId,
@@ -212,6 +230,153 @@ describe("foundryImportAdapter", () => {
       knownSpellIds: [],
       preparedSpellIds: ["animal-friendship-xphb"],
     });
+  });
+
+  it("detects dnd5e 5.3 and preserves level-10 extras without false pendencies", () => {
+    const actor = createFoundryActorFixture() as unknown as {
+      [key: string]: unknown;
+      system: {
+        [key: string]: unknown;
+        attributes: Record<string, unknown>;
+        traits: Record<string, unknown>;
+      };
+      items: Array<Record<string, unknown>>;
+    };
+    Object.assign(actor, {
+      _stats: { systemId: "dnd5e", systemVersion: "5.3.3", coreVersion: "14.0" },
+      effects: [{ name: "Poisoned", disabled: false, statuses: ["poisoned"] }],
+    });
+    Object.assign(actor.system.attributes, {
+      senses: { ranges: { darkvision: 90 }, units: "ft", special: "Echo sense" },
+      death: { success: 2, failure: 1 },
+      inspiration: true,
+    });
+    Object.assign(actor.system, {
+      tools: { thief: { value: 1, label: "Thieves' Tools" } },
+    });
+    Object.assign(actor.system.traits, {
+      dr: { value: ["fire"], custom: "Psychic" },
+      di: { value: ["poison"] },
+      dv: { value: ["radiant"] },
+    });
+    actor.items.push(
+      {
+        _id: "custom-spell-id",
+        name: "Merchant's Spark",
+        type: "spell",
+        system: {
+          level: 1,
+          school: "evo",
+          activation: { type: "action", value: 1 },
+          range: { value: 90, units: "ft" },
+          duration: { value: null, units: "inst" },
+          preparation: { mode: "known", prepared: false },
+          description: { value: "<p>A private guild spell.</p>" },
+        },
+      },
+      {
+        _id: "custom-feat-id",
+        name: "Guild Secret",
+        type: "feat",
+        system: { description: { value: "<p>An imported custom feature.</p>" } },
+      },
+    );
+
+    const result = importFoundryCharacter(JSON.stringify(actor), importOptions);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    const build = result.build;
+    expect(build.exportMetadata.foundryOrigin?.profile).toBe("dnd5e-5.3");
+    expect(build.choices.additionalChoices).toMatchObject({
+      languages: ["Infernal", "Primordial"],
+      toolProficiencies: ["Thieves' Tools"],
+      resistances: ["Fire", "Psychic"],
+      immunities: ["Poison"],
+      vulnerabilities: ["Radiant"],
+      senses: [
+        { name: "Darkvision", rangeFeet: 90 },
+        { name: "Echo sense" },
+      ],
+    });
+    expect(build.choices.additionalChoices.customSpells).toEqual([
+      expect.objectContaining({ name: "Merchant's Spark", level: 1 }),
+    ]);
+    expect(build.choices.additionalChoices.customFeatures).toEqual([
+      expect.objectContaining({ name: "Guild Secret" }),
+    ]);
+    expect(build.playState).toMatchObject({
+      deathSaves: { successes: 2, failures: 1 },
+      inspiration: true,
+      conditions: ["Poisoned"],
+    });
+
+    const characterClass = getBuilderClasses().find(
+      (entry) => entry.id === build.choices.selectedClassId,
+    )!;
+    expect(getPendingRequirements(createStoreStateFromBuild(build), characterClass)).toEqual([]);
+  });
+
+  it("rejects Foundry snapshots larger than 2 MiB", () => {
+    const actor = createFoundryActorFixture();
+    Object.assign(actor, { padding: "x".repeat(2 * 1024 * 1024) });
+    expect(importFoundryCharacter(JSON.stringify(actor))).toEqual({
+      ok: false,
+      error: "The Foundry actor exceeds the 2 MiB snapshot limit.",
+    });
+  });
+
+  it("preserves unknown snapshot metadata through import, edit, and cross-profile re-export", () => {
+    const source = createFoundryActorFixture();
+    const actor = {
+      ...source,
+      flags: { customModule: { mystery: true } },
+      ownership: { default: 0, playerId: 3 },
+      system: {
+        ...source.system,
+        customModuleField: { untouched: "keep-me" },
+      },
+      items: source.items.map((item, index) =>
+        index === 0 ? { ...item, flags: { customModule: { itemMarker: 7 } } } : item,
+      ),
+      _stats: { systemId: "dnd5e", systemVersion: "5.2.4", coreVersion: "13.350" },
+    };
+    const imported = importFoundryCharacter(JSON.stringify(actor), importOptions);
+
+    expect(imported.ok).toBe(true);
+    if (!imported.ok) return;
+
+    const state = createStoreStateFromBuild(imported.build);
+    const editedState = {
+      ...state,
+      description: {
+        ...state.description,
+        nome: "Hatrian Reforged",
+        tracos: "Updated at the table.",
+      },
+    };
+    const editedSummary = {
+      ...imported.build.derivedSheet,
+      name: "Hatrian Reforged",
+      currentHp: 41,
+      tempHp: 0,
+    };
+    const reexported = createFoundryCharacterExport(editedState, editedSummary, {
+      profile: "dnd5e-5.3",
+      originSnapshot: imported.build.exportMetadata.foundryOrigin,
+    });
+
+    expect(reexported.name).toBe("Hatrian Reforged");
+    expect(reexported.system.attributes.hp).toMatchObject({ value: 41, temp: 0 });
+    expect(reexported.system.details.trait).toBe("Updated at the table.");
+    expect(reexported.system.customModuleField).toEqual({ untouched: "keep-me" });
+    expect(reexported.flags).toEqual({ customModule: { mystery: true } });
+    expect(reexported.ownership).toEqual({ default: 0, playerId: 3 });
+    expect(reexported.items.find((item) => item.name === "Human")?.flags).toEqual({
+      customModule: { itemMarker: 7 },
+    });
+    expect(reexported._stats).toMatchObject({ systemVersion: "5.3.3", coreVersion: "14.0" });
+    expect(reexported.system.attributes.senses).toHaveProperty("ranges");
   });
 });
 

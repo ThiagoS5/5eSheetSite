@@ -8,6 +8,7 @@ import type {
   CharacterSpellcastingSummary,
   SpellSlotSummary,
 } from "@/src/types/spells";
+import type { CharacterBuildAdditionalChoices } from "@/src/types/characterBuild";
 
 const ATTRIBUTE_BY_LABEL: Record<string, AttributeKey> = {
   STR: "forca",
@@ -36,6 +37,10 @@ export function deriveSpellcastingSummary(input: {
   finalAttributes: CharacterAttributes;
   proficiencyBonus: number;
   choices?: CharacterSpellcastingChoices;
+  additionalChoices?: Pick<
+    CharacterBuildAdditionalChoices,
+    "spellcasting" | "customSpells"
+  >;
   usedSpellSlots?: Record<number, number>;
 }): CharacterSpellcastingSummary | undefined {
   if (!input.characterClass?.spellcastingAbility) return undefined;
@@ -43,13 +48,28 @@ export function deriveSpellcastingSummary(input: {
   const ability = resolveSpellcastingAbility(input.characterClass.spellcastingAbility);
   const abilityModifier = getAbilityModifier(input.finalAttributes[ability]);
   const choices = input.choices ?? EMPTY_CHOICES;
+  const additionalChoices = input.additionalChoices?.spellcasting ?? EMPTY_CHOICES;
+  const customSpells = new Map(
+    (input.additionalChoices?.customSpells ?? []).map((spell) => [spell.id, spell]),
+  );
   const progression = input.characterClass.spellcastingProgression;
   const levelIndex = Math.max(0, Math.min(19, input.level - 1));
   const slots = getSpellSlots(input.characterClass, input.level, input.usedSpellSlots ?? {});
-  const cantrips = dedupeSpellsByName(choices.cantripIds.map(getSpellById).filter(isSpell));
-  const knownSpells = dedupeSpellsByName(choices.knownSpellIds.map(getSpellById).filter(isSpell));
+  const resolveSpell = (id: string) => getSpellById(id) ?? customSpells.get(id);
+  const cantrips = dedupeSpellsByName(
+    [...choices.cantripIds, ...additionalChoices.cantripIds]
+      .map(resolveSpell)
+      .filter(isSpell),
+  );
+  const knownSpells = dedupeSpellsByName(
+    [...choices.knownSpellIds, ...additionalChoices.knownSpellIds]
+      .map(resolveSpell)
+      .filter(isSpell),
+  );
   const preparedSpells = dedupeSpellsByName(
-    choices.preparedSpellIds.map(getSpellById).filter(isSpell),
+    [...choices.preparedSpellIds, ...additionalChoices.preparedSpellIds]
+      .map(resolveSpell)
+      .filter(isSpell),
   );
 
   return {

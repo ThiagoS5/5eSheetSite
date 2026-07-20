@@ -18,11 +18,18 @@ import type {
   SheetInventoryItem,
 } from "@/src/types/builder";
 import type { BuilderSpell, CharacterSpellcastingSummary } from "@/src/types/spells";
+import { groupSpellsByLevel as groupSpellCatalogByLevel } from "@/src/utils/spellGrouping";
+import {
+  createCharacterExportProjection,
+  type CharacterExportProjection,
+} from "@/src/utils/characterExportProjection";
+import type { CharacterBuildPlayState } from "@/src/types/characterBuild";
 
 export interface PdfCharacterInput {
   summary: CharacterSheetSummary;
   description: CharacterDescription;
   inventory?: PdfInventoryItem[];
+  playState?: CharacterBuildPlayState;
 }
 
 export interface PdfExportOptions {
@@ -42,7 +49,6 @@ export interface PdfInventoryRow {
 }
 
 type DescriptionField = { label: string; value: string };
-type SpellGroup = { level: number; spells: BuilderSpell[] };
 
 const PAGE_BACKGROUND = "#f6efe4";
 const INK = "#241710";
@@ -56,6 +62,7 @@ const SOURCE_LABELS: Record<SheetFeature["source"], string> = {
   class: "Class",
   species: "Species",
   feat: "Feat",
+  custom: "Custom",
 };
 
 export function buildPdfDocument(
@@ -64,6 +71,11 @@ export function buildPdfDocument(
 ): ReactElement<DocumentProps> {
   const pageSize = options.pageSize ?? "A4";
   const { summary, description } = input;
+  const projection = createCharacterExportProjection(
+    summary,
+    description,
+    input.playState,
+  );
   const inventoryRows = createInventoryRows(summary, input.inventory ?? summary.inventory);
   const gearRows = inventoryRows.filter((row) => row.category !== "Weapon");
   const characterName = summary.name || "Unnamed Character";
@@ -77,7 +89,7 @@ export function buildPdfDocument(
       subject="Dungeons & Dragons 2024 printable character sheet"
       language="en-US"
     >
-      <Page size={pageSize} style={styles.page}>
+      <Page size={pageSize} style={styles.page} wrap>
         <CharacterHeader summary={summary} description={description} />
 
         <View style={styles.coreStatGrid}>
@@ -215,24 +227,40 @@ export function buildPdfDocument(
       </Page>
 
       {summary.spellcasting ? (
-        <Page size={pageSize} style={styles.page}>
+        <Page size={pageSize} style={styles.page} wrap>
           <AppendixHeader title="Spellcasting Appendix" />
           <SpellcastingAppendix spellcasting={summary.spellcasting} />
           <PageFooter characterName={characterName} />
         </Page>
       ) : null}
 
-      <Page size={pageSize} style={styles.page}>
+      <Page size={pageSize} style={styles.page} wrap>
         <AppendixHeader title="Features Appendix" />
         <FeatureAppendix features={summary.features} />
         <PageFooter characterName={characterName} />
       </Page>
 
-      <Page size={pageSize} style={styles.page}>
+      {inventoryRows.length > 0 ? (
+        <Page size={pageSize} style={styles.page} wrap>
+          <AppendixHeader title="Inventory Appendix" />
+          <InventoryAppendix rows={inventoryRows} />
+          <PageFooter characterName={characterName} />
+        </Page>
+      ) : null}
+
+      <Page size={pageSize} style={styles.page} wrap>
         <AppendixHeader title="Description Appendix" />
-        <DescriptionAppendix description={description} />
+        <DescriptionAppendix description={description} projection={projection} />
         <PageFooter characterName={characterName} />
       </Page>
+
+      {hasPlayStateContent(projection.playState) ? (
+        <Page size={pageSize} style={styles.page} wrap>
+          <AppendixHeader title="Play State & Session Log" />
+          <PlayStateAppendix summary={summary} playState={projection.playState!} />
+          <PageFooter characterName={characterName} />
+        </Page>
+      ) : null}
     </Document>
   );
 }
@@ -332,7 +360,7 @@ function SpellcastingAppendix({ spellcasting }: { spellcasting: CharacterSpellca
       </Section>
 
       {grouped.map((group) => (
-        <Section key={group.level} title={group.level === 0 ? "Cantrips" : `Level ${group.level} Spells`}>
+        <Section key={group.level} title={group.title}>
           {group.spells.map((spell) => (
             <View key={spell.id} style={styles.spellCard}>
               <Text style={styles.itemTitle}>
@@ -369,7 +397,102 @@ function FeatureAppendix({ features }: { features: SheetFeature[] }): ReactEleme
   );
 }
 
-function DescriptionAppendix({ description }: { description: CharacterDescription }): ReactElement {
+function InventoryAppendix({ rows }: { rows: PdfInventoryRow[] }): ReactElement {
+  return (
+    <Section title="Complete Inventory">
+      {rows.map((row) => (
+        <View key={row.id} style={styles.spellCard} minPresenceAhead={28}>
+          <Text style={styles.itemTitle}>
+            {row.quantity > 1 ? `${row.quantity}x ` : ""}{row.label}
+            {row.equipped ? " *" : ""}
+          </Text>
+          <Text style={styles.mutedText}>
+            {row.category} - {row.source}
+            {row.weightKg !== undefined ? ` - ${row.weightKg} kg each` : ""}
+          </Text>
+        </View>
+      ))}
+    </Section>
+  );
+}
+
+function PlayStateAppendix({
+  summary,
+  playState,
+}: {
+  summary: CharacterSheetSummary;
+  playState: CharacterBuildPlayState;
+}): ReactElement {
+  const usedResources = Object.entries(playState.resourceUses).filter(
+    ([, used]) => used > 0,
+  );
+
+  return (
+    <View style={styles.appendixGrid}>
+      <Section title="Current Status">
+        <Row label="Hit Points" value={`${summary.currentHp}/${summary.maxHp}`} />
+        <Row label="Temporary HP" value={String(summary.tempHp)} />
+        <Row label="Hit Dice Spent" value={String(playState.hitDiceSpent)} />
+        <Row
+          label="Death Saves"
+          value={`${playState.deathSaves.successes} successes / ${playState.deathSaves.failures} failures`}
+        />
+        <Row label="Inspiration" value={playState.inspiration ? "Yes" : "No"} />
+        <Row label="Conditions" value={formatList(playState.conditions)} />
+        <Row
+          label="Used Spell Slots"
+          value={
+            Object.entries(playState.usedSpellSlots)
+              .filter(([, used]) => used > 0)
+              .map(([level, used]) => `L${level}: ${used}`)
+              .join(", ") || "None"
+          }
+        />
+      </Section>
+
+      {usedResources.length > 0 ? (
+        <Section title="Resources">
+          {usedResources.map(([resourceId, used]) => (
+            <Row key={resourceId} label={titleFromId(resourceId)} value={`${used} used`} />
+          ))}
+        </Section>
+      ) : null}
+
+      {playState.campaignLog.length > 0 ? (
+        <Section title="Session Log">
+          {[...playState.campaignLog]
+            .sort((first, second) => first.date.localeCompare(second.date))
+            .map((entry) => (
+              <View key={entry.id} style={styles.spellCard} minPresenceAhead={96}>
+                <Text style={styles.itemTitle}>
+                  {entry.title || "Untitled"} <Text style={styles.mutedText}>({entry.date})</Text>
+                </Text>
+                {markdownToParagraphs(entry.body).map((paragraph, index) => (
+                  <Text key={index} style={styles.paragraph} orphans={3} widows={2}>
+                    {paragraph}
+                  </Text>
+                ))}
+              </View>
+            ))}
+        </Section>
+      ) : null}
+    </View>
+  );
+}
+
+function hasPlayStateContent(
+  playState: CharacterBuildPlayState | undefined,
+): playState is CharacterBuildPlayState {
+  return Boolean(playState);
+}
+
+function DescriptionAppendix({
+  description,
+  projection,
+}: {
+  description: CharacterDescription;
+  projection: CharacterExportProjection;
+}): ReactElement {
   return (
     <View style={styles.descriptionGrid}>
       <View style={styles.descriptionPortrait}>
@@ -380,10 +503,9 @@ function DescriptionAppendix({ description }: { description: CharacterDescriptio
           <Row key={field.label} label={field.label} value={field.value} />
         ))}
       </View>
-      <ProseSection title="Appearance" value={description.aparencia} />
-      <ProseSection title="Personality" value={description.personalidade} />
-      <ProseSection title="Traits" value={description.tracos} />
-      <ProseSection title="Notes" value={description.notas} />
+      {projection.narrative.map((section) => (
+        <ProseSection key={section.id} title={section.title} value={section.value} />
+      ))}
     </View>
   );
 }
@@ -395,7 +517,7 @@ function ProseSection({ title, value }: { title: string; value: string }): React
     <Section title={title}>
       {paragraphs.length > 0 ? (
         paragraphs.map((paragraph, index) => (
-          <Text key={index} style={styles.paragraph}>
+          <Text key={index} style={styles.paragraph} orphans={3} widows={2}>
             {paragraph}
           </Text>
         ))
@@ -409,7 +531,7 @@ function ProseSection({ title, value }: { title: string; value: string }): React
 function PageFooter({ characterName }: { characterName: string }): ReactElement {
   return (
     <Text fixed style={styles.pageFooter}>
-      Forge & Fate — {characterName}
+      Forge & Fate - {characterName}
     </Text>
   );
 }
@@ -425,7 +547,7 @@ function AppendixHeader({ title }: { title: string }): ReactElement {
 
 function Section({ children, title }: { children: ReactNode; title: string }): ReactElement {
   return (
-    <View style={styles.section}>
+    <View style={styles.section} minPresenceAhead={42}>
       <Text style={styles.sectionTitle}>{title}</Text>
       {children}
     </View>
@@ -505,25 +627,22 @@ export function formatList(values: string[]): string {
   return values.length > 0 ? values.join(", ") : "None";
 }
 
+function titleFromId(value: string): string {
+  return value
+    .split(/[-_]/)
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
 export function splitFeatureSummary(features: SheetFeature[], limit: number): SheetFeature[] {
   return features.slice(0, limit);
 }
 
-export function groupSpellsByLevel(spells: BuilderSpell[]): SpellGroup[] {
-  const groups = new Map<number, BuilderSpell[]>();
-
-  for (const spell of spells) {
-    const levelSpells = groups.get(spell.level) ?? [];
-    levelSpells.push(spell);
-    groups.set(spell.level, levelSpells);
-  }
-
-  return [...groups.entries()]
-    .sort(([a], [b]) => a - b)
-    .map(([level, levelSpells]) => ({
-      level,
-      spells: [...levelSpells].sort((a, b) => a.name.localeCompare(b.name)),
-    }));
+export function groupSpellsByLevel(
+  spells: BuilderSpell[],
+): ReturnType<typeof groupSpellCatalogByLevel> {
+  return groupSpellCatalogByLevel(spells);
 }
 
 export function getSpellAppendixDescription(spell: BuilderSpell): string {
@@ -592,7 +711,7 @@ export function markdownToParagraphs(value: string): string[] {
     .map((line) =>
       line
         .replace(/^#{1,6}\s+/, "")
-        .replace(/^\s*[-*+]\s+/, "• ")
+        .replace(/^\s*[-*+]\s+/, "- ")
         .replace(/^\s*>\s?/, "")
         .replace(/\*\*([^*]+)\*\*/g, "$1")
         .replace(/\*([^*]+)\*/g, "$1")

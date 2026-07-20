@@ -76,10 +76,10 @@ describe("ImportCharacterButton", () => {
     render(<ImportCharacterButton />);
     const before = (await listCharacters()).length;
 
-    // A File whose reported size exceeds the 2 MB cap; the guard checks
+    // A File whose reported size exceeds the 5 MiB envelope cap; the guard checks
     // `file.size` before calling `.text()`, so no parse ever runs.
     const huge = makeFile("{}");
-    Object.defineProperty(huge, "size", { value: 3 * 1024 * 1024 });
+    Object.defineProperty(huge, "size", { value: 6 * 1024 * 1024 });
 
     const input = screen.getByLabelText(/import foundry character file/i);
     await user.upload(input, huge);

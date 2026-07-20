@@ -396,7 +396,7 @@ function CreationModeDialog({
               <button
                 type="button"
                 aria-label="Close"
-                className="absolute right-4 top-4 inline-flex h-9 w-9 items-center justify-center rounded-md border border-border text-muted-foreground outline-none transition hover:text-foreground focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70"
+                className="absolute right-4 top-4 inline-flex h-10 w-10 items-center justify-center rounded-md border border-border text-muted-foreground outline-none transition hover:text-foreground focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70"
               >
                 <X aria-hidden="true" className="h-4 w-4" />
               </button>
@@ -493,15 +493,6 @@ function DashboardTopNav() {
         ))}
       </nav>
 
-      <div className="flex items-center gap-4">
-        <button
-          type="button"
-          aria-label="Profile"
-          className="flex h-10 w-10 items-center justify-center rounded-full border border-white/[0.1] bg-surface-base text-subdued outline-none transition-transform active:scale-95 focus-visible:ring-2 focus-visible:ring-primary"
-        >
-          <UserCircle aria-hidden="true" className="h-6 w-6" />
-        </button>
-      </div>
     </header>
   );
 }

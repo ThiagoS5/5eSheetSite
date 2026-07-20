@@ -1,4 +1,8 @@
-import type { CreationPreferences } from "@/src/types/characterBuild";
+import type {
+  ChoiceLimits,
+  CreationPreferences,
+  FoundryDnd5eProfile,
+} from "@/src/types/characterBuild";
 import {
   getDefaultCreationPreferences,
   isLegacyBaseOnlySourceSelection,
@@ -6,12 +10,13 @@ import {
 } from "@/src/services/sourcePreferenceService";
 
 const STORAGE_KEY = "forge-fate-preferences:v1";
-export const CURRENT_GLOBAL_PREFERENCES_VERSION = 3;
+export const CURRENT_GLOBAL_PREFERENCES_VERSION = 4;
 
 export interface GlobalPreferences {
   preferencesVersion?: number;
   creationDefaults: CreationPreferences;
   beginnerMode?: boolean;
+  foundryExportProfile?: FoundryDnd5eProfile;
 }
 
 export function readGlobalPreferences(): GlobalPreferences {
@@ -31,15 +36,18 @@ export function readGlobalPreferences(): GlobalPreferences {
     }
 
     const progressionMode = parsed.creationDefaults.progressionMode;
+    const choiceLimits: ChoiceLimits =
+      parsed.creationDefaults.choiceLimits === "flexible" ? "flexible" : "rules";
     const creationDefaults =
       parsed.preferencesVersion === undefined &&
       isLegacyBaseOnlySourceSelection(parsed.creationDefaults.activeSources)
-        ? getDefaultCreationPreferences(progressionMode)
+        ? getDefaultCreationPreferences(progressionMode, choiceLimits)
         : {
             activeSources: normalizeActiveSourceSelection(
               parsed.creationDefaults.activeSources,
             ),
             progressionMode,
+            choiceLimits,
           };
 
     return {
@@ -47,6 +55,11 @@ export function readGlobalPreferences(): GlobalPreferences {
       creationDefaults,
       beginnerMode:
         typeof parsed?.beginnerMode === "boolean" ? parsed.beginnerMode : undefined,
+      foundryExportProfile:
+        parsed?.foundryExportProfile === "dnd5e-5.2" ||
+        parsed?.foundryExportProfile === "dnd5e-5.3"
+          ? parsed.foundryExportProfile
+          : "dnd5e-5.3",
     };
   } catch {
     return getDefaultGlobalPreferences();
@@ -66,8 +79,11 @@ export function writeGlobalPreferences(prefs: GlobalPreferences): void {
           prefs.creationDefaults.activeSources,
         ),
         progressionMode: prefs.creationDefaults.progressionMode,
+        choiceLimits:
+          prefs.creationDefaults.choiceLimits === "flexible" ? "flexible" : "rules",
       },
       beginnerMode: prefs.beginnerMode,
+      foundryExportProfile: prefs.foundryExportProfile ?? "dnd5e-5.3",
     }),
   );
 }
@@ -90,5 +106,6 @@ function getDefaultGlobalPreferences(): GlobalPreferences {
   return {
     preferencesVersion: CURRENT_GLOBAL_PREFERENCES_VERSION,
     creationDefaults: getDefaultCreationPreferences(),
+    foundryExportProfile: "dnd5e-5.3",
   };
 }

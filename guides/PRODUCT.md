@@ -28,14 +28,13 @@ Implemented:
 - Local Character Vault with create, resume, duplicate, delete, search, import, and export-ready status.
 - 10-step builder with guided, standard, and quick-build entry paths.
 - Beginner-mode recommendation quizzes and inline contextual help.
-- Schema v16 canonical `CharacterBuild`, including `playState`, external import level-choice baselines, and imported custom inventory metadata.
+- Schema v17 canonical `CharacterBuild`, including opt-in flexible choices, `playState`, external import level-choice baselines, custom Foundry content, and a bounded origin snapshot.
 - Pure rules/adapters for derived sheet math, level progression, HP, AC, attacks, inventory, spellcasting, rests, pendencies, rules-text AST, Foundry import/export, canonical export/import, and PDF.
-- Living sheet with level-up, play-state panels, notes, conditions, campaign log, Foundry export, and PDF export.
+- Living sheet with level-up, play-state panels, persistent notes, conditions, an independent Session Log, level-grouped spell tables, Foundry 5.2/5.3 export, and A4/Letter PDF export.
 
 Current product gaps:
 
-- Canonical Forge & Fate JSON export exists in code but needs first-class UI next to import.
-- Source preferences must filter all catalogs consistently.
+- Live Foundry UI import remains an environment release check when the target application is available; fixture and installed-system validation cover both supported profiles.
 - Resistance/immunity/vulnerability derivation and magic item effects need deeper rules coverage.
 - Multiclassing requires an ADR and deliberate schema migration before implementation.
 - Launch hardening still needs a full manual browser/a11y/export pass.
@@ -75,9 +74,7 @@ Target WCAG 2.2 AA. Preserve visible focus states, keyboard navigation, semantic
 
 ## Next Product Priorities
 
-1. Add explicit canonical JSON export UI and keep Foundry/PDF labels unambiguous.
-2. Complete launch-hardening verification across Vault, builder, conclusion, and sheet.
-3. Expand rules coverage for defenses, feat effects, magic items, and resource recovery.
-4. Apply source preferences consistently across all catalogs.
-5. Consolidate migration logic for builder, Vault, and canonical import.
-6. Write the multiclass ADR before schema or UI work.
+1. Complete the live Foundry application import check for both supported profiles when the isolated runtimes are available.
+2. Expand rules coverage for defenses, feat effects, magic items, and resource recovery.
+3. Preserve the schema-v17 migration and export fixtures with every future contract change.
+4. Follow ADR-001 before multiclass schema or UI work.

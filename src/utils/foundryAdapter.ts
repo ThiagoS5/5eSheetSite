@@ -11,6 +11,14 @@ import type {
 } from "@/src/types/builder";
 import type { AttributeKey } from "@/src/types/dnd";
 import type { BuilderSpell } from "@/src/types/spells";
+import type {
+  FoundryDnd5eProfile,
+  FoundryOriginSnapshot,
+} from "@/src/types/characterBuild";
+import {
+  createCharacterExportProjection,
+  type CharacterExportProjection,
+} from "@/src/utils/characterExportProjection";
 
 type AbilityAbbreviation = "str" | "dex" | "con" | "int" | "wis" | "cha";
 type FoundryItemType =
@@ -71,6 +79,36 @@ interface FoundryExportContext {
   itemLookup?: CatalogLookup<CatalogItem>;
   spellLookup?: CatalogLookup<BuilderSpell>;
 }
+
+export interface FoundryExportOptions {
+  profile?: FoundryDnd5eProfile;
+  originSnapshot?: FoundryOriginSnapshot;
+}
+
+interface FoundryProfileDefinition {
+  id: FoundryDnd5eProfile;
+  systemVersion: string;
+  coreVersion: string;
+  sensesShape: "flat" | "ranges";
+}
+
+export const FOUNDRY_DND5E_PROFILES: Record<
+  FoundryDnd5eProfile,
+  FoundryProfileDefinition
+> = {
+  "dnd5e-5.2": {
+    id: "dnd5e-5.2",
+    systemVersion: "5.2.4",
+    coreVersion: "13.350",
+    sensesShape: "flat",
+  },
+  "dnd5e-5.3": {
+    id: "dnd5e-5.3",
+    systemVersion: "5.3.3",
+    coreVersion: "14.0",
+    sensesShape: "ranges",
+  },
+};
 
 export interface FoundryActorExport {
   name: string;
@@ -284,25 +322,36 @@ const DAMAGE_TYPES: Record<string, string> = {
 export function createFoundryCharacterExport(
   state: CharacterBuilderState,
   summary: CharacterSheetSummary,
+  options: FoundryExportOptions = {},
 ): FoundryActorExport {
-  const actor = cloneReference();
-  const characterName = state.description.nome.trim() || summary.name.trim() || "Character";
+  const profile = FOUNDRY_DND5E_PROFILES[options.profile ?? "dnd5e-5.3"];
+  const projection = createCharacterExportProjection(
+    summary,
+    state.description,
+    state.playState,
+  );
+  const hasOriginSnapshot = Boolean(options.originSnapshot);
+  const actor = options.originSnapshot
+    ? cloneActor(options.originSnapshot.actor)
+    : cloneReference();
+  const originalItems = hasOriginSnapshot ? (actor.items ?? []) : [];
+  const characterName = projection.identity.name;
   const context = createFoundryExportContext();
   const items = createFoundryItems(state, summary, context);
   const identity = getIdentityItemIds(summary);
 
   actor.name = characterName;
   actor.type = "character";
-  actor.items = items;
-  actor.effects = [];
-  actor.folder = null;
+  actor.items = mergeFoundryItems(originalItems, items);
+  actor.effects ??= [];
+  actor.folder ??= null;
   actor.prototypeToken = {
     ...(actor.prototypeToken ?? {}),
     name: characterName,
   };
 
   actor.system.abilities = mapAbilities(actor.system.abilities, summary);
-  actor.system.attributes = mapAttributes(actor.system.attributes, summary);
+  actor.system.attributes = mapAttributes(actor.system.attributes, summary, profile);
   actor.system.currency = mapCurrency(summary);
   actor.system.details = mapDetails(actor.system.details, state, summary, identity);
   actor.system.skills = mapSkills(actor.system.skills ?? {}, summary);
@@ -312,13 +361,72 @@ export function createFoundryCharacterExport(
     getFoundryCasterProgression(summary) === "pact",
   );
   actor.system.tools = mapTools(actor.system.tools ?? {}, summary);
-  actor.system.traits = mapTraits(actor.system.traits ?? {}, summary);
+  actor.system.traits = mapTraits(actor.system.traits ?? {}, summary, projection);
+  actor._stats = {
+    ...(actor._stats ?? {}),
+    coreVersion: profile.coreVersion,
+    systemId: "dnd5e",
+    systemVersion: profile.systemVersion,
+  };
+  actor.items = actor.items.map((item) => ({
+    ...item,
+    _stats: {
+      ...((item._stats as Record<string, unknown> | undefined) ?? {}),
+      coreVersion: profile.coreVersion,
+      systemId: "dnd5e",
+      systemVersion: profile.systemVersion,
+    },
+  }));
 
   return actor;
 }
 
 function cloneReference(): FoundryActorExport {
   return JSON.parse(JSON.stringify(foundryReference)) as FoundryActorExport;
+}
+
+function cloneActor(actor: Record<string, unknown>): FoundryActorExport {
+  return JSON.parse(JSON.stringify(actor)) as FoundryActorExport;
+}
+
+function mergeFoundryItems(
+  originalItems: FoundryItemExport[],
+  mappedItems: FoundryItemExport[],
+): FoundryItemExport[] {
+  const remaining = [...originalItems];
+  const merged = mappedItems.map((mapped) => {
+    const matchIndex = remaining.findIndex(
+      (original) =>
+        original._id === mapped._id ||
+        (original.type === mapped.type &&
+          original.name.trim().toLowerCase() === mapped.name.trim().toLowerCase()),
+    );
+    if (matchIndex < 0) return mapped;
+    const [original] = remaining.splice(matchIndex, 1);
+    return deepMergeFoundry(original, mapped) as FoundryItemExport;
+  });
+  return [...merged, ...remaining];
+}
+
+function deepMergeFoundry(original: unknown, current: unknown): unknown {
+  if (
+    !original ||
+    !current ||
+    typeof original !== "object" ||
+    typeof current !== "object" ||
+    Array.isArray(original) ||
+    Array.isArray(current)
+  ) {
+    return current;
+  }
+
+  const merged: Record<string, unknown> = {
+    ...(original as Record<string, unknown>),
+  };
+  for (const [key, value] of Object.entries(current as Record<string, unknown>)) {
+    merged[key] = deepMergeFoundry(merged[key], value);
+  }
+  return merged;
 }
 
 function mapAbilities(
@@ -348,7 +456,43 @@ function mapAbilities(
 function mapAttributes(
   current: FoundryCharacterSystem["attributes"],
   summary: CharacterSheetSummary,
+  profile: FoundryProfileDefinition,
 ): FoundryCharacterSystem["attributes"] {
+  const currentSenses = (current.senses as Record<string, unknown> | undefined) ?? {};
+  const rangeValues = {
+    darkvision: getSenseRange(summary, "darkvision"),
+    blindsight: getSenseRange(summary, "blindsight"),
+    tremorsense: getSenseRange(summary, "tremorsense"),
+    truesight: getSenseRange(summary, "truesight"),
+  };
+  const sensesWithoutFlatRanges = Object.fromEntries(
+    Object.entries(currentSenses).filter(
+      ([key]) => !Object.hasOwn(rangeValues, key),
+    ),
+  );
+  const mappedSenses =
+    profile.sensesShape === "ranges"
+      ? {
+          ...sensesWithoutFlatRanges,
+          ranges: {
+            ...((currentSenses.ranges as Record<string, unknown> | undefined) ?? {}),
+            ...rangeValues,
+          },
+          units: "ft",
+          special: summary.senses
+            .filter((sense) => !sense.rangeFeet)
+            .map((sense) => sense.name)
+            .join(", "),
+        }
+      : {
+          ...currentSenses,
+          ...rangeValues,
+          units: "ft",
+          special: summary.senses
+            .filter((sense) => !sense.rangeFeet)
+            .map((sense) => sense.name)
+            .join(", "),
+        };
   return {
     ...current,
     hp: {
@@ -368,18 +512,7 @@ function mapAttributes(
       units: "ft",
       hover: false,
     },
-    senses: {
-      ...(current.senses as Record<string, unknown> | undefined),
-      darkvision: getSenseRange(summary, "darkvision"),
-      blindsight: getSenseRange(summary, "blindsight"),
-      tremorsense: getSenseRange(summary, "tremorsense"),
-      truesight: getSenseRange(summary, "truesight"),
-      units: "ft",
-      special: summary.senses
-        .filter((sense) => !sense.rangeFeet)
-        .map((sense) => sense.name)
-        .join(", "),
-    },
+    senses: mappedSenses,
     init: {
       ...(current.init as Record<string, unknown> | undefined),
       value: summary.initiative,
@@ -506,16 +639,17 @@ function mapTools(
 function mapTraits(
   current: Record<string, unknown>,
   summary: CharacterSheetSummary,
+  projection: CharacterExportProjection,
 ): Record<string, unknown> {
   return {
     ...current,
     languages: {
       ...((current.languages as Record<string, unknown> | undefined) ?? {}),
-      value: summary.languages.map(toFoundrySlug),
+      value: projection.proficiencies.languages.map(toFoundrySlug),
     },
-    dr: mapTraitList(current.dr, summary.resistances),
-    di: mapTraitList(current.di, summary.immunities),
-    dv: mapTraitList(current.dv, summary.vulnerabilities),
+    dr: mapTraitList(current.dr, projection.defenses.resistances),
+    di: mapTraitList(current.di, projection.defenses.immunities),
+    dv: mapTraitList(current.dv, projection.defenses.vulnerabilities),
     weaponProf: {
       ...((current.weaponProf as Record<string, unknown> | undefined) ?? {}),
       value: inferWeaponProficiencies(summary),
@@ -665,9 +799,10 @@ function createSheetFeatureItem(feature: SheetFeature): FoundryItemExport {
 function createFeatureItem(
   name: string,
   description: string,
-  source: "background" | "class" | "feat" | "race" | "species",
+  source: "background" | "class" | "feat" | "race" | "species" | "custom",
 ): FoundryItemExport {
-  const typeValue = source === "species" ? "race" : source;
+  const typeValue =
+    source === "species" ? "race" : source === "custom" ? "feat" : source;
   return createBaseItem({
     id: createFoundryId(`feat:${typeValue}:${name}`),
     name,

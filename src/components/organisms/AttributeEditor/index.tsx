@@ -37,6 +37,7 @@ import {
   type AttributeKey,
   type CharacterAttributes,
 } from "@/src/types/dnd";
+import { useBuilderHeaderToolbar } from "@/src/hooks/useBuilderHeaderToolbar";
 
 import type { AttributeEditorProps } from "./index.types";
 export type { AttributeEditorProps } from "./index.types";
@@ -64,6 +65,7 @@ export function AttributeEditor({
   const [rollResetNonce, setRollResetNonce] = useState(0);
   const pointBuySpent = getPointBuySpent(baseAttributes);
   const pointBuyRemaining = getPointBuyRemaining(baseAttributes);
+  const toolbar = useBuilderHeaderToolbar();
 
   function setOtherModifier(attribute: AttributeKey, value: number) {
     setOtherModifiers((previous) => ({ ...previous, [attribute]: value }));
@@ -80,16 +82,19 @@ export function AttributeEditor({
 
   return (
     <section aria-labelledby="attributes-title" className="grid gap-5">
-      <div>
-        <h2
-          id="attributes-title"
-          className="font-serif text-xl font-bold tracking-wide text-foreground"
-        >
-          Set Ability Scores
-        </h2>
-        <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
-          Base values stay separate from 2024 Background bonuses.
-        </p>
+      <div className="grid gap-4 border-b border-white/[0.06] pb-5">
+        <div>
+          <h2
+            id="attributes-title"
+            className="font-serif text-xl font-bold tracking-wide text-foreground"
+          >
+            Set Ability Scores
+          </h2>
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
+            Base values stay separate from 2024 Background bonuses.
+          </p>
+        </div>
+        {toolbar}
       </div>
 
       <fieldset>

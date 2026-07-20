@@ -7,11 +7,17 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { CharacterStoreProvider } from "@/src/store/useCharacterStore";
 import { BuilderShell } from "@/src/components/templates/BuilderShell";
 import * as useMobileModule from "@/src/hooks/use-mobile";
+import { useBuilderHeaderToolbar } from "@/src/hooks/useBuilderHeaderToolbar";
 
 vi.mock("next/navigation", () => ({
   usePathname: () => "/builder/classe",
   useRouter: () => ({ push: vi.fn() }),
 }));
+
+function TestBuilderHeader({ children }: { children: React.ReactNode }) {
+  const toolbar = useBuilderHeaderToolbar();
+  return <div>{children}{toolbar}</div>;
+}
 
 describe("BuilderShell", () => {
   afterEach(() => {
@@ -23,11 +29,11 @@ describe("BuilderShell", () => {
     render(
       <CharacterStoreProvider>
         <BuilderShell>
-          <div>
+          <TestBuilderHeader>
             <p>Character Creation</p>
             <h1 id="builder-title">Forge & Fate</h1>
             <div>Builder content</div>
-          </div>
+          </TestBuilderHeader>
         </BuilderShell>
       </CharacterStoreProvider>,
     );
@@ -67,9 +73,9 @@ describe("BuilderShell", () => {
     render(
       <CharacterStoreProvider>
         <BuilderShell>
-          <div>
+          <TestBuilderHeader>
             <h1 id="builder-title">Forge & Fate</h1>
-          </div>
+          </TestBuilderHeader>
         </BuilderShell>
       </CharacterStoreProvider>,
     );
@@ -108,9 +114,9 @@ describe("BuilderShell", () => {
     render(
       <CharacterStoreProvider>
         <BuilderShell>
-          <div>
+          <TestBuilderHeader>
             <h1 id="builder-title">Forge & Fate</h1>
-          </div>
+          </TestBuilderHeader>
         </BuilderShell>
       </CharacterStoreProvider>,
     );

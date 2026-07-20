@@ -133,6 +133,8 @@ export function createCharacterStore(
       }),
     setSpellcastingChoices: (spellcasting) =>
       set((state) => patchCharacterState(state, { spellcasting })),
+    setAdditionalChoices: (additionalChoices) =>
+      set((state) => patchCharacterState(state, { additionalChoices })),
     applyDamage: (amount) =>
       set((state) => {
         const summary = state.characterBuild.derivedSheet;
@@ -843,6 +845,31 @@ function extractFlatState(state: FlatCharacterBuilderState): FlatCharacterBuilde
           preparedSpellIds: [...state.spellcasting.preparedSpellIds],
         }
       : undefined,
+    additionalChoices: {
+      ...state.additionalChoices,
+      skillProficiencies: [...state.additionalChoices.skillProficiencies],
+      toolProficiencies: [...state.additionalChoices.toolProficiencies],
+      languages: [...state.additionalChoices.languages],
+      featIds: [...state.additionalChoices.featIds],
+      classFeatureChoices: Object.fromEntries(
+        Object.entries(state.additionalChoices.classFeatureChoices).map(
+          ([key, values]) => [key, [...values]],
+        ),
+      ),
+      spellcasting: {
+        cantripIds: [...state.additionalChoices.spellcasting.cantripIds],
+        knownSpellIds: [...state.additionalChoices.spellcasting.knownSpellIds],
+        preparedSpellIds: [...state.additionalChoices.spellcasting.preparedSpellIds],
+      },
+      customSpells: state.additionalChoices.customSpells.map((spell) => ({ ...spell })),
+      customFeatures: state.additionalChoices.customFeatures.map((feature) => ({
+        ...feature,
+      })),
+      senses: state.additionalChoices.senses.map((sense) => ({ ...sense })),
+      resistances: [...state.additionalChoices.resistances],
+      immunities: [...state.additionalChoices.immunities],
+      vulnerabilities: [...state.additionalChoices.vulnerabilities],
+    },
     playState: {
       ...getPlayState(state),
       usedSpellSlots: { ...getPlayState(state).usedSpellSlots },

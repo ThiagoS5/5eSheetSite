@@ -893,7 +893,7 @@ function LegacySourceSelectionInitializer() {
   );
 
   useEffect(() => {
-    setCreationPreferences({ activeSources: ["XPHB"], progressionMode: "xp" });
+    setCreationPreferences({ activeSources: ["XPHB"], progressionMode: "xp", choiceLimits: "rules" });
     selectClass("legacy-fighter-phb");
   }, [selectClass, setCreationPreferences]);
 
@@ -906,7 +906,7 @@ function OnlyXphbSourcesInitializer() {
   );
 
   useEffect(() => {
-    setCreationPreferences({ activeSources: ["XPHB"], progressionMode: "xp" });
+    setCreationPreferences({ activeSources: ["XPHB"], progressionMode: "xp", choiceLimits: "rules" });
   }, [setCreationPreferences]);
 
   return null;
@@ -920,7 +920,7 @@ function DisabledSourceFeatInitializer({ featId }: { featId: string }) {
   const setLevelAsiOrFeat = useCharacterStore((state) => state.setLevelAsiOrFeat);
 
   useEffect(() => {
-    setCreationPreferences({ activeSources: ["PHB"], progressionMode: "xp" });
+    setCreationPreferences({ activeSources: ["PHB"], progressionMode: "xp", choiceLimits: "rules" });
     setLevel(4);
     setLevelAsiOrFeat(4, { mode: "feat", featId });
   }, [featId, setCreationPreferences, setLevel, setLevelAsiOrFeat]);
@@ -937,7 +937,7 @@ function DisabledSourceSpellInitializer({ spellId }: { spellId: string }) {
   );
 
   useEffect(() => {
-    setCreationPreferences({ activeSources: ["PHB"], progressionMode: "xp" });
+    setCreationPreferences({ activeSources: ["PHB"], progressionMode: "xp", choiceLimits: "rules" });
     setSpellcastingChoices({
       cantripIds: [spellId],
       knownSpellIds: [],

@@ -5,86 +5,107 @@ import { sanitizeNotesHtml } from "@/src/components/molecules/sanitizeNotesHtml"
 
 import type { MarkdownEditorProps } from "./index.types";
 export type { MarkdownEditorProps } from "./index.types";
+
 interface EasyMDEInstance {
   value: (val?: string) => string;
   toTextArea: () => void;
   togglePreview: () => void;
   isPreviewActive: () => boolean;
-  codemirror: { on: (event: string, cb: () => void) => void };
+  codemirror: { on: (event: string, callback: () => void) => void };
 }
 
-export function MarkdownEditor({ value, onChange, ariaLabel, docId, preview = false }: MarkdownEditorProps) {
+export function MarkdownEditor({
+  value,
+  onChange,
+  ariaLabel,
+  docId,
+  preview = false,
+}: MarkdownEditorProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const editorRef = useRef<EasyMDEInstance | null>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  // True while we programmatically swap the loaded document, so the resulting
-  // CodeMirror "change" event isn't written back as a user edit.
   const swappingRef = useRef(false);
+  const dirtyRef = useRef(false);
+  const pendingValueRef = useRef<string | null>(null);
   const previewRef = useRef(preview);
-
-  // Latest props, so the mount-once effect and CM handlers read current values.
-  const onChangeRef = useRef(onChange);
   const valueRef = useRef(value);
-  // onChange bound to the doc actually loaded in the editor (updated on swap),
-  // so a debounced write is always attributed to the right field.
+  const onChangeRef = useRef(onChange);
+  const docIdRef = useRef(docId);
   const activeOnChangeRef = useRef(onChange);
+  const activeDocIdRef = useRef(docId);
 
-  // Declared before the effects below so they always read this render's props.
   useEffect(() => {
     previewRef.current = preview;
-    onChangeRef.current = onChange;
     valueRef.current = value;
+    onChangeRef.current = onChange;
+    docIdRef.current = docId;
   });
 
-  // Mount EasyMDE once for the component's lifetime.
+  function flushPendingEdit() {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+    if (pendingValueRef.current !== null) {
+      activeOnChangeRef.current(pendingValueRef.current);
+      pendingValueRef.current = null;
+    }
+    dirtyRef.current = false;
+  }
+
   useEffect(() => {
     let cancelled = false;
 
     async function mount() {
       try {
-        const [mod] = await Promise.all([
+        const [module] = await Promise.all([
           import("easymde"),
           import("easymde/dist/easymde.min.css"),
         ]);
-        // Dark-theme overrides, loaded after EasyMDE's own stylesheet.
         await import("./index.css");
         if (cancelled || !textareaRef.current) return;
-        const EasyMDE = mod.default;
+
+        const EasyMDE = module.default;
         const editor = new EasyMDE({
           element: textareaRef.current,
           initialValue: valueRef.current,
           spellChecker: false,
           status: false,
           minHeight: "360px",
-          // Por padrão o EasyMDE injeta um <link> para o Font Awesome no
-          // maxcdn.bootstrapcdn.com a cada montagem — uma dependência externa
-          // de terceiro (risco de supply-chain) que a CSP bloquearia. O app já
-          // hospeda o Font Awesome localmente (app/layout.tsx), então desligamos.
           autoDownloadFontAwesome: false,
-          // EasyMDE renders the preview from `marked` with no sanitization and
-          // injects it via innerHTML; without this hook a note containing HTML
-          // (e.g. from an imported character file) executes arbitrary scripts.
-          renderingConfig: {
-            sanitizerFunction: sanitizeNotesHtml,
-          },
+          renderingConfig: { sanitizerFunction: sanitizeNotesHtml },
           toolbar: [
-            "bold", "italic", "strikethrough", "heading-2", "heading-3", "|",
-            "unordered-list", "ordered-list", "quote", "|",
-            "link", "horizontal-rule", "|", "preview",
+            "bold",
+            "italic",
+            "strikethrough",
+            "heading-2",
+            "heading-3",
+            "|",
+            "unordered-list",
+            "ordered-list",
+            "quote",
+            "|",
+            "link",
+            "horizontal-rule",
+            "|",
+            "preview",
           ],
         }) as unknown as EasyMDEInstance;
+
         editorRef.current = editor;
         activeOnChangeRef.current = onChangeRef.current;
+        activeDocIdRef.current = docIdRef.current;
         if (previewRef.current && !editor.isPreviewActive()) editor.togglePreview();
+
         editor.codemirror.on("change", () => {
-          if (swappingRef.current) return; // ignore programmatic content swaps
-          const cb = activeOnChangeRef.current;
+          if (swappingRef.current) return;
+          dirtyRef.current = true;
+          pendingValueRef.current = editor.value();
           if (timerRef.current) clearTimeout(timerRef.current);
-          timerRef.current = setTimeout(() => cb(editor.value()), 300);
+          timerRef.current = setTimeout(flushPendingEdit, 300);
         });
       } catch {
-        // EasyMDE unavailable (e.g. jsdom/test environment): fall back to the
-        // plain controlled <textarea> already rendered below.
+        // EasyMDE is optional in tests; the controlled textarea remains usable.
       }
     }
 
@@ -92,52 +113,38 @@ export function MarkdownEditor({ value, onChange, ariaLabel, docId, preview = fa
 
     return () => {
       cancelled = true;
-      if (timerRef.current) clearTimeout(timerRef.current);
+      flushPendingEdit();
       const editor = editorRef.current;
       if (editor) {
         try {
-          activeOnChangeRef.current(editor.value()); // flush last edit (best-effort)
           editor.toTextArea();
         } catch {
-          // React runs passive-effect cleanup after the DOM subtree is detached;
-          // EasyMDE's toTextArea() (or reading .value()) throws when its wrapper's
-          // parentNode is already gone. Safe to ignore.
+          // EasyMDE may already be detached when React runs passive cleanup.
         }
         editorRef.current = null;
       }
     };
   }, []);
 
-  // Swap the loaded document when docId changes, without remounting EasyMDE.
   useEffect(() => {
     const editor = editorRef.current;
-    // On first run the editor may not be mounted yet; mount() already loads the
-    // initial value, so there is nothing to swap.
     if (!editor) return;
-    // Flush the outgoing doc's latest content to its own onChange, then load the
-    // incoming doc without emitting a change for it.
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-      timerRef.current = null;
-    }
-    try {
-      activeOnChangeRef.current(editor.value());
-    } catch {
-      // ignore — editor detached
-    }
+
+    const documentChanged = activeDocIdRef.current !== docId;
+    if (documentChanged) flushPendingEdit();
+    if (!documentChanged && dirtyRef.current) return;
+
     swappingRef.current = true;
     try {
-      editor.value(valueRef.current);
+      if (editor.value() !== value) editor.value(value);
     } catch {
-      // ignore — editor detached
+      // The editor may have detached during route navigation.
     }
     swappingRef.current = false;
     activeOnChangeRef.current = onChangeRef.current;
-  }, [docId]);
+    activeDocIdRef.current = docId;
+  }, [docId, onChange, value]);
 
-  // Keep EasyMDE's preview state in sync with the `preview` prop. Runs after the
-  // docId-swap effect above (declaration order), so when the document changes
-  // while preview stays on, we re-render the preview from the new content.
   useEffect(() => {
     const editor = editorRef.current;
     if (!editor) return;
@@ -146,12 +153,11 @@ export function MarkdownEditor({ value, onChange, ariaLabel, docId, preview = fa
       if (preview !== active) {
         editor.togglePreview();
       } else if (preview) {
-        // Same preview state but the document (docId) changed: refresh it.
         editor.togglePreview();
         editor.togglePreview();
       }
     } catch {
-      // ignore — editor detached
+      // The editor may have detached during route navigation.
     }
   }, [preview, docId]);
 
@@ -159,11 +165,8 @@ export function MarkdownEditor({ value, onChange, ariaLabel, docId, preview = fa
     <textarea
       ref={textareaRef}
       aria-label={ariaLabel}
-      defaultValue={value}
-      onChange={(e) => onChangeRef.current(e.target.value)}
-      // Dark styling for the bare textarea: the graceful fallback when EasyMDE
-      // is unavailable, and it prevents a white flash in the brief window before
-      // EasyMDE takes over.
+      value={value}
+      onChange={(event) => onChangeRef.current(event.target.value)}
       className="min-h-[360px] w-full resize-y rounded-lg border border-border bg-background px-3 py-2 text-[13px] leading-relaxed text-subdued outline-none placeholder:text-muted-foreground focus:border-primary"
     />
   );

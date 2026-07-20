@@ -48,6 +48,8 @@ export type ImportCharacterResult =
   | { ok: true; build: CharacterBuild }
   | { ok: false; error: string };
 
+export const MAX_CANONICAL_IMPORT_BYTES = 5 * 1024 * 1024;
+
 /**
  * Canonical import validates the envelope with zod and delegates legacy schema
  * migration to `migrateCharacterBuild`. It always creates a fresh saveId, so
@@ -64,6 +66,10 @@ function parseImportJson(rawJson: string): unknown {
 }
 
 export function importCharacter(rawJson: string): ImportCharacterResult {
+  if (new TextEncoder().encode(rawJson).byteLength > MAX_CANONICAL_IMPORT_BYTES) {
+    return { ok: false, error: "The character export exceeds the 5 MiB limit." };
+  }
+
   let parsed: unknown;
 
   try {

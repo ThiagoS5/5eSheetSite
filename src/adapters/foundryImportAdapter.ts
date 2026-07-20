@@ -1,6 +1,7 @@
 import { getLevelRequirements } from "@/rules/levelProgression";
 import {
   createCharacterBuildFromLegacyState,
+  createEmptyAdditionalChoices,
   createEmptyCharacterBuild,
   getStepIndexBySlug,
   type CreateCharacterBuildOptions,
@@ -11,6 +12,7 @@ import {
   getBuilderEquipmentOptions,
   getBuilderLanguages,
   getBuilderSpecies,
+  getFeats,
 } from "@/src/services/ruleService";
 import { getSpellCatalog } from "@/src/services/spellService";
 import type {
@@ -18,6 +20,7 @@ import type {
   CoinPouch,
   InventoryEntry,
   SkillTrainingLevel,
+  FoundryDnd5eProfile,
 } from "@/src/types/characterBuild";
 import type {
   BuilderBackground,
@@ -28,7 +31,11 @@ import type {
   ItemCategory,
 } from "@/src/types/builder";
 import type { AttributeBonuses, AttributeKey, CharacterAttributes } from "@/src/types/dnd";
-import type { CharacterSpellcastingChoices } from "@/src/types/spells";
+import type {
+  BuilderSpell,
+  CharacterSpellcastingChoices,
+  SpellSchool,
+} from "@/src/types/spells";
 
 type FoundryItemType =
   | "background"
@@ -49,6 +56,8 @@ interface FoundryActorLike {
   type?: unknown;
   system?: Record<string, unknown>;
   items?: FoundryItemLike[];
+  effects?: FoundryEffectLike[];
+  _stats?: Record<string, unknown>;
 }
 
 interface FoundryItemLike {
@@ -68,6 +77,7 @@ export type ImportFoundryCharacterOptions = Pick<
 >;
 
 const DANGEROUS_KEYS = new Set(["__proto__", "constructor", "prototype"]);
+export const MAX_FOUNDRY_ORIGIN_BYTES = 2 * 1024 * 1024;
 const ABILITY_FROM_FOUNDRY: Record<string, AttributeKey> = {
   str: "forca",
   dex: "destreza",
@@ -111,6 +121,10 @@ export function importFoundryCharacter(
   rawJson: string,
   options: ImportFoundryCharacterOptions = {},
 ): ImportFoundryCharacterResult {
+  if (new TextEncoder().encode(rawJson).byteLength > MAX_FOUNDRY_ORIGIN_BYTES) {
+    return { ok: false, error: "The Foundry actor exceeds the 2 MiB snapshot limit." };
+  }
+
   let parsed: unknown;
 
   try {
@@ -129,6 +143,8 @@ export function importFoundryCharacter(
   }
 
   const actor = parsed;
+  const profile = detectFoundryDnd5eProfile(actor);
+  const systemVersion = readString(actor._stats?.systemVersion);
   const items = actor.items ?? [];
   const identity = resolveIdentity(actor, items);
   const level = resolveLevel(actor, items);
@@ -138,16 +154,76 @@ export function importFoundryCharacter(
     : {};
   const baseAttributes = subtractBonuses(foundryAttributes, backgroundAbilityBonuses);
   const skills = resolveSkills(actor.system);
+  const classSkills = resolveImportedClassSkills(skills, identity);
+  const importedLanguages = resolveLanguages(actor.system);
+  const languageAllowance = Math.max(
+    0,
+    2 +
+      (identity.characterClass?.languageChoiceCount ?? 0) +
+      (identity.background?.languageChoiceCount ?? 0),
+  );
   const inventory = resolveInventory(items);
   const spells = resolveSpellcasting(items, identity.characterClass);
+  const spellChoices = splitImportedSpellChoices(
+    spells.choices,
+    identity.characterClass,
+    level,
+  );
+  const importedFeatures = resolveImportedFeatures(items, identity);
+  const inheritedTools = new Set(
+    [
+      ...(identity.characterClass?.toolProficiencies ?? []),
+      ...(identity.background?.toolProficiencies ?? []),
+    ].map(normalizeSlug),
+  );
+  const additionalChoices = {
+    ...createEmptyAdditionalChoices(),
+    skillProficiencies: classSkills.additional,
+    toolProficiencies: resolveTools(actor.system, items).filter(
+      (tool) => !inheritedTools.has(normalizeSlug(tool)),
+    ),
+    languages: importedLanguages.slice(languageAllowance),
+    featIds: importedFeatures.featIds,
+    spellcasting: {
+      cantripIds: [
+        ...spellChoices.additional.cantripIds,
+        ...spells.customChoices.cantripIds,
+      ],
+      knownSpellIds: [
+        ...spellChoices.additional.knownSpellIds,
+        ...spells.customChoices.knownSpellIds,
+      ],
+      preparedSpellIds: [
+        ...spellChoices.additional.preparedSpellIds,
+        ...spells.customChoices.preparedSpellIds,
+      ],
+    },
+    customSpells: spells.customSpells,
+    customFeatures: importedFeatures.customFeatures,
+    senses: resolveSenses(actor.system),
+    resistances: resolveTraitLabels(actor.system, "dr"),
+    immunities: resolveTraitLabels(actor.system, "di"),
+    vulnerabilities: resolveTraitLabels(actor.system, "dv"),
+  };
   const notes = createImportNotes({
     baseNotes: readDetailsString(actor.system, "notes"),
     identity,
     items,
     spells,
   });
-  const baseBuild = createEmptyCharacterBuild(options);
-  const playState = createPlayState(actor.system, baseBuild);
+  const emptyBuild = createEmptyCharacterBuild(options);
+  const baseBuild: CharacterBuild = {
+    ...emptyBuild,
+    exportMetadata: {
+      ...emptyBuild.exportMetadata,
+      foundryOrigin: {
+        profile,
+        systemVersion,
+        actor: actor as Record<string, unknown>,
+      },
+    },
+  };
+  const playState = createPlayState(actor.system, actor.effects ?? [], baseBuild);
 
   const build = createCharacterBuildFromLegacyState(
     {
@@ -159,10 +235,10 @@ export function importFoundryCharacter(
       selectedSpeciesId: identity.species?.id ?? "",
       selectedBackgroundId: identity.background?.id ?? "",
       maxUnlockedStepIndex: getStepIndexBySlug("conclusao"),
-      classSkillProficiencies: skills.classSkillProficiencies,
+      classSkillProficiencies: classSkills.base,
       skillTraining: skills.skillTraining,
       classFeatureChoices: resolveClassFeatureChoices(identity.characterClass, items),
-      speciesLanguages: resolveLanguages(actor.system),
+      speciesLanguages: importedLanguages.slice(0, languageAllowance),
       attributeGenerationMethod: "manual",
       baseAttributes,
       backgroundAbilityBonuses,
@@ -196,7 +272,8 @@ export function importFoundryCharacter(
       equipmentChoicesBySource: identity.characterClass
         ? { class: { mode: "gold", selectedOptionId: null } }
         : {},
-      spellcasting: spells.choices,
+      spellcasting: spellChoices.base,
+      additionalChoices,
       playState,
     },
     {
@@ -376,6 +453,30 @@ function resolveSkills(system: Record<string, unknown> | undefined): {
   };
 }
 
+function resolveImportedClassSkills(
+  skills: ReturnType<typeof resolveSkills>,
+  identity: ReturnType<typeof resolveIdentity>,
+): { base: string[]; additional: string[] } {
+  const inherited = new Set(
+    (identity.background?.skillProficiencies ?? []).map(normalizeSlug),
+  );
+  const candidates = skills.classSkillProficiencies.filter(
+    (skill) => !inherited.has(normalizeSlug(skill)),
+  );
+  const classOptions = new Set(
+    (identity.characterClass?.skillChoices.chooseFrom ?? []).map(normalizeSlug),
+  );
+  const base = candidates
+    .filter((skill) => classOptions.has(normalizeSlug(skill)))
+    .slice(0, identity.characterClass?.skillChoices.count ?? 0);
+  const baseSet = new Set(base.map(normalizeSlug));
+
+  return {
+    base,
+    additional: candidates.filter((skill) => !baseSet.has(normalizeSlug(skill))),
+  };
+}
+
 function resolveLanguages(system: Record<string, unknown> | undefined): string[] {
   const value = readRecord(readRecord(system?.traits).languages).value;
   if (!Array.isArray(value)) return [];
@@ -388,6 +489,62 @@ function resolveLanguages(system: Record<string, unknown> | undefined): string[]
     .map(readString)
     .filter(Boolean)
     .map((language) => languageBySlug.get(normalizeSlug(language)) ?? titleFromSlug(language));
+}
+
+function resolveTools(
+  system: Record<string, unknown> | undefined,
+  items: FoundryItemLike[],
+): string[] {
+  const tools = readRecord(system?.tools);
+  const values = Object.entries(tools)
+    .filter(([, value]) => {
+      const record = readRecord(value);
+      return (readNumber(record.value) ?? readNumber(record.proficient) ?? 0) > 0;
+    })
+    .map(([key, value]) => {
+      const record = readRecord(value);
+      return readString(record.label) || titleFromSlug(key);
+    });
+
+  for (const item of items) {
+    if (item.type === "tool" && readString(item.name)) values.push(readString(item.name));
+  }
+
+  return [...new Set(values.filter(Boolean))];
+}
+
+function resolveTraitLabels(
+  system: Record<string, unknown> | undefined,
+  key: "dr" | "di" | "dv",
+): string[] {
+  const trait = readRecord(readRecord(system?.traits)[key]);
+  const values = Array.isArray(trait.value) ? trait.value.map(readString) : [];
+  const custom = readString(trait.custom)
+    .split(/[;,]/)
+    .map((value) => value.trim())
+    .filter(Boolean);
+  return [...new Set([...values.map(titleFromSlug), ...custom])];
+}
+
+function resolveSenses(system: Record<string, unknown> | undefined) {
+  const senses = readRecord(readRecord(system?.attributes).senses);
+  const ranges = readRecord(senses.ranges);
+  const source = Object.keys(ranges).length > 0 ? ranges : senses;
+  const labels: Record<string, string> = {
+    blindsight: "Blindsight",
+    darkvision: "Darkvision",
+    tremorsense: "Tremorsense",
+    truesight: "Truesight",
+  };
+  const result: Array<{ name: string; rangeFeet?: number }> = Object.entries(labels).flatMap(
+    ([key, name]) => {
+      const rangeFeet = readNumber(source[key]);
+      return rangeFeet && rangeFeet > 0 ? [{ name, rangeFeet }] : [];
+    },
+  );
+  const special = readString(senses.special);
+  if (special) result.push({ name: special });
+  return result;
 }
 
 function resolveInventory(items: FoundryItemLike[]): {
@@ -444,6 +601,19 @@ function resolveInventory(items: FoundryItemLike[]): {
     entries: [...entriesById.values()],
     equippedItemIds: [...equippedIds],
   };
+}
+
+export function detectFoundryDnd5eProfile(
+  actor: FoundryActorLike,
+): FoundryDnd5eProfile {
+  const version = readString(actor._stats?.systemVersion);
+  return /^5\.3(?:\.|$)/.test(version) ? "dnd5e-5.3" : "dnd5e-5.2";
+}
+
+interface FoundryEffectLike {
+  name?: unknown;
+  disabled?: unknown;
+  statuses?: unknown;
 }
 
 function readFoundryItemQuantity(item: FoundryItemLike): number {
@@ -631,6 +801,8 @@ function resolveSpellcasting(
 ): {
   choices: CharacterSpellcastingChoices | undefined;
   unmappedNames: string[];
+  customChoices: CharacterSpellcastingChoices;
+  customSpells: BuilderSpell[];
 } {
   const spellBySlug = new Map<string, string>();
   for (const spell of getSpellCatalog()) {
@@ -645,6 +817,12 @@ function resolveSpellcasting(
     preparedSpellIds: [],
   };
   const unmappedNames: string[] = [];
+  const customChoices: CharacterSpellcastingChoices = {
+    cantripIds: [],
+    knownSpellIds: [],
+    preparedSpellIds: [],
+  };
+  const customSpells: BuilderSpell[] = [];
 
   for (const item of items) {
     if (item.type !== "spell") continue;
@@ -656,6 +834,17 @@ function resolveSpellcasting(
     if (!spellId) {
       const name = readString(item.name);
       if (name) unmappedNames.push(name);
+      const customSpell = createImportedSpell(item, characterClass);
+      if (customSpell) {
+        customSpells.push(customSpell);
+        if (customSpell.level <= 0) {
+          addUnique(customChoices.cantripIds, customSpell.id);
+        } else if (shouldImportAsPreparedSpell(item, characterClass)) {
+          addUnique(customChoices.preparedSpellIds, customSpell.id);
+        } else {
+          addUnique(customChoices.knownSpellIds, customSpell.id);
+        }
+      }
       continue;
     }
 
@@ -674,7 +863,100 @@ function resolveSpellcasting(
     choices.knownSpellIds.length > 0 ||
     choices.preparedSpellIds.length > 0;
 
-  return { choices: hasSpells ? choices : undefined, unmappedNames };
+  return {
+    choices: hasSpells ? choices : undefined,
+    unmappedNames,
+    customChoices,
+    customSpells,
+  };
+}
+
+function createImportedSpell(
+  item: FoundryItemLike,
+  characterClass: BuilderClass | undefined,
+): BuilderSpell | undefined {
+  const name = readString(item.name).trim();
+  if (!name) return undefined;
+  const system = readRecord(item.system);
+  const level = clampInteger(readNumber(system.level) ?? 0, 0, 9);
+  const activation = readRecord(system.activation);
+  const range = readRecord(system.range);
+  const duration = readRecord(system.duration);
+  const description = readRecord(system.description);
+  const school = normalizeImportedSpellSchool(readString(system.school));
+
+  return {
+    id: `foundry-spell-${normalizeSlug(name)}-${readString(item._id) || "custom"}`,
+    name,
+    source: "Foundry VTT",
+    level,
+    school,
+    schoolCode: school.charAt(0).toUpperCase(),
+    classNames: characterClass ? [characterClass.name] : [],
+    castingTime: formatFoundryMeasure(activation, "action"),
+    range: formatFoundryMeasure(range, "Self"),
+    duration: formatFoundryMeasure(duration, "Instantaneous"),
+    components: resolveFoundrySpellComponents(system),
+    description: stripHtml(readString(description.value)),
+  };
+}
+
+function normalizeImportedSpellSchool(value: string): SpellSchool {
+  const schools: Record<string, SpellSchool> = {
+    abj: "Abjuration",
+    con: "Conjuration",
+    div: "Divination",
+    enc: "Enchantment",
+    evo: "Evocation",
+    ill: "Illusion",
+    nec: "Necromancy",
+    trs: "Transmutation",
+  };
+  return schools[normalizeSlug(value)] ?? "Unknown";
+}
+
+function formatFoundryMeasure(
+  value: Record<string, unknown>,
+  fallback: string,
+): string {
+  const amount = readNumber(value.value);
+  const units = readString(value.units) || readString(value.type);
+  return [amount, units].filter((part) => part !== undefined && part !== "").join(" ") || fallback;
+}
+
+function resolveFoundrySpellComponents(system: Record<string, unknown>): string {
+  const properties = Array.isArray(system.properties)
+    ? system.properties.map(readString)
+    : Object.entries(readRecord(system.components))
+        .filter(([, enabled]) => Boolean(enabled))
+        .map(([key]) => key);
+  return properties.map((value) => value.toUpperCase()).join(", ");
+}
+
+function splitImportedSpellChoices(
+  choices: CharacterSpellcastingChoices | undefined,
+  characterClass: BuilderClass | undefined,
+  level: number,
+): { base: CharacterSpellcastingChoices | undefined; additional: CharacterSpellcastingChoices } {
+  const source = choices ?? { cantripIds: [], knownSpellIds: [], preparedSpellIds: [] };
+  const levelIndex = Math.max(0, Math.min(19, level - 1));
+  const cantripLimit = characterClass?.spellcastingProgression?.cantripsKnown[levelIndex] ?? 0;
+  const knownLimit = characterClass?.spellcastingProgression?.knownSpells[levelIndex] ?? 0;
+  const preparedLimit = characterClass?.spellcastingProgression?.preparedSpells[levelIndex] ?? 0;
+  const base = {
+    cantripIds: source.cantripIds.slice(0, cantripLimit),
+    knownSpellIds: source.knownSpellIds.slice(0, knownLimit),
+    preparedSpellIds: source.preparedSpellIds.slice(0, preparedLimit),
+  };
+  const hasBase = Object.values(base).some((values) => values.length > 0);
+  return {
+    base: hasBase ? base : undefined,
+    additional: {
+      cantripIds: source.cantripIds.slice(cantripLimit),
+      knownSpellIds: source.knownSpellIds.slice(knownLimit),
+      preparedSpellIds: source.preparedSpellIds.slice(preparedLimit),
+    },
+  };
 }
 
 function shouldImportAsPreparedSpell(
@@ -744,10 +1026,13 @@ function resolveClassFeatureChoices(
 
 function createPlayState(
   system: Record<string, unknown> | undefined,
+  effects: FoundryEffectLike[],
   baseBuild: CharacterBuild,
 ): CharacterBuild["playState"] {
-  const hp = readRecord(readRecord(system?.attributes).hp);
-  const ac = readRecord(readRecord(system?.attributes).ac);
+  const attributes = readRecord(system?.attributes);
+  const hp = readRecord(attributes.hp);
+  const ac = readRecord(attributes.ac);
+  const death = readRecord(attributes.death);
   const hpValue = readNumber(hp.value);
   const maxHp = readNumber(hp.max) ?? hpValue;
   const armorClass = readNumber(ac.flat);
@@ -757,6 +1042,13 @@ function createPlayState(
     currentHp: hpValue ?? baseBuild.playState.currentHp,
     tempHp: readNumber(hp.temp) ?? baseBuild.playState.tempHp,
     usedSpellSlots: resolveUsedSpellSlots(system),
+    resourceUses: resolveResourceUses(system),
+    deathSaves: {
+      successes: clampInteger(readNumber(death.success) ?? 0, 0, 3),
+      failures: clampInteger(readNumber(death.failure) ?? 0, 0, 3),
+    },
+    inspiration: readBoolean(attributes.inspiration),
+    conditions: resolveConditions(effects),
     overrides: {
       ...baseBuild.playState.overrides,
       ...(maxHp !== undefined ? { maxHp } : {}),
@@ -959,6 +1251,83 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function readString(value: unknown): string {
   return typeof value === "string" ? value.trim() : "";
+}
+
+function resolveResourceUses(
+  system: Record<string, unknown> | undefined,
+): Record<string, number> {
+  const resources = readRecord(system?.resources);
+  return Object.fromEntries(
+    Object.entries(resources).flatMap(([key, value]) => {
+      const resource = readRecord(value);
+      const current = readNumber(resource.value);
+      const max = readNumber(resource.max);
+      return current !== undefined && max !== undefined && max > current
+        ? [[key, Math.max(0, max - current)]]
+        : [];
+    }),
+  );
+}
+
+function resolveConditions(effects: FoundryEffectLike[]): string[] {
+  const conditions = effects.flatMap((effect) => {
+    if (readBoolean(effect.disabled)) return [];
+    const statuses = Array.isArray(effect.statuses)
+      ? effect.statuses.map(readString)
+      : effect.statuses instanceof Set
+        ? [...effect.statuses].map(readString)
+        : [];
+    return statuses.length > 0 ? statuses.map(titleFromSlug) : [readString(effect.name)];
+  });
+  return [...new Set(conditions.filter(Boolean))];
+}
+
+function resolveImportedFeatures(
+  items: FoundryItemLike[],
+  identity: ReturnType<typeof resolveIdentity>,
+): {
+  featIds: string[];
+  customFeatures: CharacterBuild["choices"]["additionalChoices"]["customFeatures"];
+} {
+  const identityFeatureSlugs = new Set<string>();
+  for (const name of [
+    ...(identity.characterClass?.allFeatures.map((feature) => feature.name) ?? []),
+    ...(identity.species?.traits.map((feature) => feature.name) ?? []),
+    identity.background?.originFeat ?? "",
+  ]) {
+    for (const slug of createCandidateSlugs(name)) identityFeatureSlugs.add(slug);
+  }
+
+  const featLookup = new Map<string, string>();
+  for (const feat of getFeats()) {
+    for (const slug of createCandidateSlugs(feat.name, feat.id)) {
+      featLookup.set(slug, feat.id);
+    }
+  }
+
+  const featIds: string[] = [];
+  const customFeatures: CharacterBuild["choices"]["additionalChoices"]["customFeatures"] = [];
+  for (const item of items) {
+    if (item.type !== "feat") continue;
+    const slugs = createFoundryItemSlugs(item);
+    if (slugs.some((slug) => identityFeatureSlugs.has(slug))) continue;
+    const featId = slugs.map((slug) => featLookup.get(slug)).find(Boolean);
+    if (featId) {
+      addUnique(featIds, featId);
+      continue;
+    }
+    const name = readString(item.name).trim();
+    if (!name) continue;
+    const description = readRecord(readRecord(item.system).description);
+    customFeatures.push({
+      id: `foundry-feature-${normalizeSlug(name)}-${readString(item._id) || "custom"}`,
+      name,
+      description: stripHtml(readString(description.value)),
+      source: "Foundry VTT",
+    });
+  }
+
+  return { featIds, customFeatures };
 }
 
 function readStringArray(value: unknown): string[] {

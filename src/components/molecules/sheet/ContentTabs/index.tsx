@@ -10,11 +10,20 @@ import { originColorVars } from "@/src/components/organisms/sheet/sheetTheme";
 import { ItemDetailModal, type DetailItem } from "@/src/components/organisms/sheet/ItemDetailModal";
 import { SheetTabPanel } from "@/src/components/organisms/sheet/SheetTabPanel";
 import { NotesPanel } from "@/src/components/organisms/sheet/NotesPanel";
+import { SessionLogPanel } from "@/src/components/organisms/sheet/SessionLogPanel";
+import { groupSpellsByLevel } from "@/src/utils/spellGrouping";
 
 import type { ContentTabsProps } from "./index.types";
 export type { ContentTabsProps } from "./index.types";
-type MainTab = "actions" | "spells" | "inventory" | "features" | "sheet" | "notes";
-type OriginFilter = "all" | "class" | "species" | "background" | "feat";
+type MainTab =
+  | "actions"
+  | "spells"
+  | "inventory"
+  | "features"
+  | "sheet"
+  | "notes"
+  | "session-log";
+type OriginFilter = "all" | "class" | "species" | "background" | "feat" | "custom";
 type InvFilter = "all" | "weapons" | "armor" | "utility" | "magic";
 
 const MAIN_TABS: { id: MainTab; label: string; icon: string }[] = [
@@ -24,6 +33,7 @@ const MAIN_TABS: { id: MainTab; label: string; icon: string }[] = [
   { id: "features",  label: "Features",       icon: "fa-scroll" },
   { id: "sheet",     label: "Sheet",          icon: "fa-shield-halved" },
   { id: "notes",     label: "Notes",          icon: "fa-feather" },
+  { id: "session-log", label: "Session Log",  icon: "fa-book" },
 ];
 
 const ORIGIN_FILTERS: { id: OriginFilter; label: string }[] = [
@@ -32,6 +42,7 @@ const ORIGIN_FILTERS: { id: OriginFilter; label: string }[] = [
   { id: "species",    label: "Species" },
   { id: "background", label: "Background" },
   { id: "feat",       label: "Feats" },
+  { id: "custom",     label: "Custom" },
 ];
 
 const INV_FILTERS: { id: InvFilter; label: string }[] = [
@@ -47,6 +58,7 @@ const ORIGIN_BADGE_LABELS: Record<Exclude<OriginFilter, "all">, string> = {
   species: "Species",
   background: "Background",
   feat: "Feat",
+  custom: "Custom",
 };
 
 const MAGIC_CATS = new Set(["Ring", "Rod", "Scroll", "Staff", "Wand", "Wondrous", "Potion"]);
@@ -272,41 +284,29 @@ export function ContentTabs({ summary, description }: ContentTabsProps) {
                   ))}
                 </div>
               </section>
-              <SpellList
-                title="Cantrips"
-                spells={summary.spellcasting.cantrips}
-                onSelect={(spell) =>
-                  setDetail({
-                    kind: "spell",
-                    name: spell.name,
-                    castingTime: spell.castingTime,
-                    range: spell.range,
-                    duration: spell.duration,
-                    components: spell.components,
-                    classes: spell.classNames.join(", "),
-                    description: spell.description,
-                  })
-                }
-              />
-              <SpellList
-                title="Spells"
-                spells={[
-                  ...summary.spellcasting.knownSpells,
-                  ...summary.spellcasting.preparedSpells,
-                ]}
-                onSelect={(spell) =>
-                  setDetail({
-                    kind: "spell",
-                    name: spell.name,
-                    castingTime: spell.castingTime,
-                    range: spell.range,
-                    duration: spell.duration,
-                    components: spell.components,
-                    classes: spell.classNames.join(", "),
-                    description: spell.description,
-                  })
-                }
-              />
+              {groupSpellsByLevel([
+                ...summary.spellcasting.cantrips,
+                ...summary.spellcasting.knownSpells,
+                ...summary.spellcasting.preparedSpells,
+              ]).map((group) => (
+                <SpellList
+                  key={group.level}
+                  title={group.title}
+                  spells={group.spells}
+                  onSelect={(spell) =>
+                    setDetail({
+                      kind: "spell",
+                      name: spell.name,
+                      castingTime: spell.castingTime,
+                      range: spell.range,
+                      duration: spell.duration,
+                      components: spell.components,
+                      classes: spell.classNames.join(", "),
+                      description: spell.description,
+                    })
+                  }
+                />
+              ))}
             </div>
           ) : (
             <EmptyState
@@ -414,6 +414,8 @@ export function ContentTabs({ summary, description }: ContentTabsProps) {
         {activeTab === "sheet" && <SheetTabPanel summary={summary} description={description} />}
 
         {activeTab === "notes" && <NotesPanel />}
+
+        {activeTab === "session-log" && <SessionLogPanel />}
       </div>
 
       <ItemDetailModal item={detail} onClose={() => setDetail(null)} />
@@ -449,7 +451,14 @@ function SpellList({
         {title}
       </h3>
       <div className="overflow-x-auto rounded-lg border border-border bg-surface-nested">
-        <table className="w-full min-w-[560px] border-collapse text-left">
+        <table className="w-full min-w-[680px] table-fixed border-collapse text-left">
+          <colgroup>
+            <col className="w-[38%]" />
+            <col className="w-[12%]" />
+            <col className="w-[20%]" />
+            <col className="w-[18%]" />
+            <col className="w-[12%]" />
+          </colgroup>
           <thead className="bg-primary/20 text-[9px] font-bold uppercase tracking-[0.12em] text-muted-foreground">
             <tr>
               <th scope="col" className="px-3 py-2">Spell</th>
@@ -462,7 +471,7 @@ function SpellList({
           <tbody className="divide-y divide-border">
             {spells.map((spell) => (
               <tr key={spell.id} className="transition-colors hover:bg-card">
-                <td className="px-3 py-2">
+                <td className="align-top px-3 py-2">
                   <button
                     type="button"
                     onClick={() => onSelect(spell)}
@@ -472,7 +481,7 @@ function SpellList({
                       <i aria-hidden="true" className="fa-solid fa-wand-sparkles text-xs" />
                     </span>
                     <span className="min-w-0">
-                      <span translate="no" className="notranslate block truncate text-[13px] font-bold text-foreground">
+                      <span translate="no" className="notranslate block break-words text-[13px] font-bold text-foreground">
                         {spell.name}
                       </span>
                       <span className="block truncate text-[11px] text-muted-foreground">
@@ -481,12 +490,12 @@ function SpellList({
                     </span>
                   </button>
                 </td>
-                <td className="px-3 py-2 text-[12px] text-subdued">
+                <td className="align-top px-3 py-2 text-[12px] text-subdued">
                   {spell.level === 0 ? "Cantrip" : spell.level}
                 </td>
-                <td className="px-3 py-2 text-[12px] text-subdued">{spell.castingTime}</td>
-                <td className="px-3 py-2 text-[12px] text-subdued">{spell.range}</td>
-                <td translate="no" className="notranslate px-3 py-2 text-[11px] font-semibold text-muted-foreground">
+                <td className="break-words align-top px-3 py-2 text-[12px] text-subdued">{spell.castingTime}</td>
+                <td className="break-words align-top px-3 py-2 text-[12px] text-subdued">{spell.range}</td>
+                <td translate="no" className="notranslate break-words align-top px-3 py-2 text-[11px] font-semibold text-muted-foreground">
                   {spell.source}
                 </td>
               </tr>

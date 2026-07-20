@@ -49,6 +49,7 @@ import type {
   BuilderClass,
   BuilderClassFeatureChoiceGroup,
   BuilderLanguage,
+  BuilderFeat,
   BuilderSpecies,
   BuilderStepSlug,
   BuilderSubclass,
@@ -56,6 +57,7 @@ import type {
 } from "@/src/types/builder";
 import type { AttributeBonuses, AttributeKey } from "@/src/types/dnd";
 import type { CharacterSpellcastingChoices } from "@/src/types/spells";
+import type { CharacterBuildAdditionalChoices } from "@/src/types/characterBuild";
 import { ActionBtn } from "@/src/components/atoms/ActionBtn";
 import {
   FontAwesomeIcon,
@@ -112,6 +114,8 @@ import {
   normalizeActiveSourceSelection,
 } from "@/src/services/sourcePreferenceService";
 import { getFeats } from "@/src/services/ruleService";
+import { getStandardToolProficiencies } from "@/src/services/itemCatalogService";
+import { useBuilderHeaderToolbar } from "@/src/hooks/useBuilderHeaderToolbar";
 import {
   filterByActiveSources,
   isSourceActive,
@@ -420,12 +424,18 @@ export function BuilderStepPanel({
     [itemCatalog, activeSources, preservedItemIds],
   );
   const selectedFeatIds = useMemo(
-    () => getSelectedFeatIds(characterState.asiOrFeatByLevel),
-    [characterState.asiOrFeatByLevel],
+    () => [
+      ...getSelectedFeatIds(characterState.asiOrFeatByLevel),
+      ...characterState.additionalChoices.featIds,
+    ],
+    [characterState.asiOrFeatByLevel, characterState.additionalChoices.featIds],
   );
   const selectedSpellIds = useMemo(
-    () => getSelectedSpellIds(characterState.spellcasting),
-    [characterState.spellcasting],
+    () => [
+      ...getSelectedSpellIds(characterState.spellcasting),
+      ...getSelectedSpellIds(characterState.additionalChoices.spellcasting),
+    ],
+    [characterState.spellcasting, characterState.additionalChoices.spellcasting],
   );
   const baseInactiveSourceWarnings = useMemo(
     () =>
@@ -497,6 +507,8 @@ export function BuilderStepPanel({
     [baseInactiveSourceWarnings, spellSourceWarnings],
   );
   const languageLimit = getRequiredLanguageCount(characterState);
+  const allowExtraChoices =
+    characterState.creationPreferences?.choiceLimits === "flexible";
 
   const unlockAndGo = useCallback(
     async (stepIndex: number) => {
@@ -643,14 +655,17 @@ export function BuilderStepPanel({
           selectedClass={selectedClass}
           characterLevel={characterState.level}
           selectedSkills={characterState.classSkillProficiencies}
+          additionalChoices={characterState.additionalChoices}
           selectedFeatureChoices={characterState.classFeatureChoices}
           spellcastingChoices={characterState.spellcasting}
           activeSources={activeSources}
           disabled={!canUseCurrentStep}
+          allowExtraChoices={allowExtraChoices}
           onSelectedSkillsChange={actions.setClassSkillProficiencies}
           onSkillTrainingChange={actions.setSkillTraining}
           onClassFeatureChoiceChange={actions.setClassFeatureChoice}
           onSpellcastingChoicesChange={actions.setSpellcastingChoices}
+          onAdditionalChoicesChange={actions.setAdditionalChoices}
         />
       ) : null}
 
@@ -700,9 +715,17 @@ export function BuilderStepPanel({
           languageLimit={languageLimit}
           selectedChoices={characterState.speciesChoices}
           selectedLanguages={characterState.speciesLanguages}
+          additionalLanguages={characterState.additionalChoices.languages}
           disabled={!canUseCurrentStep}
+          allowExtraChoices={allowExtraChoices}
           onSpeciesChoiceChange={actions.setSpeciesChoice}
           onSpeciesLanguagesChange={actions.setSpeciesLanguages}
+          onAdditionalLanguagesChange={(languages) =>
+            actions.setAdditionalChoices({
+              ...characterState.additionalChoices,
+              languages,
+            })
+          }
         />
       ) : null}
 
@@ -748,12 +771,20 @@ export function BuilderStepPanel({
       ) : null}
 
       {step === "descricao" ? (
-        <PersonalDetailsEditor
-          beginnerMode={Boolean(characterState.beginnerMode)}
-          selectedBackground={selectedBackground}
-          selectedClass={selectedClass}
-          selectedSpecies={selectedSpecies}
-        />
+        <section aria-labelledby="personal-details-title" className="grid gap-5">
+          <StepHeader
+            id="personal-details-title"
+            eyebrow="Character Identity"
+            title="Personal Details"
+            description="Record identity, appearance, personality, backstory, and private notes."
+          />
+          <PersonalDetailsEditor
+            beginnerMode={Boolean(characterState.beginnerMode)}
+            selectedBackground={selectedBackground}
+            selectedClass={selectedClass}
+            selectedSpecies={selectedSpecies}
+          />
+        </section>
       ) : null}
 
       {step === "conclusao" ? <CharacterSheetView embedded /> : null}
@@ -831,6 +862,7 @@ function LockedStepPanel({
   pendencies: Pendency[];
   onGoToStep: (href: string) => void;
 }) {
+  const toolbar = useBuilderHeaderToolbar();
   const groups = builderStepNavigation
     .map((step) => ({
       step,
@@ -882,6 +914,8 @@ function LockedStepPanel({
             </div>
           </div>
 
+          {toolbar}
+
           {groups.length ? (
             <div className="rounded-lg border border-white/[0.08] bg-surface-nested/60 p-4 sm:p-5">
               <p className="mb-4 text-sm font-semibold text-foreground">
@@ -893,7 +927,7 @@ function LockedStepPanel({
                     <button
                       type="button"
                       onClick={() => onGoToStep(group.step.href)}
-                      className="inline-flex w-fit items-center gap-1.5 text-xs font-bold uppercase tracking-[0.1em] text-brand-gold-alt outline-none transition hover:text-amber-200 focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70"
+                      className="inline-flex min-h-6 w-fit items-center gap-1.5 rounded px-2 text-xs font-bold uppercase tracking-[0.1em] text-brand-gold-alt outline-none transition hover:text-amber-200 focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70"
                     >
                       {group.step.label}
                       <ArrowRight aria-hidden="true" className="h-3.5 w-3.5" />
@@ -922,7 +956,7 @@ function LockedStepPanel({
             <button
               type="button"
               onClick={() => onGoToStep(startStep.href)}
-              className="text-sm font-semibold text-muted-foreground underline underline-offset-4 outline-none transition hover:text-foreground focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70"
+              className="inline-flex min-h-10 items-center rounded-md px-3 text-sm font-semibold text-muted-foreground underline underline-offset-4 outline-none transition hover:text-foreground focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70"
             >
               Back to the start
             </button>
@@ -1947,26 +1981,32 @@ function ClassFeaturesStep({
   selectedClass,
   characterLevel,
   selectedSkills,
+  additionalChoices,
   selectedFeatureChoices,
   spellcastingChoices,
   activeSources,
   disabled,
+  allowExtraChoices,
   onSelectedSkillsChange,
   onSkillTrainingChange,
   onClassFeatureChoiceChange,
   onSpellcastingChoicesChange,
+  onAdditionalChoicesChange,
 }: {
   selectedClass?: BuilderClass;
   characterLevel: number;
   selectedSkills: string[];
+  additionalChoices: CharacterBuildAdditionalChoices;
   selectedFeatureChoices: Record<string, string[]>;
   spellcastingChoices?: CharacterSpellcastingChoices;
   activeSources?: readonly string[];
   disabled: boolean;
+  allowExtraChoices: boolean;
   onSelectedSkillsChange: (skills: string[]) => void;
   onSkillTrainingChange: (skill: string, level: SkillTrainingLevel) => void;
   onClassFeatureChoiceChange: (choiceId: string, values: string[]) => void;
   onSpellcastingChoicesChange: (choices: CharacterSpellcastingChoices) => void;
+  onAdditionalChoicesChange: (choices: CharacterBuildAdditionalChoices) => void;
 }) {
   if (!selectedClass) {
     return (
@@ -1987,6 +2027,12 @@ function ClassFeaturesStep({
   const spellMode = preparedLimit > 0 ? "prepared" : "known";
   const spellLimit = spellMode === "prepared" ? preparedLimit : knownLimit;
   const maxSpellLevel = getHighestSpellLevelAvailable(selectedClass, characterLevel);
+  const allSelectedSkills = [
+    ...new Set([...selectedSkills, ...additionalChoices.skillProficiencies]),
+  ];
+  const flexibleFeats = getFeats().filter((feat) =>
+    isSourceActive(feat.source, activeSources),
+  );
 
   function toggleSkill(skill: string) {
     if (selectedSkills.includes(skill)) {
@@ -1994,7 +2040,24 @@ function ClassFeaturesStep({
       return;
     }
 
+    if (additionalChoices.skillProficiencies.includes(skill)) {
+      onAdditionalChoicesChange({
+        ...additionalChoices,
+        skillProficiencies: additionalChoices.skillProficiencies.filter(
+          (entry) => entry !== skill,
+        ),
+      });
+      return;
+    }
+
     if (selectedSkills.length >= maxSkills) {
+      if (allowExtraChoices) {
+        onAdditionalChoicesChange({
+          ...additionalChoices,
+          skillProficiencies: [...additionalChoices.skillProficiencies, skill],
+        });
+        onSkillTrainingChange(skill, "proficient");
+      }
       return;
     }
 
@@ -2015,14 +2078,14 @@ function ClassFeaturesStep({
           <legend className="mb-3 flex flex-wrap items-center justify-between gap-2 text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">
             <span>Class skills</span>
             <ChoiceCounter
-              selected={selectedSkills.length}
+              selected={allSelectedSkills.length}
               total={maxSkills}
               label="skills chosen"
             />
           </legend>
           <div className="grid gap-2 sm:grid-cols-2">
             {selectedClass.skillChoices.chooseFrom.map((skill) => {
-              const checked = selectedSkills.includes(skill);
+              const checked = allSelectedSkills.includes(skill);
 
               return (
                 <label
@@ -2036,7 +2099,10 @@ function ClassFeaturesStep({
                   <input
                     type="checkbox"
                     checked={checked}
-                    disabled={disabled || (!checked && selectedSkills.length >= maxSkills)}
+                    disabled={
+                      disabled ||
+                      (!checked && !allowExtraChoices && selectedSkills.length >= maxSkills)
+                    }
                     onChange={() => toggleSkill(skill)}
                     className="mt-1 h-4 w-4 rounded border-white/20 bg-surface-nested accent-brand-crimson-alt focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-crimson-alt"
                   />
@@ -2071,22 +2137,60 @@ function ClassFeaturesStep({
         <ClassFeatureChoiceFieldset
           key={group.id}
           group={group}
-          selectedValues={selectedFeatureChoices[group.id] ?? []}
+          selectedValues={[
+            ...new Set([
+              ...(selectedFeatureChoices[group.id] ?? []),
+              ...(additionalChoices.classFeatureChoices[group.id] ?? []),
+            ]),
+          ]}
           disabled={disabled}
-          onChange={(values) => onClassFeatureChoiceChange(group.id, values)}
+          allowExtraChoices={allowExtraChoices}
+          onChange={(values) => {
+            onClassFeatureChoiceChange(group.id, values.slice(0, group.count));
+            onAdditionalChoicesChange({
+              ...additionalChoices,
+              classFeatureChoices: {
+                ...additionalChoices.classFeatureChoices,
+                [group.id]: values.slice(group.count),
+              },
+            });
+          }}
         />
       ))}
+      {allowExtraChoices ||
+      additionalChoices.toolProficiencies.length > 0 ||
+      additionalChoices.featIds.length > 0 ? (
+        <FlexibleProficiencyChoices
+          tools={getStandardToolProficiencies()}
+          feats={flexibleFeats}
+          selectedTools={additionalChoices.toolProficiencies}
+          selectedFeatIds={additionalChoices.featIds}
+          allowNewChoices={allowExtraChoices}
+          disabled={disabled}
+          onToolsChange={(toolProficiencies) =>
+            onAdditionalChoicesChange({ ...additionalChoices, toolProficiencies })
+          }
+          onFeatsChange={(featIds) =>
+            onAdditionalChoicesChange({ ...additionalChoices, featIds })
+          }
+        />
+      ) : null}
       {selectedClass.spellcastingAbility ? (
         <SpellCatalogPicker
           className={selectedClass.name}
           activeSources={activeSources}
           value={spellcastingChoices}
+          additionalValue={additionalChoices.spellcasting}
           cantripLimit={cantripLimit}
           spellLimit={spellLimit}
           spellMode={spellMode}
           maxSpellLevel={maxSpellLevel}
           disabled={disabled}
+          allowExtraChoices={allowExtraChoices}
           onChange={onSpellcastingChoicesChange}
+          onAdditionalChange={(spellcasting) =>
+            onAdditionalChoicesChange({ ...additionalChoices, spellcasting })
+          }
         />
       ) : null}
       <section className="rounded-lg border border-white/[0.06] bg-card p-4">
@@ -2108,11 +2212,13 @@ function ClassFeatureChoiceFieldset({
   group,
   selectedValues,
   disabled,
+  allowExtraChoices,
   onChange,
 }: {
   group: BuilderClassFeatureChoiceGroup;
   selectedValues: string[];
   disabled: boolean;
+  allowExtraChoices: boolean;
   onChange: (values: string[]) => void;
 }) {
   function toggleValue(value: string) {
@@ -2121,7 +2227,7 @@ function ClassFeatureChoiceFieldset({
       return;
     }
 
-    if (selectedValues.length >= group.count) {
+    if (selectedValues.length >= group.count && !allowExtraChoices) {
       return;
     }
 
@@ -2158,7 +2264,8 @@ function ClassFeatureChoiceFieldset({
                 type="checkbox"
                 checked={checked}
                 disabled={
-                  disabled || (!checked && selectedValues.length >= group.count)
+                  disabled ||
+                  (!checked && !allowExtraChoices && selectedValues.length >= group.count)
                 }
                 onChange={() => toggleValue(option.value)}
                 className="mt-1 h-4 w-4 rounded border-white/20 bg-surface-nested accent-brand-crimson-alt focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-crimson-alt"
@@ -2176,6 +2283,135 @@ function ClassFeatureChoiceFieldset({
         })}
       </div>
     </fieldset>
+  );
+}
+
+function FlexibleProficiencyChoices({
+  tools,
+  feats,
+  selectedTools,
+  selectedFeatIds,
+  allowNewChoices,
+  disabled,
+  onToolsChange,
+  onFeatsChange,
+}: {
+  tools: ReturnType<typeof getStandardToolProficiencies>;
+  feats: BuilderFeat[];
+  selectedTools: string[];
+  selectedFeatIds: string[];
+  allowNewChoices: boolean;
+  disabled: boolean;
+  onToolsChange: (tools: string[]) => void;
+  onFeatsChange: (featIds: string[]) => void;
+}) {
+  const [featQuery, setFeatQuery] = useState("");
+  const normalizedFeatQuery = normalizeSearchText(featQuery);
+  const visibleFeats = feats.filter((feat) =>
+    matchesNormalizedSearchText(`${feat.name} ${feat.source}`, normalizedFeatQuery),
+  );
+
+  return (
+    <section
+      aria-labelledby="flexible-proficiencies-title"
+      className="grid gap-4 rounded-lg border border-brand-gold-alt/25 bg-brand-gold-alt/[0.04] p-4"
+    >
+      <div>
+        <h3
+          id="flexible-proficiencies-title"
+          className="text-xs font-bold uppercase tracking-[0.14em] text-brand-gold-alt"
+        >
+          Additional Choices
+        </h3>
+        <p className="mt-1 text-sm leading-6 text-subdued">
+          These choices are stored separately from class requirements. Turning Flexible Choices
+          off keeps them on the character but prevents new additions.
+        </p>
+      </div>
+
+      <div className="grid gap-4 xl:grid-cols-2">
+        <fieldset className="min-w-0 rounded-md border border-border bg-background/45 p-3">
+          <legend className="px-1 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            Tool proficiencies
+          </legend>
+          <div className="mt-2 max-h-64 space-y-1 overflow-y-auto pr-1">
+            {tools.map((tool) => {
+              const checked = selectedTools.includes(tool.name);
+              return (
+                <label
+                  key={tool.id}
+                  className="flex min-h-11 items-center gap-2 rounded-md px-2 text-sm text-subdued hover:bg-white/[0.04]"
+                >
+                  <input
+                    type="checkbox"
+                    checked={checked}
+                    disabled={disabled || (!checked && !allowNewChoices)}
+                    onChange={() =>
+                      onToolsChange(
+                        checked
+                          ? selectedTools.filter((name) => name !== tool.name)
+                          : [...selectedTools, tool.name],
+                      )
+                    }
+                    className="h-4 w-4 accent-primary"
+                  />
+                  <span translate="no" className="notranslate">
+                    {tool.name}
+                  </span>
+                </label>
+              );
+            })}
+          </div>
+        </fieldset>
+
+        <fieldset className="min-w-0 rounded-md border border-border bg-background/45 p-3">
+          <legend className="px-1 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            Additional feats
+          </legend>
+          <label className="mt-2 block">
+            <span className="sr-only">Search additional feats</span>
+            <input
+              type="search"
+              value={featQuery}
+              onChange={(event) => setFeatQuery(event.target.value)}
+              placeholder="Search feats"
+              className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70"
+            />
+          </label>
+          <div className="mt-2 max-h-52 space-y-1 overflow-y-auto pr-1">
+            {visibleFeats.map((feat) => {
+              const checked = selectedFeatIds.includes(feat.id);
+              return (
+                <label
+                  key={feat.id}
+                  className="flex min-h-11 items-center gap-2 rounded-md px-2 text-sm text-subdued hover:bg-white/[0.04]"
+                >
+                  <input
+                    type="checkbox"
+                    checked={checked}
+                    disabled={disabled || (!checked && !allowNewChoices)}
+                    onChange={() =>
+                      onFeatsChange(
+                        checked
+                          ? selectedFeatIds.filter((id) => id !== feat.id)
+                          : [...selectedFeatIds, feat.id],
+                      )
+                    }
+                    className="h-4 w-4 accent-primary"
+                  />
+                  <span className="min-w-0">
+                    <span translate="no" className="notranslate block truncate">
+                      {feat.name}
+                    </span>
+                    <span className="text-xs text-muted-foreground">{feat.source}</span>
+                  </span>
+                </label>
+              );
+            })}
+          </div>
+        </fieldset>
+      </div>
+    </section>
   );
 }
 
@@ -2767,18 +3003,24 @@ function SpeciesDetailsStep({
   languageLimit,
   selectedChoices,
   selectedLanguages,
+  additionalLanguages,
   disabled,
+  allowExtraChoices,
   onSpeciesChoiceChange,
   onSpeciesLanguagesChange,
+  onAdditionalLanguagesChange,
 }: {
   selectedSpecies?: BuilderSpecies;
   languages: BuilderLanguage[];
   languageLimit: number;
   selectedChoices: Record<string, string>;
   selectedLanguages: string[];
+  additionalLanguages: string[];
   disabled: boolean;
+  allowExtraChoices: boolean;
   onSpeciesChoiceChange: (choiceId: string, value: string) => void;
   onSpeciesLanguagesChange: (languages: string[]) => void;
+  onAdditionalLanguagesChange: (languages: string[]) => void;
 }) {
   if (!selectedSpecies) {
     return (
@@ -2788,13 +3030,27 @@ function SpeciesDetailsStep({
     );
   }
 
+  const allSelectedLanguages = [
+    ...new Set([...selectedLanguages, ...additionalLanguages]),
+  ];
+
   function toggleLanguage(language: string) {
     if (selectedLanguages.includes(language)) {
       onSpeciesLanguagesChange(selectedLanguages.filter((entry) => entry !== language));
       return;
     }
 
+    if (additionalLanguages.includes(language)) {
+      onAdditionalLanguagesChange(
+        additionalLanguages.filter((entry) => entry !== language),
+      );
+      return;
+    }
+
     if (selectedLanguages.length >= languageLimit) {
+      if (allowExtraChoices) {
+        onAdditionalLanguagesChange([...additionalLanguages, language]);
+      }
       return;
     }
 
@@ -2855,7 +3111,7 @@ function SpeciesDetailsStep({
           <legend className="mb-3 flex flex-wrap items-center justify-between gap-2 text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">
             <span>Languages</span>
             <ChoiceCounter
-              selected={selectedLanguages.length}
+              selected={allSelectedLanguages.length}
               total={languageLimit}
               label="languages chosen"
             />
@@ -2864,9 +3120,10 @@ function SpeciesDetailsStep({
             <LanguageGroup
               title="Common"
               languages={languages.filter((language) => language.type === "standard")}
-              selectedLanguages={selectedLanguages}
+              selectedLanguages={allSelectedLanguages}
               languageLimit={languageLimit}
               disabled={disabled}
+              allowExtraChoices={allowExtraChoices}
               onToggleLanguage={toggleLanguage}
             />
             <LanguageGroup
@@ -2874,9 +3131,10 @@ function SpeciesDetailsStep({
               languages={languages.filter((language) =>
                 language.type === "rare" || language.type === "exotic",
               )}
-              selectedLanguages={selectedLanguages}
+              selectedLanguages={allSelectedLanguages}
               languageLimit={languageLimit}
               disabled={disabled}
+              allowExtraChoices={allowExtraChoices}
               onToggleLanguage={toggleLanguage}
             />
           </div>
@@ -2892,6 +3150,7 @@ function LanguageGroup({
   selectedLanguages,
   languageLimit,
   disabled,
+  allowExtraChoices,
   onToggleLanguage,
 }: {
   title: string;
@@ -2899,6 +3158,7 @@ function LanguageGroup({
   selectedLanguages: string[];
   languageLimit: number;
   disabled: boolean;
+  allowExtraChoices: boolean;
   onToggleLanguage: (language: string) => void;
 }) {
   if (!languages.length) {
@@ -2927,7 +3187,8 @@ function LanguageGroup({
                 type="checkbox"
                 checked={checked}
                 disabled={
-                  disabled || (!checked && selectedLanguages.length >= languageLimit)
+                  disabled ||
+                  (!checked && !allowExtraChoices && selectedLanguages.length >= languageLimit)
                 }
                 onChange={() => onToggleLanguage(language.name)}
                 className="mt-1 h-4 w-4 rounded border-white/20 bg-surface-nested accent-brand-crimson-alt focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-crimson-alt"
@@ -3362,17 +3623,21 @@ function StepHeader({
   title: string;
   description: string;
 }) {
+  const toolbar = useBuilderHeaderToolbar();
   return (
-    <div>
-      <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-foreground">
-        {eyebrow}
-      </p>
-      <h2 id={id} className="mt-1 font-serif text-xl font-bold tracking-wide text-foreground">
-        {title}
-      </h2>
-      <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
-        {description}
-      </p>
+    <div className="grid gap-4 border-b border-white/[0.06] pb-5">
+      <div>
+        <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-foreground">
+          {eyebrow}
+        </p>
+        <h2 id={id} className="mt-1 font-serif text-xl font-bold tracking-wide text-foreground">
+          {title}
+        </h2>
+        <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
+          {description}
+        </p>
+      </div>
+      {toolbar}
     </div>
   );
 }
@@ -3464,6 +3729,7 @@ function useCharacterBuilderActions() {
   const setSkillTraining = useCharacterStore((state) => state.setSkillTraining);
   const setClassFeatureChoice = useCharacterStore((state) => state.setClassFeatureChoice);
   const setSpellcastingChoices = useCharacterStore((state) => state.setSpellcastingChoices);
+  const setAdditionalChoices = useCharacterStore((state) => state.setAdditionalChoices);
   const setSpeciesChoice = useCharacterStore((state) => state.setSpeciesChoice);
   const setSpeciesLanguages = useCharacterStore((state) => state.setSpeciesLanguages);
   const setAttributeGenerationMethod = useCharacterStore(
@@ -3499,6 +3765,7 @@ function useCharacterBuilderActions() {
       setSkillTraining,
       setClassFeatureChoice,
       setSpellcastingChoices,
+      setAdditionalChoices,
       setSpeciesChoice,
       setSpeciesLanguages,
       setAttributeGenerationMethod,
@@ -3529,6 +3796,7 @@ function useCharacterBuilderActions() {
       setSkillTraining,
       setClassFeatureChoice,
       setSpellcastingChoices,
+      setAdditionalChoices,
       setSpeciesChoice,
       setSpeciesLanguages,
       setAttributeGenerationMethod,

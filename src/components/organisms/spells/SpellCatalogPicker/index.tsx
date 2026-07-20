@@ -20,14 +20,18 @@ export function SpellCatalogPicker({
   className,
   activeSources,
   value,
+  additionalValue,
   cantripLimit,
   spellLimit,
   spellMode,
   maxSpellLevel,
   disabled = false,
+  allowExtraChoices = false,
   onChange,
+  onAdditionalChange,
 }: SpellCatalogPickerProps) {
   const choices = value ?? EMPTY_CHOICES;
+  const additionalChoices = additionalValue ?? EMPTY_CHOICES;
   const [spells, setSpells] = useState<BuilderSpell[]>([]);
   const [loadedKey, setLoadedKey] = useState("");
   const [query, setQuery] = useState("");
@@ -40,8 +44,18 @@ export function SpellCatalogPicker({
       ...choices.cantripIds,
       ...choices.knownSpellIds,
       ...choices.preparedSpellIds,
+      ...additionalChoices.cantripIds,
+      ...additionalChoices.knownSpellIds,
+      ...additionalChoices.preparedSpellIds,
     ],
-    [choices.cantripIds, choices.knownSpellIds, choices.preparedSpellIds],
+    [
+      choices.cantripIds,
+      choices.knownSpellIds,
+      choices.preparedSpellIds,
+      additionalChoices.cantripIds,
+      additionalChoices.knownSpellIds,
+      additionalChoices.preparedSpellIds,
+    ],
   );
   const sourceKey = activeSources?.join("|") ?? "all";
   const requestKey = `${className}:${sourceKey}:${preservedSpellIds.join("|")}`;
@@ -78,6 +92,16 @@ export function SpellCatalogPicker({
   );
   const selectedSpellIds =
     spellMode === "prepared" ? choices.preparedSpellIds : choices.knownSpellIds;
+  const additionalSelectedSpellIds =
+    spellMode === "prepared"
+      ? additionalChoices.preparedSpellIds
+      : additionalChoices.knownSpellIds;
+  const selectedCantripIds = [
+    ...new Set([...choices.cantripIds, ...additionalChoices.cantripIds]),
+  ];
+  const combinedSelectedSpellIds = [
+    ...new Set([...selectedSpellIds, ...additionalSelectedSpellIds]),
+  ];
   const levelOptions = [
     "all",
     "0",
@@ -86,27 +110,56 @@ export function SpellCatalogPicker({
 
   function toggleSpell(spell: BuilderSpell) {
     if (spell.level === 0) {
-      const selected = choices.cantripIds.includes(spell.id);
-      const cantripIds = selected
-        ? choices.cantripIds.filter((id) => id !== spell.id)
-        : choices.cantripIds.length < cantripLimit
-          ? [...choices.cantripIds, spell.id]
-          : choices.cantripIds;
-      onChange({ ...choices, cantripIds });
+      if (choices.cantripIds.includes(spell.id)) {
+        onChange({
+          ...choices,
+          cantripIds: choices.cantripIds.filter((id) => id !== spell.id),
+        });
+      } else if (additionalChoices.cantripIds.includes(spell.id)) {
+        onAdditionalChange?.({
+          ...additionalChoices,
+          cantripIds: additionalChoices.cantripIds.filter((id) => id !== spell.id),
+        });
+      } else if (choices.cantripIds.length < cantripLimit) {
+        onChange({ ...choices, cantripIds: [...choices.cantripIds, spell.id] });
+      } else if (allowExtraChoices) {
+        onAdditionalChange?.({
+          ...additionalChoices,
+          cantripIds: [...additionalChoices.cantripIds, spell.id],
+        });
+      }
       return;
     }
 
-    const selected = selectedSpellIds.includes(spell.id);
-    const nextIds = selected
-      ? selectedSpellIds.filter((id) => id !== spell.id)
-      : selectedSpellIds.length < spellLimit
-        ? [...selectedSpellIds, spell.id]
-        : selectedSpellIds;
-    onChange(
-      spellMode === "prepared"
-        ? { ...choices, preparedSpellIds: nextIds }
-        : { ...choices, knownSpellIds: nextIds },
-    );
+    if (selectedSpellIds.includes(spell.id)) {
+      const nextIds = selectedSpellIds.filter((id) => id !== spell.id);
+      onChange(
+        spellMode === "prepared"
+          ? { ...choices, preparedSpellIds: nextIds }
+          : { ...choices, knownSpellIds: nextIds },
+      );
+    } else if (additionalSelectedSpellIds.includes(spell.id)) {
+      const nextIds = additionalSelectedSpellIds.filter((id) => id !== spell.id);
+      onAdditionalChange?.(
+        spellMode === "prepared"
+          ? { ...additionalChoices, preparedSpellIds: nextIds }
+          : { ...additionalChoices, knownSpellIds: nextIds },
+      );
+    } else if (selectedSpellIds.length < spellLimit) {
+      const nextIds = [...selectedSpellIds, spell.id];
+      onChange(
+        spellMode === "prepared"
+          ? { ...choices, preparedSpellIds: nextIds }
+          : { ...choices, knownSpellIds: nextIds },
+      );
+    } else if (allowExtraChoices) {
+      const nextIds = [...additionalSelectedSpellIds, spell.id];
+      onAdditionalChange?.(
+        spellMode === "prepared"
+          ? { ...additionalChoices, preparedSpellIds: nextIds }
+          : { ...additionalChoices, knownSpellIds: nextIds },
+      );
+    }
   }
 
   return (
@@ -119,8 +172,8 @@ export function SpellCatalogPicker({
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <ChoiceCounter selected={choices.cantripIds.length} total={cantripLimit} label="cantrips" />
-          <ChoiceCounter selected={selectedSpellIds.length} total={spellLimit} label={`${spellMode} spells`} />
+          <ChoiceCounter selected={selectedCantripIds.length} total={cantripLimit} label="cantrips" />
+          <ChoiceCounter selected={combinedSelectedSpellIds.length} total={spellLimit} label={`${spellMode} spells`} />
         </div>
       </div>
 
@@ -151,14 +204,14 @@ export function SpellCatalogPicker({
           <SpellGrid
             title="Cantrips"
             spells={cantrips}
-            selectedIds={choices.cantripIds}
+            selectedIds={selectedCantripIds}
             disabled={disabled}
             onToggle={toggleSpell}
           />
           <SpellGrid
             title={spellMode === "prepared" ? "Prepared spells" : "Known spells"}
             spells={levelledSpells}
-            selectedIds={selectedSpellIds}
+            selectedIds={combinedSelectedSpellIds}
             disabled={disabled}
             onToggle={toggleSpell}
           />

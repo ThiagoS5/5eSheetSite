@@ -57,7 +57,7 @@ export function SheetHero({
 
       <div
         data-testid="sheet-hero-combat-stats"
-        className="grid grid-cols-1 items-center justify-items-center gap-[22px] min-[440px]:grid-cols-[88px_172px_88px]"
+        className="grid grid-cols-[88px_112px_88px] items-center justify-items-center gap-2 sm:grid-cols-[88px_172px_88px] sm:gap-[22px]"
       >
         <CombatStatFrame variant="square" accentColor="var(--brand-crimson-alt)">
           <i aria-hidden="true" className="fa-solid fa-bolt text-[13px] text-primary" />
@@ -65,7 +65,7 @@ export function SheetHero({
           <span translate="no" className="notranslate font-serif text-2xl font-extrabold text-foreground">{fmt(summary.initiative)}</span>
         </CombatStatFrame>
 
-        <div className="relative flex h-[190px] w-[172px] items-center justify-center">
+        <div className="relative flex h-[124px] w-[112px] items-center justify-center sm:h-[190px] sm:w-[172px]">
           <svg viewBox="0 0 100 110" className="pointer-events-none absolute inset-0 h-full w-full" xmlns="http://www.w3.org/2000/svg">
             <path d="M 50 4 L 94 18 L 94 54 C 94 80 72 100 50 106 C 28 100 6 80 6 54 L 6 18 Z" fill="var(--card)" stroke="var(--brand-crimson-alt)" strokeWidth="1.5" />
             <path d="M 50 9 L 89 21 L 89 54 C 89 78 68 97 50 102 C 32 97 11 78 11 54 L 11 21 Z" fill="none" stroke="var(--brand-crimson-alt)" strokeWidth="0.6" opacity="0.5" />
@@ -74,7 +74,7 @@ export function SheetHero({
             <span className="text-center text-[9.5px] font-semibold uppercase leading-tight tracking-[0.08em] text-brand-crimson-alt">
               Armor<br />Class
             </span>
-            <span translate="no" className="notranslate font-serif text-5xl font-extrabold leading-none text-foreground">{summary.armorClass}</span>
+            <span translate="no" className="notranslate font-serif text-4xl font-extrabold leading-none text-foreground sm:text-5xl">{summary.armorClass}</span>
           </div>
         </div>
 
@@ -122,7 +122,7 @@ function ExportButton({
       type="button"
       onClick={onClick}
       className={cn(
-        "inline-flex items-center gap-[7px] rounded-[9px] border border-border bg-card px-[14px] py-[9px] text-xs font-bold tracking-[0.04em] text-muted-foreground transition-colors hover:border-brand-crimson-alt hover:text-foreground",
+        "inline-flex min-h-10 items-center gap-[7px] rounded-[9px] border border-border bg-card px-[14px] py-[9px] text-xs font-bold tracking-[0.04em] text-muted-foreground transition-colors hover:border-brand-crimson-alt hover:text-foreground",
         focusRing,
       )}
     >

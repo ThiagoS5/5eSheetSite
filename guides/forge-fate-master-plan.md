@@ -1,10 +1,12 @@
 # Forge & Fate — Master Plan
 
+> **Current delivery baseline (2026-07-19):** phases 1–9 remain complete and `CHARACTER_BUILD_SCHEMA_VERSION = 17`. The v17 closure adds source-isolated flexible choices, robust note persistence, an independent Session Log, level-grouped spells, and a shared semantic export projection for Foundry dnd5e 5.2/5.3 and A4/Letter PDF. The older v10 planning sections below remain historical rationale; use `MANIFESTO.md`, `project-delivery-ruler.md`, and `AUDITORIA.md` for current truth.
+
 > **Documento mestre do projeto.** Este arquivo consolida visão, estado atual, arquitetura-alvo, contratos de domínio, roadmap por fases e critérios de aceite do Forge & Fate. Ele complementa (não substitui) o `MANIFESTO.md`: o Manifesto define a estrela-guia; este plano define **o caminho ordenado até ela**. Ao concluir uma fase, atualize a seção 2 (Estado Atual) e a tabela da seção 22.
 >
-> **⚠️ Nota de atualização (2026-07-15):** as **Fases 1–9 estão concluídas** (status por fase na seção 22) e o schema atual é `CHARACTER_BUILD_SCHEMA_VERSION = 16`. As seções 2–21 descrevem a auditoria de planejamento de 2026-07-06 (schema v10) e permanecem como **registro histórico e racional das decisões** — para o estado atual consolidado, leia `AUDITORIA.md` e `project-delivery-ruler.md` nesta mesma pasta (`guides/`). Em conflito, vale a ordem: `MANIFESTO.md` → `project-delivery-ruler.md` → este plano.
+> **⚠️ Nota de atualização (2026-07-19):** as **Fases 1–9 estão concluídas** (status por fase na seção 22) e o schema atual é `CHARACTER_BUILD_SCHEMA_VERSION = 17`. As seções 2–21 descrevem a auditoria de planejamento de 2026-07-06 (schema v10) e permanecem como **registro histórico e racional das decisões** — para o estado atual consolidado, leia `AUDITORIA.md` e `project-delivery-ruler.md` nesta mesma pasta (`guides/`). Em conflito, vale a ordem: `MANIFESTO.md` → `project-delivery-ruler.md` → este plano.
 >
-> **Data da auditoria original:** 2026-07-06 · **Schema na época:** v10 · **Schema atual:** v16
+> **Data da auditoria original:** 2026-07-06 · **Schema na época:** v10 · **Schema atual:** v17
 
 ---
 

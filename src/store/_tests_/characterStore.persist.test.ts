@@ -46,15 +46,18 @@ describe("createCharacterStore persistence", () => {
     store.getState().setCreationPreferences({
       activeSources: ["EFA"],
       progressionMode: "xp",
+      choiceLimits: "rules",
     });
 
     expect(store.getState().creationPreferences).toEqual({
       activeSources: ["XPHB", "EFA"],
       progressionMode: "xp",
+      choiceLimits: "rules",
     });
     expect(store.getState().characterBuild.choices.creationPreferences).toEqual({
       activeSources: ["XPHB", "EFA"],
       progressionMode: "xp",
+      choiceLimits: "rules",
     });
     disposeCharacterStore(store);
   });
@@ -84,10 +87,12 @@ describe("createCharacterStore persistence", () => {
     expect(store.getState().creationPreferences).toEqual({
       activeSources: ["XPHB", "EFA"],
       progressionMode: "milestone",
+      choiceLimits: "rules",
     });
     expect(store.getState().characterBuild.choices.creationPreferences).toEqual({
       activeSources: ["XPHB", "EFA"],
       progressionMode: "milestone",
+      choiceLimits: "rules",
     });
     disposeCharacterStore(store);
   });
@@ -475,6 +480,32 @@ describe("createCharacterStore persistence", () => {
           },
         },
       });
+    });
+
+    it("persists Personality Traits through autosave and a Vault reload", async () => {
+      vi.useFakeTimers();
+      const store = createCharacterStore();
+      const saveId = store.getState().characterBuild.exportMetadata.saveId;
+
+      store.getState().setDescriptionField("nome", "Trait Keeper");
+      await saveCharacter(store.getState().characterBuild);
+      store.getState().setDescriptionField(
+        "tracos",
+        "Keeps a meticulous promise ledger.",
+      );
+
+      await vi.advanceTimersByTimeAsync(1000);
+      const saved = await getCharacter(saveId);
+      expect(saved?.draft.description.tracos).toBe(
+        "Keeps a meticulous promise ledger.",
+      );
+
+      const reopened = createCharacterStore();
+      reopened.getState().loadCharacterBuild(saved!);
+      expect(reopened.getState().description.tracos).toBe(
+        "Keeps a meticulous promise ledger.",
+      );
+      disposeCharacterStore(reopened);
     });
 
     it("does not create vault entries for drafts never saved to the vault", async () => {

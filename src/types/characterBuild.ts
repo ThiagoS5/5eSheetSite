@@ -5,6 +5,7 @@ import type {
   EquipmentCharges,
   InventoryItemType,
   ItemCategory,
+  SheetSense,
 } from "@/src/types/builder";
 import type {
   AttributeBonuses,
@@ -12,6 +13,7 @@ import type {
   Ruleset,
 } from "@/src/types/dnd";
 import type { CharacterSpellcastingChoices } from "@/src/types/spells";
+import type { BuilderSpell } from "@/src/types/spells";
 
 // v13: draft.description added historia; playState added campaignLog (defaulted migration).
 // v14: added the "subclasse" step after "recursos-classe"; maxUnlockedStepIndex from
@@ -20,7 +22,9 @@ import type { CharacterSpellcastingChoices } from "@/src/types/spells";
 //      a baseline level without inventing Forge & Fate ASI/feat history.
 // v16: inventory entries can preserve imported custom item metadata when no
 //      5eTools/Plutonium catalog match exists.
-export const CHARACTER_BUILD_SCHEMA_VERSION = 16;
+// v17: per-character flexible choice limits, isolated additional choices, and
+//      a sanitized Foundry origin snapshot for lossless canonical round-trips.
+export const CHARACTER_BUILD_SCHEMA_VERSION = 17;
 
 export interface CoinPouch {
   pc: number;
@@ -96,10 +100,38 @@ export interface CharacterBuildDraft {
 export type HpRollChoice = number | "average";
 
 export type ProgressionMode = "xp" | "milestone";
+export type ChoiceLimits = "rules" | "flexible";
 
 export interface CreationPreferences {
   activeSources: string[];
   progressionMode: ProgressionMode;
+  choiceLimits: ChoiceLimits;
+}
+
+export interface ImportedCharacterFeature {
+  id: string;
+  name: string;
+  description: string;
+  source: string;
+}
+
+/**
+ * Optional choices that do not consume the normal rules-defined allowance.
+ * They stay separate so switching back to rules mode never destroys data.
+ */
+export interface CharacterBuildAdditionalChoices {
+  skillProficiencies: string[];
+  toolProficiencies: string[];
+  languages: string[];
+  featIds: string[];
+  classFeatureChoices: Record<string, string[]>;
+  spellcasting: CharacterSpellcastingChoices;
+  customSpells: BuilderSpell[];
+  customFeatures: ImportedCharacterFeature[];
+  senses: SheetSense[];
+  resistances: string[];
+  immunities: string[];
+  vulnerabilities: string[];
 }
 
 export interface CharacterBuildLevelChoiceState {
@@ -133,6 +165,7 @@ export interface CharacterBuildChoices {
   carriedLoadKg: number;
   skillModifierOverrides: Record<string, number>;
   spellcasting?: CharacterSpellcastingChoices;
+  additionalChoices: CharacterBuildAdditionalChoices;
   creationPreferences?: CreationPreferences;
   beginnerMode: boolean;
 }
@@ -168,6 +201,15 @@ export interface CharacterBuildExportMetadata {
   saveId: string;
   createdAt: string;
   updatedAt: string;
+  foundryOrigin?: FoundryOriginSnapshot;
+}
+
+export type FoundryDnd5eProfile = "dnd5e-5.2" | "dnd5e-5.3";
+
+export interface FoundryOriginSnapshot {
+  profile: FoundryDnd5eProfile;
+  systemVersion: string;
+  actor: Record<string, unknown>;
 }
 
 export interface CharacterBuild {

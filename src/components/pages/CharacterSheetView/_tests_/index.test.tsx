@@ -17,6 +17,7 @@ const mocks = vi.hoisted(() => ({
 
 afterEach(() => {
   cleanup();
+  localStorage.clear();
   vi.restoreAllMocks();
 });
 
@@ -116,8 +117,14 @@ describe("CharacterSheetView", () => {
 
     render(<CharacterSheetView />);
     fireEvent.click(screen.getByRole("button", { name: "Export Foundry VTT JSON" }));
+    expect(screen.getByRole("radio", { name: /dnd5e 5\.3\.x/i })).toBeChecked();
+    fireEvent.click(screen.getByRole("button", { name: "Download JSON" }));
 
-    expect(mocks.createFoundryCharacterExport).toHaveBeenCalled();
+    expect(mocks.createFoundryCharacterExport).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ name: "Thalindra" }),
+      expect.objectContaining({ profile: "dnd5e-5.3" }),
+    );
     expect(click).toHaveBeenCalledTimes(1);
   });
 

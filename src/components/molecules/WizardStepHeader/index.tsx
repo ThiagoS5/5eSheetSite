@@ -1,6 +1,7 @@
 
 
 import type { WizardStepHeaderProps } from "./index.types";
+import { useBuilderHeaderToolbar } from "@/src/hooks/useBuilderHeaderToolbar";
 export type { WizardStepHeaderProps } from "./index.types";
 export function WizardStepHeader({
   id,
@@ -14,12 +15,14 @@ export function WizardStepHeader({
   resultCountLabel,
   onSearch,
 }: WizardStepHeaderProps) {
+  const toolbar = useBuilderHeaderToolbar();
   const hasSearch = Boolean(onSearch && searchId);
   const resultId = hasSearch ? `${searchId}-results` : undefined;
 
   return (
-    <div className="flex flex-col gap-4 border-b border-white/[0.06] pb-5 lg:flex-row lg:items-end lg:justify-between">
-      <div>
+    <div className="grid gap-4 border-b border-white/[0.06] pb-5">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        <div>
         {eyebrow ? (
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-foreground">
             {eyebrow}
@@ -31,9 +34,9 @@ export function WizardStepHeader({
         <p className="mt-2 max-w-2xl text-sm leading-6 text-subdued">
           {description}
         </p>
-      </div>
+        </div>
 
-      {hasSearch ? (
+        {hasSearch ? (
         <div className="w-full lg:max-w-xs">
           <label
             htmlFor={searchId}
@@ -62,7 +65,9 @@ export function WizardStepHeader({
             </p>
           ) : null}
         </div>
-      ) : null}
+        ) : null}
+      </div>
+      {toolbar}
     </div>
   );
 }

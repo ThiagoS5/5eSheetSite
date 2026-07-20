@@ -1,8 +1,8 @@
 # Project Audit - Forge & Fate
 
-> Current audit snapshot: 2026-07-16. Basis: guide docs, `package.json`, domain types, rules, adapters, store, components, browser smoke QA, and focused/full tests found in the repository.
+> Current audit snapshot: 2026-07-19. Basis: guide docs, `package.json`, domain types, rules, adapters, store, components, browser QA across public routes and responsive widths, real PDF renders, installed Foundry-system schemas, and focused/full tests.
 >
-> Since the 2026-07-11 snapshot: dedicated subclass builder step + level-up modal with state-integrity fixes (schema v14), Foundry import level-choice baselines (schema v15), imported custom inventory metadata (schema v16), security hardening (CSP/headers, sanitized notes, import hardening, no external CDN), species defenses and level-up feat fixes, Foundry export compliance, data pruning, first-class Forge & Fate JSON export actions, source filtering coverage, shared migration entry point, structured magic-item bonuses, and the multiclass ADR. Guide docs were consolidated into `guides/`.
+> Since the 2026-07-16 snapshot: schema v17 adds flexible choice preferences and isolated extras, a bounded Foundry-origin snapshot, complete semantic Foundry 5.2/5.3 profiles, a shared PDF/Foundry projection, resilient rich-note persistence, an independent Session Log, grouped spell tables, responsive builder controls, and route-wide accessibility/layout corrections.
 
 ## 1. Phase Status
 
@@ -22,7 +22,7 @@
 
 ## 2. Evidence
 
-- Canonical persisted contract: `src/types/characterBuild.ts`, schema v16.
+- Canonical persisted contract: `src/types/characterBuild.ts`, schema v17.
 - Derived truth boundary: `src/store/characterSelectors.ts` delegates to `rules/characterSheetSummaryRules.ts`.
 - Vault: `src/services/characterService.ts`.
 - Creation modes and quick build: `src/components/pages/Dashboard.tsx`, `src/data/quickBuildProfiles.ts`.
@@ -34,8 +34,8 @@
 - Inventory: `src/services/itemCatalogService.ts`, `src/adapters/itemCatalogAdapter.ts`, `rules/inventoryRules.ts`, `rules/armorClassRules.ts`, `rules/attackRules.ts`, `InventoryManager.tsx`, `EquipmentChecklist.tsx`.
 - Rules text AST: `src/adapters/rulesTextAst.ts`, `RulesTextView.tsx`, golden tests.
 - Canonical export/import: `src/utils/canonicalExport.ts`, `src/types/export.ts`, `src/utils/_tests_/canonicalExport.test.ts`, `CharacterSheetView`, `SheetHero`, `Dashboard`.
-- Foundry export: `src/utils/foundryAdapter.ts`, Foundry adapter tests.
-- PDF: `src/adapters/pdfAdapter.ts`, `src/adapters/pdfAdapterDocument.tsx`, `src/adapters/_tests_/pdfAdapter.test.tsx`.
+- Foundry import/export: profile adapters under `src/adapters/foundry`, semantic projection, fixtures, round-trip tests, and installed-system schema checks for dnd5e 5.2.4 and 5.3.3.
+- PDF: `src/adapters/pdfAdapter.ts`, `src/adapters/pdfAdapterDocument.tsx`, the shared semantic projection, real A4/Letter renders, and `src/adapters/_tests_/pdfAdapter.test.tsx`.
 - Sheet/conclusion: `CharacterSheetView`, `SheetHero`, `ContentTabs`, `BuilderStepPanel` conclusion embed.
 
 ## 3. Confirmed Strengths
@@ -64,8 +64,7 @@
 
 ### Low
 
-- Foundry export likely needs a manual import verification pass against the target Foundry/dnd5e version before a public v1 claim.
-- PDF layout is functionally tested, but visual print QA should still be done with real generated PDFs.
+- A live Foundry application import remains a release-environment check because no Foundry executable/runtime was available during this audit. Fixtures were validated against the local 5.2.4 system and an isolated official 5.3.3 package without touching worlds.
 
 ## 5. Recommended Next Work
 
@@ -121,6 +120,19 @@ Browser smoke QA run on `http://localhost:3001`:
 
 Residual manual release checks before a public v1 announcement:
 
-- Import a generated Foundry VTT JSON into the target Foundry/dnd5e version.
-- Print-review at least one martial and one spellcaster PDF from real exported files.
-- Run a full human keyboard/a11y pass at 200% zoom and reduced motion beyond the automated smoke.
+- Import generated Foundry VTT JSON through live dnd5e 5.2.4 and 5.3.3 applications when those runtimes are available.
+- Run a final human screen-reader pass; automated semantics, keyboard behavior, 200%-equivalent layout, and reduced-motion rules are covered.
+
+## 8. Schema v17 And Route Audit - 2026-07-19
+
+Closed contract and behavior findings:
+
+- Flexible choices are opt-in per character, keep normal minimums blocking, preserve extras when disabled, and never relax class/species/subclass or ASI-versus-feat exclusivity.
+- Personality Traits and other rich-note documents synchronize after late Zustand hydration, debounce safely, flush on document changes/unmount, and survive Vault reload.
+- Notes and Session Log are independent keyboard-accessible tabs. Spells are deduplicated and grouped by present level with fixed, identical table columns.
+- Foundry 5.2/5.3 import/export covers semantic sheet data, historical external baselines, custom entities, unknown metadata preservation, and cross-profile conversion.
+- PDF output includes narrative and play-state content, level-grouped spells, long inventory/features/notes/logs, and visually inspected A4 and Letter high-level fixtures without clipped content or orphaned Session Log headings.
+
+Route QA covered Dashboard, create/import modal, all 10 builder steps, locked state, preferences, detail/level-up dialogs, conclusion, and `/sheet` at 1440 px, tablet/200%-equivalent width, and 390 px. Closed findings included dead builder navigation actions, inaccessible mobile menu wiring, stacked mobile sheet statistics, undersized touch targets, Portuguese quick-build labels, and duplicate SVG IDs. The final automated scan found no page-level horizontal overflow, unnamed controls, duplicate IDs, or dead links in the audited public routes.
+
+Final gates: `npm run lint` passed; `npm run typecheck` passed; `npm test` passed with 140 files and 721 tests; `npm run build` passed with Next.js 16.2.9 and 16 generated pages.

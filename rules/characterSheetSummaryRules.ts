@@ -35,6 +35,10 @@ import { deriveSpellcastingSummary } from "@/rules/spellcastingRules";
 import { deriveEffectivePlayState } from "@/rules/playStateSummaryRules";
 import { deriveSheetAttributes } from "@/rules/attributeSummaryRules";
 import {
+  deriveAdditionalFeatureSummaries,
+  mergeAdditionalSenses,
+} from "@/rules/additionalChoiceRules";
+import {
   calculateMaxHitPointsWithRolls,
   getHitPointsBreakdown,
 } from "@/rules/hitPointRules";
@@ -75,8 +79,12 @@ export function selectCharacterSheetSummary(
   const finalAttributes = deriveFinalAttributes(state, featEffects);
   const proficiencyBonus = getProficiencyBonus(state.level);
   const classAndFeatSkillProficiencies = [
-    ...state.classSkillProficiencies,
-    ...featEffects.skillProficiencies,
+    ...new Set([
+      ...state.classSkillProficiencies,
+      ...(background?.skillProficiencies ?? []),
+      ...featEffects.skillProficiencies,
+      ...state.additionalChoices.skillProficiencies,
+    ]),
   ];
   const skills = computeSkills({
     finalAttributes,
@@ -111,6 +119,7 @@ export function selectCharacterSheetSummary(
     finalAttributes,
     proficiencyBonus,
     choices: state.spellcasting,
+    additionalChoices: state.additionalChoices,
     usedSpellSlots: effectivePlay.playState.usedSpellSlots,
   });
   const pendencies = deriveBuilderPendencies({ state, characterClass });
@@ -137,7 +146,9 @@ export function selectCharacterSheetSummary(
     skillTraining: state.skillTraining,
     classFeatureChoices: state.classFeatureChoices,
     speciesChoices: state.speciesChoices,
-    speciesLanguages: state.speciesLanguages,
+    speciesLanguages: [
+      ...new Set([...state.speciesLanguages, ...state.additionalChoices.languages]),
+    ],
     validationMessages: pendencies.map((pendency) => pendency.label),
     pendencies,
     name: state.description.nome,
@@ -174,15 +185,35 @@ export function selectCharacterSheetSummary(
       savingThrowBonus: equipmentSavingThrowBonus,
     }),
     passives: computePassives(skills),
-    senses: species?.senses ?? [],
-    languages: [...state.speciesLanguages, ...featEffects.languageProficiencies],
-    toolProficiencies: [...new Set(featEffects.toolProficiencies)],
+    senses: mergeAdditionalSenses(species?.senses ?? [], state.additionalChoices.senses),
+    languages: [
+      ...new Set([
+        ...state.speciesLanguages,
+        ...featEffects.languageProficiencies,
+        ...state.additionalChoices.languages,
+      ]),
+    ],
+    toolProficiencies: [
+      ...new Set([
+        ...featEffects.toolProficiencies,
+        ...(characterClass?.toolProficiencies ?? []),
+        ...(background?.toolProficiencies ?? []),
+        ...state.additionalChoices.toolProficiencies,
+      ]),
+    ],
     resistances: combineDefenseLabels(
       deriveSpeciesResistances(species, state.speciesChoices),
       equipmentResistances,
+      state.additionalChoices.resistances,
     ),
-    immunities: deriveSpeciesImmunities(species),
-    vulnerabilities: deriveSpeciesVulnerabilities(species),
+    immunities: combineDefenseLabels(
+      deriveSpeciesImmunities(species),
+      state.additionalChoices.immunities,
+    ),
+    vulnerabilities: combineDefenseLabels(
+      deriveSpeciesVulnerabilities(species),
+      state.additionalChoices.vulnerabilities,
+    ),
     features: deriveFeatures({ classFeaturesUpToLevel, characterClass, state, species, background }),
     weapons: deriveAttacks({
       finalAttributes,
@@ -270,6 +301,11 @@ function deriveFeatEffects(
     effects = applyFeatEffects(effects, feat, effectsChoice);
   }
 
+  for (const featId of state.additionalChoices.featIds) {
+    const feat = feats.find((entry) => entry.id === featId);
+    if (feat) effects = applyFeatEffects(effects, feat);
+  }
+
   return effects;
 }
 
@@ -306,6 +342,7 @@ function deriveFeatures(input: {
         }]
       : []),
     ...deriveChosenFeatSummaries(input.state.asiOrFeatByLevel, input.state.level, getFeats()),
+    ...deriveAdditionalFeatureSummaries(input.state.additionalChoices, getFeats()),
   ].filter((feature) => feature.name);
 }
 

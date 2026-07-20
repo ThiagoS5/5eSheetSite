@@ -36,6 +36,7 @@ describe("schema v6 migration", () => {
     build.choices.creationPreferences = {
       activeSources: ["XPHB"],
       progressionMode: "milestone",
+      choiceLimits: "rules",
     };
     const flat = flattenCharacterBuild(build);
     expect(flat.hpRollByLevel?.["3"]).toBe(7);

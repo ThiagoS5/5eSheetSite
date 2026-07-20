@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactNode } from "react";
+import { useId, type CSSProperties, type ReactNode } from "react";
 
 import type { HeroChoiceCardProps, HeroChoiceTheme } from "./index.types";
 export type { HeroChoiceCardProps, HeroChoiceTheme } from "./index.types";
@@ -61,8 +61,14 @@ function FrameTopRail() {
 }
 
 /** Trilho vertical duplo com esmaecimento em direção à base do card. */
-function FrameSideRail({ flipped = false }: { flipped?: boolean }) {
-  const idSuffix = flipped ? "right" : "left";
+function FrameSideRail({
+  flipped = false,
+  instanceId,
+}: {
+  flipped?: boolean;
+  instanceId: string;
+}) {
+  const idSuffix = `${instanceId}-${flipped ? "right" : "left"}`;
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -200,6 +206,7 @@ export function HeroChoiceCard({
   selectedLabel = "Selected",
   children,
 }: HeroChoiceCardProps) {
+  const instanceId = useId().replace(/:/g, "");
   const themeVars = {
     "--hero-theme": theme.theme,
     "--hero-accent": theme.accent,
@@ -261,8 +268,8 @@ export function HeroChoiceCard({
 
         {/* Moldura dourada: trilhos laterais */}
         <div className="absolute inset-x-0 bottom-0 top-16 z-[1] flex justify-between">
-          <FrameSideRail />
-          <FrameSideRail flipped />
+          <FrameSideRail instanceId={instanceId} />
+          <FrameSideRail instanceId={instanceId} flipped />
         </div>
       </div>
 

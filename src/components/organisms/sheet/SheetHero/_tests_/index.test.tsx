@@ -63,8 +63,8 @@ describe("SheetHero", () => {
       "text-center",
     );
     expect(screen.getByTestId("sheet-hero-combat-stats")).toHaveClass(
-      "grid-cols-1",
-      "min-[440px]:grid-cols-[88px_172px_88px]",
+      "grid-cols-[88px_112px_88px]",
+      "sm:grid-cols-[88px_172px_88px]",
     );
   });
 

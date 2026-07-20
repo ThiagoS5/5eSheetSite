@@ -24,6 +24,14 @@ vi.mock("@/src/store/useCharacterStore", () => ({
     }),
 }));
 
+vi.mock("@/src/components/organisms/sheet/NotesPanel", () => ({
+  NotesPanel: () => <div>Notes workspace</div>,
+}));
+
+vi.mock("@/src/components/organisms/sheet/SessionLogPanel", () => ({
+  SessionLogPanel: () => <div>Session Log workspace</div>,
+}));
+
 const summary = {
   isSpellcaster: false,
   weapons: [{ name: "Dagger", attackBonus: "+6", damage: "1d4+3 Piercing", notes: "Finesse" }],
@@ -67,9 +75,35 @@ describe("ContentTabs", () => {
   afterEach(cleanup);
   beforeEach(() => render(<ContentTabs summary={summary} description={description} />));
 
-  it("renders the Sheet and Notes tabs", () => {
+  it("renders Notes and Session Log as independent main tabs", () => {
     expect(screen.getByRole("tab", { name: /sheet/i })).toBeTruthy();
     expect(screen.getByRole("tab", { name: /notes/i })).toBeTruthy();
+    expect(screen.getByRole("tab", { name: /session log/i })).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("tab", { name: /notes/i }));
+    expect(screen.getByText("Notes workspace")).toBeInTheDocument();
+    expect(screen.queryByText("Session Log workspace")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("tab", { name: /session log/i }));
+    expect(screen.getByText("Session Log workspace")).toBeInTheDocument();
+    expect(screen.queryByText("Notes workspace")).not.toBeInTheDocument();
+  });
+
+  it("supports Arrow, Home, and End keyboard navigation across main tabs", () => {
+    const actionsTab = screen.getByRole("tab", { name: /actions/i });
+    actionsTab.focus();
+
+    fireEvent.keyDown(actionsTab, { key: "End" });
+    const sessionLogTab = screen.getByRole("tab", { name: /session log/i });
+    expect(sessionLogTab).toHaveAttribute("aria-selected", "true");
+    expect(sessionLogTab).toHaveFocus();
+
+    fireEvent.keyDown(sessionLogTab, { key: "Home" });
+    expect(actionsTab).toHaveAttribute("aria-selected", "true");
+    expect(actionsTab).toHaveFocus();
+
+    fireEvent.keyDown(actionsTab, { key: "ArrowLeft" });
+    expect(sessionLogTab).toHaveAttribute("aria-selected", "true");
   });
 
   it("shows weapons as cards on the Actions tab by default", () => {
@@ -79,6 +113,65 @@ describe("ContentTabs", () => {
   it("shows an intentional empty state on the Spells tab for a non-caster", () => {
     fireEvent.click(screen.getByRole("tab", { name: /Spells/ }));
     expect(screen.getByText(/does not have spells|No spells/i)).toBeInTheDocument();
+  });
+
+  it("groups and deduplicates spells with identical fixed columns for every present level", () => {
+    cleanup();
+    const spell = (id: string, name: string, level: number) => ({
+      id,
+      name,
+      level,
+      school: "Abjuration",
+      source: "XPHB",
+      castingTime: "1 action",
+      range: "Self",
+      duration: "1 round",
+      components: "V, S",
+      classNames: ["Wizard"],
+      description: `${name} description`,
+    });
+    const mageHand = spell("mage-hand-xphb", "Mage Hand", 0);
+    const shield = spell("shield-xphb", "Shield", 1);
+    const mistyStep = spell("misty-step-xphb", "Misty Step", 2);
+    const casterSummary = {
+      ...summary,
+      isSpellcaster: true,
+      spellcasting: {
+        ability: "inteligencia",
+        abilityLabel: "Intelligence",
+        spellSaveDc: 15,
+        spellAttackBonus: 7,
+        cantripsKnownLimit: 2,
+        knownSpellLimit: 0,
+        preparedSpellLimit: 3,
+        selectedCantripCount: 1,
+        selectedKnownCount: 0,
+        selectedPreparedCount: 2,
+        slots: [],
+        cantrips: [mageHand],
+        knownSpells: [shield],
+        preparedSpells: [shield, mistyStep],
+      },
+    } as unknown as CharacterSheetSummary;
+    render(<ContentTabs summary={casterSummary} description={description} />);
+
+    fireEvent.click(screen.getByRole("tab", { name: /spells/i }));
+
+    expect(screen.getByRole("heading", { name: "Cantrips" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Level 1 Spells" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Level 2 Spells" })).toBeInTheDocument();
+    expect(screen.getAllByText("Shield")).toHaveLength(1);
+    for (const table of screen.getAllByRole("table")) {
+      expect(within(table).getAllByRole("columnheader").map((header) => header.textContent)).toEqual([
+        "Spell",
+        "Level",
+        "Casting",
+        "Range",
+        "Source",
+      ]);
+      expect(table).toHaveClass("table-fixed");
+      expect(table.querySelectorAll("colgroup col")).toHaveLength(5);
+    }
   });
 
   it("filters features by origin on the Features tab", () => {

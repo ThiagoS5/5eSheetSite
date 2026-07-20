@@ -11,6 +11,7 @@ import { MobileBuilderBar } from "@/src/components/organisms/MobileBuilderBar";
 import {
   Sheet,
   SheetContent,
+  SheetDescription,
   SheetHeader,
   SheetTitle,
 } from "@/src/components/ui/sheet";
@@ -33,6 +34,7 @@ import {
   useCharacterStore,
   useCharacterStoreHydrated,
 } from "@/src/store/useCharacterStore";
+import { BuilderHeaderToolbarProvider } from "@/src/hooks/useBuilderHeaderToolbar";
 
 import type { BuilderShellProps } from "./index.types";
 export type { BuilderShellProps } from "./index.types";
@@ -148,6 +150,7 @@ export function BuilderShell({ children }: BuilderShellProps) {
   }
 
   return (
+    <BuilderHeaderToolbarProvider toolbar={<AutosaveStatus updatedAt={updatedAt} />}>
     <SidebarProvider
       open={!sidebarCollapsed}
       onOpenChange={(open) => setSidebarCollapsed(!open)}
@@ -160,7 +163,7 @@ export function BuilderShell({ children }: BuilderShellProps) {
       }
     >
       <main className="builder-shell-main min-h-screen overflow-x-clip bg-surface-nested text-foreground">
-        <Header />
+        <Header onOpenMenu={() => setMobileStepsOpen(true)} />
         <div
           data-builder-layout={gridLayout}
           className="builder-shell-grid grid min-h-[calc(100dvh-4rem)] w-full min-w-0"
@@ -176,7 +179,6 @@ export function BuilderShell({ children }: BuilderShellProps) {
                 isMobile ? (nextBlockedReason ? "pb-36" : "pb-28") : ""
               }`}
             >
-              <AutosaveStatus updatedAt={updatedAt} />
               {children}
             </div>
           </section>
@@ -217,6 +219,9 @@ export function BuilderShell({ children }: BuilderShellProps) {
             <SheetContent side="bottom" className="h-[85svh] overflow-y-auto">
               <SheetHeader>
                 <SheetTitle>Live Sheet</SheetTitle>
+                <SheetDescription>
+                  Review the character derived from your current builder choices.
+                </SheetDescription>
               </SheetHeader>
               <CharacterSheetPreview variant="drawer" />
             </SheetContent>
@@ -226,6 +231,9 @@ export function BuilderShell({ children }: BuilderShellProps) {
             <SheetContent side="bottom" className="h-[85svh] overflow-y-auto">
               <SheetHeader>
                 <SheetTitle>Builder steps</SheetTitle>
+                <SheetDescription>
+                  Review progress and move between available character creation steps.
+                </SheetDescription>
               </SheetHeader>
               <BuilderSidebar variant="drawer" />
             </SheetContent>
@@ -233,6 +241,7 @@ export function BuilderShell({ children }: BuilderShellProps) {
         </>
       ) : null}
     </SidebarProvider>
+    </BuilderHeaderToolbarProvider>
   );
 }
 
@@ -252,14 +261,14 @@ function AutosaveStatus({ updatedAt }: { updatedAt: string }) {
   }
 
   return (
-    <div className="mb-4 flex flex-wrap justify-end gap-2">
+    <div className="flex flex-wrap gap-2 sm:justify-end">
       <button
         type="button"
         role="switch"
         aria-checked={beginnerMode}
         aria-label="Guided mode"
         onClick={handleBeginnerModeToggle}
-        className={`inline-flex h-9 items-center gap-2 rounded-md border px-3 text-[11px] font-bold uppercase tracking-[0.12em] outline-none transition focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70 ${
+        className={`inline-flex h-10 items-center gap-2 rounded-md border px-3 text-[11px] font-bold uppercase tracking-[0.12em] outline-none transition focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70 ${
           beginnerMode
             ? "border-brand-gold-alt/60 bg-brand-gold-alt/15 text-foreground"
             : "border-white/[0.08] bg-card text-muted-foreground hover:text-foreground"
@@ -277,14 +286,14 @@ function AutosaveStatus({ updatedAt }: { updatedAt: string }) {
         type="button"
         aria-label="Creation preferences"
         onClick={() => setPreferencesOpen(true)}
-        className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-white/[0.08] bg-card text-muted-foreground outline-none transition hover:text-foreground focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70"
+        className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-white/[0.08] bg-card text-muted-foreground outline-none transition hover:text-foreground focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70"
       >
         <Settings aria-hidden="true" className="h-4 w-4" />
       </button>
       <div
         role="status"
         aria-label="Draft saved"
-        className="inline-flex items-center gap-2 rounded-md border border-white/[0.08] bg-card px-3 py-2 text-[11px] font-bold uppercase tracking-[0.12em] text-muted-foreground"
+        className="inline-flex min-h-10 items-center gap-2 rounded-md border border-white/[0.08] bg-card px-3 py-2 text-[11px] font-bold uppercase tracking-[0.12em] text-muted-foreground"
       >
         <Save aria-hidden="true" className="h-3.5 w-3.5 text-brand-green" />
         Saved <span suppressHydrationWarning>{savedAt}</span>

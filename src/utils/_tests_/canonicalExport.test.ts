@@ -45,6 +45,49 @@ describe("importCharacter", () => {
     }).toEqual(baseBuild);
   });
 
+  it("round-trips v17 additional choices and the sanitized Foundry snapshot", () => {
+    const enriched = normalizeCharacterBuild({
+      ...baseBuild,
+      choices: {
+        ...baseBuild.choices,
+        creationPreferences: {
+          activeSources: ["XPHB"],
+          progressionMode: "milestone",
+          choiceLimits: "flexible",
+        },
+        additionalChoices: {
+          ...baseBuild.choices.additionalChoices,
+          languages: ["Infernal"],
+          toolProficiencies: ["Thieves' Tools"],
+        },
+      },
+      exportMetadata: {
+        ...baseBuild.exportMetadata,
+        foundryOrigin: {
+          profile: "dnd5e-5.3",
+          systemVersion: "5.3.3",
+          actor: {
+            name: "Snapshot Hero",
+            type: "character",
+            flags: { homebrew: { keep: true } },
+          },
+        },
+      },
+    });
+
+    const result = importCharacter(serializeCharacterExport(enriched));
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.build.choices.additionalChoices).toMatchObject({
+      languages: ["Infernal"],
+      toolProficiencies: ["Thieves' Tools"],
+    });
+    expect(result.build.exportMetadata.foundryOrigin).toMatchObject({
+      profile: "dnd5e-5.3",
+      actor: { flags: { homebrew: { keep: true } } },
+    });
+  });
+
   it("migrates a legacy-schema build inside the envelope", () => {
     const legacyEnvelope = {
       format: "forge-fate-character",
@@ -68,6 +111,13 @@ describe("importCharacter", () => {
     expect(importCharacter("{not json")).toEqual({
       ok: false,
       error: "The file is not valid JSON.",
+    });
+  });
+
+  it("rejects canonical envelopes larger than 5 MiB before parsing", () => {
+    expect(importCharacter("x".repeat(5 * 1024 * 1024 + 1))).toEqual({
+      ok: false,
+      error: "The character export exceeds the 5 MiB limit.",
     });
   });
 

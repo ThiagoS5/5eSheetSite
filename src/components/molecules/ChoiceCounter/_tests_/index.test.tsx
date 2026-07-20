@@ -30,4 +30,11 @@ describe("ChoiceCounter", () => {
 
     expect(screen.queryByText("complete")).not.toBeInTheDocument();
   });
+
+  it("reports the required minimum separately from flexible extras", () => {
+    render(<ChoiceCounter selected={5} total={3} label="languages" />);
+
+    expect(screen.getByText("3 of 3 languages + 2 extra")).toBeInTheDocument();
+    expect(screen.getByText("complete")).toBeInTheDocument();
+  });
 });

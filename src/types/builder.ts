@@ -388,7 +388,7 @@ export interface SheetSense {
 export interface SheetFeature {
   name: string;
   description: string;
-  source: "class" | "species" | "background" | "feat";
+  source: "class" | "species" | "background" | "feat" | "custom";
 }
 
 export interface SheetWeapon {

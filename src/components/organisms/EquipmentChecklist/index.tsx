@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader } from "@/src/components/ui/card";
 import { Button } from "@/src/components/ui/button";
 import type { EquipmentAcquisitionMode, EquipmentSourceKey } from "@/src/store/characterStore.types";
 import type { BuilderBackground, BuilderClass, BuilderEquipmentPackage, BuilderEquipmentPackageItem } from "@/src/types/builder";
+import { useBuilderHeaderToolbar } from "@/src/hooks/useBuilderHeaderToolbar";
 
 import type { EquipmentChecklistProps } from "./index.types";
 export type { EquipmentChecklistProps } from "./index.types";
@@ -113,22 +114,26 @@ export function EquipmentChecklist({
   onSourceOptionChange,
 }: EquipmentChecklistProps) {
   const sources = buildEquipmentSources(selectedClass, selectedBackground);
+  const toolbar = useBuilderHeaderToolbar();
 
   return (
     <section aria-labelledby="equipment-title" className="grid gap-5">
-      <div>
-        <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-foreground">
-          Starting Gear
-        </p>
-        <h2
-          id="equipment-title"
-          className="mt-1 font-serif text-xl font-bold tracking-wide text-foreground"
-        >
-          Starting Equipment
-        </h2>
-        <p className="mt-2 text-sm leading-6 text-muted-foreground">
-          Choose between class offered items or starting gold.
-        </p>
+      <div className="grid gap-4 border-b border-white/[0.06] pb-5">
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-foreground">
+            Starting Gear
+          </p>
+          <h2
+            id="equipment-title"
+            className="mt-1 font-serif text-xl font-bold tracking-wide text-foreground"
+          >
+            Starting Equipment
+          </h2>
+          <p className="mt-2 text-sm leading-6 text-muted-foreground">
+            Choose between class offered items or starting gold.
+          </p>
+        </div>
+        {toolbar}
       </div>
 
       {sources.map((source) => {

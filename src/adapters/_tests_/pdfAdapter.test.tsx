@@ -1,5 +1,4 @@
 import { mkdir, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
@@ -19,6 +18,7 @@ import type {
 } from "@/src/types/builder";
 import type { AttributeKey, CharacterAttributes } from "@/src/types/dnd";
 import type { BuilderSpell, CharacterSpellcastingSummary } from "@/src/types/spells";
+import type { CharacterBuildPlayState } from "@/src/types/characterBuild";
 
 const ATTRIBUTE_ORDER: Array<{ key: AttributeKey; label: string; abbr: string }> = [
   { key: "forca", label: "Strength", abbr: "STR" },
@@ -289,7 +289,7 @@ async function maybeWritePdfFixture(label: string, buffer: Buffer): Promise<void
     return;
   }
 
-  const root = join(tmpdir(), "forge-fate-pdf-matrix");
+  const root = join(process.cwd(), "output", "pdf");
   const fileName = `${label.replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "").toLowerCase()}.pdf`;
   await mkdir(root, { recursive: true });
   await writeFile(join(root, fileName), buffer);
@@ -744,8 +744,8 @@ describe("pdfAdapter", () => {
     expect(paragraphs).toEqual([
       "Journal",
       "Bold plans with emphasis and code.",
-      "• first errand",
-      "• second errand",
+      "- first errand",
+      "- second errand",
       "a quoted vow",
       "a map",
     ]);
@@ -765,6 +765,63 @@ describe("pdfAdapter", () => {
     expect(buffer.toString("utf8", 0, 4)).toBe("%PDF");
     expect(countPdfPages(buffer)).toBeGreaterThanOrEqual(4);
   });
+
+  it.each(["A4", "LETTER"] as const)(
+    "paginates long backstory, inventory, features, spells, and Session Log on %s",
+    async (pageSize) => {
+      const campaignLog = Array.from({ length: 18 }, (_, index) => ({
+        id: `session-${index}`,
+        title: `Session ${index + 1}`,
+        date: `2026-07-${String((index % 28) + 1).padStart(2, "0")}`,
+        body: Array.from(
+          { length: 6 },
+          () =>
+            "The party recorded alliances, conditions, treasure, unresolved clues, and the consequences of every difficult choice.",
+        ).join(" "),
+      }));
+      const playState: CharacterBuildPlayState = {
+        currentHp: 81,
+        tempHp: 12,
+        hitDiceSpent: 4,
+        usedSpellSlots: { 1: 2, 3: 1, 5: 1 },
+        resourceUses: { sorceryPoints: 6, arcaneRecovery: 1 },
+        resourceRecoveries: { sorceryPoints: "longRest", arcaneRecovery: "longRest" },
+        deathSaves: { successes: 2, failures: 1 },
+        inspiration: true,
+        conditions: ["Poisoned", "Prone"],
+        campaignLog,
+        overrides: {},
+      };
+      const extensiveInventory = Array.from({ length: 45 }, (_, index) => ({
+        item: equipment(
+          `custom-item-${index}`,
+          `Custom Expedition Item ${index + 1}`,
+          "Other Gear",
+          { weightKg: 0.5 },
+        ),
+        quantity: (index % 3) + 1,
+      }));
+      const buffer = await renderPdfBuffer(
+        {
+          summary: ilyra,
+          description: description({
+            nome: "Ilyra Moonfall",
+            historia: "A long backstory. ".repeat(700),
+            notas: "A long private note. ".repeat(300),
+          }),
+          inventory: extensiveInventory,
+          playState,
+        },
+        { pageSize },
+      );
+      await maybeWritePdfFixture(`high-level-spellcaster-${pageSize}`, buffer);
+
+      expect(buffer.toString("utf8", 0, 4)).toBe("%PDF");
+      expect(buffer.byteLength).toBeGreaterThan(15_000);
+      expect(countPdfPages(buffer)).toBeGreaterThanOrEqual(8);
+    },
+    30_000,
+  );
 
   it("marks carried equipped items once and preserves their carried quantity", () => {
     const dagger = equipment("dagger-xphb", "Dagger", "Weapon", {

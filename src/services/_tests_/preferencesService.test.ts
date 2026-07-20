@@ -16,12 +16,13 @@ describe("preferencesService", () => {
     expect(readGlobalPreferences()).toEqual({
       preferencesVersion: CURRENT_GLOBAL_PREFERENCES_VERSION,
       creationDefaults: getDefaultCreationPreferences(),
+      foundryExportProfile: "dnd5e-5.3",
     });
   });
 
   it("round-trips preferences", () => {
     writeGlobalPreferences({
-      creationDefaults: { activeSources: ["XPHB"], progressionMode: "milestone" },
+      creationDefaults: { activeSources: ["XPHB"], progressionMode: "milestone", choiceLimits: "rules" },
     });
     expect(readGlobalPreferences().creationDefaults.progressionMode).toBe("milestone");
     expect(readGlobalPreferences().preferencesVersion).toBe(
@@ -61,6 +62,7 @@ describe("preferencesService", () => {
     expect(readGlobalPreferences().creationDefaults).toEqual({
       activeSources: ["XPHB", "EFA"],
       progressionMode: "xp",
+      choiceLimits: "rules",
     });
   });
 
@@ -76,6 +78,7 @@ describe("preferencesService", () => {
     expect(readGlobalPreferences().creationDefaults).toEqual({
       activeSources: ["XPHB"],
       progressionMode: "xp",
+      choiceLimits: "rules",
     });
   });
 
@@ -112,13 +115,18 @@ describe("preferencesService", () => {
   it("persists beginner mode beside creation defaults", () => {
     writeGlobalPreferences({
       beginnerMode: true,
-      creationDefaults: { activeSources: ["XPHB"], progressionMode: "milestone" },
+      creationDefaults: { activeSources: ["XPHB"], progressionMode: "milestone", choiceLimits: "rules" },
     });
 
     expect(readGlobalPreferences()).toEqual({
       preferencesVersion: CURRENT_GLOBAL_PREFERENCES_VERSION,
       beginnerMode: true,
-      creationDefaults: { activeSources: ["XPHB"], progressionMode: "milestone" },
+      creationDefaults: {
+        activeSources: ["XPHB"],
+        progressionMode: "milestone",
+        choiceLimits: "rules",
+      },
+      foundryExportProfile: "dnd5e-5.3",
     });
   });
 });

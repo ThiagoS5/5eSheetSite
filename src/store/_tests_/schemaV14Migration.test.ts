@@ -24,7 +24,7 @@ function createLegacyBuild(maxUnlockedStepIndex: number) {
 
 describe("schema v14 migration — subclass step insertion", () => {
   it("pins the current schema version", () => {
-    expect(CHARACTER_BUILD_SCHEMA_VERSION).toBe(16);
+    expect(CHARACTER_BUILD_SCHEMA_VERSION).toBe(17);
   });
 
   it("shifts maxUnlockedStepIndex past the inserted subclass step", () => {

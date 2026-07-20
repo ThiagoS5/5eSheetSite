@@ -359,3 +359,14 @@
   --tone-crimson-deep: oklch(0.32 0.1 22);
   --tone-crimson-deepest: oklch(0.27 0.06 8);
 }
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
