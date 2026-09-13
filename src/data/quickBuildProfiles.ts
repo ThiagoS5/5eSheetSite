@@ -7,6 +7,14 @@ export interface QuickBuildProfile {
   baseAttributes: CharacterAttributes;
 }
 
+/** Starter suggestions, filtered by the class list and active books before use. */
+export const quickBuildSpellPriorities = [
+  "Fire Bolt", "Eldritch Blast", "Guidance", "Mage Hand", "Light", "Sacred Flame",
+  "Vicious Mockery", "Ray of Frost", "Prestidigitation", "Magic Missile", "Shield",
+  "Cure Wounds", "Healing Word", "Bless", "Detect Magic", "Thunderwave", "Sleep",
+  "Hex", "Hunter's Mark",
+];
+
 const martialAttributes: CharacterAttributes = {
   forca: 15,
   destreza: 14,

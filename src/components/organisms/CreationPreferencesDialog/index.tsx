@@ -1,8 +1,8 @@
 "use client";
 
 import * as Dialog from "@radix-ui/react-dialog";
-import { X } from "lucide-react";
-import { useMemo, useState } from "react";
+import { Search, X } from "lucide-react";
+import { useMemo, useRef, useState } from "react";
 import { readGlobalPreferences, writeGlobalPreferences } from "@/src/services/preferencesService";
 import {
   BASE_SOURCE_CODE,
@@ -21,14 +21,21 @@ export function CreationPreferencesDialog({
 }: CreationPreferencesDialogProps) {
   const creationPreferences = useCharacterStore((s) => s.creationPreferences);
   const setCreationPreferences = useCharacterStore((s) => s.setCreationPreferences);
+  const openerRef = useRef<HTMLElement | null>(null);
 
   const [activeSources, setActiveSources] = useState<string[]>([]);
   const [progressionMode, setProgressionMode] = useState<ProgressionMode>("xp");
   const [choiceLimits, setChoiceLimits] = useState<ChoiceLimits>("rules");
+  const [sourceQuery, setSourceQuery] = useState("");
   const sourceOptions = useMemo(() => getAvailableSourcePreferenceOptions(), []);
+  const filteredSources = sourceOptions.filter((source) =>
+    `${source.label} ${source.contentSummary}`.toLowerCase().includes(sourceQuery.trim().toLowerCase()),
+  );
+  const enabledSources = sourceOptions.filter((source) => !source.inactive && activeSources.includes(source.code));
   const [snapshotTaken, setSnapshotTaken] = useState(false);
   if (open && !snapshotTaken) {
     setSnapshotTaken(true);
+    setSourceQuery("");
     const saved = creationPreferences ?? readGlobalPreferences().creationDefaults;
     setActiveSources(normalizeActiveSourceSelection(saved.activeSources));
     setProgressionMode(saved.progressionMode);
@@ -73,8 +80,19 @@ export function CreationPreferencesDialog({
     <Dialog.Root open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 flex items-stretch justify-center overflow-y-auto bg-black/70 p-0 backdrop-blur-md md:items-center md:p-6">
-          <Dialog.Content className="relative flex h-[100dvh] w-full min-w-0 flex-col overflow-hidden border border-white/[0.08] bg-surface-nested text-foreground shadow-2xl shadow-black/60 outline-none focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70 md:h-auto md:max-h-[88vh] md:max-w-lg md:rounded-xl">
-            <Dialog.Title className="border-b border-white/[0.07] px-5 py-4 text-sm font-bold uppercase tracking-widest text-foreground">
+          <Dialog.Content
+            onOpenAutoFocus={() => {
+              openerRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+            }}
+            onCloseAutoFocus={(event) => {
+              if (openerRef.current?.isConnected) {
+                event.preventDefault();
+                openerRef.current.focus();
+              }
+            }}
+            className="relative flex h-[100dvh] w-full min-w-0 flex-col overflow-hidden border border-border bg-surface-nested text-foreground shadow-2xl outline-none focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70 md:h-auto md:max-h-[88vh] md:max-w-2xl md:rounded-xl"
+          >
+            <Dialog.Title className="border-b border-border px-5 py-5 pr-16 font-serif text-2xl font-bold text-foreground">
               Creation Preferences
             </Dialog.Title>
             <Dialog.Description className="sr-only">
@@ -96,9 +114,26 @@ export function CreationPreferencesDialog({
                 aria-label="Active sources"
                 className="space-y-2"
               >
-                <legend className="mb-1 text-xs font-bold uppercase tracking-widest text-subdued">
+                <legend className="mb-1 text-base font-semibold text-foreground">
                   Active Sources
                 </legend>
+                <p className="text-sm leading-6 text-muted-foreground">
+                  Choose the books allowed at your table. Each book lists the options available in this builder.
+                </p>
+                <p className="text-sm font-medium text-foreground" role="status">
+                  {enabledSources.length} books enabled · {enabledSources.reduce((sum, source) => sum + source.contentCount, 0).toLocaleString("en-US")} catalog entries
+                </p>
+                <label className="relative block">
+                  <span className="sr-only">Search source books</span>
+                  <Search aria-hidden="true" className="pointer-events-none absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
+                  <input
+                    type="search"
+                    value={sourceQuery}
+                    onChange={(event) => setSourceQuery(event.target.value)}
+                    placeholder="Find a book, source code, or content type…"
+                    className="min-h-11 w-full rounded-md border border-border bg-background py-2 pl-10 pr-3 text-sm outline-none placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-accent"
+                  />
+                </label>
                 <div className="mb-3 flex flex-wrap gap-2">
                   <button
                     type="button"
@@ -115,26 +150,43 @@ export function CreationPreferencesDialog({
                     Deselect optional sources
                   </button>
                 </div>
-                {sourceOptions.map((source) => (
+                <div className="max-h-80 overflow-y-auto rounded-lg border border-border bg-background">
+                {filteredSources.map((source) => (
                   <label
                     key={source.code}
                     title={source.disabledReason}
-                    className={`flex items-center gap-2 text-sm ${
-                      source.locked || source.inactive ? "text-muted-foreground" : "text-foreground"
+                    className={`flex min-h-16 items-start gap-3 border-b border-border px-3 py-3 text-sm last:border-0 ${
+                      source.inactive ? "text-muted-foreground" : "text-foreground hover:bg-muted"
                     }`}
                   >
                     <input
                       type="checkbox"
+                      aria-label={source.label}
+                      aria-describedby={`source-${source.code}-coverage`}
                       checked={!source.inactive && activeSources.includes(source.code)}
                       disabled={source.locked || source.inactive}
                       onChange={(e) => toggleSource(source.code, e.target.checked)}
-                      className="h-4 w-4 accent-primary"
+                      className="mt-1 h-4 w-4 shrink-0 accent-primary outline-none focus-visible:ring-2 focus-visible:ring-accent"
                     />
-                    <span translate="no" className="notranslate">
-                      {source.label}
+                    <span className="min-w-0 flex-1">
+                      <span translate="no" className="notranslate block font-medium">{source.bookTitle}</span>
+                      <span className="mt-0.5 block text-xs leading-5 text-muted-foreground">
+                        {source.code}{source.locked ? " · Core rules" : source.inactive ? " · Legacy source (inactive)" : ""}
+                      </span>
+                      <span id={`source-${source.code}-coverage`} className="mt-1 block text-xs leading-5 text-subdued">
+                        {source.contentSummary}
+                      </span>
                     </span>
                   </label>
                 ))}
+                {filteredSources.length === 0 ? (
+                  <div className="p-5 text-center text-sm text-muted-foreground">
+                    <p>No books match your search.</p>
+                    <button type="button" onClick={() => setSourceQuery("")} className="mt-2 min-h-10 rounded-md px-3 text-foreground underline underline-offset-4 outline-none focus-visible:ring-2 focus-visible:ring-accent">Clear search</button>
+                  </div>
+                ) : null}
+                </div>
+                <p className="text-xs leading-5 text-muted-foreground">Existing character choices are preserved when a source is disabled.</p>
               </fieldset>
 
               <fieldset

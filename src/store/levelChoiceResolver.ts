@@ -1,5 +1,5 @@
 import { getLevelRequirements, type LevelChoiceRequirement } from "@/rules/levelProgression";
-import { getFeats, getSubclassesForClass } from "@/src/services/ruleService";
+import { getBuilderClasses, getFeats, getSubclassesForClass } from "@/src/services/ruleService";
 import type { CharacterBuilderState } from "@/src/store/characterStore.types";
 import type { AsiOrFeatChoice } from "@/src/types/characterBuild";
 import type { BuilderClass, BuilderFeature } from "@/src/types/builder";
@@ -49,16 +49,29 @@ function isValidAsi(choice: AsiOrFeatChoice): boolean {
   );
 }
 
-function selectedFeatIds(state: CharacterBuilderState): string[] {
-  return Object.values(state.asiOrFeatByLevel)
+function selectedFeatIds(state: CharacterBuilderState, beforeLevel: number): string[] {
+  return Object.entries(state.asiOrFeatByLevel).filter(([level]) => Number(level) < beforeLevel).map(([, choice]) => choice)
     .filter((choice) => choice.mode === "feat")
     .map((choice) => (choice as { featId: string }).featId);
 }
 
-function finalAttributesForPrerequisites(state: CharacterBuilderState) {
+export function getLevelFeatPrerequisiteContext(state: CharacterBuilderState, level: number) {
+  const priorState = { ...state, level: level - 1 };
   const mergedBonuses = { ...state.backgroundAbilityBonuses };
-  addBonuses(mergedBonuses, collectAsiBonuses(state));
-  return calculateFinalAttributes(state.baseAttributes, mergedBonuses);
+  addBonuses(mergedBonuses, collectAsiBonuses(priorState));
+  const characterClass = getBuilderClasses().find((entry) => entry.id === state.selectedClassId);
+  const chosenFeatIds = selectedFeatIds(state, level);
+  const armorProficiencies = (characterClass?.armorProficiencies ?? []).map((armor) => armor.toLowerCase().replace(/ armor$|s$/g, ""));
+  for (const [id, armor] of [["lightly-armored-xphb", "light"], ["moderately-armored-xphb", "medium"], ["heavily-armored-xphb", "heavy"]]) {
+    if (chosenFeatIds.includes(id)) armorProficiencies.push(armor);
+  }
+  return {
+    level,
+    finalAttributes: calculateFinalAttributes(state.baseAttributes, mergedBonuses),
+    chosenFeatIds,
+    armorProficiencies,
+    canCastSpells: Boolean(characterClass?.spellcastingAbility || state.spellcasting?.cantripIds.length || state.spellcasting?.knownSpellIds.length || state.spellcasting?.preparedSpellIds.length),
+  };
 }
 
 function hasRequiredFeatChoices(choice: Extract<AsiOrFeatChoice, { mode: "feat" }>): boolean {
@@ -73,11 +86,11 @@ function hasRequiredFeatChoices(choice: Extract<AsiOrFeatChoice, { mode: "feat" 
           value > 0 &&
           (!requirement.options || requirement.options.includes(key)),
       );
-      if (picked.length !== requirement.count) return false;
+      if (picked.length !== requirement.count || picked.some(([, amount]) => amount !== (feat.abilityBonus?.choose?.amount ?? 1))) return false;
     }
     if (requirement.kind === "skill") {
       const picked = choice.skillProficiencies ?? [];
-      if (picked.length < requirement.count) return false;
+      if (new Set(picked).size !== requirement.count) return false;
       if (requirement.options && !picked.every((entry) => requirement.options?.includes(entry))) {
         return false;
       }
@@ -102,11 +115,9 @@ function isValidFeatChoice(
   if (feat.id === ASI_FEAT_ID) return false;
   const expectedCategory = req.level >= 19 ? "epic-boon" : "general";
   if (feat.category !== expectedCategory) return false;
-  const status = getFeatPrerequisiteStatus(feat, {
-    level: req.level,
-    finalAttributes: finalAttributesForPrerequisites(state),
-    chosenFeatIds: selectedFeatIds(state),
-  });
+  const context = getLevelFeatPrerequisiteContext(state, req.level);
+  if (!feat.repeatable && context.chosenFeatIds.includes(feat.id)) return false;
+  const status = getFeatPrerequisiteStatus(feat, context);
   return status.met && hasRequiredFeatChoices(choice);
 }
 

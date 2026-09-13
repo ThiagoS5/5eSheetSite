@@ -15,9 +15,11 @@ const EMPTY_CHOICES: CharacterSpellcastingChoices = {
   knownSpellIds: [],
   preparedSpellIds: [],
 };
+const NO_GRANTED_SPELLS: readonly BuilderSpell[] = [];
 
 export function SpellCatalogPicker({
   className,
+  grantedSpells = NO_GRANTED_SPELLS,
   activeSources,
   value,
   additionalValue,
@@ -30,7 +32,12 @@ export function SpellCatalogPicker({
   onChange,
   onAdditionalChange,
 }: SpellCatalogPickerProps) {
-  const choices = value ?? EMPTY_CHOICES;
+  const grantedIds = useMemo(() => new Set(grantedSpells.map((spell) => spell.id)), [grantedSpells]);
+  const choices = useMemo(() => ({
+    cantripIds: (value ?? EMPTY_CHOICES).cantripIds.filter((id) => !grantedIds.has(id)),
+    knownSpellIds: (value ?? EMPTY_CHOICES).knownSpellIds.filter((id) => !grantedIds.has(id)),
+    preparedSpellIds: (value ?? EMPTY_CHOICES).preparedSpellIds.filter((id) => !grantedIds.has(id)),
+  }), [value, grantedIds]);
   const additionalChoices = additionalValue ?? EMPTY_CHOICES;
   const [spells, setSpells] = useState<BuilderSpell[]>([]);
   const [loadedKey, setLoadedKey] = useState("");
@@ -76,13 +83,14 @@ export function SpellCatalogPicker({
   const filtered = useMemo(() => {
     const queryText = query.trim().toLowerCase();
     return spells.filter((spell) => {
+      if (grantedIds.has(spell.id)) return false;
       if (queryText && !spell.name.toLowerCase().includes(queryText)) return false;
       if (level !== "all" && spell.level !== Number(level)) return false;
       if (school !== "all" && spell.school !== school) return false;
       if (source !== "all" && spell.source !== source) return false;
       return true;
     });
-  }, [spells, query, level, school, source]);
+  }, [spells, query, level, school, source, grantedIds]);
 
   const sources = Array.from(new Set(spells.map((spell) => spell.source))).sort();
   const schools = Array.from(new Set(spells.map((spell) => spell.school))).sort();
@@ -168,7 +176,7 @@ export function SpellCatalogPicker({
         <div>
           <h3 className="font-serif text-lg font-bold text-foreground">Spellcasting</h3>
           <p className="mt-1 text-sm leading-6 text-subdued">
-            Choose spells for your class list. Slots refresh on a long rest and cantrips never spend slots.
+            Choose spells from your class list. Cantrips do not spend spell slots. Pact Magic slots also recover on a short rest.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -176,7 +184,7 @@ export function SpellCatalogPicker({
           <ChoiceCounter selected={combinedSelectedSpellIds.length} total={spellLimit} label={`${spellMode} spells`} />
         </div>
       </div>
-
+      {grantedSpells.length > 0 ? <div className="border-t border-border pt-3"><h4 className="font-semibold">Automatically granted</h4><p className="mt-1 text-sm text-muted-foreground">These spells are already on your sheet and do not use your choices above.</p><ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm">{grantedSpells.map((spell) => <li key={spell.id} translate="no" className="notranslate">{spell.name}</li>)}</ul></div> : null}
       <div className="grid gap-2 md:grid-cols-[1fr_auto_auto_auto]">
         <label className="relative block">
           <span className="sr-only">Search spells</span>

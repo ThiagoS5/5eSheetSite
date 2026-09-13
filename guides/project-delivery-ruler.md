@@ -36,7 +36,7 @@ Next.js 16 has breaking changes. Before touching routes, layouts, metadata, or f
 
 ### Complete
 
-- `CharacterBuild` schema v17 with `draft`, `progression`, `choices`, `playState`, `derivedSheet`, and `exportMetadata`.
+- `CharacterBuild` schema v18 with `draft`, `progression`, `choices`, `playState`, `derivedSheet`, and `exportMetadata`; bounded custom portraits persist in the description and migrate through both storage paths.
 - Local Vault with create/resume/duplicate/delete/search/import/status and direct Forge & Fate JSON export for ready characters.
 - 10-step builder with validation and protected navigation.
 - Guided/standard/quick-build creation modes.
@@ -59,6 +59,8 @@ Next.js 16 has breaking changes. Before touching routes, layouts, metadata, or f
 - Dense sheet/conclusion layout.
 
 ### Partial
+
+- September 2026 catalog/rules refinement: class inheritance and feature-reference coverage, searchable source counts, Monk/Barbarian defense and movement, Dwarf/Tough/Fortitude HP, shield conflicts, and a derived-only builder preview are implemented. The subsequent schema v18 pass integrates portraits, class resource recovery, fixed spell grants and export downloads. See `AUDITORIA.md` for verified behavior and remaining automation limits.
 
 - Source preferences are enforced across the main class, subclass, species, background, feat, spell, and item catalogs while preserving disabled-source legacy choices with warnings.
 - Feat and feature mechanical effects are not exhaustive.

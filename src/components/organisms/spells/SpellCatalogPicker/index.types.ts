@@ -1,7 +1,8 @@
-import type { CharacterSpellcastingChoices } from "@/src/types/spells";
+import type { BuilderSpell, CharacterSpellcastingChoices } from "@/src/types/spells";
 
 export interface SpellCatalogPickerProps {
   className: string;
+  grantedSpells?: readonly BuilderSpell[];
   activeSources?: readonly string[];
   value?: CharacterSpellcastingChoices;
   additionalValue?: CharacterSpellcastingChoices;

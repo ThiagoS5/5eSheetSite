@@ -25,6 +25,18 @@ const playState = (overrides: Partial<CharacterBuildPlayState> = {}): CharacterB
 });
 
 describe("rest rules", () => {
+  it("does not allow a rest to revive a character at zero HP", () => {
+    const unconscious = playState({ currentHp: 0 });
+    expect(applyLongRestToPlayState(unconscious, { maxHp: 20 })).toEqual(unconscious);
+    expect(applyShortRestToPlayState(unconscious, { maxHp: 20, hitDieValue: 10, constitutionModifier: 2, hitDiceToSpend: 1, totalHitDice: 3 })).toEqual(unconscious);
+  });
+  it("uses individual rolled Hit Dice instead of the maximum die face", () => {
+    const rested = applyShortRestToPlayState(playState({ currentHp: 1 }), { maxHp: 100, hitDieValue: 10, rolledHitDice: [2, 4], constitutionModifier: 2, hitDiceToSpend: 2, totalHitDice: 3 });
+    expect(rested.currentHp).toBe(11);
+  });
+  it("clears death save counters when healing restores HP", () => {
+    expect(applyHealingToPlayState(playState({ currentHp: 0, deathSaves: { successes: 1, failures: 2 } }), { amount: 1, maxHp: 20 }).deathSaves).toEqual({ successes: 0, failures: 0 });
+  });
   it("clamps damage, healing, and temporary HP to valid table values", () => {
     const damaged = applyDamageToPlayState(playState({ tempHp: 5 }), {
       amount: 12,

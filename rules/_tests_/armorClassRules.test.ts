@@ -6,10 +6,33 @@ import {
 } from "@/rules/armorClassRules";
 
 describe("armor class rules", () => {
+  it("uses worn armor even when it is worse than unarmored AC", () => {
+    expect(deriveArmorClass({ dexterityScore: 20, selectedEquipment: [
+      { id: "ring-mail", armorClass: 14, armorType: "heavy" },
+    ] }).armorClass).toBe(14);
+  });
+
+  it("uses the strongest shield once and reports conflicting shields", () => {
+    const selectedEquipment = [
+      { id: "shield", shieldBonus: 2, armorType: "shield" as const },
+      { id: "magic-shield", shieldBonus: 2, armorClassBonus: 1, armorType: "shield" as const },
+    ];
+    const result = deriveArmorClass({ dexterityScore: 14, selectedEquipment });
+    expect(result.armorClass).toBe(15);
+    expect(result.breakdown.reduce((sum, part) => sum + part.value, 0)).toBe(15);
+    expect(deriveArmorEquipmentPendencies(selectedEquipment)).toContainEqual(expect.objectContaining({ id: "equipment-shield-conflict" }));
+  });
+
+  it("applies Unarmored Defense only with its permitted equipment", () => {
+    const defense = { label: "Monk defense", abilityScore: 16, allowsShield: false };
+    expect(deriveArmorClass({ dexterityScore: 16, selectedEquipment: [], unarmoredDefense: defense }).armorClass).toBe(16);
+    expect(deriveArmorClass({ dexterityScore: 16, selectedEquipment: [{ id: "shield", armorType: "shield", shieldBonus: 2 }], unarmoredDefense: defense }).armorClass).toBe(15);
+    expect(deriveArmorClass({ dexterityScore: 16, selectedEquipment: [{ id: "leather", armorType: "light", armorClass: 11 }], unarmoredDefense: defense }).armorClass).toBe(14);
+  });
   it("uses unarmored AC when no armor is equipped", () => {
     expect(deriveArmorClass({ dexterityScore: 14, selectedEquipment: [] })).toStrictEqual({
       armorClass: 12,
-      breakdown: [{ label: "Base sem armadura", value: 12 }],
+      breakdown: [{ label: "Unarmored (10 + DEX)", value: 12 }],
     });
   });
 
@@ -65,7 +88,7 @@ describe("armor class rules", () => {
 
     expect(result.armorClass).toBe(13);
     expect(result.breakdown).toStrictEqual([
-      { label: "Base sem armadura", value: 10 },
+      { label: "Unarmored (10 + DEX)", value: 10 },
       { label: "Sentinel Shield", value: 3 },
     ]);
   });

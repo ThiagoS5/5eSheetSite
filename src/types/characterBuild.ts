@@ -24,7 +24,8 @@ import type { BuilderSpell } from "@/src/types/spells";
 //      5eTools/Plutonium catalog match exists.
 // v17: per-character flexible choice limits, isolated additional choices, and
 //      a sanitized Foundry origin snapshot for lossless canonical round-trips.
-export const CHARACTER_BUILD_SCHEMA_VERSION = 17;
+// v18: optional embedded raster portrait in draft.description.
+export const CHARACTER_BUILD_SCHEMA_VERSION = 18;
 
 export interface CoinPouch {
   pc: number;

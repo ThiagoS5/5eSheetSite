@@ -221,10 +221,14 @@ export function createCharacterStore(
     shortRest: (options) =>
       set((state) => {
         const summary = state.characterBuild.derivedSheet;
+        const hitDie = getClassForState(state)?.hitDie ?? 6;
+        const count = Math.max(0, Math.min(state.level - getPlayState(state).hitDiceSpent, Math.trunc(options?.hitDiceToSpend ?? 0)));
         return patchCharacterState(state, {
           playState: applyShortRestToPlayState(getPlayState(state), {
             maxHp: summary.maxHp,
-            hitDieValue: getClassForState(state)?.hitDie ?? 6,
+            hitDieValue: hitDie,
+            rolledHitDice: Array.from({ length: count }, () => rollHitDie(hitDie)),
+            resources: summary.resources,
             constitutionModifier: getAbilityModifier(summary.finalAttributes.constituicao),
             hitDiceToSpend: options?.hitDiceToSpend ?? 0,
             totalHitDice: state.level,
@@ -929,3 +933,4 @@ function getAttributesForMethod(
 
   return currentAttributes;
 }
+import { rollHitDie } from "@/rules/hitPointRules";

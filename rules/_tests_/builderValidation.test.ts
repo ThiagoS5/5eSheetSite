@@ -2,6 +2,18 @@ import { describe, expect, it } from "vitest";
 import { validateBuilderStep } from "@/rules/builderValidation";
 import { getBuilderClasses } from "@/src/services/ruleService";
 import { initialCharacterState } from "@/src/store/createCharacterStore";
+import { getSpellCatalogForClass } from "@/src/services/spellService";
+
+function validSpellChoices(classId: string) {
+  const cls = getBuilderClasses().find((entry) => entry.id === classId)!;
+  const spells = getSpellCatalogForClass({ className: cls.name, activeSources: ["XPHB"] });
+  const progression = cls.spellcastingProgression;
+  return {
+    cantripIds: spells.filter((spell) => spell.level === 0).slice(0, progression?.cantripsKnown[0] ?? 0).map((spell) => spell.id),
+    knownSpellIds: spells.filter((spell) => spell.level === 1).slice(0, progression?.knownSpells[0] ?? 0).map((spell) => spell.id),
+    preparedSpellIds: spells.filter((spell) => spell.level === 1 && !(cls.grantedSpells ?? []).some((grant) => grant.spellId === spell.id && grant.level <= 1)).slice(0, progression?.preparedSpells[0] ?? 0).map((spell) => spell.id),
+  };
+}
 
 describe("builder validation", () => {
   it("requires class, class feature choices, species, background choices, description name, and equipment", () => {
@@ -104,6 +116,7 @@ describe("builder validation", () => {
         ...initialCharacterState,
         selectedClassId: "bard-xphb",
         classSkillProficiencies: ["Arcana", "Performance", "Stealth"],
+        spellcasting: validSpellChoices("bard-xphb"),
       }),
     ).toStrictEqual([]);
   });
@@ -158,6 +171,7 @@ describe("builder validation", () => {
         ...initialCharacterState,
         selectedClassId: "ranger-xphb",
         classSkillProficiencies: ["Athletics", "Insight", "Perception"],
+        spellcasting: validSpellChoices("ranger-xphb"),
         classFeatureChoices: ranger ? validFeatureChoices(ranger) : {},
       }),
     ).toStrictEqual([]);
@@ -173,6 +187,7 @@ describe("builder validation", () => {
           ...initialCharacterState,
           selectedClassId: cls.id,
           classSkillProficiencies: validSkills,
+          spellcasting: validSpellChoices(cls.id),
           classFeatureChoices: featureChoices,
         }),
       ).toStrictEqual([]);

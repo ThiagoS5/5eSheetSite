@@ -48,6 +48,7 @@ export interface SpellSlotSummary {
 }
 
 export interface CharacterSpellcastingSummary {
+  grantedSpells?: BuilderSpell[];
   ability: AttributeKey;
   abilityLabel: string;
   spellSaveDc: number;

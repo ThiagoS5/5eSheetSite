@@ -9,9 +9,9 @@ export function WizardStepHeader({
   title,
   description,
   searchId,
-  searchLabel = "Filtrar opcoes",
+  searchLabel = "Filter options",
   searchValue,
-  searchPlaceholder = "Buscar...",
+  searchPlaceholder = "Search…",
   resultCountLabel,
   onSearch,
 }: WizardStepHeaderProps) {
@@ -24,7 +24,7 @@ export function WizardStepHeader({
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
         {eyebrow ? (
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-foreground">
+          <p className="text-xs font-medium text-muted-foreground">
             {eyebrow}
           </p>
         ) : null}
@@ -40,7 +40,7 @@ export function WizardStepHeader({
         <div className="w-full lg:max-w-xs">
           <label
             htmlFor={searchId}
-            className="mb-2 block text-[10px] font-bold uppercase tracking-[0.14em] text-subdued"
+            className="mb-2 block text-xs font-medium text-subdued"
           >
             {searchLabel}
           </label>
@@ -49,8 +49,6 @@ export function WizardStepHeader({
             type="search"
             value={searchValue}
             onChange={(event) => onSearch?.(event.target.value)}
-            onInput={(event) => onSearch?.(event.currentTarget.value)}
-            onKeyUp={(event) => onSearch?.(event.currentTarget.value)}
             aria-describedby={resultId}
             placeholder={searchPlaceholder}
             className="min-h-11 w-full rounded-md border border-border bg-muted px-3 py-2 text-sm text-foreground outline-none transition placeholder:text-muted-foreground hover:border-white/20 focus:border-brand-gold-alt focus:ring-2 focus:ring-brand-gold-alt/40"

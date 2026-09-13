@@ -36,18 +36,12 @@ import {
   createEmptyCharacterBuild,
 } from "@/src/store/characterBuildModel";
 import { readGlobalPreferences, writeGlobalPreferences } from "@/src/services/preferencesService";
-import {
-  getBuilderBackgrounds,
-  getBuilderClasses,
-  getBuilderLanguages,
-  getBuilderSpecies,
-} from "@/src/services/ruleService";
-import { quickBuildProfiles, type QuickBuildProfile } from "@/src/data/quickBuildProfiles";
+import type { QuickBuildProfile } from "@/src/data/quickBuildProfiles";
+import { createQuickBuild, getAvailableQuickBuildProfiles } from "@/src/store/quickBuildFactory";
 import { useCharacterStore } from "@/src/store/useCharacterStore";
 import { serializeCharacterExport } from "@/src/utils/canonicalExport";
 import type { CharacterBuild, CreationPreferences } from "@/src/types/characterBuild";
-import type { BuilderBackground, BuilderStepSlug } from "@/src/types/builder";
-import type { AttributeBonuses, AttributeKey } from "@/src/types/dnd";
+import type { BuilderStepSlug } from "@/src/types/builder";
 import type { Character } from "@/src/types/Character";
 
 const builderStartHref = "/builder/classe";
@@ -86,13 +80,6 @@ export function Dashboard() {
   const hasCharacters = characters.length > 0;
 
   function goToBuilder() {
-    const globalPrefs = readGlobalPreferences();
-
-    if (typeof globalPrefs.beginnerMode === "boolean") {
-      startNewCharacter(globalPrefs.beginnerMode, globalPrefs.creationDefaults);
-      return;
-    }
-
     setCreationModeOpen(true);
   }
 
@@ -257,94 +244,6 @@ function createBuildWithBeginnerMode(
   );
 }
 
-function createQuickBuild(
-  profile: QuickBuildProfile,
-  creationPreferences: CreationPreferences,
-): CharacterBuild {
-  const build = createEmptyCharacterBuild();
-  const classes = getBuilderClasses();
-  const selectedClass = classes.find((entry) => entry.id === profile.classId) ?? classes[0];
-  const species = getBuilderSpecies();
-  const selectedSpecies =
-    species.find((entry) => entry.id === "human-xphb") ?? species[0];
-  const backgrounds = getBuilderBackgrounds();
-  const selectedBackground =
-    backgrounds.find((entry) => entry.id === "guard-xphb") ?? backgrounds[0];
-  const requiredLanguageCount =
-    2 +
-    (selectedClass?.languageChoiceCount ?? 0) +
-    (selectedBackground?.languageChoiceCount ?? 0);
-  const speciesLanguages = getBuilderLanguages()
-    .slice(0, requiredLanguageCount)
-    .map((language) => language.name);
-
-  return createCharacterBuildFromLegacyState(
-    {
-      characterBuild: build,
-      beginnerMode: false,
-      creationPreferences,
-      selectedClassId: selectedClass?.id ?? profile.classId,
-      selectedSpeciesId: selectedSpecies?.id ?? "",
-      selectedBackgroundId: selectedBackground?.id ?? "",
-      maxUnlockedStepIndex: 7,
-      classSkillProficiencies: profile.skillProficiencies.slice(
-        0,
-        selectedClass?.skillChoices.count ?? profile.skillProficiencies.length,
-      ),
-      skillTraining: Object.fromEntries(
-        profile.skillProficiencies.map((skill) => [skill, "proficient"]),
-      ),
-      classFeatureChoices: Object.fromEntries(
-        selectedClass?.featureChoiceGroups.map((group) => [
-          group.id,
-          group.options.slice(0, group.count).map((option) => option.value),
-        ]) ?? [],
-      ),
-      speciesLanguages,
-      attributeGenerationMethod: "standard-array",
-      baseAttributes: profile.baseAttributes,
-      backgroundAbilityBonuses: getDefaultBackgroundBonuses(selectedBackground),
-      equipmentChoicesBySource: selectedClass?.startingEquipmentPackages[0]
-        ? {
-            class: {
-              mode: "items",
-              selectedOptionId: selectedClass.startingEquipmentPackages[0].id,
-            },
-          }
-        : {},
-    },
-    {
-      createdAt: build.exportMetadata.createdAt,
-      currentStepSlug: "descricao",
-      saveId: build.exportMetadata.saveId,
-      updatedAt: build.exportMetadata.updatedAt,
-    },
-  );
-}
-
-function getDefaultBackgroundBonuses(
-  background: BuilderBackground | undefined,
-): AttributeBonuses {
-  const option = background?.abilityOptions[0];
-
-  if (!option) {
-    return {};
-  }
-
-  if (option.mode === "+2/+1") {
-    const [major, minor] = option.attributes;
-    return {
-      ...(major ? { [major]: 2 } : {}),
-      ...(minor ? { [minor]: 1 } : {}),
-    } as AttributeBonuses;
-  }
-
-  return option.attributes.reduce<AttributeBonuses>(
-    (bonuses, attribute) => ({ ...bonuses, [attribute as AttributeKey]: 1 }),
-    {},
-  );
-}
-
 function subscribeToLocalCharacters(onStoreChange: () => void) {
   if (typeof window === "undefined") {
     return () => {};
@@ -376,10 +275,7 @@ function CreationModeDialog({
   onStandard: () => void;
   onQuickBuild: (profile: QuickBuildProfile) => void;
 }) {
-  const classes = getBuilderClasses();
-  const profiles = quickBuildProfiles.filter((profile) =>
-    classes.some((entry) => entry.id === profile.classId),
-  );
+  const profiles = open ? getAvailableQuickBuildProfiles(readGlobalPreferences().creationDefaults) : [];
 
   return (
     <Dialog.Root open={open} onOpenChange={(nextOpen) => { if (!nextOpen) onClose(); }}>
@@ -387,7 +283,7 @@ function CreationModeDialog({
         <Dialog.Overlay className="fixed inset-0 z-50 grid place-items-center overflow-y-auto bg-black/75 p-4 backdrop-blur-md">
           <Dialog.Content className="relative max-h-[90dvh] w-full max-w-3xl overflow-y-auto rounded-lg border border-white/[0.08] bg-surface-nested p-5 text-foreground shadow-2xl shadow-black/60 outline-none focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70">
             <Dialog.Title className="pr-10 font-serif text-2xl font-bold text-foreground">
-              Is this your first time playing Dungeons & Dragons 5e?
+              How would you like to create your character?
             </Dialog.Title>
             <Dialog.Description className="mt-2 text-sm leading-6 text-subdued">
               Choose how you want to start this character. You can change guided mode later in the builder.

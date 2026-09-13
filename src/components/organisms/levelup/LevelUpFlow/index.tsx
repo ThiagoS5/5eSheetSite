@@ -4,7 +4,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { getBuilderClasses, getFeats } from "@/src/services/ruleService";
-import { getPendingRequirements } from "@/src/store/levelChoiceResolver";
+import { getLevelFeatPrerequisiteContext, getPendingRequirements } from "@/src/store/levelChoiceResolver";
 import { getFeatPrerequisiteStatus, getSelectableFeats } from "@/src/adapters/featCatalog";
 import { useCharacterStore } from "@/src/store/useCharacterStore";
 import { ATTRIBUTE_LABELS, type AttributeKey } from "@/src/types/dnd";
@@ -123,6 +123,7 @@ export function LevelUpFlow({ open, onClose }: LevelUpFlowProps) {
       return isSpellcastingSelectionComplete({
         ...getSpellStepLimits(),
         choices: state.spellcasting,
+        grantedSpellIds: state.characterBuild.derivedSheet.spellcasting?.grantedSpells?.map((spell) => spell.id),
       });
     }
     return !pendingIds.has(id);
@@ -170,6 +171,7 @@ export function LevelUpFlow({ open, onClose }: LevelUpFlowProps) {
       return (
         <SpellCatalogPicker
           className={characterClass!.name}
+          grantedSpells={summary.spellcasting?.grantedSpells}
           activeSources={activeSources}
           value={state.spellcasting}
           cantripLimit={cantripLimit}
@@ -225,11 +227,7 @@ export function LevelUpFlow({ open, onClose }: LevelUpFlowProps) {
       activeSources,
       [currentFeatId],
     );
-    const ctx = {
-      level: req.level,
-      finalAttributes: summary.finalAttributes,
-      chosenFeatIds,
-    };
+    const ctx = getLevelFeatPrerequisiteContext(state, req.level);
     const selectableFeats = getSelectableFeats(featCategory, allFeats, ctx);
     const selectedIds = new Set(chosenFeatIds);
     const selectableIds = new Set(selectableFeats.map((feat) => feat.id));

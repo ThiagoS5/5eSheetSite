@@ -34,6 +34,7 @@ export interface BuilderSubclass {
   shortName: string;
   source: string;
   features: BuilderFeature[];
+  grantedSpells?: Array<{ level: number; spellId: string }>;
 }
 
 
@@ -166,6 +167,7 @@ export interface BuilderClass {
   weaponProficiencies: string[];
   toolProficiencies: string[];
   spellcastingAbility?: string;
+  grantedSpells?: Array<{ level: number; spellId: string }>;
   spellcastingProgression?: BuilderSpellcastingProgression;
   image?: BuilderClassImage;
   progressionRows: BuilderClassProgressionRow[];
@@ -300,6 +302,8 @@ export interface FeatPrerequisite {
   level?: number;
   abilities?: Partial<Record<AttributeKey, number>>;
   feat?: string[];
+  spellcasting?: boolean;
+  armorProficiencies?: string[];
 }
 
 export interface FeatChoiceRequirement {
@@ -309,6 +313,8 @@ export interface FeatChoiceRequirement {
 }
 
 export interface FeatStructuredEffects {
+  hitPointBonus?: number;
+  hitPointsPerLevel?: number;
   abilityBonuses?: AttributeBonuses;
   initiativeBonus?: number;
   /** 5e 2024 (ex.: Alert): soma o bônus de proficiência à iniciativa. */
@@ -332,6 +338,14 @@ export interface BuilderFeat {
   description: string;
 }
 
+export interface SheetResource {
+  id: string;
+  label: string;
+  maxUses: number;
+  /** All pools recover fully on a long rest. */
+  shortRestRecovery: number | "all";
+}
+
 export interface CharacterDescription {
   nome: string;
   alinhamento: string;
@@ -352,6 +366,8 @@ export interface CharacterDescription {
   historia: string;
   /** Id de retrato da galeria local (src/data/portraits.ts); "" = sem retrato. */
   portraitId: string;
+  /** Embedded, locally optimized PNG/JPEG portrait; empty for legacy saves. */
+  portraitDataUrl?: string;
 }
 
 export interface SheetAttribute {
@@ -439,6 +455,7 @@ export interface CharacterSheetSummary {
   inventory: SheetInventoryItem[];
   selectedTraits: BuilderFeature[];
   classFeatures: BuilderFeature[];
+  resources?: SheetResource[];
   classSkillProficiencies: string[];
   skillTraining: Record<string, "none" | "half" | "proficient" | "expertise">;
   classFeatureChoices: Record<string, string[]>;

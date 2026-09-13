@@ -18,6 +18,15 @@ function seededRandom(seed: number): () => number {
 }
 
 describe("classQuiz", () => {
+  it("always asks about combat, party role, and decision complexity", () => {
+    for (let seed = 0; seed < 10; seed++) expect(createClassQuizSession(seededRandom(seed)).map((q) => q.id)).toEqual(expect.arrayContaining(["instinto-de-combate", "papel-no-grupo", "estilo-de-turno"]));
+  });
+  it("rejects invalid answers and respects an empty source catalog", () => {
+    const session = createClassQuizSession(seededRandom(7));
+    const answers = session.map((q) => q.options[0].id);
+    expect(getClassQuizRecommendation(session, answers, [])).toBeNull();
+    expect(getClassQuizRecommendation(session, answers.map(() => "invalid"))).toBeNull();
+  });
   it("only references class ids that exist in the builder catalog", () => {
     const catalogIds = new Set(getBuilderClasses().map((entry) => entry.id));
     const referencedIds = new Set([

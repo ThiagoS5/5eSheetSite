@@ -1,22 +1,12 @@
 "use client";
 
-import { useMemo } from "react";
 import { PanelRightClose, PanelRightOpen } from "lucide-react";
-import {
-  getBuilderBackgrounds,
-  getBuilderClasses,
-  getBuilderSpecies,
-} from "@/src/services/ruleService";
-import { getAbilityModifier } from "@/src/adapters/characterDerivedAdapter";
 import { selectDerivedSheet } from "@/src/store/characterSelectors";
-import { useCharacterBuilderState } from "@/src/store/useCharacterBuilderState";
 import { useCharacterStore } from "@/src/store/useCharacterStore";
-import { ATTRIBUTE_LABELS, type AttributeKey } from "@/src/types/dnd";
 import { TagList } from "@/src/components/molecules/TagList";
 
 import type { CharacterSheetPreviewProps } from "./index.types";
 export type { CharacterSheetPreviewProps } from "./index.types";
-const attributes = Object.keys(ATTRIBUTE_LABELS) as AttributeKey[];
 
 export function CharacterSheetPreview({
   collapsed = false,
@@ -26,22 +16,6 @@ export function CharacterSheetPreview({
   const isDrawer = variant === "drawer";
   const isCollapsed = collapsed && !isDrawer;
   const summary = useCharacterStore(selectDerivedSheet);
-  const { description } = useCharacterBuilderState();
-  const speciesName = useMemo(
-    () => getBuilderSpecies().find((entry) => entry.id === summary.speciesId)?.name,
-    [summary.speciesId],
-  );
-  const className = useMemo(
-    () => getBuilderClasses().find((entry) => entry.id === summary.classId)?.name,
-    [summary.classId],
-  );
-  const backgroundName = useMemo(
-    () =>
-      getBuilderBackgrounds().find(
-        (entry) => entry.id === summary.backgroundId,
-      )?.name,
-    [summary.backgroundId],
-  );
 
   const toggleButton = isDrawer ? null : (
     <button
@@ -83,7 +57,7 @@ export function CharacterSheetPreview({
               aria-hidden="true"
               className="flex h-12 w-12 items-center justify-center rounded-xl border-2 border-brand-crimson-alt/40 bg-card font-serif text-lg font-bold text-foreground"
             >
-              {description.nome.trim().charAt(0).toUpperCase() || "?"}
+              {summary.name.trim().charAt(0).toUpperCase() || "?"}
             </span>
             <p className="sr-only" id="sheet-preview-title">
               Hero sheet collapsed
@@ -98,7 +72,7 @@ export function CharacterSheetPreview({
               aria-hidden="true"
               className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border-2 border-brand-crimson-alt/40 bg-gradient-to-br from-card to-surface-elevated font-serif text-xl font-bold text-muted-foreground"
             >
-              {description.nome.trim().charAt(0).toUpperCase() || "?"}
+              {summary.name.trim().charAt(0).toUpperCase() || "?"}
             </span>
             <div className="min-w-0">
               <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
@@ -109,10 +83,10 @@ export function CharacterSheetPreview({
                 translate="no"
                 className="notranslate truncate font-serif text-lg font-bold tracking-wide text-foreground"
               >
-                {description.nome || "Unnamed Hero"}
+                {summary.name || "Unnamed Hero"}
               </h2>
               <p translate="no" className="notranslate text-base text-muted-foreground">
-                {speciesName || "Species"} · {className || "Class"}
+                {summary.speciesName || "Species"} · {summary.className || "Class"}
               </p>
             </div>
           </div>
@@ -136,12 +110,12 @@ export function CharacterSheetPreview({
                 value={`+${summary.proficiencyBonus}`}
                 tone="green"
               />
-              <Metric label="Initiative" value={formatSigned(getAbilityModifier(summary.finalAttributes.destreza))} tone="gold" />
+              <Metric label="Initiative" value={formatSigned(summary.initiative)} tone="gold" />
             </div>
             <div>
               <dt className="text-muted-foreground">Background</dt>
               <dd translate="no" className="notranslate font-semibold text-foreground">
-                {backgroundName || "Not set"}
+                {summary.backgroundName || "Not set"}
               </dd>
             </div>
             <div>
@@ -151,6 +125,26 @@ export function CharacterSheetPreview({
               </dd>
             </div>
           </dl>
+          <details className="mt-4 text-xs text-subdued">
+            <summary className="min-h-10 rounded-md py-2 font-medium outline-none focus-visible:ring-2 focus-visible:ring-accent">HP and armor class breakdown</summary>
+            <div className="mt-2 grid gap-4 border-t border-border pt-3">
+              {[
+                { name: "Hit points", parts: summary.maxHpBreakdown ?? [] },
+                { name: "Armor class", parts: summary.armorClassBreakdown ?? [] },
+              ].map(({ name, parts }) => (
+                <div key={name}>
+                  <p className="mb-2 font-semibold text-foreground">{name}</p>
+                  <dl className="grid gap-2">
+                    {parts.map((part, index) => (
+                      <div key={`${part.label}-${index}`} className="flex justify-between gap-3">
+                        <dt>{part.label}</dt><dd className="shrink-0 tabular-nums text-foreground">{formatSigned(part.value)}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                </div>
+              ))}
+            </div>
+          </details>
         </section>
 
         <section aria-labelledby="sheet-attributes-title" className="border-b border-white/[0.06] py-4">
@@ -161,26 +155,22 @@ export function CharacterSheetPreview({
             Ability Scores
           </h3>
           <dl className="mt-3 grid grid-cols-3 gap-2">
-            {attributes.map((attribute) => {
-              const value = summary.finalAttributes[attribute];
-
-              return (
+            {summary.attributes.map((attribute) => (
                 <div
-                  key={attribute}
+                  key={attribute.key}
                   className="rounded-lg border border-white/[0.06] bg-card px-2 py-2 text-center"
                 >
                   <dt className="text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground">
-                    {ATTRIBUTE_LABELS[attribute].slice(0, 3)}
+                    {attribute.abbr}
                   </dt>
                   <dd className="mt-1 font-serif text-xl font-bold text-foreground">
-                    {value}
+                    {attribute.score}
                   </dd>
                   <dd className="mt-1 rounded border border-brand-crimson-alt/25 bg-brand-crimson-alt/15 px-1 py-0.5 text-[10px] font-bold text-foreground">
-                    {formatSigned(getAbilityModifier(value))}
+                    {formatSigned(attribute.modifier)}
                   </dd>
                 </div>
-              );
-            })}
+            ))}
           </dl>
         </section>
 

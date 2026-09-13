@@ -21,7 +21,7 @@ describe("additional choice rules", () => {
   it("maps catalog feats and custom features without inventing unknown feats", () => {
     const additional = createEmptyAdditionalChoices();
     additional.featIds = ["alert", "unknown"];
-    additional.customFeatures = [{ name: "Gift of the Moon", description: "Homebrew feature." }];
+    additional.customFeatures = [{ id: "gift-of-the-moon", source: "custom", name: "Gift of the Moon", description: "Homebrew feature." }];
 
     expect(
       deriveAdditionalFeatureSummaries(additional, [

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import type { CharacterSheetSummary } from "@/src/types/builder";
 import { useCharacterStore } from "@/src/store/useCharacterStore";
 import { cn } from "@/src/lib/utils";
 import { focusRing } from "@/src/lib/styles";
@@ -23,7 +22,7 @@ export function PlayStatePanel({ summary }: PlayStatePanelProps) {
   const setResourceUseCount = useCharacterStore((state) => state.setResourceUseCount);
   const storePlayState = useCharacterStore((state) => state.playState);
   const playState = storePlayState ?? createDefaultPlayState(summary.maxHp);
-  const trackedResources = getTrackedResources(summary);
+  const trackedResources = summary.resources ?? [];
 
   return (
     <section className="rounded-lg border border-white/[0.08] bg-card p-3">
@@ -86,12 +85,13 @@ export function PlayStatePanel({ summary }: PlayStatePanelProps) {
                 className={cn("h-9 rounded-md border border-border bg-background px-3 text-sm text-foreground outline-none", focusRing)}
               />
             </label>
-            <ActionButton label="Short Rest" onClick={() => shortRest({ hitDiceToSpend })} />
-            <ActionButton label="Long Rest" onClick={longRest} />
+            <ActionButton label="Short Rest" disabled={summary.currentHp <= 0} onClick={() => shortRest({ hitDiceToSpend })} />
+            <ActionButton label="Long Rest" disabled={summary.currentHp <= 0} onClick={longRest} />
           </div>
           <p className="text-xs text-muted-foreground">
             Hit dice spent: {playState.hitDiceSpent} of {summary.level}
           </p>
+          <p className="text-xs text-muted-foreground">{summary.currentHp <= 0 ? "Regain at least 1 hit point before starting a rest." : "Short rest rolls each selected Hit Die and adds Constitution. Use one die at a time to avoid spending more than needed."}</p>
         </div>
 
         {trackedResources.length > 0 ? (
@@ -110,21 +110,25 @@ export function PlayStatePanel({ summary }: PlayStatePanelProps) {
                     <span>
                       <span className="block font-semibold text-foreground">{resource.label}</span>
                       <span className="text-[10px] uppercase tracking-[0.08em] text-muted-foreground">
-                        {resource.recovery === "shortRest" ? "Short rest" : "Long rest"}
+                        {resource.shortRestRecovery === "all" ? "All on short rest" : resource.shortRestRecovery > 0 ? `${resource.shortRestRecovery} on short rest; all on long rest` : "Long rest"}
                       </span>
                     </span>
                     <input
-                      type="checkbox"
-                      checked={used >= 1}
+                      type="number"
+                      min={0}
+                      max={resource.maxUses}
+                      step={1}
+                      aria-label={`${resource.label}: uses spent of ${resource.maxUses}`}
+                      value={used}
                       onChange={(event) =>
                         setResourceUseCount(
                           resource.id,
-                          event.target.checked ? 1 : 0,
-                          1,
-                          resource.recovery,
+                          Math.trunc(Number(event.target.value)),
+                          resource.maxUses,
+                          "longRest",
                         )
                       }
-                      className="h-4 w-4 accent-primary"
+                      className={cn("h-10 w-16 rounded-md border border-border bg-background px-2 text-sm text-foreground", focusRing)}
                     />
                   </label>
                 );
@@ -156,21 +160,6 @@ export function PlayStatePanel({ summary }: PlayStatePanelProps) {
   );
 }
 
-function getTrackedResources(summary: CharacterSheetSummary) {
-  return (summary.classFeatures ?? [])
-    .map((feature) => {
-      const text = `${feature.name} ${feature.description}`.toLowerCase();
-      if (!/finish .*rest|short rest|long rest/.test(text)) return null;
-      const recovery = text.includes("short rest") ? "shortRest" : "longRest";
-      return {
-        id: feature.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""),
-        label: feature.name,
-        recovery,
-      } as const;
-    })
-    .filter((resource): resource is NonNullable<typeof resource> => Boolean(resource));
-}
-
 function Stat({ label, value, manual = false }: { label: string; value: number; manual?: boolean }) {
   return (
     <div className="rounded-lg border border-border bg-surface-nested p-2">
@@ -187,11 +176,12 @@ function Stat({ label, value, manual = false }: { label: string; value: number; 
   );
 }
 
-function ActionButton({ label, onClick }: { label: string; onClick: () => void }) {
+function ActionButton({ label, onClick, disabled = false }: { label: string; onClick: () => void; disabled?: boolean }) {
   return (
     <button
       type="button"
       onClick={onClick}
+      disabled={disabled}
       className={cn("rounded-md border border-border bg-surface-nested px-3 py-2 text-xs font-semibold text-subdued transition hover:text-foreground", focusRing)}
     >
       {label}

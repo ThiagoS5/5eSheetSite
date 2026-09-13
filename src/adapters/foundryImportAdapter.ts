@@ -52,6 +52,7 @@ type FoundryItemType =
   | "weapon";
 
 interface FoundryActorLike {
+  img?: string;
   name?: unknown;
   type?: unknown;
   system?: Record<string, unknown>;
@@ -245,6 +246,7 @@ export function importFoundryCharacter(
       description: {
         ...baseBuild.draft.description,
         nome: readString(actor.name) || "Imported Foundry Character",
+        portraitDataUrl: normalizePortraitDataUrl(actor.img),
         alinhamento: readDetailsString(actor.system, "alignment"),
         faith: readDetailsString(actor.system, "faith"),
         lifestyle: readDetailsString(actor.system, "lifestyle"),
@@ -1350,3 +1352,4 @@ function readBoolean(value: unknown): boolean {
 function clampInteger(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, Math.trunc(value)));
 }
+import { normalizePortraitDataUrl } from "@/src/utils/portrait";

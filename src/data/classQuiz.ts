@@ -575,8 +575,11 @@ function shuffle<T>(items: readonly T[], random: () => number): T[] {
 export function createClassQuizSession(
   random: () => number = Math.random,
 ): ClassQuizQuestion[] {
-  return shuffle(classQuizQuestionPool, random)
-    .slice(0, QUIZ_QUESTION_COUNT)
+  const essentials = classQuizQuestionPool.filter((question) =>
+    ["instinto-de-combate", "papel-no-grupo", "estilo-de-turno"].includes(question.id),
+  );
+  return [...essentials, ...shuffle(classQuizQuestionPool.filter((question) => !essentials.includes(question)), random)
+    .slice(0, QUIZ_QUESTION_COUNT - essentials.length)]
     .map((question) => ({
       ...question,
       options: shuffle(question.options, random),
@@ -587,6 +590,7 @@ export function createClassQuizSession(
 export function getClassQuizRecommendation(
   questions: readonly ClassQuizQuestion[],
   answerOptionIds: readonly string[],
+  availableClassIds?: readonly string[],
 ): ClassQuizRecommendation | null {
   if (
     questions.length < QUIZ_QUESTION_COUNT ||
@@ -600,6 +604,7 @@ export function getClassQuizRecommendation(
       question.options.find((option) => option.id === answerOptionIds[index]),
     )
     .filter((option): option is ClassQuizOption => Boolean(option));
+  if (chosenOptions.length !== questions.length) return null;
 
   const scores = new Map<string, number>();
   const reasons = new Map<string, Array<{ label: string; weight: number }>>();
@@ -613,7 +618,8 @@ export function getClassQuizRecommendation(
     }
   }
 
-  const ranked = [...scores.entries()].sort((a, b) => {
+  const available = availableClassIds === undefined ? null : new Set(availableClassIds);
+  const ranked = [...scores.entries()].filter(([id]) => !available || available.has(id)).sort((a, b) => {
     if (b[1] !== a[1]) {
       return b[1] - a[1];
     }
@@ -621,7 +627,8 @@ export function getClassQuizRecommendation(
     return TIE_BREAK_ORDER.indexOf(a[0]) - TIE_BREAK_ORDER.indexOf(b[0]);
   });
 
-  const [primary = "fighter-xphb", secondary = "cleric-xphb"] = ranked.map(
+  if (ranked.length === 0) return null;
+  const [primary, secondary = ""] = ranked.map(
     ([classId]) => classId,
   );
 

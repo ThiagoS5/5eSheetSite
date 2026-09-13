@@ -56,7 +56,7 @@ This is the current audited baseline as of 2026-07-19.
 
 ### Domain And Persistence
 
-- `CharacterBuild` is the canonical persisted model at schema v17.
+- `CharacterBuild` is the canonical persisted model at schema v18. Optional `draft.description.portraitDataUrl` stores a bounded local PNG/JPEG portrait; v17 gallery selections migrate unchanged.
 - The persisted shape is split into `draft`, `progression`, `choices`, `playState`, `derivedSheet`, and `exportMetadata`.
 - Store persistence, Vault reads, and canonical import normalize old saves through the shared `migrateCharacterBuild(raw, fromVersion)` path.
 - Schema migrations are covered for the important historical shapes, with fixture-based tests.
@@ -78,6 +78,14 @@ This is the current audited baseline as of 2026-07-19.
 - Play state supports damage, healing, temporary HP, short rest, long rest, spent spell slots, resource uses, conditions, death saves, inspiration, HP/AC overrides, notes, and an independent Session Log.
 
 ### Character Options
+
+September 2026 refinement: local class catalogs resolve `_copy` inheritance and full feature references before normalization. All 36 local JSON files have explicit service consumers, with a reproducible inventory in `5etools-data-audit.md`. Source preferences expose searchable per-book catalog counts. File reachability does not imply exhaustive mechanics coverage.
+
+Permanent rules now include Monk/Barbarian Unarmored Defense and movement, Dwarven Toughness, Tough, and Boon of Fortitude. Worn armor uses its actual formula, shield bonuses do not stack, and HP gains respect the minimum of 1 per level. Explicit class resource pools and fixed class/subclass spell grants are derived in rules, then shared by the UI, PDF and Foundry adapters. Resource counters do not imply automated execution of their combat effects.
+
+Custom portraits are decoded and resized locally before persistence. External adapters consume the same normalized portrait through the export projection. PDF rendering loads only on demand. A reviewed pt-BR rules glossary is an explicit user-requested exception to the English interface convention; machine translation must never alter rules identifiers or substitute for curated terminology.
+
+Quick-build orchestration lives in `src/store/quickBuildFactory.ts`. Pure starter-choice logic lives in `rules/quickBuildRules.ts`; curated suggestions remain in `src/data/quickBuildProfiles.ts`. New builds initialize full HP and select starter spells from active class catalogs without bypassing canonical derivation.
 
 - Classes, species, backgrounds, languages, tools, feats, spells, and item catalogs are normalized from local 5e data.
 - Subclasses are modeled with a dedicated builder step and through level-up requirements.

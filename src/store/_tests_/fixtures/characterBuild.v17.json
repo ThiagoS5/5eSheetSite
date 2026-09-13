@@ -1,0 +1,6 @@
+{
+  "draft": { "description": { "nome": "Legacy Portrait", "portraitId": "portrait-ember-knight" } },
+  "progression": { "level": 1, "levelChoices": {} },
+  "choices": { "ruleset": "2024", "selectedClassId": "fighter-xphb" },
+  "exportMetadata": { "schemaVersion": 17, "saveId": "legacy-portrait-v17", "createdAt": "2026-07-19T00:00:00Z", "updatedAt": "2026-07-19T00:00:00Z" }
+}

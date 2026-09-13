@@ -1,4 +1,5 @@
 import { cn } from "@/src/lib/utils";
+import Image from "next/image";
 import { focusRing } from "@/src/lib/styles";
 import { CombatStatFrame } from "@/src/components/atoms/sheet/frames/CombatStatFrame";
 import { AttributeGrid } from "@/src/components/molecules/sheet/AttributeGrid";
@@ -12,6 +13,8 @@ function fmt(n: number): string {
 
 export function SheetHero({
   summary,
+  portraitUrl,
+  pdfBusy = false,
   onExportForgeFate,
   onExportFoundry,
   onExportPdf,
@@ -26,13 +29,14 @@ export function SheetHero({
         <div className="flex min-w-0 flex-wrap items-center justify-center gap-2 md:justify-self-start">
           <ExportButton label="Export Forge & Fate JSON" icon="fa-file-code" onClick={onExportForgeFate} />
           <ExportButton label="Export Foundry VTT JSON" icon="fa-file-export" onClick={onExportFoundry} />
-          <ExportButton label="Export PDF" icon="fa-file-pdf" onClick={onExportPdf} />
+          <ExportButton label={pdfBusy ? "Creating PDF…" : "Export PDF"} icon="fa-file-pdf" onClick={onExportPdf} disabled={pdfBusy} />
         </div>
         <div
           data-testid="sheet-hero-identity"
           className="min-w-0 justify-self-center text-center md:min-w-[200px]"
         >
-          <h1 translate="no" className="notranslate m-0 font-serif text-[28px] font-extrabold leading-[1.02] text-foreground">
+          {portraitUrl ? <Image src={portraitUrl} alt="Character portrait" width={80} height={80} unoptimized className="mx-auto mb-3 h-20 w-20 rounded-xl border border-border object-cover" /> : null}
+          <h1 translate="no" className="notranslate m-0 break-words font-serif text-[28px] font-extrabold leading-[1.02] text-foreground">
             {summary.name || "Unnamed Character"}
           </h1>
           <p translate="no" className="notranslate mt-[5px] text-[13px] text-muted-foreground">
@@ -112,15 +116,18 @@ function ExportButton({
   icon,
   label,
   onClick,
+  disabled = false,
 }: {
   icon: string;
   label: string;
   onClick: () => void;
+  disabled?: boolean;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
+      disabled={disabled}
       className={cn(
         "inline-flex min-h-10 items-center gap-[7px] rounded-[9px] border border-border bg-card px-[14px] py-[9px] text-xs font-bold tracking-[0.04em] text-muted-foreground transition-colors hover:border-brand-crimson-alt hover:text-foreground",
         focusRing,

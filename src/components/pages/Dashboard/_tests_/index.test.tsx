@@ -138,6 +138,7 @@ describe("Dashboard", () => {
     });
 
     fireEvent.click(screen.getAllByRole("button", { name: /Create Character/i })[0]);
+    fireEvent.click(screen.getByRole("button", { name: "Standard mode" }));
     expect(push).toHaveBeenCalledWith("/builder/classe");
     expect(JSON.parse(localStorage.getItem("forge-fate-character-saves:v1") ?? "{}")).toBeTruthy();
 
@@ -167,7 +168,7 @@ describe("Dashboard", () => {
     );
 
     fireEvent.click(screen.getByRole("button", { name: /Create Character/i }));
-
+    fireEvent.click(screen.getByRole("button", { name: "Standard mode" }));
     await waitFor(() => {
       const saves = JSON.parse(localStorage.getItem("forge-fate-character-saves:v1") ?? "{}");
       const savedBuild = Object.values(saves)[0] as CharacterBuild | undefined;
@@ -279,7 +280,7 @@ describe("Dashboard", () => {
 
     expect(
       screen.getByRole("dialog", {
-        name: "Is this your first time playing Dungeons & Dragons 5e?",
+        name: "How would you like to create your character?",
       }),
     ).toBeInTheDocument();
 
@@ -294,7 +295,7 @@ describe("Dashboard", () => {
     expect(savedBuild.choices.beginnerMode).toBe(true);
   });
 
-  it("skips the creation mode dialog when beginner defaults already exist", async () => {
+  it("keeps quick build available when beginner defaults already exist", async () => {
     localStorage.setItem(
       "forge-fate-preferences:v1",
       JSON.stringify({
@@ -311,14 +312,18 @@ describe("Dashboard", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /Create Character/i }));
 
+    expect(screen.getByRole("dialog", {
+      name: "How would you like to create your character?",
+    })).toBeInTheDocument();
+    expect(push).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "Martial Fighter" }));
     await waitFor(() => {
-      expect(push).toHaveBeenCalledWith("/builder/classe");
+      expect(push).toHaveBeenCalledWith("/builder/descricao");
     });
-    expect(
-      screen.queryByRole("dialog", {
-        name: "Is this your first time playing Dungeons & Dragons 5e?",
-      }),
-    ).not.toBeInTheDocument();
+    const saves = JSON.parse(localStorage.getItem("forge-fate-character-saves:v1") ?? "{}");
+    const savedBuild = Object.values(saves)[0] as CharacterBuild;
+    expect(savedBuild.choices.selectedClassId).toBe("fighter-xphb");
+    expect(savedBuild.playState.currentHp).toBe(savedBuild.derivedSheet.maxHp);
   });
 });
 

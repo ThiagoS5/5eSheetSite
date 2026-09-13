@@ -59,6 +59,7 @@ Do not combine multiple competing card styles inside the same panel.
 
 - Serif display (`font-serif`) for hero names, panel titles, and big numbers.
 - Sans for interface copy and dense data.
+- `--font-sans` references the self-hosted `--font-geist-sans` variable; never point a font token at itself. Verify the computed browser font after token changes, since development CSS may remain cached.
 - Do not introduce a third family.
 - Use a fixed product scale, not viewport-fluid type.
 - Functional labels should be at least 12px.
@@ -82,6 +83,9 @@ Respect `prefers-reduced-motion`.
 - Verify at 390px, tablet, desktop, and 200 percent zoom for UI-heavy changes.
 - The mobile builder separates step navigation from live sheet access. Do not blur those actions together.
 - The sheet should read as a dense tactical dashboard, not a large whitespace-heavy showcase.
+- Source preferences use searchable book rows with actual catalog counts, a bounded list, and a persistent Save/Cancel footer. Filtering never changes hidden selections.
+- The builder preview reads initiative, ability modifiers, and HP/AC explanations directly from the derived summary. Calculations are disclosed on demand below the combat statistics.
+- Creating another character always exposes Guided, Standard, and Quick Build choices. Saved defaults must not make a creation path inaccessible.
 
 ## Anti-Patterns
 

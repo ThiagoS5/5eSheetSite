@@ -58,6 +58,7 @@ export const emptyCharacterDescription: CharacterDescription = {
   notas: "",
   historia: "",
   portraitId: "",
+  portraitDataUrl: "",
 };
 
 export interface CreateCharacterBuildOptions {
@@ -546,6 +547,7 @@ function normalizeFlatState(
     description: {
       ...defaults.description,
       ...state.description,
+      portraitDataUrl: normalizePortraitDataUrl(state.description?.portraitDataUrl),
     },
     money: state.money ?? defaults.money,
     moneyTouched: state.moneyTouched ?? defaults.moneyTouched,
@@ -897,3 +899,4 @@ function createEmptyDerivedSheet(
     carry: { currentKg: 0, maxKg: 0 },
   };
 }
+import { normalizePortraitDataUrl } from "@/src/utils/portrait";

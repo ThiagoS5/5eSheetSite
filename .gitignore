@@ -57,6 +57,7 @@ yarn-error.log*
 .worktrees/
 .mcp.json
 .playwright-mcp/
+.playwright-cli/
 ai-prompts/
 skills-lock.json
 scratchpad.md
@@ -64,7 +65,9 @@ enviarparaocodex.md
 *.mock.json
 src/_references/*
 !src/_references/foundry-reference.json
-5etools-data-audit.md
+/5etools-data-audit.md
+output/
+review-*.png
 # Brainstorming visual companion artifacts
 .superpowers/
 # The canonical guide docs live in guides/ and MUST stay tracked

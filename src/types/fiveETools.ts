@@ -43,6 +43,7 @@ export interface Raw5eBackgroundFile {
 }
 
 export interface Raw5eClass {
+  additionalSpells?: unknown[];
   name: string;
   source: string;
   edition?: string;
@@ -88,6 +89,7 @@ export interface Raw5eClassFile {
 }
 
 export interface Raw5eSubclass {
+  additionalSpells?: unknown[];
   name: string;
   shortName?: string;
   source: string;
@@ -130,6 +132,7 @@ export interface Raw5eFeature {
   className?: string;
   classSource?: string;
   subclassShortName?: string;
+  subclassSource?: string;
   level?: number;
   entries?: unknown[];
 }
@@ -170,7 +173,7 @@ export interface Raw5eItem {
   containerCapacity?: unknown;
   reqAttune?: boolean | string;
   resist?: unknown[];
-  reprintedAs?: string[];
+  reprintedAs?: Array<string | { uid: string; tag?: string }>;
 }
 
 export interface Raw5eItemFile {

@@ -29,6 +29,7 @@ import {
   toSlug,
 } from "@/src/adapters/fiveEToolsAdapter";
 import { normalizeFeats } from "@/src/adapters/featCatalog";
+import { resolve5eInheritance } from "@/src/adapters/fiveEToolsInheritance";
 import type {
   BuilderBackground,
   BuilderClass,
@@ -69,6 +70,13 @@ const classFiles = [
   warlockData,
   wizardData,
 ] as Raw5eClassFile[];
+const resolvedClassFiles = classFiles.map((file) => ({
+  ...file,
+  class: resolve5eInheritance(file.class),
+  classFeature: resolve5eInheritance(file.classFeature ?? []),
+  subclass: resolve5eInheritance(file.subclass ?? []),
+  subclassFeature: resolve5eInheritance(file.subclassFeature ?? []),
+}));
 
 let builderSpeciesCache: BuilderSpecies[] | undefined;
 let builderBackgroundsCache: BuilderBackground[] | undefined;
@@ -154,7 +162,7 @@ export function getBuilderClasses() {
   const weaponMasteryOptions = getWeaponMasteryOptions();
 
   builderClassesCache = deepFreeze(
-    classFiles
+    resolvedClassFiles
       .flatMap((file) =>
         file.class
           .filter((rawClass) => is2024Source(rawClass.source, rawClass.edition))

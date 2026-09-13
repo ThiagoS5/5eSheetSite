@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CircleQuestionMark, Dices, Sparkles } from "lucide-react";
@@ -9,11 +9,13 @@ import { useCharacterStore } from "@/src/store/useCharacterStore";
 import { Input } from "@/src/components/ui/input";
 import { cn } from "@/src/lib/utils";
 import { PORTRAIT_OPTIONS } from "@/src/data/portraits";
+import { prepareCharacterPortrait } from "@/src/services/portraitService";
 import {
   buildPersonalDetailsFieldHelp,
   getPersonalDetailsRecommendations,
 } from "@/src/data/personalDetailsRecommendations";
-import { generateRandomName } from "@/src/data/nameGenerator";import {
+import { generateRandomName } from "@/src/data/nameGenerator";
+import {
   personalDetailsSchema,
   parseWeight,
   formatWeight,
@@ -89,6 +91,11 @@ export function PersonalDetailsEditor({
 }: PersonalDetailsEditorProps) {
   const description = useCharacterStore((s) => s.description);
   const setDescriptionField = useCharacterStore((s) => s.setDescriptionField);
+  const [portraitBusy, setPortraitBusy] = useState(false);
+  const [portraitError, setPortraitError] = useState("");
+  const saveId = useCharacterStore((s) => s.characterBuild.exportMetadata.saveId);
+  const portraitRequest = useRef(0);
+  useEffect(() => () => { portraitRequest.current += 1; }, [saveId]);
   const { weightValue, weightUnit } = parseWeight(description.weight);
   const [suggestionIndexes, setSuggestionIndexes] = useState<
     Record<NarrativeSuggestionField, number>
@@ -166,21 +173,13 @@ export function PersonalDetailsEditor({
 
   function persist() {
     const data = getValues();
-    setDescriptionField("nome", data.nome ?? "");
-    setDescriptionField("alinhamento", data.alinhamento ?? "");
-    setDescriptionField("faith", data.faith ?? "");
-    setDescriptionField("lifestyle", data.lifestyle ?? "");
-    setDescriptionField("age", data.age ?? "");
-    setDescriptionField("gender", data.gender ?? "");
-    setDescriptionField("height", data.height ?? "");
-    setDescriptionField("eyes", data.eyes ?? "");
-    setDescriptionField("skin", data.skin ?? "");
-    setDescriptionField("hair", data.hair ?? "");
-    setDescriptionField("aparencia", data.aparencia ?? "");
-    setDescriptionField("personalidade", data.personalidade ?? "");
-    setDescriptionField("historia", data.historia ?? "");
-    setDescriptionField("notas", data.notas ?? "");
-    setDescriptionField("weight", formatWeight(data.weightValue, data.weightUnit));
+    const fields = ["nome", "alinhamento", "faith", "lifestyle", "age", "gender", "height", "eyes", "skin", "hair", "aparencia", "personalidade", "historia", "notas"] as const;
+    for (const field of fields) {
+      const value = data[field] ?? "";
+      if (value !== (description[field] ?? "")) setDescriptionField(field, value);
+    }
+    const weight = formatWeight(data.weightValue, data.weightUnit);
+    if (weight !== (description.weight ?? "")) setDescriptionField("weight", weight);
   }
 
   function selectWeightUnit(unit: WeightUnit) {
@@ -208,7 +207,7 @@ export function PersonalDetailsEditor({
           className="grid grid-cols-4 gap-3 sm:grid-cols-8"
         >
           {PORTRAIT_OPTIONS.map((portrait) => {
-            const isSelected = description.portraitId === portrait.id;
+            const isSelected = !description.portraitDataUrl && description.portraitId === portrait.id;
 
             return (
               <button
@@ -217,9 +216,11 @@ export function PersonalDetailsEditor({
                 role="radio"
                 aria-checked={isSelected}
                 aria-label={portrait.alt}
-                onClick={() =>
-                  setDescriptionField("portraitId", isSelected ? "" : portrait.id)
-                }
+                disabled={portraitBusy}
+                onClick={() => {
+                  setDescriptionField("portraitDataUrl", "");
+                  setDescriptionField("portraitId", isSelected ? "" : portrait.id);
+                }}
                 className={cn(
                   "overflow-hidden rounded-lg border-2 outline-none transition focus-visible:ring-2 focus-visible:ring-brand-gold-alt/70",
                   isSelected
@@ -238,6 +239,38 @@ export function PersonalDetailsEditor({
             );
           })}
         </div>
+        <div className="mt-4 flex flex-wrap items-center gap-4">
+          {description.portraitDataUrl ? (
+            <Image src={description.portraitDataUrl} alt="Your character portrait" width={96} height={96} unoptimized className="h-24 w-24 rounded-lg object-cover" />
+          ) : null}
+          <div className="min-w-0 flex-1">
+            <label htmlFor="pd-portrait-upload" className={labelCls}>Upload character portrait</label>
+            <Input id="pd-portrait-upload" type="file" accept="image/png,image/jpeg,image/webp" disabled={portraitBusy}
+              aria-describedby="pd-portrait-help" className={inputCls}
+              onChange={async (event) => {
+                const file = event.currentTarget.files?.[0];
+                event.currentTarget.value = "";
+                if (!file) return;
+                const request = ++portraitRequest.current;
+                setPortraitBusy(true);
+                setPortraitError("");
+                try {
+                  const portrait = await prepareCharacterPortrait(file);
+                  if (portraitRequest.current === request) {
+                    setDescriptionField("portraitDataUrl", portrait);
+                  }
+                } catch (error) {
+                  setPortraitError(error instanceof Error ? error.message : "This image could not be opened. Try another image.");
+                } finally {
+                  setPortraitBusy(false);
+                }
+              }} />
+            <p id="pd-portrait-help" className="mt-2 text-xs text-muted-foreground">PNG, JPEG, or WebP, up to 5 MB. Saved on this device and included in PDF and Foundry exports.</p>
+          </div>
+          {description.portraitDataUrl ? <button type="button" disabled={portraitBusy} onClick={() => setDescriptionField("portraitDataUrl", "")} className="rounded-md border border-border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-ring">Use gallery portrait</button> : null}
+        </div>
+        {portraitBusy ? <p role="status" className="mt-2 text-sm">Preparing portrait…</p> : null}
+        {portraitError ? <p role="alert" className="mt-2 text-sm text-foreground">{portraitError}</p> : null}
         <p className="mt-3 text-xs leading-5 text-muted-foreground">
           Pick a portrait for the Vault card and printed sheet. Click again to remove it.
         </p>

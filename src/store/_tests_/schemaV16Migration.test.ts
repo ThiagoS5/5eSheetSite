@@ -4,7 +4,7 @@ import { CHARACTER_BUILD_SCHEMA_VERSION } from "@/src/types/characterBuild";
 
 describe("schema v17 migration - flexible choices and Foundry origin", () => {
   it("pins the current schema version", () => {
-    expect(CHARACTER_BUILD_SCHEMA_VERSION).toBe(17);
+    expect(CHARACTER_BUILD_SCHEMA_VERSION).toBe(18);
   });
 
   it("defaults old inventory entries to catalog-backed items", () => {

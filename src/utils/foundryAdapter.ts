@@ -1,4 +1,3 @@
-import foundryReference from "@/src/_references/foundry-reference.json";
 import { getItemCatalog } from "@/src/services/itemCatalogService";
 import { getBuilderClasses } from "@/src/services/ruleService";
 import { getSpellCatalog } from "@/src/services/spellService";
@@ -342,12 +341,20 @@ export function createFoundryCharacterExport(
 
   actor.name = characterName;
   actor.type = "character";
+  if (projection.identity.portraitDataUrl) actor.img = projection.identity.portraitDataUrl;
+  else if (!hasOriginSnapshot) actor.img = "icons/svg/mystery-man.svg";
   actor.items = mergeFoundryItems(originalItems, items);
   actor.effects ??= [];
   actor.folder ??= null;
   actor.prototypeToken = {
     ...(actor.prototypeToken ?? {}),
     name: characterName,
+    ...(projection.identity.portraitDataUrl ? {
+      texture: {
+        ...((actor.prototypeToken?.texture as Record<string, unknown> | undefined) ?? {}),
+        src: projection.identity.portraitDataUrl,
+      },
+    } : {}),
   };
 
   actor.system.abilities = mapAbilities(actor.system.abilities, summary);
@@ -382,7 +389,20 @@ export function createFoundryCharacterExport(
 }
 
 function cloneReference(): FoundryActorExport {
-  return JSON.parse(JSON.stringify(foundryReference)) as FoundryActorExport;
+  // Start with an empty actor. A reference character contains unrelated flags,
+  // effects and token data and should never be shipped in the client bundle.
+  return {
+    name: "",
+    type: "character",
+    system: {
+      abilities: Object.fromEntries(Object.values(ATTRIBUTE_TO_FOUNDRY).map((key) => [key, { value: 10 }])) as Record<AbilityAbbreviation, FoundryAbility>,
+      attributes: { hp: { value: 0, max: 0 }, ac: { flat: 10, calc: "flat" } },
+      details: {},
+    },
+    items: [],
+    effects: [],
+    flags: {},
+  };
 }
 
 function cloneActor(actor: Record<string, unknown>): FoundryActorExport {
@@ -682,6 +702,18 @@ function createFoundryItems(
       createFeatureItem(titleFromId(choiceId), values.join(", "), "class"),
     ),
   ];
+  for (const resource of summary.resources ?? []) {
+    const item = featureItems.find((entry) => toIdentifier(entry.name) === resource.id);
+    if (!item) continue;
+    item.system.uses = {
+      max: String(resource.maxUses),
+      spent: Math.min(resource.maxUses, state.playState?.resourceUses[resource.id] ?? 0),
+      recovery: [
+        ...(resource.shortRestRecovery === "all" ? [{ period: "sr", type: "recoverAll" }] : resource.shortRestRecovery > 0 ? [{ period: "sr", type: "formula", formula: String(resource.shortRestRecovery) }] : []),
+        { period: "lr", type: "recoverAll" },
+      ],
+    };
+  }
   const inventoryItems = summary.inventory.map((entry) =>
     createInventoryItem(entry.item, entry.quantity, state.equippedItemIds.includes(entry.item.id), context),
   );

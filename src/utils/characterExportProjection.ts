@@ -1,4 +1,5 @@
 import { groupSpellsByLevel } from "@/src/utils/spellGrouping";
+import { normalizePortraitDataUrl } from "@/src/utils/portrait";
 import type { CharacterDescription, CharacterSheetSummary } from "@/src/types/builder";
 import type { CharacterBuildPlayState } from "@/src/types/characterBuild";
 
@@ -9,6 +10,7 @@ export interface CharacterExportProjection {
     className: string;
     speciesName: string;
     backgroundName: string;
+    portraitDataUrl: string;
   };
   narrative: Array<{ id: string; title: string; value: string }>;
   proficiencies: {
@@ -38,6 +40,7 @@ export function createCharacterExportProjection(
       className: summary.className,
       speciesName: summary.speciesName,
       backgroundName: summary.backgroundName,
+      portraitDataUrl: normalizePortraitDataUrl(description.portraitDataUrl),
     },
     narrative: [
       { id: "appearance", title: "Appearance", value: description.aparencia },

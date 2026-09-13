@@ -1,4 +1,6 @@
 import type { CharacterBuildPlayState } from "@/src/types/characterBuild";
+import type { SheetResource } from "@/src/types/builder";
+import { recoverClassResources } from "@/rules/classResourceRules";
 
 export function createDefaultPlayState(maxHp = 0): CharacterBuildPlayState {
   return {
@@ -39,7 +41,12 @@ export function applyHealingToPlayState(
   input: { amount: number; maxHp: number },
 ): CharacterBuildPlayState {
   return normalizePlayState(
-    { ...state, currentHp: state.currentHp + Math.max(0, input.amount) },
+    {
+      ...state,
+      currentHp: state.currentHp + Math.max(0, input.amount),
+      deathSaves: input.amount > 0 && input.maxHp > state.currentHp
+        ? { successes: 0, failures: 0 } : state.deathSaves,
+    },
     input.maxHp,
   );
 }
@@ -49,7 +56,7 @@ export function setTemporaryHitPointsInPlayState(
   input: { amount: number; maxHp: number },
 ): CharacterBuildPlayState {
   return normalizePlayState(
-    { ...state, tempHp: Math.max(0, input.amount) },
+    { ...state, tempHp: Math.max(state.tempHp, input.amount, 0) },
     input.maxHp,
   );
 }
@@ -78,14 +85,19 @@ export function applyShortRestToPlayState(
     hitDiceToSpend: number;
     totalHitDice: number;
     recoverSpellSlots?: boolean;
+    rolledHitDice?: readonly number[];
+    resources?: readonly SheetResource[];
   },
 ): CharacterBuildPlayState {
+  if (state.currentHp <= 0) return state;
   const availableHitDice = Math.max(0, input.totalHitDice - state.hitDiceSpent);
   const hitDiceSpent = Math.min(
     availableHitDice,
-    Math.max(0, input.hitDiceToSpend),
+    Math.max(0, Math.trunc(input.hitDiceToSpend)),
   );
-  const healing = hitDiceSpent * Math.max(1, input.hitDieValue + input.constitutionModifier);
+  const healing = Array.from({ length: hitDiceSpent }, (_, index) =>
+    Math.max(1, (input.rolledHitDice?.[index] ?? input.hitDieValue) + input.constitutionModifier),
+  ).reduce((sum, value) => sum + value, 0);
 
   return normalizePlayState(
     {
@@ -93,7 +105,10 @@ export function applyShortRestToPlayState(
       currentHp: state.currentHp + healing,
       hitDiceSpent: state.hitDiceSpent + hitDiceSpent,
       usedSpellSlots: input.recoverSpellSlots ? {} : state.usedSpellSlots,
-      resourceUses: recoverRestResources(state, "shortRest"),
+      resourceUses: recoverClassResources({
+        ...recoverRestResources(state, "shortRest"),
+        ...Object.fromEntries((input.resources ?? []).filter((resource) => state.resourceUses[resource.id] !== undefined).map((resource) => [resource.id, state.resourceUses[resource.id]])),
+      }, input.resources ?? []),
     },
     input.maxHp,
   );
@@ -103,6 +118,7 @@ export function applyLongRestToPlayState(
   state: CharacterBuildPlayState,
   input: { maxHp: number },
 ): CharacterBuildPlayState {
+  if (state.currentHp <= 0) return state;
   return normalizePlayState(
     {
       ...state,

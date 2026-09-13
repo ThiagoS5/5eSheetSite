@@ -12,6 +12,7 @@ import {
   deriveSelectedEquipment,
 } from "@/rules/inventoryRules";
 import { deriveStartingGoldPo } from "@/rules/startingGoldRules";
+import { deriveClassMovementAndDefense } from "@/rules/classMechanicsRules";
 import { deriveChosenFeatSummaries } from "@/rules/levelProgression";
 import { deriveBuilderPendencies } from "@/rules/pendencyRules";
 import { deriveSpeciesImmunities, deriveSpeciesResistances, deriveSpeciesVulnerabilities } from "@/rules/speciesDefenseRules";
@@ -41,16 +42,14 @@ import {
 import {
   calculateMaxHitPointsWithRolls,
   getHitPointsBreakdown,
+  deriveHitPointBonuses,
 } from "@/rules/hitPointRules";
 import {
   collectAsiBonuses,
   getActiveSubclassFeatures,
 } from "@/src/store/levelChoiceResolver";
-import {
-  applyFeatEffects,
-  createEmptyAppliedFeatEffects,
-  type AppliedFeatEffects,
-} from "@/src/adapters/featCatalog";
+import type { AppliedFeatEffects } from "@/src/adapters/featCatalog";
+import { deriveFeatEffects, deriveFeatSavingThrows, resolveOriginFeat } from "@/rules/featEffectRules";
 import type { CharacterBuilderState } from "@/src/store/characterStore.types";
 import { EMPTY_COIN_POUCH } from "@/src/types/characterBuild";
 import type {
@@ -96,15 +95,20 @@ export function selectCharacterSheetSummary(
   const classFeaturesUpToLevel = (characterClass?.allFeatures ?? []).filter(
     (feature) => (feature.level ?? 1) <= state.level,
   );
-  const maxHitPoints = calculateMaxHitPointsWithRolls({
+  const hitPointsInput = {
     hitDie: characterClass?.hitDie ?? 6,
     constitutionScore: finalAttributes.constituicao,
     level: state.level,
     hpRollByLevel: state.hpRollByLevel ?? {},
-  });
+    bonuses: deriveHitPointBonuses(species, state.level, featEffects),
+  };
+  const maxHitPoints = calculateMaxHitPointsWithRolls(hitPointsInput);
+  const classMechanics = deriveClassMovementAndDefense({ characterClass, level: state.level, finalAttributes, selectedEquipment });
+  const speedFeet = (species?.speed ?? 30) + featEffects.speedBonusFeet + classMechanics.speedBonusFeet;
   const armorClassResult = deriveArmorClass({
     dexterityScore: finalAttributes.destreza,
     selectedEquipment,
+    unarmoredDefense: classMechanics.unarmoredDefense,
   });
   const equipmentSavingThrowBonus = deriveEquipmentSavingThrowBonus(selectedEquipment);
   const equipmentResistances = deriveEquipmentResistances(selectedEquipment);
@@ -115,6 +119,7 @@ export function selectCharacterSheetSummary(
   });
   const spellcasting = deriveSpellcastingSummary({
     characterClass,
+    selectedSubclassId: state.selectedSubclassId,
     level: state.level,
     finalAttributes,
     proficiencyBonus,
@@ -142,6 +147,7 @@ export function selectCharacterSheetSummary(
     inventory: carriedEquipment,
     selectedTraits: species?.traits ?? [],
     classFeatures: classFeaturesUpToLevel,
+    resources: deriveClassResources({ classId: state.selectedClassId, level: state.level, finalAttributes }),
     classSkillProficiencies: classAndFeatSkillProficiencies,
     skillTraining: state.skillTraining,
     classFeatureChoices: state.classFeatureChoices,
@@ -157,20 +163,15 @@ export function selectCharacterSheetSummary(
     backgroundName: background?.name ?? "",
     currentHp: effectivePlay.playState.currentHp,
     maxHp: effectivePlay.maxHitPoints,
-    maxHpBreakdown: getHitPointsBreakdown({
-      hitDie: characterClass?.hitDie ?? 6,
-      constitutionScore: finalAttributes.constituicao,
-      level: state.level,
-      hpRollByLevel: state.hpRollByLevel ?? {},
-    }),
+    maxHpBreakdown: getHitPointsBreakdown(hitPointsInput),
     tempHp: effectivePlay.playState.tempHp,
     hitDice: `${state.level}d${characterClass?.hitDie ?? 6}`,
     initiative:
       getAbilityModifier(finalAttributes.destreza) +
       featEffects.initiativeBonus +
       (featEffects.initiativeAddsProficiencyBonus ? proficiencyBonus : 0),
-    speedFeet: (species?.speed ?? 30) + featEffects.speedBonusFeet,
-    speedMeters: feetToMeters((species?.speed ?? 30) + featEffects.speedBonusFeet),
+    speedFeet,
+    speedMeters: feetToMeters(speedFeet),
     xp: xpForLevel(state.level),
     xpThreshold: xpThresholdForNextLevel(state.level),
     progressionMode: state.creationPreferences?.progressionMode ?? "xp",
@@ -180,7 +181,7 @@ export function selectCharacterSheetSummary(
     skills,
     savingThrows: computeSavingThrows({
       finalAttributes,
-      proficientSaveAttributes: normalizeSavingThrowAttributes(characterClass?.savingThrows),
+      proficientSaveAttributes: [...new Set([...normalizeSavingThrowAttributes(characterClass?.savingThrows), ...deriveFeatSavingThrows(state)])],
       proficiencyBonus,
       savingThrowBonus: equipmentSavingThrowBonus,
     }),
@@ -263,51 +264,6 @@ function deriveFinalAttributes(
   return calculateFinalAttributes(cappedAtTwenty, epicBonuses, capOverrides);
 }
 
-function resolveOriginFeat(
-  background: ReturnType<typeof getBuilderBackgrounds>[number] | undefined,
-) {
-  if (!background?.originFeat) return undefined;
-  const feats = getFeats();
-  const originName = background.originFeat;
-  const baseName = originName.replace(/\s*\(.+\)\s*$/, "");
-  return (
-    feats.find((feat) => feat.name === originName && feat.source === "XPHB") ??
-    feats.find((feat) => feat.name === baseName && feat.source === "XPHB") ??
-    feats.find((feat) => feat.name === originName) ??
-    feats.find((feat) => feat.name === baseName)
-  );
-}
-
-function deriveFeatEffects(
-  state: CharacterBuilderState,
-  background: ReturnType<typeof getBuilderBackgrounds>[number] | undefined,
-): AppliedFeatEffects {
-  const feats = getFeats();
-  let effects: AppliedFeatEffects = createEmptyAppliedFeatEffects();
-
-  const originFeat = resolveOriginFeat(background);
-  if (originFeat) {
-    effects = applyFeatEffects(effects, originFeat);
-  }
-
-  for (const [level, choice] of Object.entries(state.asiOrFeatByLevel)) {
-    if (Number(level) > state.level || choice.mode !== "feat") continue;
-    const feat = feats.find((entry) => entry.id === choice.featId);
-    if (!feat) continue;
-    // Half-feats comuns têm o ASI coletado em collectAsiBonuses (cap 20);
-    // Epic Boons mantêm o ASI aqui para rotear pelo cap 30.
-    const effectsChoice =
-      feat.category === "epic-boon" ? choice : { ...choice, asi: undefined };
-    effects = applyFeatEffects(effects, feat, effectsChoice);
-  }
-
-  for (const featId of state.additionalChoices.featIds) {
-    const feat = feats.find((entry) => entry.id === featId);
-    if (feat) effects = applyFeatEffects(effects, feat);
-  }
-
-  return effects;
-}
 
 function deriveFeatures(input: {
   classFeaturesUpToLevel: BuilderFeature[];
@@ -359,3 +315,4 @@ function xpThresholdForNextLevel(level: number): number {
 function feetToMeters(feet: number): number {
   return Math.round(feet * 0.3);
 }
+import { deriveClassResources } from "@/rules/classResourceRules";

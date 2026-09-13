@@ -1,5 +1,5 @@
 import { CHARACTER_BUILD_SCHEMA_VERSION } from "@/src/types/characterBuild";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { createCharacterStore } from "@/src/store/createCharacterStore";
 import { deriveStartingGoldPo, selectCharacterSheetSummary } from "@/src/store/characterSelectors";
 import { getBuilderClasses } from "@/src/services/ruleService";
@@ -450,7 +450,9 @@ describe("character store spellcasting and play mode", () => {
     expect(store.getState().playState!.inspiration).toBe(true);
 
     store.getState().applyDamage(6);
+    const random = vi.spyOn(Math, "random").mockReturnValue(0.99);
     store.getState().shortRest({ hitDiceToSpend: 1 });
+    random.mockRestore();
     expect(store.getState().playState!.currentHp).toBe(maxHp);
     expect(store.getState().playState!.hitDiceSpent).toBe(1);
 

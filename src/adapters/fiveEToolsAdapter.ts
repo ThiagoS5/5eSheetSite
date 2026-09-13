@@ -86,7 +86,7 @@ export function normalizeSpecies(
     description,
     descriptionBlocks,
     image: lore?.image ?? normalizeSpeciesImage(race),
-    size: race.size?.join(" ou ") ?? "M",
+    size: race.size?.join(" or ") ?? "M",
     speed: typeof race.speed === "number" ? race.speed : (race.speed?.walk ?? 30),
     traits,
     abilityBonuses: [],
@@ -182,7 +182,7 @@ export function normalizeClass(
     ruleset: "2024",
     level: 1,
     hitDie: rawClass.hd?.faces ?? 6,
-    summary: lore?.summary || `${rawClass.name} e uma classe jogavel de 2024.`,
+    summary: lore?.summary || `${rawClass.name} is a playable 2024 class.`,
     description:
       blocksToText(descriptionBlocks) || `${rawClass.name} class lore details.`,
     descriptionBlocks,
@@ -196,6 +196,7 @@ export function normalizeClass(
       formatTaggedTextAsPlain,
     ),
     spellcastingAbility,
+    grantedSpells: normalizeGrantedSpells(rawClass.additionalSpells),
     spellcastingProgression: normalizeSpellcastingProgression(rawClass),
     image: applyClassCardFraming(
       toSlug(rawClass.name, rawClass.source),
@@ -579,14 +580,16 @@ function normalizeClassFeature(
   classFeatures: Raw5eFeature[],
 ): BuilderFeature | null {
   const featureRef = typeof feature === "string" ? feature : feature.classFeature;
-  const [name, className, source, level] = featureRef.split("|");
+  const [name, className, classSource, level, featureSource] = featureRef.split("|");
+  const source = featureSource || classSource || "PHB";
 
   const featureLevel = Number(level);
   const matchedFeature = classFeatures.find(
     (entry) =>
-      entry.name === name &&
+      entry.name.toLowerCase() === name.toLowerCase() &&
       entry.source === source &&
       entry.level === featureLevel &&
+      (entry.classSource ?? "PHB") === (classSource || "PHB") &&
       entry.className === className,
   );
 
@@ -605,13 +608,17 @@ function normalizeSubclassFeature(
   featureRef: string,
   subclassFeatures: Raw5eFeature[],
 ): BuilderFeature {
-  const [name, , , subclassShortName, source, level] = featureRef.split("|");
+  const [name, className, classSource, subclassShortName, subclassSource, level, featureSource] = featureRef.split("|");
+  const source = featureSource || subclassSource || "PHB";
   const featureLevel = Number(level);
   const matched = subclassFeatures.find(
     (entry) =>
-      entry.name === name &&
+      entry.name.toLowerCase() === name.toLowerCase() &&
       entry.source === source &&
       entry.level === featureLevel &&
+      entry.className === className &&
+      (entry.classSource ?? "PHB") === (classSource || "PHB") &&
+      (entry.subclassSource ?? entry.source) === (subclassSource || "PHB") &&
       entry.subclassShortName === subclassShortName,
   );
 
@@ -646,10 +653,32 @@ function normalizeSubclass(
     name: rawSubclass.name,
     shortName: rawSubclass.shortName ?? rawSubclass.name,
     source: rawSubclass.source,
+    grantedSpells: normalizeGrantedSpells(rawSubclass.additionalSpells),
     features: (rawSubclass.subclassFeatures ?? []).map((ref) =>
       normalizeSubclassFeature(ref, subclassFeatures),
     ),
   };
+}
+
+/** Fixed class/subclass grants only; expanded lists are not automatic choices. */
+function normalizeGrantedSpells(raw: unknown[] | undefined): Array<{ level: number; spellId: string }> {
+  const grants: Array<{ level: number; spellId: string }> = [];
+  for (const group of raw ?? []) {
+    if (!group || typeof group !== "object") continue;
+    for (const kind of ["prepared", "known"]) {
+      const levels = (group as Record<string, unknown>)[kind];
+      if (!levels || typeof levels !== "object") continue;
+      for (const [level, spells] of Object.entries(levels)) {
+        if (!/^\d+$/.test(level) || !Array.isArray(spells)) continue;
+        for (const spell of spells) {
+          if (typeof spell !== "string") continue;
+          const [name, source = "PHB"] = spell.split("#")[0].split("|");
+          grants.push({ level: Number(level), spellId: toSlug(name, source) });
+        }
+      }
+    }
+  }
+  return grants;
 }
 
 function normalizePrimaryAbility(

@@ -27,6 +27,8 @@ export interface SourcePreferenceOption {
   locked: boolean;
   inactive: boolean;
   disabledReason?: string;
+  contentCount: number;
+  contentSummary: string;
 }
 
 const SOURCE_BOOK_TITLES: Record<string, string> = {
@@ -183,6 +185,24 @@ export function isLegacyBaseOnlySourceSelection(
 
 function buildAvailableSourcePreferenceOptions(): SourcePreferenceOption[] {
   const codes = new Set<string>();
+  const coverage = new Map<string, Map<string, number>>();
+  function countEntries(entries: { source: string }[], singular: string, plural: string) {
+    for (const entry of entries) {
+      const code = normalizeSourceCode(entry.source);
+      const counts = coverage.get(code) ?? new Map<string, number>();
+      const key = `${singular}|${plural}`;
+      counts.set(key, (counts.get(key) ?? 0) + 1);
+      coverage.set(code, counts);
+    }
+  }
+  countEntries(getBuilderClasses(), "class", "classes");
+  countEntries(getBuilderClasses().flatMap((entry) => entry.subclasses), "subclass", "subclasses");
+  countEntries(getBuilderSpecies(), "species", "species");
+  countEntries(getBuilderBackgrounds(), "background", "backgrounds");
+  countEntries(getFeats(), "feat", "feats");
+  countEntries(getBuilderLanguages(), "language", "languages");
+  countEntries(getSpellCatalog(), "spell", "spells");
+  countEntries(getItemCatalog(), "item", "items");
 
   for (const entry of getBuilderClasses()) {
     addSource(codes, entry.source);
@@ -226,6 +246,11 @@ function buildAvailableSourcePreferenceOptions(): SourcePreferenceOption[] {
         label: `${code} (${bookTitle})`,
         locked: code === BASE_SOURCE_CODE,
         inactive,
+        contentCount: [...(coverage.get(code)?.values() ?? [])].reduce((total, count) => total + count, 0),
+        contentSummary: [...(coverage.get(code)?.entries() ?? [])].map(([key, count]) => {
+          const [singular, plural] = key.split("|");
+          return `${count} ${count === 1 ? singular : plural}`;
+        }).join(" · "),
         disabledReason: inactive
           ? "Legacy D&D 2014 source is inactive in Forge & Fate."
           : undefined,

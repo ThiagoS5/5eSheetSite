@@ -20,6 +20,10 @@ Read 1–3 before **any** change. Read the rest based on what you are touching.
 | 8 | [`forge-fate-master-plan.md`](forge-fate-master-plan.md) | Full phase-by-phase roadmap (F1–F10) with per-phase scope, acceptance and status. Partly historical — see its header | Deep context on a specific phase or contract |
 | 9 | [`ADR-001-multiclass.md`](ADR-001-multiclass.md) | Post-v1 multiclass architecture decision, schema direction, migration constraints | Before any multiclass implementation or class-progression schema work |
 
+For data changes, also consult [`5etools-data-audit.md`](5etools-data-audit.md).
+Regenerate its complete file inventory with `npm run audit:data -- --write` and run
+`src/services/_tests_/catalogCoverage.test.ts` to verify normalized catalog reachability.
+
 ## Conflict Resolution Order
 
 When documents disagree, this precedence wins (highest first):

@@ -5,6 +5,7 @@ import {
   isValidPointBuyScore,
 } from "@/rules/pointBuyRules";
 import { getLevelRequirements } from "@/rules/levelProgression";
+import { deriveSpellcastingSummary } from "@/rules/spellcastingRules";
 import {
   getBuilderBackgrounds,
   getBuilderClasses,
@@ -65,6 +66,14 @@ export function validateBuilderStep(
 
     if (featureMessages.length) {
       return featureMessages;
+    }
+    const spells = deriveSpellcastingSummary({ characterClass: selectedClass, selectedSubclassId: state.selectedSubclassId, level: state.level, finalAttributes: state.baseAttributes, proficiencyBonus: 0, choices: state.spellcasting });
+    if (spells) {
+      const messages: string[] = [];
+      if (spells.selectedCantripCount < spells.cantripsKnownLimit) messages.push(`Choose ${spells.cantripsKnownLimit} class cantrips. Automatically granted spells do not use these choices.`);
+      if (spells.selectedPreparedCount < spells.preparedSpellLimit) messages.push(`Choose ${spells.preparedSpellLimit} prepared class spells.`);
+      if (spells.selectedKnownCount < spells.knownSpellLimit && spells.preparedSpellLimit === 0) messages.push(`Choose ${spells.knownSpellLimit} known class spells.`);
+      if (messages.length) return messages;
     }
   }
 

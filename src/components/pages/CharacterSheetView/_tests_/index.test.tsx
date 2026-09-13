@@ -87,6 +87,7 @@ describe("CharacterSheetView", () => {
   });
 
   it("downloads the printable PDF from the Export PDF action", async () => {
+    const schedule = vi.spyOn(window, "setTimeout");
     const click = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
     const createObjectURL = vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:sheet");
     const revokeObjectURL = vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => {});
@@ -105,10 +106,11 @@ describe("CharacterSheetView", () => {
     });
 
     expect(createObjectURL).toHaveBeenCalledWith(expect.any(Blob));
-    expect(revokeObjectURL).toHaveBeenCalledWith("blob:sheet");
+    expect(revokeObjectURL).not.toHaveBeenCalled();
+    expect(schedule).toHaveBeenCalledWith(expect.any(Function), 60_000);
   });
 
-  it("downloads Foundry JSON from the Foundry export action", () => {
+  it("downloads Foundry JSON after closing the version dialog", async () => {
     const click = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(function (this: HTMLAnchorElement) {
       expect(this.download).toBe("thalindra-foundry-vtt.json");
     });
@@ -125,7 +127,8 @@ describe("CharacterSheetView", () => {
       expect.objectContaining({ name: "Thalindra" }),
       expect.objectContaining({ profile: "dnd5e-5.3" }),
     );
-    expect(click).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(click).toHaveBeenCalledTimes(1));
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 
   it("downloads canonical Forge & Fate JSON from the canonical export action", () => {

@@ -26,7 +26,7 @@ export function StartingLevelStepper() {
 
   return (
     <div className="flex flex-wrap items-center gap-3">
-      <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">Starting level</span>
+      <span className="text-xs font-medium text-subdued">Starting level</span>
       <div className="inline-flex items-center gap-2 rounded-md border border-white/[0.08] bg-card px-1 py-1">
         <button type="button" aria-label="Decrease level" disabled={level <= 1}
           onClick={() => setLevel(Math.max(1, level - 1))}

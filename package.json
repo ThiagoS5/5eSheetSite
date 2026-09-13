@@ -12,7 +12,8 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "build:player-lore": "node scripts/build-player-lore.js",
-    "prune:data": "node scripts/prune-data.js"
+    "prune:data": "node scripts/prune-data.js",
+    "audit:data": "node scripts/audit-5etools.mjs"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^7.2.0",

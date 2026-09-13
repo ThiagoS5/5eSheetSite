@@ -1,9 +1,9 @@
 "use client";
 
 import * as Dialog from "@radix-ui/react-dialog";
-import { pdf } from "@react-pdf/renderer";
-import { useState } from "react";
-import { buildPdfDocument } from "@/src/adapters/pdfAdapter";
+import { useRef, useState } from "react";
+import { resolveCharacterPortrait } from "@/src/utils/portrait";
+import { PortugueseRulesGlossary } from "@/src/components/molecules/PortugueseRulesGlossary";
 import { selectDerivedSheet } from "@/src/store/characterSelectors";
 import { useCharacterStore } from "@/src/store/useCharacterStore";
 import { useCharacterBuilderState } from "@/src/store/useCharacterBuilderState";
@@ -29,6 +29,9 @@ export function CharacterSheetView({ embedded = false }: CharacterSheetViewProps
   const summary = useCharacterStore(selectDerivedSheet);
   const builderToolbar = useBuilderHeaderToolbar();
   const [foundryDialogOpen, setFoundryDialogOpen] = useState(false);
+  const [pdfBusy, setPdfBusy] = useState(false);
+  const pdfInProgress = useRef(false);
+  const [exportError, setExportError] = useState("");
   const [foundryProfile, setFoundryProfile] = useState<FoundryDnd5eProfile>(
     () => readGlobalPreferences().foundryExportProfile ?? "dnd5e-5.3",
   );
@@ -50,31 +53,47 @@ export function CharacterSheetView({ embedded = false }: CharacterSheetViewProps
       ...readGlobalPreferences(),
       foundryExportProfile: foundryProfile,
     });
-    downloadJson(`${sanitizeFileName(summary.name)}-foundry-vtt.json`, JSON.stringify(exportData, null, 2));
     setFoundryDialogOpen(false);
+    // Start after the modal releases its interaction lock.
+    window.setTimeout(() => downloadJson(`${sanitizeFileName(summary.name)}-foundry-vtt.json`, JSON.stringify(exportData, null, 2)), 0);
   }
 
   async function handlePdfExport() {
-    const blob = await pdf(
-      buildPdfDocument({
-        summary,
-        description,
-        inventory: summary.inventory,
-        playState: characterBuild.playState,
-      }),
-    ).toBlob();
-    downloadBlob(blob, `${sanitizeFileName(summary.name)}-sheet.pdf`);
+    if (pdfInProgress.current) return;
+    pdfInProgress.current = true;
+    setPdfBusy(true);
+    setExportError("");
+    try {
+      const [{ pdf }, { buildPdfDocument }] = await Promise.all([
+        import("@react-pdf/renderer"),
+        import("@/src/adapters/pdfAdapter"),
+      ]);
+      const blob = await pdf(
+        buildPdfDocument({ summary, description, inventory: summary.inventory, playState: characterBuild.playState }),
+      ).toBlob();
+      downloadBlob(blob, `${sanitizeFileName(summary.name)}-sheet.pdf`);
+    } catch {
+      setExportError("The PDF could not be created. Please try again.");
+    } finally {
+      pdfInProgress.current = false;
+      setPdfBusy(false);
+    }
   }
 
   const content = (
     <div className="flex flex-col gap-[14px]" style={SHEET_THEME_VARS}>
       <SheetHero
         summary={summary}
+        portraitUrl={resolveCharacterPortrait(description)}
+        pdfBusy={pdfBusy}
         onExportForgeFate={handleForgeFateExport}
         onExportFoundry={handleFoundryExport}
         onExportPdf={handlePdfExport}
       />
+      {pdfBusy ? <p role="status" className="text-sm text-muted-foreground">Creating PDF…</p> : null}
+      {exportError ? <p role="alert" className="text-sm text-foreground">{exportError}</p> : null}
       {builderToolbar}
+      <PortugueseRulesGlossary />
       <ContentTabs summary={summary} description={description} />
       <FoundryExportDialog
         open={foundryDialogOpen}
@@ -186,6 +205,9 @@ function downloadBlob(blob: Blob, fileName: string): void {
   const anchor = document.createElement("a");
   anchor.href = url;
   anchor.download = fileName;
+  document.body.appendChild(anchor);
   anchor.click();
-  URL.revokeObjectURL(url);
+  anchor.remove();
+  // Allow the browser to start reading the blob before releasing it.
+  window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
 }

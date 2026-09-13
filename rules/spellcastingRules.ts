@@ -33,6 +33,7 @@ const EMPTY_CHOICES: CharacterSpellcastingChoices = {
 
 export function deriveSpellcastingSummary(input: {
   characterClass: BuilderClass | undefined;
+  selectedSubclassId?: string;
   level: number;
   finalAttributes: CharacterAttributes;
   proficiencyBonus: number;
@@ -56,6 +57,11 @@ export function deriveSpellcastingSummary(input: {
   const levelIndex = Math.max(0, Math.min(19, input.level - 1));
   const slots = getSpellSlots(input.characterClass, input.level, input.usedSpellSlots ?? {});
   const resolveSpell = (id: string) => getSpellById(id) ?? customSpells.get(id);
+  const grantedSpells = dedupeSpellsByName([
+    ...(input.characterClass.grantedSpells ?? []),
+    ...(input.characterClass.subclasses.find((entry) => entry.id === input.selectedSubclassId)?.grantedSpells ?? []),
+  ].filter((grant) => grant.level <= input.level).map((grant) => resolveSpell(grant.spellId)).filter(isSpell));
+  const grantedNames = new Set(grantedSpells.map((spell) => spell.name.toLowerCase()));
   const cantrips = dedupeSpellsByName(
     [...choices.cantripIds, ...additionalChoices.cantripIds]
       .map(resolveSpell)
@@ -73,6 +79,7 @@ export function deriveSpellcastingSummary(input: {
   );
 
   return {
+    grantedSpells,
     ability,
     abilityLabel: ATTRIBUTE_LABELS[ability],
     spellSaveDc: 8 + input.proficiencyBonus + abilityModifier,
@@ -80,13 +87,13 @@ export function deriveSpellcastingSummary(input: {
     cantripsKnownLimit: progression?.cantripsKnown[levelIndex] ?? 0,
     knownSpellLimit: progression?.knownSpells[levelIndex] ?? 0,
     preparedSpellLimit: progression?.preparedSpells[levelIndex] ?? 0,
-    selectedCantripCount: cantrips.length,
-    selectedKnownCount: knownSpells.length,
-    selectedPreparedCount: preparedSpells.length,
+    selectedCantripCount: cantrips.filter((spell) => !grantedNames.has(spell.name.toLowerCase())).length,
+    selectedKnownCount: knownSpells.filter((spell) => !grantedNames.has(spell.name.toLowerCase())).length,
+    selectedPreparedCount: preparedSpells.filter((spell) => !grantedNames.has(spell.name.toLowerCase())).length,
     slots,
-    cantrips,
+    cantrips: dedupeSpellsByName([...cantrips, ...grantedSpells.filter((spell) => spell.level === 0)]),
     knownSpells,
-    preparedSpells,
+    preparedSpells: dedupeSpellsByName([...preparedSpells, ...grantedSpells.filter((spell) => spell.level > 0)]),
   };
 }
 
@@ -149,19 +156,21 @@ export function getHighestSpellLevelAvailable(
 }
 
 export function isSpellcastingSelectionComplete(input: {
+  grantedSpellIds?: readonly string[];
   cantripLimit: number;
   spellLimit: number;
   spellMode: "prepared" | "known";
   choices?: CharacterSpellcastingChoices;
 }): boolean {
   const choices = input.choices ?? EMPTY_CHOICES;
+  const count = (ids: string[]) => new Set(ids.filter((id) => !input.grantedSpellIds?.includes(id))).size;
   const selectedSpellCount =
     input.spellMode === "prepared"
-      ? choices.preparedSpellIds.length
-      : choices.knownSpellIds.length;
+      ? count(choices.preparedSpellIds)
+      : count(choices.knownSpellIds);
 
   return (
-    choices.cantripIds.length >= input.cantripLimit &&
+    count(choices.cantripIds) >= input.cantripLimit &&
     selectedSpellCount >= input.spellLimit
   );
 }

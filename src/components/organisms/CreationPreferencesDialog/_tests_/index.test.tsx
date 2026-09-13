@@ -2,7 +2,8 @@
  * @vitest-environment jsdom
  */
 import "@testing-library/jest-dom/vitest";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { useState } from "react";
 import { afterEach, describe, expect, it } from "vitest";
 import { CreationPreferencesDialog } from "@/src/components/organisms/CreationPreferencesDialog";
 import {
@@ -13,6 +14,44 @@ import { createCharacterStore } from "@/src/store/createCharacterStore";
 import { CharacterStoreProvider, useCharacterStore } from "@/src/store/useCharacterStore";
 
 describe("CreationPreferencesDialog", () => {
+  it("returns keyboard focus to the external opener after Escape", async () => {
+    function Harness() {
+      const [open, setOpen] = useState(false);
+      return <><button onClick={() => setOpen(true)}>Open preferences</button><CreationPreferencesDialog open={open} onClose={() => setOpen(false)} /></>;
+    }
+    render(<CharacterStoreProvider><Harness /></CharacterStoreProvider>);
+    const opener = screen.getByRole("button", { name: "Open preferences" });
+    opener.focus();
+    fireEvent.click(opener);
+    screen.getByRole("searchbox", { name: "Search source books" }).focus();
+    fireEvent.keyDown(document.activeElement!, { key: "Escape" });
+    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+    await waitFor(() => expect(opener).toHaveFocus());
+  });
+  it("searches books by content without changing hidden source selections", () => {
+    const store = createCharacterStore();
+    store.getState().setCreationPreferences({ activeSources: ["XPHB", "EFA"], progressionMode: "xp", choiceLimits: "rules" });
+    render(<CharacterStoreProvider store={store}><CreationPreferencesDialog open onClose={() => {}} /></CharacterStoreProvider>);
+    fireEvent.change(screen.getByRole("searchbox", { name: "Search source books" }), { target: { value: "Eberron: Forge" } });
+    const checkbox = screen.getByRole("checkbox", { name: "EFA (Eberron: Forge of the Artificer)" });
+    expect(checkbox).toBeChecked();
+    expect(checkbox).toHaveAccessibleDescription(expect.stringContaining("1 class"));
+    expect(screen.queryByRole("checkbox", { name: "XPHB (Player's Handbook 2024)" })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+    expect(store.getState().creationPreferences?.activeSources).toEqual(["XPHB", "EFA"]);
+  });
+
+  it("provides a recoverable empty search and cancels unsaved source edits", () => {
+    const store = createCharacterStore();
+    store.getState().setCreationPreferences({ activeSources: ["XPHB", "EFA"], progressionMode: "xp", choiceLimits: "rules" });
+    render(<CharacterStoreProvider store={store}><CreationPreferencesDialog open onClose={() => {}} /></CharacterStoreProvider>);
+    fireEvent.change(screen.getByRole("searchbox", { name: "Search source books" }), { target: { value: "no-such-book" } });
+    expect(screen.getByText("No books match your search.")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Clear search" }));
+    fireEvent.click(screen.getByRole("button", { name: "Deselect optional sources" }));
+    fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+    expect(store.getState().creationPreferences?.activeSources).toEqual(["XPHB", "EFA"]);
+  });
   afterEach(() => {
     cleanup();
     localStorage.clear();

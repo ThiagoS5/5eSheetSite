@@ -8,6 +8,17 @@ import {
 import { calculateMaxHitPoints } from "@/src/adapters/characterDerivedAdapter";
 
 describe("calculateMaxHitPointsWithRolls", () => {
+  it("never loses HP on a low roll with a negative Constitution modifier", () => {
+    const input = { hitDie: 6, constitutionScore: 6, level: 3, hpRollByLevel: { "2": 1, "3": 1 } };
+    expect(calculateMaxHitPointsWithRolls(input)).toBe(6);
+    expect(getHitPointsBreakdown(input).reduce((sum, part) => sum + part.value, 0)).toBe(6);
+  });
+
+  it("includes source bonuses in both max HP and its explanation", () => {
+    const input = { hitDie: 10, constitutionScore: 14, level: 5, hpRollByLevel: {}, bonuses: [{ label: "Tough", value: 10 }, { label: "Dwarven Toughness", value: 5 }] };
+    expect(calculateMaxHitPointsWithRolls(input)).toBe(59);
+    expect(getHitPointsBreakdown(input).reduce((sum, part) => sum + part.value, 0)).toBe(59);
+  });
   it("without rolls equals the fixed-average rule (d10, CON 14, level 5 = 44)", () => {
     const input = { hitDie: 10, constitutionScore: 14, level: 5, hpRollByLevel: {} };
     expect(calculateMaxHitPointsWithRolls(input)).toBe(44);

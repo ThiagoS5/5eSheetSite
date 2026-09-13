@@ -1,6 +1,7 @@
 import type { ReactElement, ReactNode } from "react";
 import {
   Circle,
+  Image as PdfImage,
   Document,
   type DocumentProps,
   Page,
@@ -90,7 +91,7 @@ export function buildPdfDocument(
       language="en-US"
     >
       <Page size={pageSize} style={styles.page} wrap>
-        <CharacterHeader summary={summary} description={description} />
+        <CharacterHeader summary={summary} description={description} projection={projection} />
 
         <View style={styles.coreStatGrid}>
           <StatBox label="Armor Class" value={String(summary.armorClass)} />
@@ -254,7 +255,7 @@ export function buildPdfDocument(
         <PageFooter characterName={characterName} />
       </Page>
 
-      {hasPlayStateContent(projection.playState) ? (
+      {projection.playState && (hasPlayStateContent(projection.playState) || summary.resources?.length) ? (
         <Page size={pageSize} style={styles.page} wrap>
           <AppendixHeader title="Play State & Session Log" />
           <PlayStateAppendix summary={summary} playState={projection.playState!} />
@@ -265,10 +266,10 @@ export function buildPdfDocument(
   );
 }
 
-function CharacterHeader({ description, summary }: PdfCharacterInput): ReactElement {
+function CharacterHeader({ description, summary, projection }: PdfCharacterInput & { projection: CharacterExportProjection }): ReactElement {
   return (
     <View style={styles.header}>
-      <Portrait portraitId={description.portraitId} />
+      <Portrait portraitId={description.portraitId} portraitDataUrl={projection.identity.portraitDataUrl} />
       <View style={styles.headerText}>
         <Text style={styles.characterName}>{summary.name || "Unnamed Character"}</Text>
         <Text style={styles.characterLine}>
@@ -284,7 +285,8 @@ function CharacterHeader({ description, summary }: PdfCharacterInput): ReactElem
   );
 }
 
-function Portrait({ portraitId }: { portraitId?: string }): ReactElement {
+function Portrait({ portraitId, portraitDataUrl }: { portraitId?: string; portraitDataUrl?: string }): ReactElement {
+  if (portraitDataUrl) return <View style={styles.portraitFrame}><PdfImage src={portraitDataUrl} style={{ width: 72, height: 72, objectFit: "cover" }} /></View>;
   const palette = getPortraitPalette(portraitId ?? "");
 
   return (
@@ -450,9 +452,10 @@ function PlayStateAppendix({
         />
       </Section>
 
-      {usedResources.length > 0 ? (
+      {(summary.resources?.length ?? 0) > 0 || usedResources.length > 0 ? (
         <Section title="Resources">
-          {usedResources.map(([resourceId, used]) => (
+          {(summary.resources ?? []).map((resource) => <Row key={resource.id} label={resource.label} value={`${Math.max(0, resource.maxUses - (playState.resourceUses[resource.id] ?? 0))}/${resource.maxUses} remaining; ${resource.shortRestRecovery === "all" ? "all on short rest" : resource.shortRestRecovery > 0 ? `${resource.shortRestRecovery} on short rest` : "long rest"}`} />)}
+          {usedResources.filter(([resourceId]) => !summary.resources?.some((resource) => resource.id === resourceId)).map(([resourceId, used]) => (
             <Row key={resourceId} label={titleFromId(resourceId)} value={`${used} used`} />
           ))}
         </Section>
@@ -496,7 +499,7 @@ function DescriptionAppendix({
   return (
     <View style={styles.descriptionGrid}>
       <View style={styles.descriptionPortrait}>
-        <Portrait portraitId={description.portraitId} />
+        <Portrait portraitId={description.portraitId} portraitDataUrl={projection.identity.portraitDataUrl} />
       </View>
       <View style={styles.descriptionFields}>
         {compactDescriptionFields(description).map((field) => (

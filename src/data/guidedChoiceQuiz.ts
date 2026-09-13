@@ -686,6 +686,7 @@ function getRecommendation(
       question.options.find((option) => option.id === answerOptionIds[index]),
     )
     .filter((option): option is GuidedChoiceQuizOption => Boolean(option));
+  if (chosenOptions.length !== questions.length) return null;
 
   const scores = new Map<string, number>();
   const reasons = new Map<string, Array<{ label: string; weight: number }>>();
@@ -707,7 +708,7 @@ function getRecommendation(
     return tieBreakOrder.indexOf(a[0]) - tieBreakOrder.indexOf(b[0]);
   });
 
-  const availableIdSet = availableItemIds?.length ? new Set(availableItemIds) : null;
+  const availableIdSet = availableItemIds === undefined ? null : new Set(availableItemIds);
   const availableRanked = availableIdSet
     ? ranked.filter(([id]) => availableIdSet.has(id))
     : ranked;

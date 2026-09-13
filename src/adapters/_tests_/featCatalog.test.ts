@@ -126,7 +126,7 @@ describe("getSelectableFeats", () => {
     expect(selectable.every((f) => f.category === "general")).toBe(true);
 
     const nonRepeatable = selectable.find((f) => !f.repeatable);
-    const repeatable = selectable.find((f) => f.repeatable);
+    const repeatable = getSelectableFeats("general", feats, { ...ctx, canCastSpells: true }).find((f) => f.repeatable);
     if (!nonRepeatable || !repeatable) {
       throw new Error("expected both a repeatable and a non-repeatable general feat in the catalog");
     }
@@ -137,7 +137,7 @@ describe("getSelectableFeats", () => {
     expect(afterNonRep.some((f) => f.id === nonRepeatable.id)).toBe(false);
 
     const afterRep = getSelectableFeats("general", feats, {
-      ...ctx, chosenFeatIds: [repeatable.id],
+      ...ctx, canCastSpells: true, chosenFeatIds: [repeatable.id],
     });
     expect(afterRep.some((f) => f.id === repeatable.id)).toBe(true);
   });
@@ -188,8 +188,8 @@ describe("getSelectableFeats", () => {
     });
 
     expect(status.met).toBe(false);
-    expect(status.reason).toMatch(/nivel 4/i);
-    expect(status.reason).toMatch(/forca 13|destreza 13/i);
+    expect(status.reason).toMatch(/level 4/i);
+    expect(status.reason).toMatch(/Strength 13|Dexterity 13/i);
   });
 });
 

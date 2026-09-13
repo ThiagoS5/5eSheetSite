@@ -1030,6 +1030,7 @@ function ClassStep({
   onSelectClass: (classId: string) => void;
 }) {
   const [searchQuery, setSearchQuery] = useState("");
+  const startingLevel = useCharacterStore((state) => state.level);
   const [difficultyFilter, setDifficultyFilter] = useState<
     ClassDifficulty | "all"
   >("all");
@@ -1050,14 +1051,14 @@ function ClassStep({
   const quizRecommendation = useMemo(
     () =>
       quizQuestions
-        ? getClassQuizRecommendation(quizQuestions, quizAnswers)
+        ? getClassQuizRecommendation(quizQuestions, quizAnswers, classes.map((entry) => entry.id))
         : null,
-    [quizQuestions, quizAnswers],
+    [quizQuestions, quizAnswers, classes],
   );
   const getRecommendationTier = (
     classId: string,
   ): "primary" | "secondary" | null => {
-    if (!beginnerMode || !quizRecommendation) {
+    if (!quizRecommendation) {
       return null;
     }
     if (quizRecommendation.primaryClassId === classId) {
@@ -1073,7 +1074,7 @@ function ClassStep({
   return (
     <section aria-labelledby="class-options-title" className="grid gap-6">
       <WizardStepHeader
-        eyebrow="Level 1"
+        eyebrow={`Level ${startingLevel}`}
         title="Choose a Class"
         description="Class defines Hit Die, proficiencies, saving throws, and features."
         id="class-options-title"
@@ -1088,7 +1089,7 @@ function ClassStep({
       <div className="flex flex-wrap items-center gap-3">
         <label
           htmlFor="class-difficulty-filter"
-          className="text-[10px] font-bold uppercase tracking-[0.14em] text-subdued"
+          className="text-xs font-medium text-subdued"
         >
           Difficulty
         </label>
@@ -1105,10 +1106,10 @@ function ClassStep({
           <option value="medio">{CLASS_DIFFICULTY_LABELS.medio}</option>
           <option value="dificil">{CLASS_DIFFICULTY_LABELS.dificil}</option>
         </select>
+        <div className="sm:ml-auto"><StartingLevelStepper /></div>
       </div>
 
-      {beginnerMode ? (
-        <>
+      <>
           <StepIntroCard
             conceptId="class"
             title="What is a class?"
@@ -1174,12 +1175,7 @@ function ClassStep({
               />
             ) : null}
           </section>
-        </>
-      ) : null}
-
-      <div className="mb-4">
-        <StartingLevelStepper />
-      </div>
+      </>
 
       {filteredClasses.length ? (
         <div className="grid min-w-0 auto-rows-[1fr] grid-cols-1 items-stretch gap-3 md:gap-4 md:grid-cols-2 2xl:grid-cols-3">
@@ -2008,6 +2004,7 @@ function ClassFeaturesStep({
   onSpellcastingChoicesChange: (choices: CharacterSpellcastingChoices) => void;
   onAdditionalChoicesChange: (choices: CharacterBuildAdditionalChoices) => void;
 }) {
+  const grantedSpells = useCharacterStore((state) => state.characterBuild.derivedSheet.spellcasting?.grantedSpells);
   if (!selectedClass) {
     return (
       <section className="rounded-lg border border-white/[0.06] bg-card p-4 text-sm text-subdued">
@@ -2178,6 +2175,7 @@ function ClassFeaturesStep({
       {selectedClass.spellcastingAbility ? (
         <SpellCatalogPicker
           className={selectedClass.name}
+          grantedSpells={grantedSpells}
           activeSources={activeSources}
           value={spellcastingChoices}
           additionalValue={additionalChoices.spellcasting}
@@ -2419,7 +2417,6 @@ function BackgroundStep({
   backgrounds,
   selectedBackgroundId,
   selectedBonuses,
-  beginnerMode,
   disabled,
   onSelectBackground,
   onSetBonuses,
@@ -2477,7 +2474,6 @@ function BackgroundStep({
         onSearch={setSearchQuery}
       />
 
-      {beginnerMode ? (
         <GuidedChoiceQuizSection
           scope="background"
           title="Not sure which past fits?"
@@ -2512,7 +2508,6 @@ function BackgroundStep({
             setQuizAnswers([]);
           }}
         />
-      ) : null}
 
       {filteredBackgrounds.length ? (
         <div className="grid w-full min-w-0 auto-rows-[1fr] grid-cols-1 items-stretch gap-3 md:gap-4 md:grid-cols-2 2xl:grid-cols-3">
@@ -2603,7 +2598,6 @@ function matchesSpeciesSearch(species: BuilderSpecies, query: string): boolean {
 function SpeciesStep({
   species,
   selectedSpeciesId,
-  beginnerMode,
   disabled,
   onSelectSpecies,
 }: {
@@ -2653,7 +2647,6 @@ function SpeciesStep({
         onSearch={setSearchQuery}
       />
 
-      {beginnerMode ? (
         <GuidedChoiceQuizSection
           scope="species"
           title="Not sure which species fits?"
@@ -2688,7 +2681,6 @@ function SpeciesStep({
             setQuizAnswers([]);
           }}
         />
-      ) : null}
 
       {filteredSpecies.length ? (
         <div className="grid min-w-0 auto-rows-[1fr] grid-cols-1 items-stretch gap-3 md:gap-4 md:grid-cols-2 2xl:grid-cols-3">

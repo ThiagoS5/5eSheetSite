@@ -49,6 +49,7 @@ const summary = {
   maxHp: 24,
   tempHp: 0,
   armorClass: 15,
+  resources: [{ id: "arcane-recovery", label: "Arcane Recovery", maxUses: 1, shortRestRecovery: 0 }],
   classFeatures: [
     {
       name: "Arcane Recovery",
@@ -83,7 +84,7 @@ describe("PlayStatePanel", () => {
     fireEvent.change(screen.getByLabelText("Hit dice"), { target: { value: "2" } });
     fireEvent.click(screen.getByRole("button", { name: "Short Rest" }));
     fireEvent.click(screen.getByRole("button", { name: "Long Rest" }));
-    fireEvent.click(screen.getByLabelText(/Arcane Recovery/i));
+    fireEvent.change(screen.getByLabelText(/Arcane Recovery/i), { target: { value: "1" } });
 
     expect(shortRest).toHaveBeenCalledWith({ hitDiceToSpend: 2 });
     expect(longRest).toHaveBeenCalledTimes(1);
@@ -91,7 +92,7 @@ describe("PlayStatePanel", () => {
       "arcane-recovery",
       1,
       1,
-      "shortRest",
+      "longRest",
     );
   });
 });

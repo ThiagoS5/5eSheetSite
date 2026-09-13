@@ -34,6 +34,8 @@ interface RawFeat {
 }
 
 export interface AppliedFeatEffects {
+  hitPointBonus: number;
+  hitPointsPerLevel: number;
   abilityBonuses: Partial<Record<AttributeKey, number>>;
   /** Bônus de habilidade vindos de Epic Boons — podem elevar o atributo até 30. */
   epicBoonAbilityBonuses: Partial<Record<AttributeKey, number>>;
@@ -47,6 +49,8 @@ export interface AppliedFeatEffects {
 
 export function createEmptyAppliedFeatEffects(): AppliedFeatEffects {
   return {
+    hitPointBonus: 0,
+    hitPointsPerLevel: 0,
     abilityBonuses: {},
     epicBoonAbilityBonuses: {},
     initiativeBonus: 0,
@@ -63,6 +67,8 @@ const CURATED_EFFECTS: Record<string, FeatStructuredEffects> = {
   "alert-xphb": { initiativeAddsProficiencyBonus: true },
   "speedy-xphb": { speedBonusFeet: 10 },
   "boon-of-speed-xphb": { speedBonusFeet: 30 },
+  "tough-xphb": { hitPointsPerLevel: 2 },
+  "boon-of-fortitude-xphb": { hitPointBonus: 40 },
 };
 
 export const ASI_FEAT_ID = "ability-score-improvement-xphb";
@@ -89,12 +95,12 @@ const CANONICAL_SKILL_NAMES = [
 ];
 
 const ABILITY_LABEL: Record<AttributeKey, string> = {
-  forca: "forca",
-  destreza: "destreza",
-  constituicao: "constituicao",
-  inteligencia: "inteligencia",
-  sabedoria: "sabedoria",
-  carisma: "carisma",
+  forca: "Strength",
+  destreza: "Dexterity",
+  constituicao: "Constitution",
+  inteligencia: "Intelligence",
+  sabedoria: "Wisdom",
+  carisma: "Charisma",
 };
 
 function mapPrerequisites(raw: unknown[] | undefined): FeatPrerequisite[] {
@@ -103,6 +109,9 @@ function mapPrerequisites(raw: unknown[] | undefined): FeatPrerequisite[] {
       level?: number | { level?: number };
       ability?: Array<Record<string, number>>;
       feat?: string[];
+      spellcasting?: boolean;
+      spellcasting2020?: boolean;
+      proficiency?: Array<{ armor?: string }>;
     };
     const level =
       typeof record.level === "object" ? record.level?.level : record.level;
@@ -114,6 +123,9 @@ function mapPrerequisites(raw: unknown[] | undefined): FeatPrerequisite[] {
       }
     }
     const prereq: FeatPrerequisite = {};
+    if (record.spellcasting || record.spellcasting2020) prereq.spellcasting = true;
+    const armor = record.proficiency?.flatMap((entry) => entry.armor ? [entry.armor] : []);
+    if (armor?.length) prereq.armorProficiencies = armor;
     if (typeof level === "number") prereq.level = level;
     if (Object.keys(abilities).length > 0) prereq.abilities = abilities;
     if (record.feat?.length) {
@@ -281,6 +293,8 @@ export interface FeatPrerequisiteContext {
   level: number;
   finalAttributes: Record<AttributeKey, number>;
   chosenFeatIds: string[];
+  canCastSpells?: boolean;
+  armorProficiencies?: string[];
 }
 
 export function meetsPrerequisite(
@@ -291,6 +305,8 @@ export function meetsPrerequisite(
 
 
   return feat.prerequisites.some((entry) => {
+    if (entry.spellcasting && !ctx.canCastSpells) return false;
+    if (entry.armorProficiencies?.some((armor) => !ctx.armorProficiencies?.includes(armor))) return false;
     if (entry.level !== undefined && ctx.level < entry.level) return false;
     if (entry.abilities) {
       for (const [key, threshold] of Object.entries(entry.abilities)) {
@@ -319,8 +335,12 @@ function prerequisiteEntryFailures(
   ctx: FeatPrerequisiteContext,
 ): string[] {
   const failures: string[] = [];
+  if (entry.spellcasting && !ctx.canCastSpells) failures.push("the ability to cast spells");
+  for (const armor of entry.armorProficiencies ?? []) {
+    if (!ctx.armorProficiencies?.includes(armor)) failures.push(`${armor} armor training`);
+  }
   if (entry.level !== undefined && ctx.level < entry.level) {
-    failures.push(`nivel ${entry.level}`);
+    failures.push(`level ${entry.level}`);
   }
   if (entry.abilities) {
     for (const [key, threshold] of Object.entries(entry.abilities)) {
@@ -333,7 +353,7 @@ function prerequisiteEntryFailures(
     const owned = new Set(ctx.chosenFeatIds);
     const missing = entry.feat.filter((featId) => !owned.has(featId));
     if (missing.length > 0) {
-      failures.push(`talento ${missing.join(", ")}`);
+      failures.push(`feat ${missing.join(", ")}`);
     }
   }
   return failures;
@@ -344,7 +364,7 @@ export function getFeatPrerequisiteStatus(
   ctx: FeatPrerequisiteContext,
 ): FeatPrerequisiteStatus {
   if (feat.category === "epic-boon" && ctx.level < 19) {
-    return { met: false, reason: "Requer nivel 19." };
+    return { met: false, reason: "Requires level 19." };
   }
   if (feat.prerequisites.length === 0) return { met: true };
 
@@ -355,7 +375,7 @@ export function getFeatPrerequisiteStatus(
 
   return {
     met: false,
-    reason: `Requer ${failures.map((entryFailures) => entryFailures.join(" e ")).join(" ou ")}.`,
+    reason: `Requires ${failures.map((entryFailures) => entryFailures.join(" and ")).join(" or ")}.`,
   };
 }
 
@@ -390,6 +410,8 @@ function mergeEffects(
   source: FeatStructuredEffects | undefined,
   isEpicBoon: boolean,
 ): void {
+  target.hitPointBonus += source?.hitPointBonus ?? 0;
+  target.hitPointsPerLevel += source?.hitPointsPerLevel ?? 0;
   addBonuses(
     isEpicBoon ? target.epicBoonAbilityBonuses : target.abilityBonuses,
     source?.abilityBonuses,
@@ -410,6 +432,8 @@ export function applyFeatEffects(
 ): AppliedFeatEffects {
   const empty = createEmptyAppliedFeatEffects();
   const result: AppliedFeatEffects = {
+    hitPointBonus: current?.hitPointBonus ?? 0,
+    hitPointsPerLevel: current?.hitPointsPerLevel ?? 0,
     abilityBonuses: { ...(current?.abilityBonuses ?? empty.abilityBonuses) },
     epicBoonAbilityBonuses: {
       ...(current?.epicBoonAbilityBonuses ?? empty.epicBoonAbilityBonuses),

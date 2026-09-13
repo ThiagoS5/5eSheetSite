@@ -1,12 +1,27 @@
 import { getAbilityModifier } from "@/src/adapters/characterDerivedAdapter";
 import type { HpRollChoice } from "@/src/types/characterBuild";
-import type { BreakdownPart } from "@/src/types/builder";
+import type { BreakdownPart, BuilderSpecies } from "@/src/types/builder";
+import type { AppliedFeatEffects } from "@/src/adapters/featCatalog";
+
+export function deriveHitPointBonuses(species: BuilderSpecies | undefined, level: number, featEffects: AppliedFeatEffects): BreakdownPart[] {
+  const bonuses: BreakdownPart[] = [];
+  if (species?.id === "dwarf-xphb" && species.traits.some((trait) => trait.name === "Dwarven Toughness")) {
+    bonuses.push({ label: `Dwarven Toughness (+1 × ${level})`, value: level });
+  }
+  if (featEffects.hitPointsPerLevel) bonuses.push({
+    label: `Tough (+${featEffects.hitPointsPerLevel} × ${level})`,
+    value: featEffects.hitPointsPerLevel * level,
+  });
+  if (featEffects.hitPointBonus) bonuses.push({ label: "Boon of Fortitude", value: featEffects.hitPointBonus });
+  return bonuses;
+}
 
 export interface HitPointsInput {
   hitDie: number;
   constitutionScore: number;
   level: number;
   hpRollByLevel: Record<string, HpRollChoice>;
+  bonuses?: BreakdownPart[];
 }
 
 function perLevelGain(input: HitPointsInput, level: number): number {
@@ -21,11 +36,11 @@ function perLevelGain(input: HitPointsInput, level: number): number {
 export function calculateMaxHitPointsWithRolls(input: HitPointsInput): number {
   const effectiveLevel = Math.max(1, Math.floor(input.level));
   const conModifier = getAbilityModifier(input.constitutionScore);
-  let total = input.hitDie + conModifier;
+  let total = Math.max(1, input.hitDie + conModifier);
   for (let level = 2; level <= effectiveLevel; level += 1) {
-    total += perLevelGain(input, level) + conModifier;
+    total += Math.max(1, perLevelGain(input, level) + conModifier);
   }
-  return total;
+  return total + (input.bonuses ?? []).reduce((sum, part) => sum + part.value, 0);
 }
 
 export function getHitPointsBreakdown(input: HitPointsInput): BreakdownPart[] {
@@ -61,7 +76,10 @@ export function getHitPointsBreakdown(input: HitPointsInput): BreakdownPart[] {
       value: conModifier * effectiveLevel,
     });
   }
-  return parts;
+  const rawTotal = parts.reduce((sum, part) => sum + part.value, 0);
+  const minimumAdjustment = calculateMaxHitPointsWithRolls({ ...input, bonuses: [] }) - rawTotal;
+  if (minimumAdjustment > 0) parts.push({ label: "Minimum 1 HP per level", value: minimumAdjustment });
+  return [...parts, ...(input.bonuses ?? [])];
 }
 
 export function rollHitDie(hitDie: number, rng: () => number = Math.random): number {
